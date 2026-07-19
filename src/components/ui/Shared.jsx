@@ -4,8 +4,7 @@ import { motion } from "framer-motion";
 export function HoverCard({ children, style, onMouseEnter, onMouseLeave }) {
   return (
     <motion.div 
-      whileHover={{ y: -12, boxShadow: "0 30px 60px rgba(108,99,255,0.3)" }} 
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      whileHover={{ y: -8, boxShadow: "0 30px 60px rgba(108,99,255,0.3)", transition: { type: "spring", stiffness: 400, damping: 17 } }} 
       style={{ ...style }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -20,9 +19,9 @@ export function InteractiveCard({ children, style, delay = 0, ...props }) {
   return (
     <motion.div 
       {...fadeInUp}
-      whileHover={{ y: -8, scale: 1.02, boxShadow: "0 20px 40px rgba(108,99,255,0.12)" }}
+      whileHover={{ y: -8, scale: 1.02, boxShadow: "0 20px 40px rgba(108,99,255,0.15)", transition: { type: "spring", stiffness: 400, damping: 17 } }}
       {...props}
-      style={{ transition: "box-shadow 0.3s", cursor: "pointer", ...style }}
+      style={{ cursor: "pointer", ...style }}
     >
       {children}
     </motion.div>
@@ -102,8 +101,7 @@ export function RoleCard({ icon, title, tagline, desc, active, onClick }) {
   return (
     <motion.button 
       onClick={onClick}
-      whileHover={{ y: -6, scale: 1.02 }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      whileHover={{ y: -6, scale: 1.02, transition: { type: "spring", stiffness: 400, damping: 17 } }}
       style={{ 
         flex: 1, minWidth: 155, 
         background: active ? "linear-gradient(145deg,#f0f0ff,#e8f9f5)" : "#fff", 
