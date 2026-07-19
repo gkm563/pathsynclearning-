@@ -62,6 +62,27 @@ export function RecruiterValidationSection({
   );
 }
 
+export function QuoteSection({ quote, author, role }) {
+  const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
+  return (
+    <section style={{ padding: "80px 32px", background: "linear-gradient(135deg, #1a1a2e, #2a2a4e)", color: "#fff" }}>
+      <div style={{ maxWidth: 1000, margin: "0 auto", textAlign: "center" }}>
+        <motion.div {...fadeInUp}>
+          <div style={{ fontSize: 64, color: "#6c63ff", opacity: 0.4, lineHeight: 0.5, marginBottom: 20 }}>"</div>
+          <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 300, fontStyle: "italic", lineHeight: 1.6, marginBottom: 32 }}>
+            {quote}
+          </h3>
+          <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center" }}>
+            <div style={{ width: 40, height: 2, background: "#6c63ff", marginBottom: 16 }} />
+            <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 700 }}>{author}</div>
+            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: "#b2aeff", letterSpacing: 1, marginTop: 4, textTransform: "uppercase" }}>{role}</div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
 export function Chip({ bg, border, color, children }) {
   return (
     <div style={{ 

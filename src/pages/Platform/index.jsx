@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
-import { Chip, SkillBar, HoverCard, RecruiterValidationSection, InteractiveCard } from "../../components/ui/Shared";
+import { Chip, SkillBar, HoverCard, QuoteSection, RecruiterValidationSection, InteractiveCard } from "../../components/ui/Shared";
 
 export default function Platform() {
   const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
@@ -241,6 +241,12 @@ export default function Platform() {
 
         </div>
       </section>
+
+      <QuoteSection 
+        quote="The gap between learning and earning is a design flaw. PathEd is the patch."
+        author="Rahul Kushwaha"
+        role="CEO & Chief Designer"
+      />
 
       <RecruiterValidationSection 
         tag="▸ HIRING DASHBOARD"

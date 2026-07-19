@@ -2,16 +2,16 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
-import { Chip, HoverCard, RecruiterValidationSection, InteractiveCard } from "../../components/ui/Shared";
+import { Chip, HoverCard, RecruiterValidationSection, InteractiveCard, QuoteSection } from "../../components/ui/Shared";
 
 export default function Company() {
   const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
 
   const team = [
-    { name: "Rahul Kushwaha", role: "CEO & Chief Designer", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80" },
-    { name: "Devesh Singh", role: "Head of R&D", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80" },
-    { name: "Ayush Yadav", role: "Chief Engineer & Developer", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=600&q=80" },
-    { name: "Prabhat Pandey", role: "Chief Technical Head", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=600&q=80" }
+    { name: "Rahul Kushwaha", role: "CEO & Chief Designer", img: "/team/Rahul Kushwaha.jpeg" },
+    { name: "Devesh Singh", role: "Head of R&D", img: "/team/Devesh SIngh.jpeg" },
+    { name: "Ayush Yadav", role: "Chief Engineer & Developer", img: "/team/Ayush yadav.jpg" },
+    { name: "Prabhat Pandey", role: "Chief Technical Head", img: "/team/Prabhat Pandey.jpg" }
   ];
 
   const galleryImages = [
@@ -210,6 +210,12 @@ export default function Company() {
           )}
         </div>
       </section>
+
+      <QuoteSection 
+        quote="Built in Prayagraj. Scaled for the world. We are engineers building for engineers."
+        author="Rahul Kushwaha"
+        role="CEO & Chief Designer"
+      />
 
       <RecruiterValidationSection 
         tag="▸ CORPORATE PARTNERSHIPS"

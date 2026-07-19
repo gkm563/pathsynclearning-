@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
-import { Chip, HoverCard, RecruiterValidationSection, InteractiveCard } from "../../components/ui/Shared";
+import { Chip, HoverCard, RecruiterValidationSection, InteractiveCard, QuoteSection } from "../../components/ui/Shared";
 
 export default function Methodology() {
   const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
@@ -227,6 +227,12 @@ export default function Methodology() {
 
         </div>
       </section>
+
+      <QuoteSection 
+        quote="We don't need easier degrees. We need degrees that actually matter to the people hiring."
+        author="Rahul Kushwaha"
+        role="CEO & Chief Designer"
+      />
 
       <RecruiterValidationSection 
         tag="▸ VALIDATED ARCHITECTURE"

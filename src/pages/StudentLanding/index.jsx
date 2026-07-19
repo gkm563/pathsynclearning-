@@ -8,6 +8,7 @@ import PreFooterCTA from "./sections/PreFooterCTA";
 import PlatformOverview from "./sections/PlatformOverview";
 import FAQ from "./sections/FAQ";
 import Reviews from "./sections/Reviews";
+import { QuoteSection } from "../../components/ui/Shared";
 
 export default function StudentLanding() {
   useEffect(() => {
@@ -35,6 +36,11 @@ export default function StudentLanding() {
         <PlatformOverview />
         <FAQ />
         <Reviews />
+        <QuoteSection 
+          quote="An engineering degree shouldn't be a gamble. PathEd is the blueprint for guaranteed readiness."
+          author="Rahul Kushwaha"
+          role="CEO & Chief Designer"
+        />
         <PreFooterCTA />
       </main>
 

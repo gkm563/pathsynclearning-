@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
-import { Chip, HoverCard, RecruiterValidationSection } from "../../components/ui/Shared";
+import { Chip, HoverCard, RecruiterValidationSection, InteractiveCard, QuoteSection } from "../../components/ui/Shared";
 
 export default function Community() {
   const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
@@ -195,6 +195,12 @@ export default function Community() {
           </motion.div>
         </div>
       </section>
+
+      <QuoteSection 
+        quote="A great engineer is never built in isolation. It takes a community, a mentor, and a shared mission."
+        author="Rahul Kushwaha"
+        role="CEO & Chief Designer"
+      />
 
       <RecruiterValidationSection 
         tag="▸ VETTED TALENT POOL"

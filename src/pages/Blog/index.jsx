@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
-import { Chip, HoverCard, RecruiterValidationSection } from "../../components/ui/Shared";
+import { Chip, HoverCard, RecruiterValidationSection, QuoteSection } from "../../components/ui/Shared";
 
 export default function Blog() {
   const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
@@ -103,6 +103,12 @@ export default function Blog() {
           ))}
         </div>
       </section>
+
+      <QuoteSection 
+        quote="Knowledge without a clear path to application is just trivia. It's time we engineer the path itself."
+        author="Rahul Kushwaha"
+        role="CEO & Chief Designer"
+      />
 
       <RecruiterValidationSection 
         tag="▸ INDUSTRY PERSPECTIVES"

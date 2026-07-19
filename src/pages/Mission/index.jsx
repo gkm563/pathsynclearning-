@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
-import { Chip, HoverCard, RecruiterValidationSection, InteractiveCard } from "../../components/ui/Shared";
+import { Chip, HoverCard, RecruiterValidationSection, InteractiveCard, QuoteSection } from "../../components/ui/Shared";
 
 export default function Mission() {
   const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
@@ -175,6 +175,12 @@ export default function Mission() {
           </motion.div>
         </div>
       </section>
+
+      <QuoteSection 
+        quote="Our mission is simple: to make sure no engineering student ever graduates wondering 'what now?'"
+        author="Rahul Kushwaha"
+        role="CEO & Chief Designer"
+      />
 
       <RecruiterValidationSection 
         tag="▸ A SHARED MISSION"
