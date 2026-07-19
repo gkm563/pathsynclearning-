@@ -37,6 +37,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import CookiePolicy from "./pages/CookiePolicy";
 import Accessibility from "./pages/Accessibility";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 function App() {
   return (
@@ -51,6 +53,9 @@ function App() {
           <Route path="/company" element={<Company />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/community" element={<Community />} />
+          
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/guides" element={<Guides />} />

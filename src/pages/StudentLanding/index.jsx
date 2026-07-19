@@ -8,6 +8,10 @@ import PreFooterCTA from "./sections/PreFooterCTA";
 import PlatformOverview from "./sections/PlatformOverview";
 import FAQ from "./sections/FAQ";
 import Reviews from "./sections/Reviews";
+import StatCounter from "./sections/StatCounter";
+import HowItWorks from "./sections/HowItWorks";
+import TrustedBy from "./sections/TrustedBy";
+import SuccessStories from "./sections/SuccessStories";
 import { QuoteSection } from "../../components/ui/Shared";
 
 export default function StudentLanding() {
@@ -31,9 +35,13 @@ export default function StudentLanding() {
       
       <main style={{ position: "relative", zIndex: 1 }}>
         <HeroRegion />
+        <StatCounter />
         <WhyPathEd />
+        <HowItWorks />
         <VisualFeatures />
+        <TrustedBy />
         <PlatformOverview />
+        <SuccessStories />
         <FAQ />
         <Reviews />
         <QuoteSection 
