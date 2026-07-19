@@ -9,7 +9,7 @@ export default function Company() {
 
   const team = [
     { name: "Rahul Kushwaha", role: "CEO & Chief Designer", img: "/team/Rahul Kushwaha.jpeg" },
-    { name: "Devesh Singh", role: "Head of R&D", img: "/team/Devesh SIngh.jpeg" },
+    { name: "Devesh Singh", role: "Head of Research and Development", img: "/team/Devesh SIngh.jpeg" },
     { name: "Ayush Yadav", role: "Chief Engineer & Developer", img: "/team/Ayush yadav.jpg" },
     { name: "Prabhat Pandey", role: "Chief Technical Head", img: "/team/Prabhat Pandey.jpg", objectPosition: "top center" }
   ];
