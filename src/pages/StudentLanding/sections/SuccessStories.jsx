@@ -16,8 +16,8 @@ export default function SuccessStories() {
       text: "Before PathEd, I was lost in a sea of theoretical coursework. Once I started completing the real-world challenges on my personalized roadmap, my CRI score shot up. Within 3 months, a recruiter saw my profile and reached out directly. No resume screen, just proof of work.",
       before: "Struggling with DSA",
       after: "Backend SDE",
-      image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80",
-      imagePosition: "center 20%"
+      image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&h=800&q=80&crop=faces",
+      imagePosition: "center"
     },
     {
       name: "Rahul Verma",
@@ -28,8 +28,8 @@ export default function SuccessStories() {
       text: "I used to get rejected at the resume screening stage constantly. PathEd's project-based approach meant I built real, complex applications. When recruiters saw my verified Skill Tree and project repos, the interviews started pouring in.",
       before: "Tutorial Hell",
       after: "Frontend Engineer",
-      image: "https://images.unsplash.com/photo-1556157382-97eda2d62296?auto=format&fit=crop&w=800&q=80",
-      imagePosition: "center top"
+      image: "https://images.unsplash.com/photo-1556157382-97eda2d62296?auto=format&fit=crop&w=800&h=800&q=80&crop=faces",
+      imagePosition: "center"
     },
     {
       name: "Aisha Patel",
@@ -40,8 +40,8 @@ export default function SuccessStories() {
       text: "Whenever I was stuck on a complex data pipeline challenge, the AI Mentor didn't just give me the answer. It asked me guiding questions, pointing out flaws in my logic. That Socratic method of learning completely changed how I problem-solve.",
       before: "Academic Theory",
       after: "Data Scientist",
-      image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=800&q=80",
-      imagePosition: "center top"
+      image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=800&h=800&q=80&crop=faces",
+      imagePosition: "center"
     },
     {
       name: "David Chen",
@@ -52,8 +52,8 @@ export default function SuccessStories() {
       text: "University taught me how to write scripts, but PathEd taught me how to build systems. Learning about CI/CD, system design, and clean architecture through hands-on challenges made me confident enough to ace my technical interviews.",
       before: "Writing Scripts",
       after: "Full Stack Developer",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80",
-      imagePosition: "center top"
+      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&h=800&q=80&crop=faces",
+      imagePosition: "center"
     }
   ];
 
