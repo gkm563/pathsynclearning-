@@ -4,7 +4,15 @@ import { motion } from "framer-motion";
 import { Search, Globe, Sun } from "lucide-react";
 
 export default function Header() {
-  const links = ["Home", "Platform", "Methodology", "Mission", "Company", "Blog", "Community"];
+  const links = [
+    { label: "Home", path: "/" },
+    { label: "Platform", path: "/platform" },
+    { label: "Methodology", path: "/methodology" },
+    { label: "Mission", path: "/mission" },
+    { label: "Company", path: "/company" },
+    { label: "Blog", path: "/blog" },
+    { label: "Community", path: "/community" }
+  ];
 
   return (
     <div style={{ position: "fixed", top: 24, left: 0, right: 0, zIndex: 100, display: "flex", justifyContent: "center", pointerEvents: "none" }}>
@@ -51,16 +59,16 @@ export default function Header() {
 
           {/* Navigation */}
           <nav style={{ display: "flex", gap: "2px", alignItems: "center" }}>
-            {links.map((label) => (
-              <button key={label} style={{
+            {links.map((link) => (
+              <Link key={link.label} to={link.path} style={{
                 color: "#555", fontFamily: "'Inter', sans-serif", fontSize: "14px",
                 padding: "8px 12px", borderRadius: "10px", fontWeight: 500,
                 transition: "all 0.2s"
               }}
               onMouseEnter={(e) => { e.currentTarget.style.color = "#1a1a2e"; e.currentTarget.style.background = "#f0f4ff" }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "#555"; e.currentTarget.style.background = "transparent" }}>
-                {label}
-              </button>
+                {link.label}
+              </Link>
             ))}
           </nav>
         </div>
