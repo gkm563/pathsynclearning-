@@ -31,8 +31,8 @@ export default function Platform() {
         </motion.div>
       </section>
 
-      {/* 2. Personalized Roadmap */}
-      <section style={{ padding: "100px 32px", background: "#fff", borderTop: "1px solid #f0f2ff", borderBottom: "1px solid #f0f2ff" }}>
+      {/* 2. Personalized Roadmap (Features) */}
+      <section id="features" style={{ padding: "100px 32px", background: "#fff", borderTop: "1px solid #f0f2ff", borderBottom: "1px solid #f0f2ff" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap" }}>
           <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>
             <Chip bg="#fff9e6" border="#ffe08a" color="#c68a00">▸ THE DEGREE AS A SKILL GRAPH</Chip>
@@ -57,6 +57,46 @@ export default function Platform() {
                 <SkillBar label="System Design" pct={0} c="#eaecff" delay={0} />
               </div>
             </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Challenges Section */}
+      <section id="challenges" style={{ padding: "100px 32px", background: "#fcfdff" }}>
+        <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap", flexDirection: "row-reverse" }}>
+          <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>
+            <Chip bg="#f0f0ff" border="#d8d4ff" color="#6c63ff">▸ HANDS-ON LEARNING</Chip>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+              Real-World<br />Engineering Challenges.
+            </h2>
+            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8, marginBottom: 24 }}>
+              Forget theoretical exams. PathEd validates your skills through rigorous, industry-simulated coding challenges. From debugging legacy code to building scalable microservices, our challenges test what actually matters.
+            </p>
+          </motion.div>
+          <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
+             <HoverCard style={{ height: 400, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(108,99,255,0.15)", border: "1px solid #eaecff" }}>
+              <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80" alt="Coding Challenges" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </HoverCard>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Skill Trees Section */}
+      <section id="skill-trees" style={{ padding: "100px 32px", background: "#1a1a2e", color: "#fff" }}>
+        <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap" }}>
+          <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>
+            <Chip bg="rgba(0,201,167,0.1)" border="rgba(0,201,167,0.3)" color="#00c9a7">▸ VISUALIZE PROGRESS</Chip>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, lineHeight: 1.15, margin: "24px 0" }}>
+              Interactive<br />Skill Trees.
+            </h2>
+            <p style={{ fontSize: 18, color: "#d1d5db", lineHeight: 1.8, marginBottom: 24 }}>
+              Navigate your engineering journey like a modern RPG. Our interconnected skill trees map out exactly what dependencies you need to master before unlocking advanced technologies. 
+            </p>
+          </motion.div>
+          <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
+             <HoverCard style={{ height: 400, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,201,167,0.15)", border: "1px solid rgba(0,201,167,0.3)" }}>
+              <img src="https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=1200&q=80" alt="Skill Trees" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </HoverCard>
           </motion.div>
         </div>
       </section>

@@ -4,10 +4,33 @@ import { Globe, Users, Code, Mail } from "lucide-react";
 
 export default function Footer() {
   const sections = [
-    { title: "Platform", links: ["Features", "Roadmaps", "Challenges", "Skill Trees", "Pricing"] },
-    { title: "Resources", links: ["Blog", "Guides", "Documentation", "API Reference", "Community"] },
-    { title: "Company", links: ["About Us", "Careers", "Mission", "Contact", "Partners"] },
-    { title: "Legal", links: ["Privacy Policy", "Terms of Service", "Cookie Policy", "Accessibility"] }
+    { title: "Platform", links: [
+      { label: "Features", to: "/platform#features" },
+      { label: "Roadmaps", to: "/platform" },
+      { label: "Challenges", to: "/platform#challenges" },
+      { label: "Skill Trees", to: "/platform#skill-trees" },
+      { label: "Pricing", to: "/pricing" }
+    ]},
+    { title: "Resources", links: [
+      { label: "Blog", to: "/blog" },
+      { label: "Guides", to: "/guides" },
+      { label: "Documentation", to: "/documentation" },
+      { label: "API Reference", to: "/api-reference" },
+      { label: "Community", to: "/community" }
+    ]},
+    { title: "Company", links: [
+      { label: "About Us", to: "/company" },
+      { label: "Careers", to: "/company" },
+      { label: "Mission", to: "/mission" },
+      { label: "Contact", to: "/company#contact" },
+      { label: "Partners", to: "/company" }
+    ]},
+    { title: "Legal", links: [
+      { label: "Privacy Policy", to: "/privacy-policy" },
+      { label: "Terms of Service", to: "/terms-of-service" },
+      { label: "Cookie Policy", to: "/cookie-policy" },
+      { label: "Accessibility", to: "/accessibility" }
+    ]}
   ];
 
   return (
@@ -62,11 +85,11 @@ export default function Footer() {
               <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "12px" }}>
                 {section.links.map((link, i) => (
                   <li key={i}>
-                    <a href="#" style={{ color: "#9ca3af", fontSize: "14px", transition: "color 0.2s", fontFamily: "'Inter', sans-serif" }}
+                    <Link to={link.to} style={{ color: "#9ca3af", fontSize: "14px", transition: "color 0.2s", fontFamily: "'Inter', sans-serif", textDecoration: "none" }}
                        onMouseEnter={(e) => e.currentTarget.style.color = "#00c9a7"}
                        onMouseLeave={(e) => e.currentTarget.style.color = "#9ca3af"}>
-                      {link}
-                    </a>
+                      {link.label}
+                    </Link>
                   </li>
                 ))}
               </ul>

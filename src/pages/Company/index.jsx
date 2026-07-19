@@ -224,6 +224,31 @@ export default function Company() {
         desc2="They recruit straight from our platform, trusting our transparent data over traditional academic credentials."
         img="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=1200&q=80"
       />
+
+      {/* Contact Section */}
+      <section id="contact" style={{ padding: "100px 32px", background: "#f8f9fa", borderTop: "1px solid #eaecff" }}>
+        <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
+          <motion.div {...fadeInUp}>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", marginBottom: 24 }}>
+              Get in Touch
+            </h2>
+            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8, marginBottom: 48 }}>
+              Whether you're a student looking to accelerate your career, or a company looking to hire vetted engineering talent, we'd love to hear from you.
+            </p>
+            <div style={{ display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
+              <InteractiveCard style={{ background: "#fff", border: "1px solid #eaecff", padding: 32, borderRadius: 16, minWidth: 280 }}>
+                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 700, color: "#1a1a2e", marginBottom: 12 }}>General Inquiries</h3>
+                <a href="mailto:hello@pathed.in" style={{ color: "#1677ff", fontSize: 18, textDecoration: "none", fontWeight: 600 }}>hello@pathed.in</a>
+              </InteractiveCard>
+              <InteractiveCard style={{ background: "#fff", border: "1px solid #eaecff", padding: 32, borderRadius: 16, minWidth: 280 }}>
+                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 700, color: "#1a1a2e", marginBottom: 12 }}>Corporate Partnerships</h3>
+                <a href="mailto:partners@pathed.in" style={{ color: "#00c9a7", fontSize: 18, textDecoration: "none", fontWeight: 600 }}>partners@pathed.in</a>
+              </InteractiveCard>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

@@ -10,14 +10,33 @@ import Community from "./pages/Community";
 import "./index.css";
 
 function ScrollToTop() {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+    if (hash) {
+      setTimeout(() => {
+        const element = document.getElementById(hash.replace('#', ''));
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [pathname, hash]);
 
   return null;
 }
+
+// Layout placeholders for new pages
+import Pricing from "./pages/Pricing";
+import Guides from "./pages/Guides";
+import Documentation from "./pages/Documentation";
+import ApiReference from "./pages/ApiReference";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import CookiePolicy from "./pages/CookiePolicy";
+import Accessibility from "./pages/Accessibility";
 
 function App() {
   return (
@@ -32,6 +51,15 @@ function App() {
           <Route path="/company" element={<Company />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/community" element={<Community />} />
+          
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/guides" element={<Guides />} />
+          <Route path="/documentation" element={<Documentation />} />
+          <Route path="/api-reference" element={<ApiReference />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/cookie-policy" element={<CookiePolicy />} />
+          <Route path="/accessibility" element={<Accessibility />} />
         </Routes>
       </div>
     </Router>
