@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
-import { Chip, HoverCard, RecruiterValidationSection } from "../../components/ui/Shared";
+import { Chip, HoverCard, RecruiterValidationSection, InteractiveCard } from "../../components/ui/Shared";
 
 export default function Mission() {
   const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
@@ -43,10 +43,10 @@ export default function Mission() {
                 { title: "Delayed Planning", desc: "Postponing preparation until the final year." },
                 { title: "Wasted Effort", desc: "Changing goals penalizes exploration." }
               ].map((prob, i) => (
-                <div key={i} style={{ background: "#fcfdff", padding: 30, borderRadius: 16, border: "1.5px solid #eaecff" }}>
+                <InteractiveCard key={i} delay={i * 0.1} style={{ background: "#fcfdff", padding: 30, borderRadius: 16, border: "1.5px solid #eaecff" }}>
                   <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 22, fontWeight: 700, color: "#1a1a2e", marginBottom: 12 }}>{prob.title}</h3>
                   <p style={{ fontSize: 16, color: "#666", lineHeight: 1.6 }}>{prob.desc}</p>
-                </div>
+                </InteractiveCard>
               ))}
             </div>
           </motion.div>

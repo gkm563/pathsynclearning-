@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
-import { Chip, HoverCard, RecruiterValidationSection } from "../../components/ui/Shared";
+import { Chip, HoverCard, RecruiterValidationSection, InteractiveCard } from "../../components/ui/Shared";
 
 export default function Company() {
   const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
@@ -52,16 +52,13 @@ export default function Company() {
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: 30, justifyContent: "center" }}>
             {team.map((member, i) => (
-              <motion.div key={member.name} {...fadeInUp} transition={{ delay: i * 0.1, duration: 0.6 }} 
-                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 24, padding: 30, width: 280, textAlign: "center", transition: "all 0.3s ease" }}
-                onMouseEnter={e => e.currentTarget.style.transform = "translateY(-10px)"}
-                onMouseLeave={e => e.currentTarget.style.transform = ""}>
+              <InteractiveCard key={member.name} delay={i * 0.1} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 24, padding: 30, width: 280, textAlign: "center" }}>
                 <div style={{ width: 140, height: 140, borderRadius: "50%", overflow: "hidden", margin: "0 auto 24px", border: "4px solid rgba(108,99,255,0.5)" }}>
                   <img src={member.img} alt={member.name} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(20%) contrast(1.1)" }} />
                 </div>
                 <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, marginBottom: 8 }}>{member.name}</h3>
                 <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 13, color: "#b2aeff", letterSpacing: 1 }}>{member.role.toUpperCase()}</div>
-              </motion.div>
+              </InteractiveCard>
             ))}
           </div>
         </div>

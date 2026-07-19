@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star } from "lucide-react";
+import { InteractiveCard } from "../../../components/ui/Shared";
 
 const allReviews = [
   { id: 1, name: "Aryan Mehta", role: "SDE @ Microsoft", text: "PathEd's CRI tracker kept me laser-focused. I landed my dream role 6 months before graduation.", avatar: "AM" },
@@ -52,7 +53,7 @@ export default function Reviews() {
               style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px" }}
             >
               {visibleReviews.map((review) => (
-                <div key={review.id} style={{ 
+                <InteractiveCard key={review.id} delay={0.1} style={{ 
                   background: "#fff", borderRadius: "20px", padding: "32px", 
                   border: "1px solid #eaecff", boxShadow: "0 10px 30px rgba(108,99,255,0.05)",
                   display: "flex", flexDirection: "column", justifyContent: "space-between"
@@ -84,7 +85,7 @@ export default function Reviews() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </InteractiveCard>
               ))}
             </motion.div>
           </AnimatePresence>

@@ -15,6 +15,20 @@ export function HoverCard({ children, style, onMouseEnter, onMouseLeave }) {
   );
 }
 
+export function InteractiveCard({ children, style, delay = 0, ...props }) {
+  const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.5, delay } };
+  return (
+    <motion.div 
+      {...fadeInUp}
+      whileHover={{ y: -8, scale: 1.02, boxShadow: "0 20px 40px rgba(108,99,255,0.12)" }}
+      {...props}
+      style={{ transition: "box-shadow 0.3s", cursor: "pointer", ...style }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 export function RecruiterValidationSection() {
   const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
   return (
@@ -86,17 +100,17 @@ export function SkillBar({ label, pct, c, delay = 0 }) {
 
 export function RoleCard({ icon, title, tagline, desc, active, onClick }) {
   return (
-    <button 
-      onClick={onClick} 
+    <motion.button 
+      onClick={onClick}
+      whileHover={{ y: -6, scale: 1.02 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
       style={{ 
         flex: 1, minWidth: 155, 
         background: active ? "linear-gradient(145deg,#f0f0ff,#e8f9f5)" : "#fff", 
         border: `2px solid ${active ? "#6c63ff" : "#e8ecff"}`, 
         borderRadius: 18, padding: "26px 22px", cursor: "pointer", textAlign: "left", 
         position: "relative", overflow: "hidden", 
-        transition: "all .35s cubic-bezier(.34,1.56,.64,1)", 
-        transform: active ? "translateY(-6px) scale(1.03)" : "scale(1)", 
-        boxShadow: active ? "0 16px 48px rgba(108,99,255,.2),0 0 0 4px rgba(108,99,255,.08)" : "0 2px 16px rgba(108,99,255,.06)" 
+        boxShadow: active ? "0 16px 48px rgba(108,99,255,.2),0 0 0 4px rgba(108,99,255,.08)" : "0 4px 14px rgba(0,0,0,0.03)"
       }}
     >
       {active && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg,#6c63ff,#00c9a7)", borderRadius: "18px 18px 0 0" }} />}

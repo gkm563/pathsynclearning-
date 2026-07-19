@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
-import { Chip, HoverCard, RecruiterValidationSection } from "../../components/ui/Shared";
+import { Chip, HoverCard, RecruiterValidationSection, InteractiveCard } from "../../components/ui/Shared";
 
 export default function Methodology() {
   const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
@@ -80,11 +80,11 @@ export default function Methodology() {
               { t: "Time Spent", d: "Understanding the depth of your focus and engagement.", i: "⏱️" },
               { t: "Improvement Trends", d: "Recognizing that learning is a process of continuous growth.", i: "📈" }
             ].map((card, i) => (
-              <motion.div key={i} {...fadeInUp} style={{ background: "#fff", padding: 40, borderRadius: 24, border: "1.5px solid #eaecff", boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
+              <InteractiveCard key={i} delay={i * 0.1} style={{ background: "#fff", padding: 40, borderRadius: 24, border: "1.5px solid #eaecff", boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
                 <div style={{ fontSize: 40, marginBottom: 20 }}>{card.i}</div>
                 <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "#1a1a2e", marginBottom: 12 }}>{card.t}</h3>
                 <p style={{ fontSize: 16, color: "#666", lineHeight: 1.6 }}>{card.d}</p>
-              </motion.div>
+              </InteractiveCard>
             ))}
           </div>
         </div>
@@ -162,10 +162,10 @@ export default function Methodology() {
               "High contrast readability modes",
               "Full keyboard navigation support"
             ].map((feature, i) => (
-              <motion.div key={i} {...fadeInUp} transition={{ delay: i * 0.1 }} style={{ background: "#fcfdff", padding: "24px", borderRadius: 16, border: "1.5px solid #eaecff", display: "flex", alignItems: "center", gap: 16 }}>
+              <InteractiveCard key={i} delay={i * 0.1} style={{ background: "#fcfdff", padding: "24px", borderRadius: 16, border: "1.5px solid #eaecff", display: "flex", alignItems: "center", gap: 16 }}>
                 <div style={{ color: "#00c9a7", fontSize: 24 }}>✓</div>
                 <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 16, fontWeight: 600, color: "#1a1a2e", textAlign: "left" }}>{feature}</div>
-              </motion.div>
+              </InteractiveCard>
             ))}
           </div>
         </div>

@@ -1,5 +1,5 @@
 import React from "react";
-import { Chip, SkillBar } from "../../../components/ui/Shared";
+import { Chip, SkillBar, InteractiveCard } from "../../../components/ui/Shared";
 
 export default function WhyPathEd() {
   return (
@@ -49,12 +49,12 @@ export default function WhyPathEd() {
               ["⚡", "∞", "#f7971e", "Daily Challenges", "Gamified XP engine"],
               ["🧑‍🏫", "24/7", "#e040fb", "Teacher Connect", "Beat every plateau"]
             ].map(([em, stat, c, lbl, sub]) => (
-              <div key={lbl} style={{ background: "#fff", border: "1.5px solid #eaecff", borderRadius: 16, padding: "26px 20px", textAlign: "center", transition: "all .3s ease", boxShadow: "0 2px 10px rgba(0,0,0,.04)" }}>
+              <InteractiveCard key={lbl} style={{ background: "#fff", border: "1.5px solid #eaecff", borderRadius: 16, padding: "26px 20px", textAlign: "center", transition: "all .3s ease", boxShadow: "0 2px 10px rgba(0,0,0,.04)" }}>
                 <div style={{ fontSize: 32, marginBottom: 8 }}>{em}</div>
                 <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 36, fontWeight: 800, color: c, marginBottom: 4 }}>{stat}</div>
                 <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 700, color: "#1a1a2e", marginBottom: 4 }}>{lbl}</div>
                 <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: "#999" }}>{sub}</div>
-              </div>
+              </InteractiveCard>
             ))}
           </div>
           

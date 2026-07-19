@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
-import { Chip, SkillBar, HoverCard, RecruiterValidationSection } from "../../components/ui/Shared";
+import { Chip, SkillBar, HoverCard, RecruiterValidationSection, InteractiveCard } from "../../components/ui/Shared";
 
 export default function Platform() {
   const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
@@ -90,10 +90,10 @@ export default function Platform() {
                 { icon: "⚡", text: "Consistency of performance over time" },
                 { icon: "💼", text: "Progress in interview preparedness" }
               ].map((param, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 16, background: "#fff", padding: "16px 24px", borderRadius: 12, border: "1.5px solid #eaecff", boxShadow: "0 4px 14px rgba(0,0,0,0.02)" }}>
+                <InteractiveCard key={i} delay={i * 0.1} style={{ display: "flex", alignItems: "center", gap: 16, background: "#fff", padding: "16px 24px", borderRadius: 12, border: "1.5px solid #eaecff", boxShadow: "0 4px 14px rgba(0,0,0,0.02)" }}>
                   <div style={{ fontSize: 24 }}>{param.icon}</div>
                   <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 16, fontWeight: 500, color: "#333" }}>{param.text}</div>
-                </div>
+                </InteractiveCard>
               ))}
             </div>
           </motion.div>
@@ -205,12 +205,12 @@ export default function Platform() {
           
           <motion.div {...fadeInUp} style={{ display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
             {["React JS", "System Design", "SQL Joins"].map((skill, i) => (
-              <div key={skill} style={{ background: "#fff", padding: "30px 40px", borderRadius: 16, border: `2px solid ${i === 1 ? "#ffe0a0" : "#eaecff"}`, boxShadow: "0 10px 30px rgba(0,0,0,0.05)" }}>
+              <InteractiveCard key={skill} delay={i * 0.1} style={{ background: "#fff", padding: "30px 40px", borderRadius: 16, border: `2px solid ${i === 1 ? "#ffe0a0" : "#eaecff"}`, boxShadow: "0 10px 30px rgba(0,0,0,0.05)" }}>
                 <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "#1a1a2e", marginBottom: 12 }}>{skill}</div>
                 <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 14, color: i === 1 ? "#c68a00" : "#00c9a7", fontWeight: 600 }}>
                   {i === 1 ? "⚠️ NEEDS REFRESH" : "✓ FRESH"}
                 </div>
-              </div>
+              </InteractiveCard>
             ))}
           </motion.div>
         </div>
