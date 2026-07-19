@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import StudentLanding from "./pages/StudentLanding";
 import Platform from "./pages/Platform";
 import Methodology from "./pages/Methodology";
@@ -8,9 +9,20 @@ import Blog from "./pages/Blog";
 import Community from "./pages/Community";
 import "./index.css";
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
+
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <div className="app-container">
         <Routes>
           <Route path="/" element={<StudentLanding />} />
