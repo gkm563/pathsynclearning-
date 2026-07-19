@@ -127,6 +127,6 @@ export function RoleCard({ icon, title, tagline, desc, active, onClick }) {
       <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 800, color: active ? "#1a1a2e" : "#bbb", marginBottom: 5 }}>{title}</div>
       <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 13, color: active ? "#6c63ff" : "#ccc", letterSpacing: 1, marginBottom: 12 }}>{tagline}</div>
       <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: active ? "#999" : "#ccc", lineHeight: 1.6 }}>{desc}</div>
-    </button>
+    </motion.button>
   );
 }
