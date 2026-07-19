@@ -91,7 +91,98 @@ export default function Mission() {
         </div>
       </section>
 
-      <RecruiterValidationSection />
+      {/* 4. The Ripple Effect */}
+      <section style={{ padding: "100px 32px", background: "#fff" }}>
+        <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap" }}>
+          <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>
+            <Chip bg="#e8faf5" border="#b2eed9" color="#00a67e">▸ SYSTEMIC IMPACT</Chip>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+              The Ripple Effect.
+            </h2>
+            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8, marginBottom: 24 }}>
+              When a single student unlocks their true potential, the impact doesn't stop at their first paycheck. It elevates their family, inspires their peers, and ultimately strengthens the global engineering ecosystem.
+            </p>
+            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8 }}>
+              Our mission is to trigger this ripple effect at an unprecedented scale, transforming India's vast engineering talent pool into the world's most capable technical workforce.
+            </p>
+          </motion.div>
+          <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
+            <HoverCard style={{ height: 400, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,166,126,0.15)", border: "1.5px solid #b2eed9" }}>
+              <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80" alt="Ripple Effect" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </HoverCard>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 5. The Transparency Guarantee */}
+      <section style={{ padding: "100px 32px", background: "#f8f9ff" }}>
+        <div style={{ maxWidth: 1360, margin: "0 auto", textAlign: "center" }}>
+          <motion.div {...fadeInUp}>
+            <Chip bg="#e6f4ff" border="#bae0ff" color="#1677ff">▸ ZERO OBFUSCATION</Chip>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+              The Transparency Guarantee.
+            </h2>
+            <p style={{ fontSize: 18, color: "#666", maxWidth: 800, margin: "0 auto 60px", lineHeight: 1.8 }}>
+              Education should not be a black box. You deserve to know exactly how your performance is measured, why you received a specific CRI score, and what specific steps you must take to improve.
+            </p>
+          </motion.div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 30 }}>
+            {[
+              { title: "Open Algorithms", desc: "Our CRI scoring methodology is open and explained to every student." },
+              { title: "No Hidden Agendas", desc: "We don't sell your data. We don't charge hidden fees." },
+              { title: "Direct Feedback", desc: "Every assessment comes with granular, actionable feedback." }
+            ].map((item, i) => (
+              <InteractiveCard key={i} delay={i * 0.1} style={{ background: "#fff", padding: "40px 30px", borderRadius: 20, border: "1.5px solid #eaecff" }}>
+                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "#1a1a2e", marginBottom: 16 }}>{item.title}</h3>
+                <p style={{ fontSize: 16, color: "#666", lineHeight: 1.6 }}>{item.desc}</p>
+              </InteractiveCard>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 6. Industry Alignment */}
+      <section style={{ padding: "100px 32px", background: "#1a1a2e", color: "#fff" }}>
+        <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap-reverse" }}>
+          <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
+            <HoverCard style={{ height: 400, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.5)", border: "1px solid #333" }}>
+              <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?auto=format&fit=crop&w=1200&q=80" alt="Industry Alignment" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </HoverCard>
+          </motion.div>
+          <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>
+            <Chip bg="rgba(108,99,255,0.2)" border="rgba(108,99,255,0.4)" color="#b2aeff">▸ BRIDGING THE GAP</Chip>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, lineHeight: 1.15, margin: "24px 0" }}>
+              Closing the gap between<br /><span style={{ color: "#6c63ff" }}>academia & corporate.</span>
+            </h2>
+            <p style={{ fontSize: 18, color: "#bbb", lineHeight: 1.8, marginBottom: 24 }}>
+              For decades, universities and tech companies have operated in silos. PathEd acts as the definitive bridge, aligning academic curriculum directly with the evolving demands of the tech industry.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 7. The Long-Term Vision */}
+      <section style={{ padding: "100px 32px", background: "linear-gradient(135deg, #fdf0ff, #fff)" }}>
+        <div style={{ maxWidth: 1360, margin: "0 auto", textAlign: "center" }}>
+          <motion.div {...fadeInUp}>
+            <Chip bg="#fdf0ff" border="#e8b3ff" color="#9c27b0">▸ THE 10-YEAR HORIZON</Chip>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+              Where we are going.
+            </h2>
+            <p style={{ fontSize: 18, color: "#666", maxWidth: 800, margin: "0 auto", lineHeight: 1.8 }}>
+              Within the next decade, we envision a world where a student's potential is never bottlenecked by outdated college syllabi. We aim to establish the CRI as the global standard for engineering employability—rendering proxy metrics obsolete and ensuring that merit, validated by data, is the only currency that matters in hiring.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      <RecruiterValidationSection 
+        tag="▸ A SHARED MISSION"
+        title={<>Recruiting Based<br />on Merit.</>}
+        desc1="We've partnered with forward-thinking recruiters who share our mission of democratizing access to opportunity. They use PathEd because they care about what you can build, not just where you went to school."
+        desc2="Our platform eliminates hiring bias by providing objective, skill-based evidence of your readiness."
+        img="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1200&q=80"
+      />
       <Footer />
     </div>
   );

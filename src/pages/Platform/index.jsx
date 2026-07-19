@@ -242,7 +242,13 @@ export default function Platform() {
         </div>
       </section>
 
-      <RecruiterValidationSection />
+      <RecruiterValidationSection 
+        tag="▸ HIRING DASHBOARD"
+        title={<>Platform-Driven.<br />Direct Placements.</>}
+        desc1="PathEd's platform isn't just about learning; it's a seamless pipeline to employment. Our dashboard translates your daily efforts into a unified Career Readiness Index that recruiters trust."
+        desc2="Top tech companies use our verified analytics to bypass traditional screening, meaning your platform profile becomes your strongest resume."
+        img="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1200&q=80"
+      />
       <Footer />
     </div>
   );

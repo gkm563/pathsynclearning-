@@ -43,6 +43,24 @@ export default function Blog() {
       desc: "Meaningful career planning is often postponed until the final year. We are shifting preparation to day one of your B.Tech journey.",
       img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80",
       tag: "VISION", color: "#00c9a7", bg: "#e8faf5", border: "#b2eed9"
+    },
+    {
+      title: "Why Continuous Feedback Loops Beat Final Exams",
+      desc: "An exam at the end of a semester tells you what you failed to learn. A continuous feedback loop tells you what to fix right now.",
+      img: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80",
+      tag: "FEEDBACK", color: "#f7971e", bg: "#fff9e6", border: "#ffe08a"
+    },
+    {
+      title: "The Problem with Proxy Metrics in Tech Hiring",
+      desc: "Why are companies still using university pedigree as a proxy for coding skill? We explore the data behind a merit-first approach.",
+      img: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80",
+      tag: "HIRING", color: "#9c27b0", bg: "#fdf0ff", border: "#e8b3ff"
+    },
+    {
+      title: "Gamification vs. True Progress",
+      desc: "Leaderboards are fun, but getting a job is better. How we balance engagement with rigorous, employable skill building.",
+      img: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80",
+      tag: "PRODUCT", color: "#6c63ff", bg: "#f0f0ff", border: "#d8d4ff"
     }
   ];
 
@@ -86,7 +104,13 @@ export default function Blog() {
         </div>
       </section>
 
-      <RecruiterValidationSection />
+      <RecruiterValidationSection 
+        tag="▸ INDUSTRY PERSPECTIVES"
+        title={<>Read by Engineers.<br />Trusted by HR.</>}
+        desc1="Our blog doesn't just theorize about the future of education. The insights we share are actively consumed and validated by hiring managers across top tech firms."
+        desc2="They understand that students learning on our platform are absorbing a curriculum engineered for real-world impact."
+        img="https://images.unsplash.com/photo-1515169067868-5387ec356754?auto=format&fit=crop&w=1200&q=80"
+      />
       <Footer />
     </div>
   );

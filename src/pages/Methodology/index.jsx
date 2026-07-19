@@ -228,7 +228,13 @@ export default function Methodology() {
         </div>
       </section>
 
-      <RecruiterValidationSection />
+      <RecruiterValidationSection 
+        tag="▸ VALIDATED ARCHITECTURE"
+        title={<>Methodology Backed<br />by Industry.</>}
+        desc1="Our entire pedagogical framework was co-designed with hiring managers. The rigorous evaluation you undergo ensures that your skills aren't just academically sound—they are exactly what the industry demands."
+        desc2="Because recruiters trust our methodology, your validated CRI score acts as a direct passport to technical interviews."
+        img="https://images.unsplash.com/photo-1542744094-3a31f272c490?auto=format&fit=crop&w=1200&q=80"
+      />
       <Footer />
     </div>
   );

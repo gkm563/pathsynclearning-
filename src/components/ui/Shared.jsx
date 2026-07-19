@@ -28,28 +28,32 @@ export function InteractiveCard({ children, style, delay = 0, ...props }) {
   );
 }
 
-export function RecruiterValidationSection() {
+export function RecruiterValidationSection({ 
+  tag = "▸ RECRUITER VERIFIED", 
+  title = <>Transparent Skills.<br />Assured Placements.</>, 
+  desc1 = "Your hard work doesn't go unnoticed. PathEd gives authorized recruiters direct visibility into your verified performance, skill roadmap, and CRI scores.", 
+  desc2 = "By validating your skills through our uncompromising metrics, you bypass traditional hiring friction and connect directly with companies looking for true, demonstrable readiness.", 
+  img = "https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=1200&q=80" 
+}) {
   const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
   return (
     <section style={{ padding: "100px 32px", background: "#fcfdff", borderTop: "1px solid #eaecff", borderBottom: "1px solid #eaecff" }}>
       <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap" }}>
         
         <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>
-          <Chip bg="#e6f4ff" border="#bae0ff" color="#1677ff">▸ RECRUITER VERIFIED</Chip>
+          <Chip bg="#e6f4ff" border="#bae0ff" color="#1677ff">{tag}</Chip>
           <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
-            Transparent Skills.<br />Assured Placements.
+            {title}
           </h2>
           <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8, marginBottom: 24 }}>
-            Your hard work doesn't go unnoticed. PathEd gives authorized recruiters direct visibility into your verified performance, skill roadmap, and CRI scores. 
+            {desc1}
           </p>
-          <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8 }}>
-            By validating your skills through our uncompromising metrics, you bypass traditional hiring friction and connect directly with companies looking for true, demonstrable readiness.
-          </p>
+          {desc2 && <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8 }}>{desc2}</p>}
         </motion.div>
 
         <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
           <HoverCard style={{ height: 400, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(22,119,255,0.15)", border: "1.5px solid #bae0ff", background: "#fff" }}>
-            <img src="https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=1200&q=80" alt="Recruiter reviewing candidate" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <img src={img} alt="Recruiter reviewing candidate" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </HoverCard>
         </motion.div>
 
