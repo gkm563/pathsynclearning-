@@ -11,7 +11,7 @@ export default function Company() {
     { name: "Rahul Kushwaha", role: "CEO & Chief Designer", img: "/team/Rahul Kushwaha.jpeg" },
     { name: "Devesh Singh", role: "Head of R&D", img: "/team/Devesh SIngh.jpeg" },
     { name: "Ayush Yadav", role: "Chief Engineer & Developer", img: "/team/Ayush yadav.jpg" },
-    { name: "Prabhat Pandey", role: "Chief Technical Head", img: "/team/Prabhat Pandey.jpg" }
+    { name: "Prabhat Pandey", role: "Chief Technical Head", img: "/team/Prabhat Pandey.jpg", objectPosition: "top center" }
   ];
 
   const galleryImages = [
@@ -80,7 +80,7 @@ export default function Company() {
             {team.map((member, i) => (
               <InteractiveCard key={member.name} delay={i * 0.1} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 24, padding: 30, width: 280, textAlign: "center" }}>
                 <div style={{ width: 140, height: 140, borderRadius: "50%", overflow: "hidden", margin: "0 auto 24px", border: "4px solid rgba(108,99,255,0.5)" }}>
-                  <img src={member.img} alt={member.name} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(20%) contrast(1.1)" }} />
+                  <img src={member.img} alt={member.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: member.objectPosition || "center", filter: "grayscale(20%) contrast(1.1)" }} />
                 </div>
                 <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, marginBottom: 8 }}>{member.name}</h3>
                 <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 13, color: "#b2aeff", letterSpacing: 1 }}>{member.role.toUpperCase()}</div>
