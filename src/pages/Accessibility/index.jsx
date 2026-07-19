@@ -17,12 +17,25 @@ export default function Accessibility() {
 
         <section style={{ color: "#444", lineHeight: 1.8, display: "flex", flexDirection: "column", gap: 32 }}>
           <div>
-            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "#1a1a2e", marginBottom: 16 }}>Our Commitment</h3>
-            <p>PathEd is committed to ensuring digital accessibility for people with disabilities. We are continually improving the user experience for everyone and applying the relevant accessibility standards to our platform.</p>
+            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "#1a1a2e", marginBottom: 16 }}>1. Our Commitment</h3>
+            <p>PathEd is committed to ensuring digital accessibility for people with disabilities. We are continually improving the user experience for everyone, and applying the relevant accessibility standards to guarantee that our coding challenges, AI mentorship interfaces, and recruitment dashboards are usable by all.</p>
           </div>
           <div>
-            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "#1a1a2e", marginBottom: 16 }}>Conformance Status</h3>
-            <p>We strive to conform to the Web Content Accessibility Guidelines (WCAG) 2.1 level AA. These guidelines explain how to make web content more accessible for people with disabilities.</p>
+            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "#1a1a2e", marginBottom: 16 }}>2. Conformance Status</h3>
+            <p>The Web Content Accessibility Guidelines (WCAG) defines requirements for designers and developers to improve accessibility for people with disabilities. It defines three levels of conformance: Level A, Level AA, and Level AAA. PathEd is partially conformant with WCAG 2.1 level AA. Partially conformant means that some parts of the content do not fully conform to the accessibility standard, primarily due to the highly interactive nature of our embedded code editors, which we are actively working to improve.</p>
+          </div>
+          <div>
+            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "#1a1a2e", marginBottom: 16 }}>3. Core Accessibility Features</h3>
+            <ul style={{ paddingLeft: 24, display: "flex", flexDirection: "column", gap: 8 }}>
+              <li><strong>Keyboard Navigation:</strong> All core platform features, including the Skill Trees and CRI dashboards, can be navigated using only a keyboard.</li>
+              <li><strong>Screen Reader Support:</strong> Semantic HTML and ARIA labels are implemented across our UI components.</li>
+              <li><strong>Color Contrast:</strong> Our dark mode and light mode themes are designed to meet strict WCAG contrast ratios for text readability.</li>
+              <li><strong>Adjustable UI:</strong> The embedded IDE allows users to increase font sizes and adjust contrast themes without breaking the layout.</li>
+            </ul>
+          </div>
+          <div>
+            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "#1a1a2e", marginBottom: 16 }}>4. Feedback</h3>
+            <p>We welcome your feedback on the accessibility of PathEd. Please let us know if you encounter accessibility barriers on PathEd by contacting our support team at accessibility@pathed.in. We try to respond to feedback within 2 business days.</p>
           </div>
         </section>
       </main>

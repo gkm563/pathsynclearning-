@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
 import { InteractiveCard, Chip } from "../../components/ui/Shared";
-import { BookOpen, Code, Compass, Target } from "lucide-react";
+import { BookOpen, Code, Compass, Target, TrendingUp, Briefcase, Zap, ShieldCheck, Award } from "lucide-react";
 
 export default function Guides() {
   const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
@@ -17,6 +17,11 @@ export default function Guides() {
     { title: "Maximizing Your CRI Score", desc: "A deep dive into how the Career Readiness Index is calculated and how to boost it.", icon: <Target size={32} /> },
     { title: "Acing the AI Mentor Interviews", desc: "Tips and tricks for passing our simulated technical interviews.", icon: <BookOpen size={32} /> },
     { title: "Building Portfolio Projects", desc: "How to leverage PathEd challenges to build a recruiter-ready GitHub portfolio.", icon: <Code size={32} /> },
+    { title: "Decoding the Market Trends", desc: "Analyze the demand for specific frameworks and optimize your learning path.", icon: <TrendingUp size={32} /> },
+    { title: "Corporate Recruiting Pipeline", desc: "Understand exactly what hiring managers see when they view your PathEd profile.", icon: <Briefcase size={32} /> },
+    { title: "Mastering the AI Grader", desc: "Learn how the AST-based grading engine evaluates your code submissions for efficiency.", icon: <Zap size={32} /> },
+    { title: "Data Security Best Practices", desc: "A guide to maintaining strict privacy controls over your academic and performance data.", icon: <ShieldCheck size={32} /> },
+    { title: "Achieving Elite Certifications", desc: "Step-by-step roadmap to earning top-tier badges recognized by industry leaders.", icon: <Award size={32} /> },
   ];
 
   return (
