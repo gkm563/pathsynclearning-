@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
-import { Chip, SkillBar } from "../../components/ui/Shared";
+import { Chip, SkillBar, HoverCard, RecruiterValidationSection } from "../../components/ui/Shared";
 
 export default function Platform() {
   const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
@@ -23,10 +23,11 @@ export default function Platform() {
           </p>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }} 
-          style={{ width: "100%", height: 500, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(108,99,255,0.15)", border: "1px solid #eaecff", position: "relative" }}>
-          <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1600&q=80" alt="Student Coding" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "50%", background: "linear-gradient(to top, rgba(26,26,46,0.9), transparent)" }} />
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
+          <HoverCard style={{ width: "100%", height: 500, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(108,99,255,0.15)", border: "1px solid #eaecff", position: "relative" }}>
+            <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1600&q=80" alt="Student Coding" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "50%", background: "linear-gradient(to top, rgba(26,26,46,0.9), transparent)" }} />
+          </HoverCard>
         </motion.div>
       </section>
 
@@ -61,27 +62,68 @@ export default function Platform() {
       </section>
 
       {/* 3. Career Readiness Index (CRI) */}
-      <section style={{ padding: "120px 32px" }}>
-        <div style={{ maxWidth: 1360, margin: "0 auto", textAlign: "center" }}>
-          <motion.div {...fadeInUp}>
+      <section style={{ padding: "120px 32px", background: "#fcfdff" }}>
+        <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap-reverse" }}>
+          
+          <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
+            <HoverCard style={{ width: "100%", height: 450, borderRadius: 24, overflow: "hidden", position: "relative", boxShadow: "0 20px 60px rgba(0,0,0,0.1)", border: "1.5px solid #eaecff" }}>
+              <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80" alt="Dashboard Analytics" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <div style={{ position: "absolute", inset: 0, background: "rgba(26,26,46,0.8)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ fontSize: 96, fontFamily: "'Outfit', sans-serif", fontWeight: 800, color: "#00c9a7", lineHeight: 1 }}>84<span style={{ fontSize: 60 }}>%</span></div>
+                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 18, color: "#fff", letterSpacing: 3, marginTop: 12 }}>CRI SCORE</div>
+              </div>
+            </HoverCard>
+          </motion.div>
+
+          <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>
             <Chip bg="#e8faf5" border="#b2eed9" color="#00a67e">▸ METRICS THAT MATTER</Chip>
             <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
-              The Career Readiness Index.
+              The Career<br />Readiness Index.
             </h2>
-            <p style={{ fontSize: 18, color: "#666", maxWidth: 800, margin: "0 auto 60px", lineHeight: 1.8 }}>
-              Unlike traditional grades which only show how you performed on a single exam, the CRI is a sophisticated 0-100 score that synthesizes skill coverage, mastery levels, and learning consistency into a real-time signal of your true job readiness.
+            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8, marginBottom: 30 }}>
+              Unlike traditional grades which only show how you performed on a single exam, the CRI is a sophisticated 0-100 score that synthesizes multiple data points into a real-time signal of your true job readiness.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {[
+                { icon: "🎯", text: "Overall skill coverage for your target career" },
+                { icon: "📈", text: "Mastery levels achieved on each skill node" },
+                { icon: "⚡", text: "Consistency of performance over time" },
+                { icon: "💼", text: "Progress in interview preparedness" }
+              ].map((param, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 16, background: "#fff", padding: "16px 24px", borderRadius: 12, border: "1.5px solid #eaecff", boxShadow: "0 4px 14px rgba(0,0,0,0.02)" }}>
+                  <div style={{ fontSize: 24 }}>{param.icon}</div>
+                  <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 16, fontWeight: 500, color: "#333" }}>{param.text}</div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+        </div>
+      </section>
+
+      {/* 3.5. Interview Preparedness Engine */}
+      <section style={{ padding: "100px 32px", background: "#fff", borderTop: "1px solid #f0f2ff", borderBottom: "1px solid #f0f2ff" }}>
+        <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap" }}>
+          
+          <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>
+            <Chip bg="#fdf0ff" border="#e8b3ff" color="#9c27b0">▸ STRUCTURALLY INTEGRATED</Chip>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+              Interview<br />Preparedness Engine.
+            </h2>
+            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8, marginBottom: 24 }}>
+              Interview preparation shouldn't be a frantic, last-minute activity. In PathEd, it is structurally integrated directly into your learning journey.
+            </p>
+            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8 }}>
+              Technical questions and behavioral scenarios are mapped specifically to your target career paths and academic stages, gradually increasing in complexity as you progress to build unbreakable confidence.
             </p>
           </motion.div>
 
-          <div style={{ display: "flex", gap: 40, justifyContent: "center", flexWrap: "wrap" }}>
-            <motion.div {...fadeInUp} style={{ width: 400, height: 300, borderRadius: 24, overflow: "hidden", position: "relative", boxShadow: "0 10px 30px rgba(0,0,0,0.08)" }}>
-              <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80" alt="Data Analytics" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              <div style={{ position: "absolute", inset: 0, background: "rgba(26,26,46,0.7)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                <div style={{ fontSize: 72, fontFamily: "'Outfit', sans-serif", fontWeight: 800, color: "#00c9a7" }}>84%</div>
-                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 16, color: "#fff", letterSpacing: 2 }}>CRI SCORE</div>
-              </div>
-            </motion.div>
-          </div>
+          <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
+            <HoverCard style={{ height: 450, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(156,39,176,0.15)", border: "1.5px solid #fdf0ff" }}>
+              <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80" alt="Interview Preparation" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </HoverCard>
+          </motion.div>
+
         </div>
       </section>
 
@@ -140,9 +182,9 @@ export default function Platform() {
           </motion.div>
 
           <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
-            <div style={{ height: 400, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.1)" }}>
+            <HoverCard style={{ height: 400, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.1)" }}>
               <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80" alt="Team Collaboration" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            </div>
+            </HoverCard>
           </motion.div>
 
         </div>
@@ -174,6 +216,33 @@ export default function Platform() {
         </div>
       </section>
 
+      {/* 4. Continuous Feedback Loop */}
+      <section style={{ padding: "100px 32px", background: "#1a1a2e", color: "#fff" }}>
+        <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap" }}>
+          
+          <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>
+            <Chip bg="rgba(108,99,255,0.2)" border="rgba(108,99,255,0.4)" color="#b2aeff">▸ ADAPTIVE ROUTING</Chip>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, lineHeight: 1.15, margin: "24px 0" }}>
+              Continuous <span style={{ color: "#6c63ff" }}>Feedback Loop.</span>
+            </h2>
+            <p style={{ fontSize: 18, color: "#bbb", lineHeight: 1.8, marginBottom: 24 }}>
+              Your roadmap isn't static. It breathes and evolves with your performance. 
+            </p>
+            <p style={{ fontSize: 18, color: "#bbb", lineHeight: 1.8 }}>
+              Struggling with Dynamic Programming? The engine instantly injects micro-lessons and targeted challenges. Acing System Design? It accelerates you to advanced architecture problems, ensuring you are always operating at your edge of capability.
+            </p>
+          </motion.div>
+
+          <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
+            <HoverCard style={{ height: 400, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.5)", border: "1px solid #333" }}>
+              <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80" alt="Dashboard Analytics" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </HoverCard>
+          </motion.div>
+
+        </div>
+      </section>
+
+      <RecruiterValidationSection />
       <Footer />
     </div>
   );

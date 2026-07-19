@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { HoverCard } from "../../../components/ui/Shared";
 
 export default function PlatformOverview() {
   const cards = [
@@ -51,9 +52,9 @@ export default function PlatformOverview() {
                 boxShadow: "0 10px 40px rgba(108,99,255,0.05)", flexWrap: "wrap"
               }}
             >
-              <div style={{ flex: "1 1 400px", borderRadius: "16px", overflow: "hidden", height: "300px" }}>
+              <HoverCard style={{ flex: "1 1 400px", borderRadius: "16px", overflow: "hidden", height: "300px" }}>
                 <img src={card.img} alt={card.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              </div>
+              </HoverCard>
               <div style={{ flex: "1 1 400px", padding: "20px" }}>
                 <div style={{ display: "inline-block", fontFamily: "'Fira Code', monospace", fontSize: "10px", color: "#6c63ff", background: "#f0f0ff", padding: "6px 12px", borderRadius: "12px", letterSpacing: "1px", marginBottom: "16px", fontWeight: 600 }}>
                   {card.tag}

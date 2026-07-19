@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
-import { Chip } from "../../components/ui/Shared";
+import { Chip, HoverCard, RecruiterValidationSection } from "../../components/ui/Shared";
 
 export default function Blog() {
   const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
@@ -64,18 +64,16 @@ export default function Blog() {
       <section style={{ padding: "0 32px 120px" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))", gap: 40 }}>
           {blogs.map((blog, i) => (
-            <motion.div key={i} {...fadeInUp} transition={{ delay: i * 0.1, duration: 0.6 }} 
-              style={{ background: "#fff", borderRadius: 24, overflow: "hidden", border: "1.5px solid #eaecff", boxShadow: "0 10px 30px rgba(0,0,0,0.04)", cursor: "pointer", display: "flex", flexDirection: "column" }}
-              onMouseEnter={e => e.currentTarget.style.transform = "translateY(-8px)"}
-              onMouseLeave={e => e.currentTarget.style.transform = ""}>
+            <HoverCard key={i} style={{ background: "#fff", borderRadius: 24, overflow: "hidden", border: "1.5px solid #eaecff", boxShadow: "0 10px 30px rgba(0,0,0,0.04)", cursor: "pointer", display: "flex", flexDirection: "column" }}>
               
               <div style={{ height: 240, overflow: "hidden" }}>
                 <img src={blog.img} alt={blog.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s ease" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} />
               </div>
               
               <div style={{ padding: 30, display: "flex", flexDirection: "column", flex: 1 }}>
-                <div style={{ marginBottom: 16 }}>
+                <div style={{ marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <Chip bg={blog.bg} border={blog.border} color={blog.color}>{blog.tag}</Chip>
+                  <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "#999", fontWeight: 500 }}>By Rahul Kushwaha</span>
                 </div>
                 <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 26, fontWeight: 700, color: "#1a1a2e", lineHeight: 1.3, marginBottom: 16 }}>{blog.title}</h3>
                 <p style={{ fontSize: 16, color: "#666", lineHeight: 1.7, marginBottom: 24, flex: 1 }}>{blog.desc}</p>
@@ -83,11 +81,12 @@ export default function Blog() {
                   Read Article →
                 </div>
               </div>
-            </motion.div>
+            </HoverCard>
           ))}
         </div>
       </section>
 
+      <RecruiterValidationSection />
       <Footer />
     </div>
   );

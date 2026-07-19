@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { HoverCard } from "../../../components/ui/Shared";
 import { Target, Layers, Compass, TrendingUp } from "lucide-react";
 
 const features = [
@@ -53,20 +54,13 @@ export default function VisualFeatures() {
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "32px" }}>
           {features.map((item, i) => (
-            <motion.div 
+            <HoverCard 
               key={i}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.6, delay: i * 0.15 }}
-              whileHover={{ y: -10 }}
               style={{
                 background: "#f8f9ff", borderRadius: "24px", padding: "12px",
                 border: "1px solid #eaecff", boxShadow: "0 10px 30px rgba(0,0,0,0.03)",
-                transition: "box-shadow 0.3s", cursor: "default"
+                cursor: "pointer", display: "flex", flexDirection: "column"
               }}
-              onMouseEnter={(e) => e.currentTarget.style.boxShadow = `0 20px 40px ${item.color}22`}
-              onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0 10px 30px rgba(0,0,0,0.03)"}
             >
               <div style={{ width: "100%", height: "200px", borderRadius: "16px", overflow: "hidden", marginBottom: "24px", position: "relative" }}>
                 <img src={item.img} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s" }} 
@@ -82,7 +76,7 @@ export default function VisualFeatures() {
                 <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "20px", fontWeight: 800, color: "#1a1a2e", marginBottom: "12px" }}>{item.title}</h3>
                 <p style={{ color: "#666", fontSize: "14px", lineHeight: 1.6 }}>{item.desc}</p>
               </div>
-            </motion.div>
+            </HoverCard>
           ))}
         </div>
 

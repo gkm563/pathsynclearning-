@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
-import { Chip } from "../../components/ui/Shared";
+import { Chip, HoverCard, RecruiterValidationSection } from "../../components/ui/Shared";
 
 export default function Methodology() {
   const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
@@ -23,10 +23,11 @@ export default function Methodology() {
           </p>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }} 
-          style={{ width: "100%", height: 500, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,201,167,0.15)", border: "1px solid #e8faf5", position: "relative" }}>
-          <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1600&q=80" alt="Serious study" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "50%", background: "linear-gradient(to top, rgba(26,26,46,0.9), transparent)" }} />
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
+          <HoverCard style={{ width: "100%", height: 500, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,201,167,0.15)", border: "1px solid #e8faf5", position: "relative" }}>
+            <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1600&q=80" alt="Serious study" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "50%", background: "linear-gradient(to top, rgba(26,26,46,0.9), transparent)" }} />
+          </HoverCard>
         </motion.div>
       </section>
 
@@ -94,9 +95,9 @@ export default function Methodology() {
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap-reverse" }}>
           
           <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
-            <div style={{ height: 400, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.4)" }}>
+            <HoverCard style={{ height: 400, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.4)" }}>
               <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80" alt="Serious students" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            </div>
+            </HoverCard>
           </motion.div>
 
           <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>
@@ -114,7 +115,120 @@ export default function Methodology() {
 
         </div>
       </section>
+      {/* 5. Node-Level Learning */}
+      <section style={{ padding: "120px 32px", background: "#fcfdff" }}>
+        <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap" }}>
+          
+          <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>
+            <Chip bg="#e8faf5" border="#b2eed9" color="#00a67e">▸ ACTIVE DEMONSTRATION</Chip>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+              Node-Level<br />Learning.
+            </h2>
+            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8, marginBottom: 24 }}>
+              Our validation policy is uncompromising: progress is tied exclusively to assessment outcomes. Simply consuming content—downloading notes or watching a video—does not mark a node as complete.
+            </p>
+            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8 }}>
+              This distinction is crucial. We shift the focus from passive reception to the active demonstration of knowledge, fostering genuine accountability at every step of your journey.
+            </p>
+          </motion.div>
 
+          <motion.div {...fadeInUp} style={{ flex: "1 1 600px", position: "relative" }}>
+            <HoverCard style={{ height: 450, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,201,167,0.15)", border: "1.5px solid #e8faf5" }}>
+              <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80" alt="Active Learning" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </HoverCard>
+          </motion.div>
+          
+        </div>
+      </section>
+
+      {/* 6. Accessible & Focused */}
+      <section style={{ padding: "100px 32px", background: "#fff", borderTop: "1px solid #f0f2ff" }}>
+        <div style={{ maxWidth: 1360, margin: "0 auto", textAlign: "center" }}>
+          <motion.div {...fadeInUp}>
+            <Chip bg="#fdf0ff" border="#e8b3ff" color="#9c27b0">▸ ETHICAL DESIGN</Chip>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+              Focused by Exclusion.
+            </h2>
+            <p style={{ fontSize: 18, color: "#666", maxWidth: 800, margin: "0 auto 60px", lineHeight: 1.8 }}>
+              The strategic value of PathEd is defined as much by what it includes as by what it deliberately excludes. We've created an environment optimized for deep, focused work, free from the distractions that plague modern educational technologies.
+            </p>
+          </motion.div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 24 }}>
+            {[
+              "No social feeds or forums",
+              "No distracting notifications",
+              "No advertisements or upsells",
+              "High contrast readability modes",
+              "Full keyboard navigation support"
+            ].map((feature, i) => (
+              <motion.div key={i} {...fadeInUp} transition={{ delay: i * 0.1 }} style={{ background: "#fcfdff", padding: "24px", borderRadius: 16, border: "1.5px solid #eaecff", display: "flex", alignItems: "center", gap: 16 }}>
+                <div style={{ color: "#00c9a7", fontSize: 24 }}>✓</div>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 16, fontWeight: 600, color: "#1a1a2e", textAlign: "left" }}>{feature}</div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 7. Animated Coding Environment */}
+      <section style={{ padding: "100px 32px", background: "#1a1a2e", color: "#fff" }}>
+        <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap-reverse" }}>
+          
+          <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
+            <HoverCard style={{ background: "#0d0d1a", borderRadius: 16, border: "1px solid #333", overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }}>
+              {/* Terminal Header */}
+              <div style={{ background: "#222", padding: "12px 20px", display: "flex", gap: 8, alignItems: "center", borderBottom: "1px solid #333" }}>
+                <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#ff5f56" }} />
+                <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#ffbd2e" }} />
+                <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#27c93f" }} />
+                <div style={{ marginLeft: 16, fontFamily: "'Fira Code', monospace", fontSize: 13, color: "#888" }}>main.py - PathEd Internal Compiler</div>
+              </div>
+              
+              {/* Code Editor Body */}
+              <div style={{ padding: 24, fontFamily: "'Fira Code', monospace", fontSize: 14, lineHeight: 1.6, minHeight: 250 }}>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+                  <span style={{ color: "#c678dd" }}>def</span> <span style={{ color: "#61afef" }}>validate_skill</span>(student_score):
+                </motion.div>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }} style={{ paddingLeft: 24 }}>
+                  <span style={{ color: "#c678dd" }}>if</span> student_score {">="} <span style={{ color: "#d19a66" }}>90</span>:
+                </motion.div>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.9 }} style={{ paddingLeft: 48 }}>
+                  <span style={{ color: "#c678dd" }}>return</span> <span style={{ color: "#98c379" }}>"Skill Unlocked"</span>
+                </motion.div>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.6 }} style={{ paddingLeft: 24 }}>
+                  <span style={{ color: "#c678dd" }}>else</span>:
+                </motion.div>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3.3 }} style={{ paddingLeft: 48 }}>
+                  <span style={{ color: "#c678dd" }}>return</span> <span style={{ color: "#98c379" }}>"Review Required"</span>
+                </motion.div>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 4.0, marginTop: 16 }}>
+                  <span style={{ color: "#5c6370", fontStyle: "italic" }}># Compiling and executing...</span>
+                </motion.div>
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 4.8 }} style={{ marginTop: 24, padding: 16, background: "rgba(39,201,63,0.1)", borderLeft: "4px solid #27c93f", color: "#27c93f" }}>
+                  {">"} Output: Skill Unlocked. Proceed to next node.
+                </motion.div>
+              </div>
+            </HoverCard>
+          </motion.div>
+
+          <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>
+            <Chip bg="rgba(108,99,255,0.2)" border="rgba(108,99,255,0.4)" color="#b2aeff">▸ INTERACTIVE CODING</Chip>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, lineHeight: 1.15, margin: "24px 0" }}>
+              In-browser <span style={{ color: "#6c63ff" }}>compilation.</span>
+            </h2>
+            <p style={{ fontSize: 18, color: "#bbb", lineHeight: 1.8, marginBottom: 24 }}>
+              Demonstrating mastery shouldn't require complex local environment setups. PathEd features an integrated, real-time coding environment.
+            </p>
+            <p style={{ fontSize: 18, color: "#bbb", lineHeight: 1.8 }}>
+              Write, compile, and execute code directly within your browser. Get instant feedback on algorithmic challenges and project submissions.
+            </p>
+          </motion.div>
+
+        </div>
+      </section>
+
+      <RecruiterValidationSection />
       <Footer />
     </div>
   );
