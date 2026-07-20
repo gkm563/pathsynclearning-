@@ -18,6 +18,22 @@ export default function Header() {
     return localStorage.getItem("theme") === "dark";
   });
 
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem("isAuthenticated") === "true" || localStorage.getItem("userRegistered") === "true";
+  });
+
+  useEffect(() => {
+    const checkAuth = () => {
+      setIsAuthenticated(localStorage.getItem("isAuthenticated") === "true" || localStorage.getItem("userRegistered") === "true");
+    };
+    window.addEventListener("storage", checkAuth);
+    const interval = setInterval(checkAuth, 800);
+    return () => {
+      window.removeEventListener("storage", checkAuth);
+      clearInterval(interval);
+    };
+  }, []);
+
   useEffect(() => {
     if (isDark) {
       document.body.setAttribute("data-theme", "dark");
@@ -106,27 +122,62 @@ export default function Header() {
           <div style={{ width: "1px", height: "24px", background: "#e0e4f5" }} />
 
           {/* Auth Buttons */}
-          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <Link to="/login" style={{
-              color: "#6c63ff", fontFamily: "'Outfit', sans-serif", fontWeight: 700,
-              fontSize: "14px", padding: "10px 16px", borderRadius: "12px",
-              transition: "all 0.2s", display: "inline-block"
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-alt)"}
-            onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
-              Sign In
-            </Link>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {isAuthenticated ? (
+              <>
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                  <Link to="/platform" style={{
+                    background: "linear-gradient(135deg, #6c63ff, #00c9a7)",
+                    color: "#ffffff", fontFamily: "'Outfit', sans-serif", fontWeight: 700,
+                    fontSize: "14px", padding: "10px 22px", borderRadius: "14px",
+                    display: "inline-block", boxShadow: "0 6px 20px rgba(108,99,255,0.25)",
+                    textDecoration: "none"
+                  }}>
+                    Dashboard →
+                  </Link>
+                </motion.div>
+                <button 
+                  onClick={() => {
+                    localStorage.removeItem("isAuthenticated");
+                    localStorage.removeItem("userRegistered");
+                    setIsAuthenticated(false);
+                    window.dispatchEvent(new Event("storage"));
+                  }}
+                  style={{
+                    background: "transparent", border: "none", color: "var(--text-muted)",
+                    fontFamily: "'Inter', sans-serif", fontSize: "13px", fontWeight: 600,
+                    padding: "8px 12px", borderRadius: "10px", cursor: "pointer"
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = "var(--bg-alt)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" style={{
+                  color: "#6c63ff", fontFamily: "'Outfit', sans-serif", fontWeight: 700,
+                  fontSize: "14px", padding: "10px 16px", borderRadius: "12px",
+                  transition: "all 0.2s", display: "inline-block", textDecoration: "none"
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-alt)"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+                  Sign In
+                </Link>
 
-            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-              <Link to="/register" style={{
-                background: "var(--bg-inverse)",
-                color: "var(--text-inverse)", fontFamily: "'Outfit', sans-serif", fontWeight: 700,
-                fontSize: "14px", padding: "12px 24px", borderRadius: "14px",
-                display: "inline-block", boxShadow: "0 6px 16px rgba(26,26,46,0.15)"
-              }}>
-                Get Started
-              </Link>
-            </motion.div>
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                  <Link to="/register" style={{
+                    background: "var(--bg-inverse)",
+                    color: "var(--text-inverse)", fontFamily: "'Outfit', sans-serif", fontWeight: 700,
+                    fontSize: "14px", padding: "12px 24px", borderRadius: "14px",
+                    display: "inline-block", boxShadow: "0 6px 16px rgba(26,26,46,0.15)", textDecoration: "none"
+                  }}>
+                    Get Started
+                  </Link>
+                </motion.div>
+              </>
+            )}
           </div>
 
         </div>

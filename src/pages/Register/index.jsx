@@ -118,7 +118,10 @@ export default function Register() {
       setProgress(p);
       if (p >= 100) {
         clearInterval(interval);
-        setTimeout(() => navigate('/login'), 400);
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("userRegistered", "true");
+        window.dispatchEvent(new Event("storage"));
+        setTimeout(() => navigate('/platform'), 400);
       }
     }, 300);
   };

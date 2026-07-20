@@ -129,6 +129,9 @@ export default function Login() {
       setProgress(p);
       if (p >= 100) {
         clearInterval(interval);
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("userRegistered", "true");
+        window.dispatchEvent(new Event("storage"));
         setTimeout(() => navigate(role === 'student' ? '/platform' : '/'), 400);
       }
     }, 300);
