@@ -113,33 +113,38 @@ export default function Register() {
 
   if (success) {
     return (
-      <div style={{ minHeight: "100vh", background: "#0f0f1a", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter', sans-serif", color: "#fff" }}>
+      <div style={{ minHeight: "100vh", background: "#0f0f1a", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter', sans-serif", color: "var(--bg-card)" }}>
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ textAlign: "center" }}>
           <div style={{ width: 100, height: 100, borderRadius: "50%", background: activeRole.bg, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 32px", color: activeRole.accent }}>
             <ShieldCheck size={48} />
           </div>
           <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 40, fontWeight: 800, marginBottom: 16 }}>Account Created!</h1>
-          <p style={{ color: "#9ca3af", fontSize: 18, marginBottom: 32 }}>Redirecting you to login...</p>
+          <p style={{ color: "var(--text-light)", fontSize: 18, marginBottom: 32 }}>Redirecting you to login...</p>
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0f0f1a", display: "flex", fontFamily: "'Inter', sans-serif", color: "#fff", position: "relative", overflow: "hidden" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-main)", display: "flex", fontFamily: "'Inter', sans-serif", color: "var(--text-main)", position: "relative", overflow: "hidden" }}>
       {/* Animated Background */}
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0 }}>
         <motion.div 
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }} 
+          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3], rotate: [0, 90, 0] }} 
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
           style={{ position: "absolute", left: "-10%", top: "-10%", width: 600, height: 600, background: `radial-gradient(circle, ${activeRole.accent} 0%, transparent 70%)`, filter: "blur(60px)" }} 
         />
-        <div style={{ position: "absolute", inset: 0, opacity: 0.05, backgroundImage: "linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+        <motion.div 
+          animate={{ scale: [1, 1.5, 1], opacity: [0.2, 0.4, 0.2], x: [0, 50, 0], y: [0, -50, 0] }} 
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+          style={{ position: "absolute", right: "-5%", bottom: "-10%", width: 500, height: 500, background: `radial-gradient(circle, ${activeRole.accent} 0%, transparent 70%)`, filter: "blur(80px)" }} 
+        />
+        <div style={{ position: "absolute", inset: 0, opacity: 0.05, backgroundImage: "linear-gradient(to right, var(--text-main) 1px, transparent 1px), linear-gradient(to bottom, var(--text-main) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
       </div>
 
       {/* Left Hero Column */}
       <div style={{ flex: "1 1 50%", display: "flex", flexDirection: "column", padding: "60px", position: "relative", zIndex: 1, justifyContent: "center" }}>
-        <Link to="/" style={{ position: "absolute", top: 40, left: 40, fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, color: "#fff", textDecoration: "none" }}>
+        <Link to="/" style={{ position: "absolute", top: 40, left: 40, fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, color: "var(--bg-card)", textDecoration: "none" }}>
           Path<span style={{ color: activeRole.accent }}>Ed</span>
         </Link>
         
@@ -153,7 +158,7 @@ export default function Register() {
             <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(40px, 4vw, 56px)", fontWeight: 800, lineHeight: 1.1, marginBottom: 16 }}>
               Join the <span style={{ color: activeRole.accent }}>revolution.</span>
             </h1>
-            <p style={{ color: "#9ca3af", fontSize: 18, marginBottom: 48 }}>{activeRole.tag}</p>
+            <p style={{ color: "var(--text-light)", fontSize: 18, marginBottom: 48 }}>{activeRole.tag}</p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {activeRole.features.map((f, i) => (
@@ -168,8 +173,8 @@ export default function Register() {
                     <CheckCircle size={20} />
                   </div>
                   <div>
-                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 700, color: "#fff" }}>{f.title}</div>
-                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, color: "#9ca3af", letterSpacing: 1 }}>{f.sub}</div>
+                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--bg-card)" }}>{f.title}</div>
+                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, color: "var(--text-light)", letterSpacing: 1 }}>{f.sub}</div>
                   </div>
                 </motion.div>
               ))}
@@ -212,39 +217,39 @@ export default function Register() {
           <form onSubmit={handleRegister}>
             <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
               <div style={{ flex: 1 }}>
-                <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#9ca3af", marginBottom: 8, fontFamily: "'Fira Code', monospace" }}>USERNAME</label>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--text-light)", marginBottom: 8, fontFamily: "'Fira Code', monospace" }}>USERNAME</label>
                 <input 
                   type="text" 
                   value={form.username}
                   onChange={e => { setForm({...form, username: e.target.value}); setError(false); }}
-                  style={{ width: "100%", padding: "14px 16px", background: "rgba(0,0,0,0.2)", border: `1px solid ${validUsername ? "#10b981" : "rgba(255,255,255,0.1)"}`, borderRadius: 12, color: "#fff", fontSize: 16, outline: "none", transition: "border 0.3s" }}
-                  onFocus={(e) => e.target.style.borderColor = activeRole.accent}
-                  onBlur={(e) => e.target.style.borderColor = validUsername ? "#10b981" : "rgba(255,255,255,0.1)"}
+                  style={{ width: "100%", padding: "14px 16px", background: "var(--bg-alt)", border: `1px solid ${validUsername ? "#10b981" : "var(--border-light)"}`, borderRadius: 12, color: "var(--text-main)", fontSize: 16, outline: "none", transition: "all 0.3s" }}
+                  onFocus={(e) => { e.target.style.borderColor = activeRole.accent; e.target.style.boxShadow = `0 0 0 3px ${activeRole.accent}40`; }}
+                  onBlur={(e) => { e.target.style.borderColor = validUsername ? "#10b981" : "var(--border-light)"; e.target.style.boxShadow = "none"; }}
                 />
               </div>
               <div style={{ flex: 1 }}>
-                <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#9ca3af", marginBottom: 8, fontFamily: "'Fira Code', monospace" }}>EMAIL</label>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--text-light)", marginBottom: 8, fontFamily: "'Fira Code', monospace" }}>EMAIL</label>
                 <input 
                   type="email" 
                   value={form.email}
                   onChange={e => { setForm({...form, email: e.target.value}); setError(false); }}
-                  style={{ width: "100%", padding: "14px 16px", background: "rgba(0,0,0,0.2)", border: `1px solid ${validEmail ? "#10b981" : "rgba(255,255,255,0.1)"}`, borderRadius: 12, color: "#fff", fontSize: 16, outline: "none", transition: "border 0.3s" }}
-                  onFocus={(e) => e.target.style.borderColor = activeRole.accent}
-                  onBlur={(e) => e.target.style.borderColor = validEmail ? "#10b981" : "rgba(255,255,255,0.1)"}
+                  style={{ width: "100%", padding: "14px 16px", background: "var(--bg-alt)", border: `1px solid ${validEmail ? "#10b981" : "var(--border-light)"}`, borderRadius: 12, color: "var(--text-main)", fontSize: 16, outline: "none", transition: "all 0.3s" }}
+                  onFocus={(e) => { e.target.style.borderColor = activeRole.accent; e.target.style.boxShadow = `0 0 0 3px ${activeRole.accent}40`; }}
+                  onBlur={(e) => { e.target.style.borderColor = validEmail ? "#10b981" : "var(--border-light)"; e.target.style.boxShadow = "none"; }}
                 />
               </div>
             </div>
             
             <div style={{ marginBottom: 20 }}>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#9ca3af", marginBottom: 8, fontFamily: "'Fira Code', monospace" }}>PASSWORD</label>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--text-light)", marginBottom: 8, fontFamily: "'Fira Code', monospace" }}>PASSWORD</label>
               <div style={{ position: "relative" }}>
                 <input 
                   type={showPassword ? "text" : "password"} 
                   value={form.password}
                   onChange={e => { setForm({...form, password: e.target.value}); setError(false); }}
-                  style={{ width: "100%", padding: "14px 48px 14px 16px", background: "rgba(0,0,0,0.2)", border: `1px solid ${validPassword ? "#10b981" : "rgba(255,255,255,0.1)"}`, borderRadius: 12, color: "#fff", fontSize: 16, outline: "none", transition: "border 0.3s" }}
-                  onFocus={(e) => e.target.style.borderColor = activeRole.accent}
-                  onBlur={(e) => e.target.style.borderColor = validPassword ? "#10b981" : "rgba(255,255,255,0.1)"}
+                  style={{ width: "100%", padding: "14px 48px 14px 16px", background: "var(--bg-alt)", border: `1px solid ${validPassword ? "#10b981" : "var(--border-light)"}`, borderRadius: 12, color: "var(--text-main)", fontSize: 16, outline: "none", transition: "all 0.3s" }}
+                  onFocus={(e) => { e.target.style.borderColor = activeRole.accent; e.target.style.boxShadow = `0 0 0 3px ${activeRole.accent}40`; }}
+                  onBlur={(e) => { e.target.style.borderColor = validPassword ? "#10b981" : "var(--border-light)"; e.target.style.boxShadow = "none"; }}
                 />
                 <button 
                   type="button"
@@ -258,12 +263,12 @@ export default function Register() {
             </div>
 
             <div style={{ marginBottom: 24 }}>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#9ca3af", marginBottom: 8, fontFamily: "'Fira Code', monospace" }}>CONFIRM PASSWORD</label>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--text-light)", marginBottom: 8, fontFamily: "'Fira Code', monospace" }}>CONFIRM PASSWORD</label>
               <input 
                 type={showPassword ? "text" : "password"} 
                 value={form.confirm}
                 onChange={e => { setForm({...form, confirm: e.target.value}); setError(false); }}
-                style={{ width: "100%", padding: "14px 16px", background: "rgba(0,0,0,0.2)", border: `1px solid ${validConfirm ? "#10b981" : "rgba(255,255,255,0.1)"}`, borderRadius: 12, color: "#fff", fontSize: 16, outline: "none", transition: "border 0.3s" }}
+                style={{ width: "100%", padding: "14px 16px", background: "rgba(0,0,0,0.2)", border: `1px solid ${validConfirm ? "#10b981" : "rgba(255,255,255,0.1)"}`, borderRadius: 12, color: "var(--bg-card)", fontSize: 16, outline: "none", transition: "border 0.3s" }}
                 onFocus={(e) => e.target.style.borderColor = activeRole.accent}
                 onBlur={(e) => e.target.style.borderColor = validConfirm ? "#10b981" : "rgba(255,255,255,0.1)"}
               />
@@ -271,7 +276,7 @@ export default function Register() {
 
             <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 32 }}>
               <input type="checkbox" id="terms" checked={terms} onChange={e => { setTerms(e.target.checked); setError(false); }} style={{ marginTop: 4, width: 16, height: 16, accentColor: activeRole.accent }} />
-              <label htmlFor="terms" style={{ color: "#9ca3af", fontSize: 14, lineHeight: 1.5 }}>
+              <label htmlFor="terms" style={{ color: "var(--text-light)", fontSize: 14, lineHeight: 1.5 }}>
                 I agree to the <Link to="/terms-of-service" style={{ color: activeRole.accent }}>Terms of Service</Link> and <Link to="/privacy-policy" style={{ color: activeRole.accent }}>Privacy Policy</Link>.
               </label>
             </div>
@@ -279,13 +284,13 @@ export default function Register() {
             <button 
               type="submit"
               disabled={loading || progress < 100 || !terms}
-              style={{ width: "100%", padding: 16, background: activeRole.accent, border: "none", borderRadius: 12, color: "#fff", fontSize: 16, fontWeight: 700, cursor: (loading || progress < 100 || !terms) ? "not-allowed" : "pointer", opacity: (progress === 100 && terms) ? 1 : 0.5, display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: "all 0.3s" }}
+              style={{ width: "100%", padding: 16, background: activeRole.accent, border: "none", borderRadius: 12, color: "var(--bg-card)", fontSize: 16, fontWeight: 700, cursor: (loading || progress < 100 || !terms) ? "not-allowed" : "pointer", opacity: (progress === 100 && terms) ? 1 : 0.5, display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: "all 0.3s" }}
             >
               {loading ? "Creating Account..." : <>Create Account <ArrowRight size={20} /></>}
             </button>
           </form>
 
-          <div style={{ textAlign: "center", marginTop: 32, fontSize: 14, color: "#9ca3af" }}>
+          <div style={{ textAlign: "center", marginTop: 32, fontSize: 14, color: "var(--text-light)" }}>
             Already have an account? <Link to="/login" style={{ color: activeRole.accent, textDecoration: "none", fontWeight: 700 }}>Sign in</Link>
           </div>
         </motion.div>

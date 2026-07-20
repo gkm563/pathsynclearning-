@@ -1,14 +1,41 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --primary: #6c63ff;
+  /* Brand Colors */
+  --primary: #1677ff;
   --secondary: #00c9a7;
   --accent: #f7971e;
+  --purple: #6c63ff;
+  --magenta: #9c27b0;
+  
+  /* Light Theme Defaults */
+  --bg-main: #fcfdff;
+  --bg-alt: #f0f4ff;
+  --bg-card: #ffffff;
   --text-main: #1a1a2e;
   --text-muted: #666666;
-  --bg-color: #f0f4ff;
+  --text-light: #9ca3af;
+  --border-light: #eaecff;
+  --border-strong: #bae0ff;
+  
+  /* Shared Gradients / Transparents */
+  --overlay-bg: rgba(255,255,255,0.9);
 }
 
+[data-theme="dark"] {
+  /* Dark Theme Overrides */
+  --bg-main: #0a0a0a;
+  --bg-alt: #121212;
+  --bg-card: #1a1a1a;
+  --text-main: #ffffff;
+  --text-muted: #a1a1aa;
+  --text-light: #71717a;
+  --border-light: #27272a;
+  --border-strong: #3f3f46;
+  
+  /* Shared Gradients / Transparents */
+  --overlay-bg: rgba(10,10,10,0.9);
+}
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -22,8 +49,9 @@ html, body {
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: var(--bg-color);
+  background-color: var(--bg-main);
   color: var(--text-main);
+  transition: background-color 0.3s ease, color 0.3s ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

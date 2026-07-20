@@ -8,17 +8,17 @@ export default function Methodology() {
   const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
 
   return (
-    <div style={{ background: "#fcfdff", minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ background: "var(--bg-main)", minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
       <Header />
       
       {/* 1. Hero Section */}
       <section style={{ paddingTop: 180, paddingBottom: 100, textAlign: "center", maxWidth: 1200, margin: "0 auto", paddingLeft: 32, paddingRight: 32 }}>
         <motion.div {...fadeInUp}>
           <Chip bg="#e8faf5" border="#b2eed9" color="#00a67e">▸ PEDAGOGY OF PROGRESS</Chip>
-          <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.1, margin: "24px 0" }}>
+          <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.1, margin: "24px 0" }}>
             Ensuring learning is deep <br />and <span style={{ color: "#00c9a7" }}>demonstrable.</span>
           </h1>
-          <p style={{ fontSize: 20, color: "#666", maxWidth: 800, margin: "0 auto 48px", lineHeight: 1.7 }}>
+          <p style={{ fontSize: 20, color: "var(--text-muted)", maxWidth: 800, margin: "0 auto 48px", lineHeight: 1.7 }}>
             The strategic integrity of the PathEd system rests on uncompromising pedagogical rules. We embed rigor into our core logic to produce industry-ready graduates, not merely fast learners.
           </p>
         </motion.div>
@@ -32,27 +32,27 @@ export default function Methodology() {
       </section>
 
       {/* 2. Mastery Based Unlocking */}
-      <section style={{ padding: "100px 32px", background: "#fff", borderTop: "1px solid #f0f2ff", borderBottom: "1px solid #f0f2ff" }}>
+      <section style={{ padding: "100px 32px", background: "var(--bg-card)", borderTop: "1px solid #f0f2ff", borderBottom: "1px solid #f0f2ff" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap" }}>
           
           <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>
             <Chip bg="#fdf0ff" border="#e8b3ff" color="#9c27b0">▸ THE 90% RULE</Chip>
-            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.15, margin: "24px 0" }}>
               Mastery-Based<br />Unlocking.
             </h2>
-            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8, marginBottom: 24 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", lineHeight: 1.8, marginBottom: 24 }}>
               A student cannot advance to the next node in the graph until they have achieved a mastery level of at least <strong>90%</strong> on the current assessment.
             </p>
-            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", lineHeight: 1.8 }}>
               This uncompromising policy prevents superficial advancement and ensures you build upon a solid, reliable foundation of understanding. We don't believe in scraping by.
             </p>
           </motion.div>
           
           <motion.div {...fadeInUp} style={{ flex: "1 1 600px", position: "relative" }}>
             <div style={{ background: "linear-gradient(135deg, #fdf0ff, #f0f0ff)", padding: 60, borderRadius: 24, border: "2px solid #e8b3ff", textAlign: "center" }}>
-              <div style={{ display: "inline-block", background: "#fff", padding: "30px 50px", borderRadius: 24, boxShadow: "0 10px 40px rgba(156,39,176,0.15)" }}>
+              <div style={{ display: "inline-block", background: "var(--bg-card)", padding: "30px 50px", borderRadius: 24, boxShadow: "0 10px 40px rgba(156,39,176,0.15)" }}>
                 <div style={{ fontSize: 84, fontFamily: "'Outfit', sans-serif", fontWeight: 800, color: "#9c27b0", lineHeight: 1 }}>90<span style={{ fontSize: 48 }}>%</span></div>
-                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 16, color: "#1a1a2e", fontWeight: 600, marginTop: 16, letterSpacing: 2 }}>MINIMUM REQUIRED SCORE</div>
+                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 16, color: "var(--text-main)", fontWeight: 600, marginTop: 16, letterSpacing: 2 }}>MINIMUM REQUIRED SCORE</div>
               </div>
             </div>
           </motion.div>
@@ -65,25 +65,25 @@ export default function Methodology() {
         <div style={{ maxWidth: 1360, margin: "0 auto", textAlign: "center" }}>
           <motion.div {...fadeInUp}>
             <Chip bg="#f0f0ff" border="#d8d4ff" color="#6c63ff">▸ HOLISTIC EVALUATION</Chip>
-            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.15, margin: "24px 0" }}>
               Multi-Signal Progress Validation.
             </h2>
-            <p style={{ fontSize: 18, color: "#666", maxWidth: 800, margin: "0 auto 60px", lineHeight: 1.8 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", maxWidth: 800, margin: "0 auto 60px", lineHeight: 1.8 }}>
               In contrast to simplistic, single-score evaluation models, PathEd assesses progress using multiple signals to create a balanced, ethical, and realistic model of your progress.
             </p>
           </motion.div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 30, textAlign: "left" }}>
             {[
-              { t: "Assessment Performance", d: "Your raw scores and accuracy on deeply technical challenges.", i: "📊" },
-              { t: "Number of Attempts", d: "Tracking persistence and the journey from failure to mastery.", i: "🔄" },
-              { t: "Time Spent", d: "Understanding the depth of your focus and engagement.", i: "⏱️" },
-              { t: "Improvement Trends", d: "Recognizing that learning is a process of continuous growth.", i: "📈" }
+              { t: "Assessment Performance", d: "Your raw scores and accuracy on deeply technical challenges.", i: "📊", c: "#1677ff" },
+              { t: "Number of Attempts", d: "Tracking persistence and the journey from failure to mastery.", i: "🔄", c: "#00c9a7" },
+              { t: "Time Spent", d: "Understanding the depth of your focus and engagement.", i: "⏱️", c: "#9c27b0" },
+              { t: "Improvement Trends", d: "Recognizing that learning is a process of continuous growth.", i: "📈", c: "#6c63ff" }
             ].map((card, i) => (
-              <InteractiveCard key={i} delay={i * 0.1} style={{ background: "#fff", padding: 40, borderRadius: 24, border: "1.5px solid #eaecff", boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
+              <InteractiveCard key={i} delay={i * 0.1} hoverColor={card.c} style={{ background: "var(--bg-card)", padding: 40, borderRadius: 24, border: "1.5px solid var(--border-light)", boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
                 <div style={{ fontSize: 40, marginBottom: 20 }}>{card.i}</div>
-                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "#1a1a2e", marginBottom: 12 }}>{card.t}</h3>
-                <p style={{ fontSize: 16, color: "#666", lineHeight: 1.6 }}>{card.d}</p>
+                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "var(--text-main)", marginBottom: 12 }}>{card.t}</h3>
+                <p style={{ fontSize: 16, color: "var(--text-muted)", lineHeight: 1.6 }}>{card.d}</p>
               </InteractiveCard>
             ))}
           </div>
@@ -91,7 +91,7 @@ export default function Methodology() {
       </section>
 
       {/* 4. Serious Gamification */}
-      <section style={{ padding: "100px 32px", background: "#1a1a2e", color: "#fff" }}>
+      <section style={{ padding: "100px 32px", background: "var(--text-main)", color: "var(--bg-card)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap-reverse" }}>
           
           <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
@@ -116,18 +116,18 @@ export default function Methodology() {
         </div>
       </section>
       {/* 5. Node-Level Learning */}
-      <section style={{ padding: "120px 32px", background: "#fcfdff" }}>
+      <section style={{ padding: "120px 32px", background: "var(--bg-main)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap" }}>
           
           <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>
             <Chip bg="#e8faf5" border="#b2eed9" color="#00a67e">▸ ACTIVE DEMONSTRATION</Chip>
-            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.15, margin: "24px 0" }}>
               Node-Level<br />Learning.
             </h2>
-            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8, marginBottom: 24 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", lineHeight: 1.8, marginBottom: 24 }}>
               Our validation policy is uncompromising: progress is tied exclusively to assessment outcomes. Simply consuming content—downloading notes or watching a video—does not mark a node as complete.
             </p>
-            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", lineHeight: 1.8 }}>
               This distinction is crucial. We shift the focus from passive reception to the active demonstration of knowledge, fostering genuine accountability at every step of your journey.
             </p>
           </motion.div>
@@ -142,14 +142,14 @@ export default function Methodology() {
       </section>
 
       {/* 6. Accessible & Focused */}
-      <section style={{ padding: "100px 32px", background: "#fff", borderTop: "1px solid #f0f2ff" }}>
+      <section style={{ padding: "100px 32px", background: "var(--bg-card)", borderTop: "1px solid #f0f2ff" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", textAlign: "center" }}>
           <motion.div {...fadeInUp}>
             <Chip bg="#fdf0ff" border="#e8b3ff" color="#9c27b0">▸ ETHICAL DESIGN</Chip>
-            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.15, margin: "24px 0" }}>
               Focused by Exclusion.
             </h2>
-            <p style={{ fontSize: 18, color: "#666", maxWidth: 800, margin: "0 auto 60px", lineHeight: 1.8 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", maxWidth: 800, margin: "0 auto 60px", lineHeight: 1.8 }}>
               The strategic value of PathEd is defined as much by what it includes as by what it deliberately excludes. We've created an environment optimized for deep, focused work, free from the distractions that plague modern educational technologies.
             </p>
           </motion.div>
@@ -162,9 +162,9 @@ export default function Methodology() {
               "High contrast readability modes",
               "Full keyboard navigation support"
             ].map((feature, i) => (
-              <InteractiveCard key={i} delay={i * 0.1} style={{ background: "#fcfdff", padding: "24px", borderRadius: 16, border: "1.5px solid #eaecff", display: "flex", alignItems: "center", gap: 16 }}>
+              <InteractiveCard key={i} delay={i * 0.1} style={{ background: "var(--bg-main)", padding: "24px", borderRadius: 16, border: "1.5px solid var(--border-light)", display: "flex", alignItems: "center", gap: 16 }}>
                 <div style={{ color: "#00c9a7", fontSize: 24 }}>✓</div>
-                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 16, fontWeight: 600, color: "#1a1a2e", textAlign: "left" }}>{feature}</div>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 16, fontWeight: 600, color: "var(--text-main)", textAlign: "left" }}>{feature}</div>
               </InteractiveCard>
             ))}
           </div>
@@ -172,7 +172,7 @@ export default function Methodology() {
       </section>
 
       {/* 7. Animated Coding Environment */}
-      <section style={{ padding: "100px 32px", background: "#1a1a2e", color: "#fff" }}>
+      <section style={{ padding: "100px 32px", background: "var(--text-main)", color: "var(--bg-card)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap-reverse" }}>
           
           <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>

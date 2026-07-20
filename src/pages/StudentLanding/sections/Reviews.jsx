@@ -32,12 +32,12 @@ export default function Reviews() {
   const visibleReviews = allReviews.slice(page * 3, page * 3 + 3);
 
   return (
-    <section style={{ padding: "80px 32px 120px", background: "#f0f4ff", position: "relative", zIndex: 2 }}>
+    <section style={{ padding: "80px 32px 120px", background: "var(--bg-alt)", position: "relative", zIndex: 2 }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
         
         <div style={{ textAlign: "center", marginBottom: "60px" }}>
           <div style={{ fontFamily: "'Fira Code', monospace", fontSize: "12px", fontWeight: 600, color: "#6c63ff", letterSpacing: "3px", marginBottom: "12px" }}>▸ STUDENT VOICES</div>
-          <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 800, color: "#1a1a2e", marginBottom: "16px" }}>
+          <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 800, color: "var(--text-main)", marginBottom: "16px" }}>
             Those who walked <span style={{ color: "#6c63ff" }}>the path.</span>
           </h2>
         </div>
@@ -54,8 +54,8 @@ export default function Reviews() {
             >
               {visibleReviews.map((review) => (
                 <InteractiveCard key={review.id} delay={0.1} style={{ 
-                  background: "#fff", borderRadius: "20px", padding: "32px", 
-                  border: "1px solid #eaecff", boxShadow: "0 10px 30px rgba(108,99,255,0.05)",
+                  background: "var(--bg-card)", borderRadius: "20px", padding: "32px", 
+                  border: "1px solid var(--border-light)", boxShadow: "0 10px 30px rgba(108,99,255,0.05)",
                   display: "flex", flexDirection: "column", justifyContent: "space-between"
                 }}>
                   <div>
@@ -72,12 +72,12 @@ export default function Reviews() {
                       width: "48px", height: "48px", borderRadius: "50%", 
                       background: "linear-gradient(135deg, #6c63ff, #00c9a7)", 
                       display: "flex", alignItems: "center", justifyContent: "center", 
-                      fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: "16px", color: "#fff" 
+                      fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: "16px", color: "var(--bg-card)" 
                     }}>
                       {review.avatar}
                     </div>
                     <div>
-                      <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: "16px", color: "#1a1a2e" }}>
+                      <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: "16px", color: "var(--text-main)" }}>
                         {review.name}
                       </div>
                       <div style={{ fontFamily: "'Fira Code', monospace", fontSize: "10px", color: "#6c63ff", marginTop: "4px" }}>

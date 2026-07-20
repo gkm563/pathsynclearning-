@@ -65,14 +65,14 @@ export default function Blog() {
   ];
 
   return (
-    <div style={{ background: "#fcfdff", minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ background: "var(--bg-main)", minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
       <Header />
       
       {/* 1. Hero Section */}
       <section style={{ paddingTop: 180, paddingBottom: 80, textAlign: "center", maxWidth: 1200, margin: "0 auto", paddingLeft: 32, paddingRight: 32 }}>
         <motion.div {...fadeInUp}>
           <Chip bg="#fdf0ff" border="#e8b3ff" color="#9c27b0">▸ PATHED INSIGHTS</Chip>
-          <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.1, margin: "24px 0" }}>
+          <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.1, margin: "24px 0" }}>
             Thoughts on the future of<br /><span style={{ color: "#9c27b0" }}>engineering education.</span>
           </h1>
         </motion.div>
@@ -82,7 +82,7 @@ export default function Blog() {
       <section style={{ padding: "0 32px 120px" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))", gap: 40 }}>
           {blogs.map((blog, i) => (
-            <HoverCard key={i} style={{ background: "#fff", borderRadius: 24, overflow: "hidden", border: "1.5px solid #eaecff", boxShadow: "0 10px 30px rgba(0,0,0,0.04)", cursor: "pointer", display: "flex", flexDirection: "column" }}>
+            <HoverCard key={i} style={{ background: "var(--bg-card)", borderRadius: 24, overflow: "hidden", border: "1.5px solid var(--border-light)", boxShadow: "0 10px 30px rgba(0,0,0,0.04)", cursor: "pointer", display: "flex", flexDirection: "column" }}>
               
               <div style={{ height: 240, overflow: "hidden" }}>
                 <img src={blog.img} alt={blog.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s ease" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} />
@@ -93,9 +93,9 @@ export default function Blog() {
                   <Chip bg={blog.bg} border={blog.border} color={blog.color}>{blog.tag}</Chip>
                   <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "#999", fontWeight: 500 }}>By Rahul Kushwaha</span>
                 </div>
-                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 26, fontWeight: 700, color: "#1a1a2e", lineHeight: 1.3, marginBottom: 16 }}>{blog.title}</h3>
-                <p style={{ fontSize: 16, color: "#666", lineHeight: 1.7, marginBottom: 24, flex: 1 }}>{blog.desc}</p>
-                <div style={{ color: "#1a1a2e", fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 16, display: "flex", alignItems: "center", gap: 8 }}>
+                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 26, fontWeight: 700, color: "var(--text-main)", lineHeight: 1.3, marginBottom: 16 }}>{blog.title}</h3>
+                <p style={{ fontSize: 16, color: "var(--text-muted)", lineHeight: 1.7, marginBottom: 24, flex: 1 }}>{blog.desc}</p>
+                <div style={{ color: "var(--text-main)", fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 16, display: "flex", alignItems: "center", gap: 8 }}>
                   Read Article →
                 </div>
               </div>

@@ -25,26 +25,26 @@ export default function Guides() {
   ];
 
   return (
-    <div style={{ background: "#fcfdff", minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ background: "var(--bg-main)", minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
       <Header />
       
       <section style={{ paddingTop: 180, paddingBottom: 100, textAlign: "center", maxWidth: 1200, margin: "0 auto", paddingLeft: 32, paddingRight: 32 }}>
         <motion.div {...fadeInUp}>
-          <Chip bg="#e6f4ff" border="#bae0ff" color="#1677ff">▸ PATHED GUIDES</Chip>
-          <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.1, margin: "24px 0" }}>
+          <Chip bg="#e6f4ff" border="var(--border-strong)" color="#1677ff">▸ PATHED GUIDES</Chip>
+          <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.1, margin: "24px 0" }}>
             Master the Platform.
           </h1>
-          <p style={{ fontSize: 20, color: "#666", maxWidth: 800, margin: "0 auto 64px", lineHeight: 1.7 }}>
+          <p style={{ fontSize: 20, color: "var(--text-muted)", maxWidth: 800, margin: "0 auto 64px", lineHeight: 1.7 }}>
             Step-by-step guides and playbooks to help you extract maximum value from PathEd and accelerate your engineering career.
           </p>
         </motion.div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 32, textAlign: "left" }}>
           {guides.map((guide, i) => (
-            <InteractiveCard key={i} delay={i * 0.1} style={{ background: "#fff", border: "1.5px solid #eaecff", borderRadius: 24, padding: 32 }}>
+            <InteractiveCard key={i} delay={i * 0.1} style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 32 }}>
               <div style={{ color: "#6c63ff", marginBottom: 24 }}>{guide.icon}</div>
-              <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, marginBottom: 12, color: "#1a1a2e" }}>{guide.title}</h3>
-              <p style={{ color: "#666", lineHeight: 1.6, marginBottom: 24 }}>{guide.desc}</p>
+              <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, marginBottom: 12, color: "var(--text-main)" }}>{guide.title}</h3>
+              <p style={{ color: "var(--text-muted)", lineHeight: 1.6, marginBottom: 24 }}>{guide.desc}</p>
               <a href="#" style={{ color: "#1677ff", fontWeight: 700, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8 }}>
                 Read Guide <span>→</span>
               </a>

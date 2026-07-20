@@ -14,15 +14,15 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section style={{ padding: "100px 32px", background: "#fff" }}>
+    <section style={{ padding: "100px 32px", background: "var(--bg-card)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: 64 }}>
           <motion.div {...fadeInUp}>
             <Chip bg="#f0f0ff" border="#d8d4ff" color="#6c63ff">▸ THE PROCESS</Chip>
-            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", marginTop: 24, marginBottom: 24 }}>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "var(--text-main)", marginTop: 24, marginBottom: 24 }}>
               How PathEd Works
             </h2>
-            <p style={{ fontSize: 20, color: "#666", maxWidth: 700, margin: "0 auto", lineHeight: 1.7 }}>
+            <p style={{ fontSize: 20, color: "var(--text-muted)", maxWidth: 700, margin: "0 auto", lineHeight: 1.7 }}>
               We've engineered a seamless pipeline from raw potential to hired professional.
             </p>
           </motion.div>
@@ -50,8 +50,8 @@ export default function HowItWorks() {
               
               <div className="step-content" style={{ flex: "1 1 300px", maxWidth: 400, textAlign: "center", padding: 24 }}>
                 <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 14, color: step.color, fontWeight: 800, letterSpacing: 2, marginBottom: 12 }}>STEP {step.num}</div>
-                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 28, fontWeight: 700, color: "#1a1a2e", marginBottom: 16 }}>{step.title}</h3>
-                <p style={{ color: "#666", fontSize: 18, lineHeight: 1.7 }}>{step.desc}</p>
+                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 28, fontWeight: 700, color: "var(--text-main)", marginBottom: 16 }}>{step.title}</h3>
+                <p style={{ color: "var(--text-muted)", fontSize: 18, lineHeight: 1.7 }}>{step.desc}</p>
               </div>
             </motion.div>
           ))}

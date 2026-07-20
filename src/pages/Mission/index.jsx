@@ -8,17 +8,17 @@ export default function Mission() {
   const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
 
   return (
-    <div style={{ background: "#fcfdff", minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ background: "var(--bg-main)", minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
       <Header />
       
       {/* 1. Hero Section */}
       <section style={{ paddingTop: 180, paddingBottom: 100, textAlign: "center", maxWidth: 1200, margin: "0 auto", paddingLeft: 32, paddingRight: 32 }}>
         <motion.div {...fadeInUp}>
           <Chip bg="#fff9e6" border="#ffe08a" color="#c68a00">▸ OUR MISSION</Chip>
-          <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.1, margin: "24px 0" }}>
+          <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.1, margin: "24px 0" }}>
             Bridging the gap between<br /><span style={{ color: "#f7971e" }}>academia and industry.</span>
           </h1>
-          <p style={{ fontSize: 20, color: "#666", maxWidth: 800, margin: "0 auto 48px", lineHeight: 1.7 }}>
+          <p style={{ fontSize: 20, color: "var(--text-muted)", maxWidth: 800, margin: "0 auto 48px", lineHeight: 1.7 }}>
             We exist to solve the structural disconnect in modern engineering education. We are translating academic investment into demonstrable economic value.
           </p>
         </motion.div>
@@ -32,20 +32,20 @@ export default function Mission() {
       </section>
 
       {/* 2. The Core Problem */}
-      <section style={{ padding: "100px 32px", background: "#fff", borderTop: "1px solid #f0f2ff", borderBottom: "1px solid #f0f2ff" }}>
+      <section style={{ padding: "100px 32px", background: "var(--bg-card)", borderTop: "1px solid #f0f2ff", borderBottom: "1px solid #f0f2ff" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap-reverse" }}>
           
           <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
               {[
-                { title: "Syllabi Misalignment", desc: "Organized by discipline, not by industry roles." },
-                { title: "Lack of Clarity", desc: "No clear framework for identifying what to learn." },
-                { title: "Delayed Planning", desc: "Postponing preparation until the final year." },
-                { title: "Wasted Effort", desc: "Changing goals penalizes exploration." }
+                { title: "Syllabi Misalignment", desc: "Organized by discipline, not by industry roles.", c: "#1677ff" },
+                { title: "Lack of Clarity", desc: "No clear framework for identifying what to learn.", c: "#00c9a7" },
+                { title: "Delayed Planning", desc: "Postponing preparation until the final year.", c: "#9c27b0" },
+                { title: "Wasted Effort", desc: "Changing goals penalizes exploration.", c: "#6c63ff" }
               ].map((prob, i) => (
-                <InteractiveCard key={i} delay={i * 0.1} style={{ background: "#fcfdff", padding: 30, borderRadius: 16, border: "1.5px solid #eaecff" }}>
-                  <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 22, fontWeight: 700, color: "#1a1a2e", marginBottom: 12 }}>{prob.title}</h3>
-                  <p style={{ fontSize: 16, color: "#666", lineHeight: 1.6 }}>{prob.desc}</p>
+                <InteractiveCard key={i} delay={i * 0.1} hoverColor={prob.c} style={{ background: "var(--bg-main)", padding: 30, borderRadius: 16, border: "1.5px solid var(--border-light)" }}>
+                  <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 22, fontWeight: 700, color: "var(--text-main)", marginBottom: 12 }}>{prob.title}</h3>
+                  <p style={{ fontSize: 16, color: "var(--text-muted)", lineHeight: 1.6 }}>{prob.desc}</p>
                 </InteractiveCard>
               ))}
             </div>
@@ -53,13 +53,13 @@ export default function Mission() {
 
           <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>
             <Chip bg="#fdf0ff" border="#e8b3ff" color="#9c27b0">▸ THE STRUCTURAL FAILURE</Chip>
-            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.15, margin: "24px 0" }}>
               The traditional model<br />is broken.
             </h2>
-            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8, marginBottom: 24 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", lineHeight: 1.8, marginBottom: 24 }}>
               The core strategic challenge facing undergraduate engineering education is a failure of design. Predefined subjects and rigid semesters create systemic friction.
             </p>
-            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", lineHeight: 1.8 }}>
               Students are forced to navigate their degree without a clear understanding of how individual courses contribute to professional employability.
             </p>
           </motion.div>
@@ -68,7 +68,7 @@ export default function Mission() {
       </section>
 
       {/* 3. The Vision */}
-      <section style={{ padding: "120px 32px", background: "#1a1a2e", color: "#fff" }}>
+      <section style={{ padding: "120px 32px", background: "var(--text-main)", color: "var(--bg-card)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", textAlign: "center" }}>
           <motion.div {...fadeInUp}>
             <Chip bg="rgba(108,99,255,0.2)" border="rgba(108,99,255,0.4)" color="#b2aeff">▸ OUR VISION</Chip>
@@ -92,17 +92,17 @@ export default function Mission() {
       </section>
 
       {/* 4. The Ripple Effect */}
-      <section style={{ padding: "100px 32px", background: "#fff" }}>
+      <section style={{ padding: "100px 32px", background: "var(--bg-card)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap" }}>
           <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>
             <Chip bg="#e8faf5" border="#b2eed9" color="#00a67e">▸ SYSTEMIC IMPACT</Chip>
-            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.15, margin: "24px 0" }}>
               The Ripple Effect.
             </h2>
-            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8, marginBottom: 24 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", lineHeight: 1.8, marginBottom: 24 }}>
               When a single student unlocks their true potential, the impact doesn't stop at their first paycheck. It elevates their family, inspires their peers, and ultimately strengthens the global engineering ecosystem.
             </p>
-            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", lineHeight: 1.8 }}>
               Our mission is to trigger this ripple effect at an unprecedented scale, transforming India's vast engineering talent pool into the world's most capable technical workforce.
             </p>
           </motion.div>
@@ -118,11 +118,11 @@ export default function Mission() {
       <section style={{ padding: "100px 32px", background: "#f8f9ff" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", textAlign: "center" }}>
           <motion.div {...fadeInUp}>
-            <Chip bg="#e6f4ff" border="#bae0ff" color="#1677ff">▸ ZERO OBFUSCATION</Chip>
-            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+            <Chip bg="#e6f4ff" border="var(--border-strong)" color="#1677ff">▸ ZERO OBFUSCATION</Chip>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.15, margin: "24px 0" }}>
               The Transparency Guarantee.
             </h2>
-            <p style={{ fontSize: 18, color: "#666", maxWidth: 800, margin: "0 auto 60px", lineHeight: 1.8 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", maxWidth: 800, margin: "0 auto 60px", lineHeight: 1.8 }}>
               Education should not be a black box. You deserve to know exactly how your performance is measured, why you received a specific CRI score, and what specific steps you must take to improve.
             </p>
           </motion.div>
@@ -132,9 +132,9 @@ export default function Mission() {
               { title: "No Hidden Agendas", desc: "We don't sell your data. We don't charge hidden fees." },
               { title: "Direct Feedback", desc: "Every assessment comes with granular, actionable feedback." }
             ].map((item, i) => (
-              <InteractiveCard key={i} delay={i * 0.1} style={{ background: "#fff", padding: "40px 30px", borderRadius: 20, border: "1.5px solid #eaecff" }}>
-                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "#1a1a2e", marginBottom: 16 }}>{item.title}</h3>
-                <p style={{ fontSize: 16, color: "#666", lineHeight: 1.6 }}>{item.desc}</p>
+              <InteractiveCard key={i} delay={i * 0.1} style={{ background: "var(--bg-card)", padding: "40px 30px", borderRadius: 20, border: "1.5px solid var(--border-light)" }}>
+                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "var(--text-main)", marginBottom: 16 }}>{item.title}</h3>
+                <p style={{ fontSize: 16, color: "var(--text-muted)", lineHeight: 1.6 }}>{item.desc}</p>
               </InteractiveCard>
             ))}
           </div>
@@ -142,7 +142,7 @@ export default function Mission() {
       </section>
 
       {/* 6. Industry Alignment */}
-      <section style={{ padding: "100px 32px", background: "#1a1a2e", color: "#fff" }}>
+      <section style={{ padding: "100px 32px", background: "var(--text-main)", color: "var(--bg-card)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap-reverse" }}>
           <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
             <HoverCard style={{ height: 400, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.5)", border: "1px solid #333" }}>
@@ -166,10 +166,10 @@ export default function Mission() {
         <div style={{ maxWidth: 1360, margin: "0 auto", textAlign: "center" }}>
           <motion.div {...fadeInUp}>
             <Chip bg="#fdf0ff" border="#e8b3ff" color="#9c27b0">▸ THE 10-YEAR HORIZON</Chip>
-            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.15, margin: "24px 0" }}>
               Where we are going.
             </h2>
-            <p style={{ fontSize: 18, color: "#666", maxWidth: 800, margin: "0 auto", lineHeight: 1.8 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", maxWidth: 800, margin: "0 auto", lineHeight: 1.8 }}>
               Within the next decade, we envision a world where a student's potential is never bottlenecked by outdated college syllabi. We aim to establish the CRI as the global standard for engineering employability—rendering proxy metrics obsolete and ensuring that merit, validated by data, is the only currency that matters in hiring.
             </p>
           </motion.div>

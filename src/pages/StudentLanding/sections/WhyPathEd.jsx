@@ -9,14 +9,14 @@ export default function WhyPathEd() {
         {/* Left Column */}
         <div style={{ flex: "1 1 360px" }}>
           <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 600, color: "#6c63ff", letterSpacing: 3, marginBottom: 14 }}>▸ WHY PATHED</div>
-          <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(24px,3vw,42px)", fontWeight: 800, lineHeight: 1.15, marginBottom: 16, color: "#1a1a2e" }}>
+          <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(24px,3vw,42px)", fontWeight: 800, lineHeight: 1.15, marginBottom: 16, color: "var(--text-main)" }}>
             One platform.<br/><span style={{ color: "#6c63ff" }}>Infinite directions.</span>
           </h2>
           <p style={{ color: "#777", fontSize: 17, lineHeight: 1.8, maxWidth: 440, marginBottom: 24, fontFamily: "'Inter', sans-serif" }}>
             The only platform that simultaneously optimizes your CGPA and Career Readiness Index. No compromises.
           </p>
           
-          <div style={{ background: "#fff", borderRadius: 16, padding: 24, border: "1.5px solid #eaecff", boxShadow: "0 2px 12px rgba(108,99,255,.06)" }}>
+          <div style={{ background: "var(--bg-card)", borderRadius: 16, padding: 24, border: "1.5px solid var(--border-light)", boxShadow: "0 2px 12px rgba(108,99,255,.06)" }}>
             <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 600, color: "#6c63ff", letterSpacing: 2, marginBottom: 16 }}>CONSISTENCY HEATMAP — 12 WEEKS</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(14,1fr)", gap: 3 }}>
               {Array.from({ length: 98 }, (_, i) => {
@@ -33,7 +33,7 @@ export default function WhyPathEd() {
               <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 600, color: "#c68a00", letterSpacing: 2 }}>⚡ TODAY'S CHALLENGE</div>
               <Chip bg="#fff9e6" border="#ffe08a" color="#c68a00">+150 XP</Chip>
             </div>
-            <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 700, color: "#1a1a2e", marginBottom: 4 }}>Implement Binary Search Tree</div>
+            <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text-main)", marginBottom: 4 }}>Implement Binary Search Tree</div>
             <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: "#888", marginBottom: 16 }}>DSA • Medium • 45 min estimated</div>
             <SkillBar pct={68} c="#f7971e" delay={300} />
             <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 600, color: "#c68a00", marginTop: 8 }}>7-day streak 🔥</div>
@@ -49,16 +49,16 @@ export default function WhyPathEd() {
               ["⚡", "∞", "#f7971e", "Daily Challenges", "Gamified XP engine"],
               ["🧑‍🏫", "24/7", "#e040fb", "Teacher Connect", "Beat every plateau"]
             ].map(([em, stat, c, lbl, sub]) => (
-              <InteractiveCard key={lbl} style={{ background: "#fff", border: "1.5px solid #eaecff", borderRadius: 16, padding: "26px 20px", textAlign: "center", transition: "all .3s ease", boxShadow: "0 2px 10px rgba(0,0,0,.04)" }}>
+              <InteractiveCard key={lbl} style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 16, padding: "26px 20px", textAlign: "center", transition: "all .3s ease", boxShadow: "0 2px 10px rgba(0,0,0,.04)" }}>
                 <div style={{ fontSize: 32, marginBottom: 8 }}>{em}</div>
                 <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 36, fontWeight: 800, color: c, marginBottom: 4 }}>{stat}</div>
-                <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 700, color: "#1a1a2e", marginBottom: 4 }}>{lbl}</div>
+                <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text-main)", marginBottom: 4 }}>{lbl}</div>
                 <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: "#999" }}>{sub}</div>
               </InteractiveCard>
             ))}
           </div>
           
-          <div style={{ background: "#fff", borderRadius: 16, padding: "24px 28px", border: "1.5px solid #eaecff", boxShadow: "0 2px 12px rgba(108,99,255,.06)" }}>
+          <div style={{ background: "var(--bg-card)", borderRadius: 16, padding: "24px 28px", border: "1.5px solid var(--border-light)", boxShadow: "0 2px 12px rgba(108,99,255,.06)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}>
               <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#f7971e", animation: "pulse 2s ease infinite" }} />
               <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 600, color: "#c68a00", letterSpacing: 2 }}>📡 TECH NEWS — LIVE</div>

@@ -36,18 +36,18 @@ const features = [
 
 export default function VisualFeatures() {
   return (
-    <section style={{ padding: "100px 32px", background: "#fff", position: "relative" }}>
+    <section style={{ padding: "100px 32px", background: "var(--bg-card)", position: "relative" }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
         
         <div style={{ textAlign: "center", marginBottom: "80px", maxWidth: "640px", margin: "0 auto 80px" }}>
           <div style={{ display: "inline-block", fontFamily: "'Fira Code', monospace", fontSize: "13px", fontWeight: 600, color: "#00c9a7", letterSpacing: "2px", marginBottom: "16px", padding: "8px 18px", background: "#e8faf5", borderRadius: "20px" }}>
             CORE WORKFLOW
           </div>
-          <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 800, color: "#1a1a2e", marginBottom: "20px" }}>
+          <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 800, color: "var(--text-main)", marginBottom: "20px" }}>
             The blueprint for your <br/>
             <span style={{ color: "#6c63ff" }}>career launchpad.</span>
           </h2>
-          <p style={{ color: "#666", fontSize: "16px", lineHeight: 1.6 }}>
+          <p style={{ color: "var(--text-muted)", fontSize: "16px", lineHeight: 1.6 }}>
             Every step is designed to optimize your readiness. No more guessing what to learn next. Just pure, targeted progression.
           </p>
         </div>
@@ -58,7 +58,7 @@ export default function VisualFeatures() {
               key={i}
               style={{
                 background: "#f8f9ff", borderRadius: "24px", padding: "12px",
-                border: "1px solid #eaecff", boxShadow: "0 10px 30px rgba(0,0,0,0.03)",
+                border: "1px solid var(--border-light)", boxShadow: "0 10px 30px rgba(0,0,0,0.03)",
                 cursor: "pointer", display: "flex", flexDirection: "column"
               }}
             >
@@ -66,15 +66,15 @@ export default function VisualFeatures() {
                 <img src={item.img} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s" }} 
                      onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
                      onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"} />
-                <div style={{ position: "absolute", top: "16px", left: "16px", width: "48px", height: "48px", borderRadius: "12px", background: "rgba(255,255,255,0.9)", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 20px rgba(0,0,0,0.1)" }}>
+                <div style={{ position: "absolute", top: "16px", left: "16px", width: "48px", height: "48px", borderRadius: "12px", background: "var(--overlay-bg)", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 20px rgba(0,0,0,0.1)" }}>
                   <item.icon size={24} color={item.color} />
                 </div>
               </div>
               
               <div style={{ padding: "0 16px 20px" }}>
                 <div style={{ fontFamily: "'Fira Code', monospace", fontSize: "10px", color: item.color, fontWeight: 700, letterSpacing: "1px", marginBottom: "8px" }}>STEP 0{i+1}</div>
-                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "20px", fontWeight: 800, color: "#1a1a2e", marginBottom: "12px" }}>{item.title}</h3>
-                <p style={{ color: "#666", fontSize: "14px", lineHeight: 1.6 }}>{item.desc}</p>
+                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "20px", fontWeight: 800, color: "var(--text-main)", marginBottom: "12px" }}>{item.title}</h3>
+                <p style={{ color: "var(--text-muted)", fontSize: "14px", lineHeight: 1.6 }}>{item.desc}</p>
               </div>
             </HoverCard>
           ))}

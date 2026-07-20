@@ -5,7 +5,7 @@ import { Rocket } from "lucide-react";
 
 export default function PreFooterCTA() {
   return (
-    <section style={{ padding: "80px 32px 120px", position: "relative", zIndex: 2, background: "#fff" }}>
+    <section style={{ padding: "80px 32px 120px", position: "relative", zIndex: 2, background: "var(--bg-card)" }}>
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
@@ -27,14 +27,14 @@ export default function PreFooterCTA() {
               display: "inline-flex", alignItems: "center", gap: "8px", 
               background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", 
               borderRadius: "20px", padding: "6px 16px", marginBottom: "24px",
-              fontFamily: "'DM Mono', monospace", fontSize: "12px", color: "#fff", letterSpacing: "2px"
+              fontFamily: "'DM Mono', monospace", fontSize: "12px", color: "var(--bg-card)", letterSpacing: "2px"
             }}>
               <Rocket size={14} /> BEGIN YOUR JOURNEY
             </div>
             
             <h2 style={{ 
               fontFamily: "'Outfit', sans-serif", fontSize: "clamp(44px, 6vw, 72px)", 
-              fontWeight: 800, color: "#fff", lineHeight: 1.1, marginBottom: "24px"
+              fontWeight: 800, color: "var(--bg-card)", lineHeight: 1.1, marginBottom: "24px"
             }}>
               Your roadmap starts<br />right now.
             </h2>
@@ -45,7 +45,7 @@ export default function PreFooterCTA() {
             
             <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
               <Link to="/register" style={{
-                background: "#fff", color: "#6c63ff", 
+                background: "var(--bg-card)", color: "#6c63ff", 
                 fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: "16px", 
                 padding: "18px 48px", borderRadius: "14px", 
                 boxShadow: "0 12px 30px rgba(0,0,0,0.15)", transition: "transform 0.3s"

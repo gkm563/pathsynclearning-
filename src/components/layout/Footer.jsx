@@ -35,8 +35,8 @@ export default function Footer() {
 
   return (
     <footer style={{
-      background: "#1a1a2e",
-      color: "#fff",
+      background: "var(--text-main)",
+      color: "var(--bg-card)",
       padding: "80px 32px 40px",
       marginTop: "auto",
       position: "relative",
@@ -53,24 +53,24 @@ export default function Footer() {
                 background: "linear-gradient(135deg, #6c63ff, #00c9a7)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: "18px",
-                color: "#fff"
+                color: "var(--bg-card)"
               }}>P</div>
-              <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: "28px", color: "#fff" }}>
+              <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: "28px", color: "var(--bg-card)" }}>
                 Path<span style={{ color: "#6c63ff" }}>Ed</span>
               </span>
             </Link>
-            <p style={{ color: "#9ca3af", lineHeight: 1.6, fontSize: "15px", marginBottom: "24px", fontFamily: "'Inter', sans-serif" }}>
+            <p style={{ color: "var(--text-light)", lineHeight: 1.6, fontSize: "15px", marginBottom: "24px", fontFamily: "'Inter', sans-serif" }}>
               The ultimate career readiness platform bridging the gap between academic theory and industry demands.
             </p>
             <div style={{ display: "flex", gap: "16px" }}>
               {[Globe, Users, Code, Mail].map((Icon, idx) => (
                 <a key={idx} href="#" style={{
                   width: "40px", height: "40px", borderRadius: "50%", background: "rgba(255,255,255,0.05)",
-                  display: "flex", alignItems: "center", justifyContent: "center", color: "#9ca3af",
+                  display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-light)",
                   transition: "all 0.3s"
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "#6c63ff"; e.currentTarget.style.color = "#fff" }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = "#9ca3af" }}>
+                onMouseEnter={(e) => { e.currentTarget.style.background = "#6c63ff"; e.currentTarget.style.color = "var(--bg-card)" }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = "var(--text-light)" }}>
                   <Icon size={18} />
                 </a>
               ))}
@@ -79,15 +79,15 @@ export default function Footer() {
 
           {sections.map((section, idx) => (
             <div key={idx}>
-              <h4 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: "16px", marginBottom: "24px", color: "#fff" }}>
+              <h4 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: "16px", marginBottom: "24px", color: "var(--bg-card)" }}>
                 {section.title}
               </h4>
               <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "12px" }}>
                 {section.links.map((link, i) => (
                   <li key={i}>
-                    <Link to={link.to} style={{ color: "#9ca3af", fontSize: "14px", transition: "color 0.2s", fontFamily: "'Inter', sans-serif", textDecoration: "none" }}
+                    <Link to={link.to} style={{ color: "var(--text-light)", fontSize: "14px", transition: "color 0.2s", fontFamily: "'Inter', sans-serif", textDecoration: "none" }}
                        onMouseEnter={(e) => e.currentTarget.style.color = "#00c9a7"}
-                       onMouseLeave={(e) => e.currentTarget.style.color = "#9ca3af"}>
+                       onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-light)"}>
                       {link.label}
                     </Link>
                   </li>
@@ -107,7 +107,7 @@ export default function Footer() {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#00c9a7", boxShadow: "0 0 10px #00c9a7" }}></div>
-            <span style={{ color: "#9ca3af", fontSize: "13px", fontFamily: "'Fira Code', monospace" }}>ALL SYSTEMS OPERATIONAL</span>
+            <span style={{ color: "var(--text-light)", fontSize: "13px", fontFamily: "'Fira Code', monospace" }}>ALL SYSTEMS OPERATIONAL</span>
           </div>
         </div>
 

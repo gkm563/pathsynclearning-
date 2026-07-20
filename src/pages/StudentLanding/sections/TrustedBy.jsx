@@ -16,11 +16,11 @@ export default function TrustedBy() {
   ];
 
   return (
-    <section style={{ padding: "80px 32px", background: "#f8f9fa", borderTop: "1px solid #eaecff", borderBottom: "1px solid #eaecff" }}>
+    <section style={{ padding: "80px 32px", background: "#f8f9fa", borderTop: "1px solid var(--border-light)", borderBottom: "1px solid var(--border-light)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", textAlign: "center" }}>
         <motion.div {...fadeInUp}>
           <Chip bg="#e8faf5" border="#b2eed9" color="#00a67e">▸ HIRING NETWORK</Chip>
-          <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(28px, 3vw, 40px)", fontWeight: 800, color: "#1a1a2e", marginTop: 24, marginBottom: 48 }}>
+          <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(28px, 3vw, 40px)", fontWeight: 800, color: "var(--text-main)", marginTop: 24, marginBottom: 48 }}>
             Top Companies Hire PathEd Graduates
           </h2>
         </motion.div>
@@ -32,8 +32,8 @@ export default function TrustedBy() {
               {...fadeInUp} 
               transition={{ delay: i * 0.1 }}
               style={{ 
-                background: "#fff", 
-                border: "1px solid #eaecff", 
+                background: "var(--bg-card)", 
+                border: "1px solid var(--border-light)", 
                 borderRadius: 16, 
                 padding: "24px 40px",
                 display: "flex",

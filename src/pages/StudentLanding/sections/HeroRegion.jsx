@@ -22,7 +22,7 @@ export default function HeroRegion() {
           <Chip bg="#f0f0ff" border="#d8d4ff" color="#6c63ff">▸ PLATFORM ENTRY — SELECT YOUR ROLE</Chip>
         </div>
         
-        <h1 className="f2" style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(48px,7vw,84px)", fontWeight: 800, lineHeight: 1.05, marginBottom: 16, color: "#1a1a2e", maxWidth: "900px", margin: "0 auto 16px" }}>
+        <h1 className="f2" style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(48px,7vw,84px)", fontWeight: 800, lineHeight: 1.05, marginBottom: 16, color: "var(--text-main)", maxWidth: "900px", margin: "0 auto 16px" }}>
           How do you want to<br /> <span className="shimmer-text">join PathEd?</span>
         </h1>
         
@@ -65,13 +65,13 @@ export default function HeroRegion() {
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: "linear-gradient(135deg,#6c63ff,#00c9a7)", animation: "pulse 2s ease infinite" }} />
           <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 600, color: "#6c63ff", letterSpacing: "1.5px" }}>TEACHER GUIDANCE ACTIVE — ALL MODES</span>
         </div>
-        <div style={{ display: "flex", gap: 0, background: "#fff", borderRadius: 14, padding: 5, border: "1.5px solid #eaecff", width: "fit-content", margin: "0 auto", boxShadow: "0 4px 20px rgba(108,99,255,.08)" }}>
+        <div style={{ display: "flex", gap: 0, background: "var(--bg-card)", borderRadius: 14, padding: 5, border: "1.5px solid var(--border-light)", width: "fit-content", margin: "0 auto", boxShadow: "0 4px 20px rgba(108,99,255,.08)" }}>
           {[["c","🚀 Career Mode"],["a","📚 Academic Mode"]].map(([m,lbl]) => (
             <button key={m} onClick={() => setMode(m)} style={{ 
               padding: "10px 28px", borderRadius: 10, border: "none", cursor: "pointer", 
               fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 13, transition: "all .3s ease", 
               background: mode === m ? (m === "c" ? "linear-gradient(135deg,#6c63ff,#00c9a7)" : "linear-gradient(135deg,#f7971e,#e040fb)") : "transparent", 
-              color: mode === m ? "#fff" : "#888", 
+              color: mode === m ? "var(--bg-card)" : "#888", 
               boxShadow: mode === m ? (m === "c" ? "0 6px 24px rgba(108,99,255,.35)" : "0 6px 24px rgba(247,151,30,.3)") : "none" 
             }}>
               {lbl}
@@ -96,10 +96,10 @@ export default function HeroRegion() {
               <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 600, color: isC ? "#6c63ff" : "#c68a00", letterSpacing: 2, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
                 <div style={{ width: 6, height: 6, borderRadius: "50%", background: isC ? "#6c63ff" : "#f7971e", animation: "pulse 1.5s ease infinite" }} />▸ {isC ? "CAREER" : "ACADEMIC"} MODE ACTIVE
               </div>
-              <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(24px,3.5vw,42px)", fontWeight: 800, lineHeight: 1.15, marginBottom: 16, color: "#1a1a2e" }}>
+              <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(24px,3.5vw,42px)", fontWeight: 800, lineHeight: 1.15, marginBottom: 16, color: "var(--text-main)" }}>
                 {isC ? <>Turn your B.Tech degree into a<br/><span style={{ color: "#6c63ff" }}>career-ready roadmap.</span></> : <>Master your University Curriculum<br/><span style={{ color: "#f7971e" }}>with structured precision.</span></>}
               </h2>
-              <p style={{ color: "#666", fontSize: 17, lineHeight: 1.8, maxWidth: 480, marginBottom: 12, fontFamily: "'Inter', sans-serif" }}>
+              <p style={{ color: "var(--text-muted)", fontSize: 17, lineHeight: 1.8, maxWidth: 480, marginBottom: 12, fontFamily: "'Inter', sans-serif" }}>
                 {isC ? "AI-powered skill paths calibrated to Google, Microsoft, Razorpay & 500+ companies. Build what the industry demands — skip what it doesn't." : "Week-by-week syllabus breakdowns with live exam countdowns. No more last-minute cramming. Structured mastery from Day 1."}
               </p>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
@@ -108,7 +108,7 @@ export default function HeroRegion() {
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                 <button onClick={() => navigate("/register")} style={{ 
                   background: isC ? "linear-gradient(135deg,#6c63ff,#00c9a7)" : "linear-gradient(135deg,#f7971e,#e040fb)", 
-                  border: "none", color: "#fff", fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 14, 
+                  border: "none", color: "var(--bg-card)", fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 14, 
                   padding: "14px 36px", borderRadius: 12, cursor: "pointer", 
                   boxShadow: isC ? "0 8px 28px rgba(108,99,255,.35)" : "0 8px 28px rgba(247,151,30,.3)" 
                 }}>
@@ -121,17 +121,17 @@ export default function HeroRegion() {
             </div>
             
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
-              <div style={{ animation: "floatY 4s ease-in-out infinite", background: "#fff", borderRadius: 20, padding: 20, boxShadow: "0 8px 32px rgba(108,99,255,.12)", border: "1.5px solid #eaecff" }}>
+              <div style={{ animation: "floatY 4s ease-in-out infinite", background: "var(--bg-card)", borderRadius: 20, padding: 20, boxShadow: "0 8px 32px rgba(108,99,255,.12)", border: "1.5px solid var(--border-light)" }}>
                 <svg width="130" height="130" viewBox="0 0 130 130">
                   <circle cx="65" cy="65" r="54" fill="none" stroke="#f0f2ff" strokeWidth="9"/>
                   <circle cx="65" cy="65" r="54" fill="none" stroke="url(#cg)" strokeWidth="9" strokeDasharray="339" strokeDashoffset="74" strokeLinecap="round" transform="rotate(-90 65 65)" style={{ animation: "criDraw 2s .5s cubic-bezier(.22,1,.36,1) both" }}/>
                   <defs><linearGradient id="cg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#6c63ff"/><stop offset="100%" stopColor="#00c9a7"/></linearGradient></defs>
-                  <text x="65" y="59" textAnchor="middle" fill="#1a1a2e" fontFamily="'Outfit', sans-serif" fontSize="22" fontWeight="800">78%</text>
+                  <text x="65" y="59" textAnchor="middle" fill="var(--text-main)" fontFamily="'Outfit', sans-serif" fontSize="22" fontWeight="800">78%</text>
                   <text x="65" y="76" textAnchor="middle" fill="#6c63ff" fontFamily="'Fira Code', monospace" fontSize="8" letterSpacing="1.5">CRI SCORE</text>
                 </svg>
                 <div style={{ textAlign: "center", fontFamily: "'Inter', sans-serif", fontSize: 13, color: "#999", marginTop: 6 }}>Career Readiness Index</div>
               </div>
-              <div style={{ background: "#fff", borderRadius: 16, padding: "20px 24px", boxShadow: "0 4px 20px rgba(108,99,255,.08)", border: "1.5px solid #eaecff", minWidth: 220 }}>
+              <div style={{ background: "var(--bg-card)", borderRadius: 16, padding: "20px 24px", boxShadow: "0 4px 20px rgba(108,99,255,.08)", border: "1.5px solid var(--border-light)", minWidth: 220 }}>
                 <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 600, color: "#6c63ff", letterSpacing: 2, marginBottom: 14 }}>SKILL SNAPSHOT</div>
                 {skills.map((s,i) => <SkillBar key={s.label} {...s} delay={i*150} />)}
               </div>

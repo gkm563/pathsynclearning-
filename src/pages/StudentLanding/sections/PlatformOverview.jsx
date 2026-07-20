@@ -29,10 +29,10 @@ export default function PlatformOverview() {
     <section style={{ padding: "80px 32px", background: "#f8f9ff", position: "relative", zIndex: 2 }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: "60px" }}>
-          <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 800, color: "#1a1a2e", marginBottom: "16px" }}>
+          <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 800, color: "var(--text-main)", marginBottom: "16px" }}>
             More than just <span style={{ color: "#6c63ff" }}>roadmaps.</span>
           </h2>
-          <p style={{ color: "#666", fontSize: "19px", maxWidth: "700px", margin: "0 auto", fontFamily: "'Inter', sans-serif" }}>
+          <p style={{ color: "var(--text-muted)", fontSize: "19px", maxWidth: "700px", margin: "0 auto", fontFamily: "'Inter', sans-serif" }}>
             PathEd is a complete ecosystem designed to transform students into high-value industry professionals.
           </p>
         </div>
@@ -47,8 +47,8 @@ export default function PlatformOverview() {
               transition={{ duration: 0.6 }}
               style={{
                 display: "flex", flexDirection: i % 2 === 0 ? "row" : "row-reverse", 
-                alignItems: "center", gap: "40px", background: "#fff", 
-                borderRadius: "24px", padding: "24px", border: "1px solid #eaecff",
+                alignItems: "center", gap: "40px", background: "var(--bg-card)", 
+                borderRadius: "24px", padding: "24px", border: "1px solid var(--border-light)",
                 boxShadow: "0 10px 40px rgba(108,99,255,0.05)", flexWrap: "wrap"
               }}
             >
@@ -59,10 +59,10 @@ export default function PlatformOverview() {
                 <div style={{ display: "inline-block", fontFamily: "'Fira Code', monospace", fontSize: "10px", color: "#6c63ff", background: "#f0f0ff", padding: "6px 12px", borderRadius: "12px", letterSpacing: "1px", marginBottom: "16px", fontWeight: 600 }}>
                   {card.tag}
                 </div>
-                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "28px", fontWeight: 800, color: "#1a1a2e", marginBottom: "16px" }}>
+                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "28px", fontWeight: 800, color: "var(--text-main)", marginBottom: "16px" }}>
                   {card.title}
                 </h3>
-                <p style={{ color: "#666", fontSize: "17px", lineHeight: 1.7, fontFamily: "'Inter', sans-serif", marginBottom: "24px" }}>
+                <p style={{ color: "var(--text-muted)", fontSize: "17px", lineHeight: 1.7, fontFamily: "'Inter', sans-serif", marginBottom: "24px" }}>
                   {card.desc}
                 </p>
                 <button style={{ color: "#6c63ff", fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: "17px", display: "flex", alignItems: "center", gap: "8px" }}>

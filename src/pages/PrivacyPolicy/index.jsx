@@ -8,20 +8,20 @@ export default function PrivacyPolicy() {
   }, []);
 
   return (
-    <div style={{ background: "#fcfdff", minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ background: "var(--bg-main)", minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
       <Header />
       
       <main style={{ paddingTop: 180, paddingBottom: 100, maxWidth: 800, margin: "0 auto", paddingLeft: 32, paddingRight: 32 }}>
-        <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 48, fontWeight: 800, color: "#1a1a2e", marginBottom: 16 }}>Privacy Policy</h1>
-        <p style={{ color: "#666", marginBottom: 48 }}>Last updated: July 20, 2026</p>
+        <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 48, fontWeight: 800, color: "var(--text-main)", marginBottom: 16 }}>Privacy Policy</h1>
+        <p style={{ color: "var(--text-muted)", marginBottom: 48 }}>Last updated: July 20, 2026</p>
 
         <section style={{ color: "#444", lineHeight: 1.8, display: "flex", flexDirection: "column", gap: 32 }}>
           <div>
-            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "#1a1a2e", marginBottom: 16 }}>1. Introduction</h3>
+            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "var(--text-main)", marginBottom: 16 }}>1. Introduction</h3>
             <p>Welcome to PathEd. We respect your privacy and are committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our website (regardless of where you visit it from) and tell you about your privacy rights and how the law protects you.</p>
           </div>
           <div>
-            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "#1a1a2e", marginBottom: 16 }}>2. The Data We Collect About You</h3>
+            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "var(--text-main)", marginBottom: 16 }}>2. The Data We Collect About You</h3>
             <p style={{ marginBottom: 16 }}>Personal data, or personal information, means any information about an individual from which that person can be identified. We may collect, use, store and transfer different kinds of personal data about you which we have grouped together as follows:</p>
             <ul style={{ paddingLeft: 24, display: "flex", flexDirection: "column", gap: 8 }}>
               <li><strong>Identity Data:</strong> includes first name, last name, username or similar identifier, and title.</li>
@@ -34,7 +34,7 @@ export default function PrivacyPolicy() {
             </ul>
           </div>
           <div>
-            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "#1a1a2e", marginBottom: 16 }}>3. How Is Your Personal Data Collected?</h3>
+            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "var(--text-main)", marginBottom: 16 }}>3. How Is Your Personal Data Collected?</h3>
             <p style={{ marginBottom: 16 }}>We use different methods to collect data from and about you including through:</p>
             <ul style={{ paddingLeft: 24, display: "flex", flexDirection: "column", gap: 8 }}>
               <li><strong>Direct interactions.</strong> You may give us your Identity, Contact, Profile, and Academic Data by filling in forms or by corresponding with us by post, phone, email or otherwise.</li>
@@ -43,7 +43,7 @@ export default function PrivacyPolicy() {
             </ul>
           </div>
           <div>
-            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "#1a1a2e", marginBottom: 16 }}>4. How We Use Your Personal Data</h3>
+            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "var(--text-main)", marginBottom: 16 }}>4. How We Use Your Personal Data</h3>
             <p style={{ marginBottom: 16 }}>We will only use your personal data when the law allows us to. Most commonly, we will use your personal data in the following circumstances:</p>
             <ul style={{ paddingLeft: 24, display: "flex", flexDirection: "column", gap: 8 }}>
               <li>Where we need to perform the contract we are about to enter into or have entered into with you (e.g., providing access to the platform).</li>
@@ -53,11 +53,11 @@ export default function PrivacyPolicy() {
             </ul>
           </div>
           <div>
-            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "#1a1a2e", marginBottom: 16 }}>5. Data Security</h3>
+            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "var(--text-main)", marginBottom: 16 }}>5. Data Security</h3>
             <p>We have put in place appropriate security measures to prevent your personal data from being accidentally lost, used or accessed in an unauthorised way, altered or disclosed. In addition, we limit access to your personal data to those employees, agents, contractors and other third parties who have a business need to know. They will only process your personal data on our instructions and they are subject to a duty of confidentiality.</p>
           </div>
           <div>
-            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "#1a1a2e", marginBottom: 16 }}>6. Your Legal Rights</h3>
+            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "var(--text-main)", marginBottom: 16 }}>6. Your Legal Rights</h3>
             <p style={{ marginBottom: 16 }}>Under certain circumstances, you have rights under data protection laws in relation to your personal data, including the right to:</p>
             <ul style={{ paddingLeft: 24, display: "flex", flexDirection: "column", gap: 8 }}>
               <li>Request access to your personal data.</li>
@@ -70,7 +70,7 @@ export default function PrivacyPolicy() {
             </ul>
           </div>
           <div>
-            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "#1a1a2e", marginBottom: 16 }}>7. Contact Us</h3>
+            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "var(--text-main)", marginBottom: 16 }}>7. Contact Us</h3>
             <p>If you have any questions about this Privacy Policy, please contact us at privacy@pathed.in.</p>
           </div>
         </section>

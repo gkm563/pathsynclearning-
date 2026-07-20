@@ -8,17 +8,17 @@ export default function Community() {
   const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
 
   return (
-    <div style={{ background: "#fcfdff", minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ background: "var(--bg-main)", minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
       <Header />
       
       {/* 1. Hero Section */}
       <section style={{ paddingTop: 180, paddingBottom: 100, textAlign: "center", maxWidth: 1200, margin: "0 auto", paddingLeft: 32, paddingRight: 32 }}>
         <motion.div {...fadeInUp}>
           <Chip bg="#e8faf5" border="#b2eed9" color="#00a67e">▸ PEER-TO-PEER ECOSYSTEM</Chip>
-          <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.1, margin: "24px 0" }}>
+          <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.1, margin: "24px 0" }}>
             You are not learning <span style={{ color: "#00c9a7" }}>alone.</span>
           </h1>
-          <p style={{ fontSize: 20, color: "#666", maxWidth: 800, margin: "0 auto 48px", lineHeight: 1.7 }}>
+          <p style={{ fontSize: 20, color: "var(--text-muted)", maxWidth: 800, margin: "0 auto 48px", lineHeight: 1.7 }}>
             PathEd is built on the belief that engineering is a collaborative discipline. Our community is designed to foster professional growth, technical debates, and peer-driven success.
           </p>
         </motion.div>
@@ -32,18 +32,18 @@ export default function Community() {
       </section>
 
       {/* 2. HackAttack Engine */}
-      <section style={{ padding: "100px 32px", background: "#fff", borderTop: "1px solid #f0f2ff", borderBottom: "1px solid #f0f2ff" }}>
+      <section style={{ padding: "100px 32px", background: "var(--bg-card)", borderTop: "1px solid #f0f2ff", borderBottom: "1px solid #f0f2ff" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap" }}>
           
           <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>
             <Chip bg="#fdf0ff" border="#e8b3ff" color="#9c27b0">▸ COMPETITIVE LEARNING</Chip>
-            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.15, margin: "24px 0" }}>
               The HackAttack<br />Engine.
             </h2>
-            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8, marginBottom: 24 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", lineHeight: 1.8, marginBottom: 24 }}>
               Put your skills to the test in real-time. Join weekly global hackathons and daily algorithmic challenges directly mapped to your CRI.
             </p>
-            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", lineHeight: 1.8 }}>
               Compete on professional, constrained leaderboards where quality of code matters just as much as speed of execution.
             </p>
           </motion.div>
@@ -62,10 +62,10 @@ export default function Community() {
         <div style={{ maxWidth: 1360, margin: "0 auto", textAlign: "center" }}>
           <motion.div {...fadeInUp}>
             <Chip bg="#f0f0ff" border="#d8d4ff" color="#6c63ff">▸ COLLABORATION</Chip>
-            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.15, margin: "24px 0" }}>
               Global Peer Review.
             </h2>
-            <p style={{ fontSize: 18, color: "#666", maxWidth: 800, margin: "0 auto 60px", lineHeight: 1.8 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", maxWidth: 800, margin: "0 auto 60px", lineHeight: 1.8 }}>
               Your code doesn't exist in a vacuum. PathEd automatically routes your project submissions to peers for blind code reviews, fostering a culture of constructive criticism and collective improvement.
             </p>
           </motion.div>
@@ -82,7 +82,7 @@ export default function Community() {
       </section>
 
       {/* 4. Teacher Connect */}
-      <section style={{ padding: "100px 32px", background: "#1a1a2e", color: "#fff" }}>
+      <section style={{ padding: "100px 32px", background: "var(--text-main)", color: "var(--bg-card)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap-reverse" }}>
           
           <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
@@ -108,17 +108,17 @@ export default function Community() {
       </section>
 
       {/* 5. Weekend Hackathons */}
-      <section style={{ padding: "100px 32px", background: "#fff" }}>
+      <section style={{ padding: "100px 32px", background: "var(--bg-card)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap" }}>
           <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>
             <Chip bg="#e8faf5" border="#b2eed9" color="#00a67e">▸ BUILDING IN PUBLIC</Chip>
-            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.15, margin: "24px 0" }}>
               Weekend Hackathons.
             </h2>
-            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8, marginBottom: 24 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", lineHeight: 1.8, marginBottom: 24 }}>
               Learning in isolation is slow. Every weekend, the PathEd community rallies together to build projects from scratch within 48 hours.
             </p>
-            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", lineHeight: 1.8 }}>
               This rapid iteration cycle forces you out of your comfort zone, teaching you how to collaborate under pressure, manage Git workflows, and ship real products—skills that recruiters specifically look for.
             </p>
           </motion.div>
@@ -134,11 +134,11 @@ export default function Community() {
       <section style={{ padding: "100px 32px", background: "#f8f9ff" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", textAlign: "center" }}>
           <motion.div {...fadeInUp}>
-            <Chip bg="#e6f4ff" border="#bae0ff" color="#1677ff">▸ OPEN ECOSYSTEM</Chip>
-            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+            <Chip bg="#e6f4ff" border="var(--border-strong)" color="#1677ff">▸ OPEN ECOSYSTEM</Chip>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.15, margin: "24px 0" }}>
               Collaborative Open Source.
             </h2>
-            <p style={{ fontSize: 18, color: "#666", maxWidth: 800, margin: "0 auto 60px", lineHeight: 1.8 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", maxWidth: 800, margin: "0 auto 60px", lineHeight: 1.8 }}>
               Contribute to real-world projects directly from the PathEd platform. Our open-source integration tracks your pull requests and commits, adding verified open-source experience to your CRI profile.
             </p>
           </motion.div>
@@ -148,10 +148,10 @@ export default function Community() {
               { icon: "🤝", title: "Team Dynamics", desc: "Learn to navigate complex codebases and coordinate with maintainers." },
               { icon: "📈", title: "Verified Commits", desc: "All your open-source activity boosts your overall employability index." }
             ].map((item, i) => (
-              <InteractiveCard key={i} delay={i * 0.1} style={{ background: "#fff", padding: "40px 30px", borderRadius: 20, border: "1.5px solid #eaecff", textAlign: "left" }}>
+              <InteractiveCard key={i} delay={i * 0.1} style={{ background: "var(--bg-card)", padding: "40px 30px", borderRadius: 20, border: "1.5px solid var(--border-light)", textAlign: "left" }}>
                 <div style={{ fontSize: 32, marginBottom: 16 }}>{item.icon}</div>
-                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "#1a1a2e", marginBottom: 16 }}>{item.title}</h3>
-                <p style={{ fontSize: 16, color: "#666", lineHeight: 1.6 }}>{item.desc}</p>
+                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "var(--text-main)", marginBottom: 16 }}>{item.title}</h3>
+                <p style={{ fontSize: 16, color: "var(--text-muted)", lineHeight: 1.6 }}>{item.desc}</p>
               </InteractiveCard>
             ))}
           </div>
@@ -159,7 +159,7 @@ export default function Community() {
       </section>
 
       {/* 7. Industry Mentors */}
-      <section style={{ padding: "100px 32px", background: "#1a1a2e", color: "#fff" }}>
+      <section style={{ padding: "100px 32px", background: "var(--text-main)", color: "var(--bg-card)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap-reverse" }}>
           <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
             <HoverCard style={{ height: 400, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.5)", border: "1px solid #333" }}>
@@ -186,10 +186,10 @@ export default function Community() {
         <div style={{ maxWidth: 1360, margin: "0 auto", textAlign: "center" }}>
           <motion.div {...fadeInUp}>
             <Chip bg="#fff3cd" border="#ffe08a" color="#c68a00">▸ OFFLINE PRESENCE</Chip>
-            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.15, margin: "24px 0" }}>
               PathEd Local Chapters.
             </h2>
-            <p style={{ fontSize: 18, color: "#666", maxWidth: 800, margin: "0 auto", lineHeight: 1.8 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", maxWidth: 800, margin: "0 auto", lineHeight: 1.8 }}>
               Digital connection is great, but offline collaboration is unmatched. Starting from our roots in Prayagraj, PathEd Local Chapters are expanding across campuses nationwide. Attend local meetups, host technical workshops, and build lifelong professional relationships in person.
             </p>
           </motion.div>

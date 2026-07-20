@@ -29,15 +29,15 @@ export default function FAQ() {
   const [openIdx, setOpenIdx] = useState(0);
 
   return (
-    <section style={{ padding: "100px 32px", background: "#fff", position: "relative", zIndex: 2 }}>
+    <section style={{ padding: "100px 32px", background: "var(--bg-card)", position: "relative", zIndex: 2 }}>
       <div style={{ maxWidth: "800px", margin: "0 auto" }}>
         
         <div style={{ textAlign: "center", marginBottom: "60px" }}>
           <div style={{ fontFamily: "'Fira Code', monospace", fontSize: "12px", fontWeight: 600, color: "#f7971e", letterSpacing: "3px", marginBottom: "12px" }}>▸ CLARITY</div>
-          <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 800, color: "#1a1a2e", marginBottom: "16px" }}>
+          <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 800, color: "var(--text-main)", marginBottom: "16px" }}>
             Recently Asked <span style={{ color: "#f7971e" }}>Questions</span>
           </h2>
-          <p style={{ color: "#666", fontSize: "16px", fontFamily: "'Inter', sans-serif" }}>
+          <p style={{ color: "var(--text-muted)", fontSize: "16px", fontFamily: "'Inter', sans-serif" }}>
             Everything you need to know about how PathEd works.
           </p>
         </div>
@@ -50,15 +50,15 @@ export default function FAQ() {
                 key={i} 
                 onClick={() => setOpenIdx(isOpen ? -1 : i)}
                 style={{ 
-                  background: isOpen ? "#fff" : "#f8f9ff", 
-                  border: `1px solid ${isOpen ? "#6c63ff" : "#eaecff"}`, 
+                  background: isOpen ? "var(--bg-card)" : "#f8f9ff", 
+                  border: `1px solid ${isOpen ? "#6c63ff" : "var(--border-light)"}`, 
                   borderRadius: "16px", padding: "24px", cursor: "pointer",
                   transition: "all 0.3s ease",
                   boxShadow: isOpen ? "0 12px 32px rgba(108,99,255,0.1)" : "none"
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px" }}>
-                  <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "18px", fontWeight: 700, color: isOpen ? "#6c63ff" : "#1a1a2e" }}>
+                  <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "18px", fontWeight: 700, color: isOpen ? "#6c63ff" : "var(--text-main)" }}>
                     {faq.q}
                   </h3>
                   <div style={{ color: isOpen ? "#6c63ff" : "#bbb", transition: "color 0.3s" }}>
@@ -75,7 +75,7 @@ export default function FAQ() {
                       transition={{ duration: 0.3, ease: "easeInOut" }}
                       style={{ overflow: "hidden" }}
                     >
-                      <p style={{ color: "#666", fontSize: "15px", lineHeight: 1.7, fontFamily: "'Inter', sans-serif" }}>
+                      <p style={{ color: "var(--text-muted)", fontSize: "15px", lineHeight: 1.7, fontFamily: "'Inter', sans-serif" }}>
                         {faq.a}
                       </p>
                     </motion.div>

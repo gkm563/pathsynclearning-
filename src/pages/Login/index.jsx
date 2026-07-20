@@ -92,20 +92,25 @@ export default function Login() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0f0f1a", display: "flex", fontFamily: "'Inter', sans-serif", color: "#fff", position: "relative", overflow: "hidden" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-main)", display: "flex", fontFamily: "'Inter', sans-serif", color: "var(--text-main)", position: "relative", overflow: "hidden" }}>
       {/* Animated Background */}
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0 }}>
         <motion.div 
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }} 
+          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3], rotate: [0, 90, 0] }} 
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
           style={{ position: "absolute", left: "-10%", top: "-10%", width: 600, height: 600, background: `radial-gradient(circle, ${activeRole.accent} 0%, transparent 70%)`, filter: "blur(60px)" }} 
         />
-        <div style={{ position: "absolute", inset: 0, opacity: 0.05, backgroundImage: "linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+        <motion.div 
+          animate={{ scale: [1, 1.5, 1], opacity: [0.2, 0.4, 0.2], x: [0, 50, 0], y: [0, -50, 0] }} 
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+          style={{ position: "absolute", right: "-5%", bottom: "-10%", width: 500, height: 500, background: `radial-gradient(circle, ${activeRole.accent} 0%, transparent 70%)`, filter: "blur(80px)" }} 
+        />
+        <div style={{ position: "absolute", inset: 0, opacity: 0.05, backgroundImage: "linear-gradient(to right, var(--text-main) 1px, transparent 1px), linear-gradient(to bottom, var(--text-main) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
       </div>
 
       {/* Left Hero Column */}
       <div style={{ flex: "1 1 50%", display: "flex", flexDirection: "column", padding: "60px", position: "relative", zIndex: 1, justifyContent: "center" }}>
-        <Link to="/" style={{ position: "absolute", top: 40, left: 40, fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, color: "#fff", textDecoration: "none" }}>
+        <Link to="/" style={{ position: "absolute", top: 40, left: 40, fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, color: "var(--bg-card)", textDecoration: "none" }}>
           Path<span style={{ color: activeRole.accent }}>Ed</span>
         </Link>
         
@@ -119,7 +124,7 @@ export default function Login() {
             <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(40px, 4vw, 56px)", fontWeight: 800, lineHeight: 1.1, marginBottom: 16 }}>
               Welcome back to your <span style={{ color: activeRole.accent }}>future.</span>
             </h1>
-            <p style={{ color: "#9ca3af", fontSize: 18, marginBottom: 48 }}>{activeRole.tag}</p>
+            <p style={{ color: "var(--text-light)", fontSize: 18, marginBottom: 48 }}>{activeRole.tag}</p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {activeRole.features.map((f, i) => (
@@ -134,8 +139,8 @@ export default function Login() {
                     {activeRole.icon}
                   </div>
                   <div>
-                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 700, color: "#fff" }}>{f.title}</div>
-                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, color: "#9ca3af", letterSpacing: 1 }}>{f.sub}</div>
+                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--bg-card)" }}>{f.title}</div>
+                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, color: "var(--text-light)", letterSpacing: 1 }}>{f.sub}</div>
                   </div>
                 </motion.div>
               ))}
@@ -178,27 +183,27 @@ export default function Login() {
 
           <form onSubmit={handleLogin}>
             <div style={{ marginBottom: 20 }}>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#9ca3af", marginBottom: 8, fontFamily: "'Fira Code', monospace" }}>EMAIL OR USERNAME</label>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--text-light)", marginBottom: 8, fontFamily: "'Fira Code', monospace" }}>EMAIL OR USERNAME</label>
               <input 
                 type="text" 
                 value={form.identifier}
                 onChange={e => { setForm({...form, identifier: e.target.value}); setError(false); }}
-                style={{ width: "100%", padding: "16px 20px", background: "rgba(0,0,0,0.2)", border: `1px solid ${error ? "#ef4444" : "rgba(255,255,255,0.1)"}`, borderRadius: 12, color: "#fff", fontSize: 16, outline: "none", transition: "border 0.3s" }}
-                onFocus={(e) => e.target.style.borderColor = activeRole.accent}
-                onBlur={(e) => e.target.style.borderColor = error ? "#ef4444" : "rgba(255,255,255,0.1)"}
+                style={{ width: "100%", padding: "16px 20px", background: "var(--bg-alt)", border: `1px solid ${error ? "#ef4444" : "var(--border-light)"}`, borderRadius: 12, color: "var(--text-main)", fontSize: 16, outline: "none", transition: "all 0.3s" }}
+                onFocus={(e) => { e.target.style.borderColor = activeRole.accent; e.target.style.boxShadow = `0 0 0 3px ${activeRole.accent}40`; }}
+                onBlur={(e) => { e.target.style.borderColor = error ? "#ef4444" : "var(--border-light)"; e.target.style.boxShadow = "none"; }}
               />
             </div>
             
             <div style={{ marginBottom: 24 }}>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#9ca3af", marginBottom: 8, fontFamily: "'Fira Code', monospace" }}>PASSWORD</label>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--text-light)", marginBottom: 8, fontFamily: "'Fira Code', monospace" }}>PASSWORD</label>
               <div style={{ position: "relative" }}>
                 <input 
                   type={showPassword ? "text" : "password"} 
                   value={form.password}
                   onChange={e => { setForm({...form, password: e.target.value}); setError(false); }}
-                  style={{ width: "100%", padding: "16px 48px 16px 20px", background: "rgba(0,0,0,0.2)", border: `1px solid ${error ? "#ef4444" : "rgba(255,255,255,0.1)"}`, borderRadius: 12, color: "#fff", fontSize: 16, outline: "none", transition: "border 0.3s" }}
-                  onFocus={(e) => e.target.style.borderColor = activeRole.accent}
-                  onBlur={(e) => e.target.style.borderColor = error ? "#ef4444" : "rgba(255,255,255,0.1)"}
+                  style={{ width: "100%", padding: "16px 48px 16px 20px", background: "var(--bg-alt)", border: `1px solid ${error ? "#ef4444" : "var(--border-light)"}`, borderRadius: 12, color: "var(--text-main)", fontSize: 16, outline: "none", transition: "all 0.3s" }}
+                  onFocus={(e) => { e.target.style.borderColor = activeRole.accent; e.target.style.boxShadow = `0 0 0 3px ${activeRole.accent}40`; }}
+                  onBlur={(e) => { e.target.style.borderColor = error ? "#ef4444" : "var(--border-light)"; e.target.style.boxShadow = "none"; }}
                 />
                 <button 
                   type="button"
@@ -219,7 +224,7 @@ export default function Login() {
             <button 
               type="submit"
               disabled={loading}
-              style={{ width: "100%", padding: 16, background: activeRole.accent, border: "none", borderRadius: 12, color: "#fff", fontSize: 16, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: "opacity 0.3s" }}
+              style={{ width: "100%", padding: 16, background: activeRole.accent, border: "none", borderRadius: 12, color: "var(--bg-card)", fontSize: 16, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: "opacity 0.3s" }}
             >
               {loading ? "Authenticating..." : <>Sign In <ArrowRight size={20} /></>}
             </button>
@@ -232,15 +237,15 @@ export default function Login() {
           </div>
 
           <div style={{ display: "flex", gap: 16 }}>
-            <button style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: 12, borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", fontWeight: 600, transition: "all 0.2s", cursor: "pointer" }} onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.08)"} onMouseLeave={e => e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
+            <button style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: 12, borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "var(--bg-card)", fontWeight: 600, transition: "all 0.2s", cursor: "pointer" }} onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.08)"} onMouseLeave={e => e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
               <GithubIcon size={20} /> GitHub
             </button>
-            <button style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: 12, borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", fontWeight: 600, transition: "all 0.2s", cursor: "pointer" }} onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.08)"} onMouseLeave={e => e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
+            <button style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: 12, borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "var(--bg-card)", fontWeight: 600, transition: "all 0.2s", cursor: "pointer" }} onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.08)"} onMouseLeave={e => e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
               <LinkedinIcon size={20} /> LinkedIn
             </button>
           </div>
 
-          <div style={{ textAlign: "center", marginTop: 32, fontSize: 14, color: "#9ca3af" }}>
+          <div style={{ textAlign: "center", marginTop: 32, fontSize: 14, color: "var(--text-light)" }}>
             Don't have an account? <Link to="/register" style={{ color: activeRole.accent, textDecoration: "none", fontWeight: 700 }}>Create one</Link>
           </div>
         </motion.div>

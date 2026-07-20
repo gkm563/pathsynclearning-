@@ -13,7 +13,7 @@ export default function Pricing() {
   }, []);
 
   return (
-    <div style={{ background: "#0f0f1a", minHeight: "100vh", fontFamily: "'Inter', sans-serif", color: "#fff" }}>
+    <div style={{ background: "#0f0f1a", minHeight: "100vh", fontFamily: "'Inter', sans-serif", color: "var(--bg-card)" }}>
       <Header />
       
       <section style={{ paddingTop: 180, paddingBottom: 100, textAlign: "center", maxWidth: 1200, margin: "0 auto", paddingLeft: 32, paddingRight: 32 }}>
@@ -22,7 +22,7 @@ export default function Pricing() {
           <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 800, lineHeight: 1.1, margin: "24px 0" }}>
             Transparent Pricing.<br /><span style={{ color: "#00c9a7" }}>Maximum ROI.</span>
           </h1>
-          <p style={{ fontSize: 20, color: "#9ca3af", maxWidth: 800, margin: "0 auto 64px", lineHeight: 1.7 }}>
+          <p style={{ fontSize: 20, color: "var(--text-light)", maxWidth: 800, margin: "0 auto 64px", lineHeight: 1.7 }}>
             Stop paying for generic degrees and start investing in guaranteed career readiness. Access industry-validated roadmaps, CRI tracking, and direct recruiter pipelines.
           </p>
         </motion.div>
@@ -44,11 +44,11 @@ export default function Pricing() {
             
             <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 24 }}>
               <span style={{ fontSize: 48, fontWeight: 800, fontFamily: "'Outfit', sans-serif" }}>₹99</span>
-              <span style={{ color: "#9ca3af", fontSize: 16 }}>/ month</span>
+              <span style={{ color: "var(--text-light)", fontSize: 16 }}>/ month</span>
             </div>
             
             <div style={{ background: "rgba(255,255,255,0.03)", padding: "12px 20px", borderRadius: 8, marginBottom: 32, display: "inline-block" }}>
-              <span style={{ color: "#00c9a7", fontWeight: 700, fontFamily: "'Fira Code', monospace" }}>400 Users</span> <span style={{ color: "#9ca3af", fontSize: 14 }}>Active</span>
+              <span style={{ color: "#00c9a7", fontWeight: 700, fontFamily: "'Fira Code', monospace" }}>400 Users</span> <span style={{ color: "var(--text-light)", fontSize: 14 }}>Active</span>
             </div>
             
             <ul style={{ listStyle: "none", padding: 0, margin: "0 0 40px", display: "flex", flexDirection: "column", gap: 16 }}>
@@ -81,7 +81,7 @@ export default function Pricing() {
             borderRadius: 24, padding: 48, position: "relative", overflow: "hidden",
             boxShadow: "0 20px 40px rgba(108,99,255,0.2)"
           }}>
-            <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", background: "#6c63ff", color: "#fff", padding: "6px 20px", fontSize: 12, fontWeight: 800, letterSpacing: 1, borderBottomLeftRadius: 12, borderBottomRightRadius: 12, textTransform: "uppercase" }}>
+            <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", background: "#6c63ff", color: "var(--bg-card)", padding: "6px 20px", fontSize: 12, fontWeight: 800, letterSpacing: 1, borderBottomLeftRadius: 12, borderBottomRightRadius: 12, textTransform: "uppercase" }}>
               Most Popular
             </div>
 
@@ -94,11 +94,11 @@ export default function Pricing() {
             
             <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 24 }}>
               <span style={{ fontSize: 48, fontWeight: 800, fontFamily: "'Outfit', sans-serif" }}>₹150</span>
-              <span style={{ color: "#9ca3af", fontSize: 16 }}>/ month</span>
+              <span style={{ color: "var(--text-light)", fontSize: 16 }}>/ month</span>
             </div>
 
             <div style={{ background: "rgba(255,255,255,0.03)", padding: "12px 20px", borderRadius: 8, marginBottom: 32, display: "inline-block" }}>
-              <span style={{ color: "#00c9a7", fontWeight: 700, fontFamily: "'Fira Code', monospace" }}>200 Users</span> <span style={{ color: "#9ca3af", fontSize: 14 }}>Active</span>
+              <span style={{ color: "#00c9a7", fontWeight: 700, fontFamily: "'Fira Code', monospace" }}>200 Users</span> <span style={{ color: "var(--text-light)", fontSize: 14 }}>Active</span>
             </div>
             
             <ul style={{ listStyle: "none", padding: 0, margin: "0 0 40px", display: "flex", flexDirection: "column", gap: 16 }}>
@@ -110,7 +110,7 @@ export default function Pricing() {
                 "Priority Project Reviews",
                 "Mock Interview Simulator"
               ].map((feature, i) => (
-                <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, color: "#fff", fontSize: 16, fontWeight: i === 0 ? 700 : 400 }}>
+                <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, color: "var(--bg-card)", fontSize: 16, fontWeight: i === 0 ? 700 : 400 }}>
                   <Check size={20} color="#00c9a7" style={{ marginTop: 2, flexShrink: 0 }} />
                   <span>{feature}</span>
                 </li>
@@ -119,7 +119,7 @@ export default function Pricing() {
             
             <motion.button 
               whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-              style={{ width: "100%", padding: "16px", borderRadius: 12, background: "linear-gradient(90deg, #6c63ff, #00c9a7)", border: "none", color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "'Inter', sans-serif" }}
+              style={{ width: "100%", padding: "16px", borderRadius: 12, background: "linear-gradient(90deg, #6c63ff, #00c9a7)", border: "none", color: "var(--bg-card)", fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "'Inter', sans-serif" }}
             >
               Upgrade to Premium
             </motion.button>
@@ -133,7 +133,7 @@ export default function Pricing() {
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 64 }}>
             <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 800 }}>Why these plans exist.</h2>
-            <p style={{ color: "#9ca3af", fontSize: 18, marginTop: 16 }}>Every feature is designed to rapidly decrease the time between learning and earning.</p>
+            <p style={{ color: "var(--text-light)", fontSize: 18, marginTop: 16 }}>Every feature is designed to rapidly decrease the time between learning and earning.</p>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>

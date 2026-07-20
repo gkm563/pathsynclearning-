@@ -41,23 +41,23 @@ export default function Company() {
   const [visibleGalleryCount, setVisibleGalleryCount] = useState(16);
 
   return (
-    <div style={{ background: "#fcfdff", minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ background: "var(--bg-main)", minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
       <Header />
       
       {/* 1. Hero Section */}
       <section style={{ paddingTop: 180, paddingBottom: 100, textAlign: "center", maxWidth: 1200, margin: "0 auto", paddingLeft: 32, paddingRight: 32 }}>
         <motion.div {...fadeInUp}>
           <Chip bg="#f0f0ff" border="#d8d4ff" color="#6c63ff">▸ AN INDIAN ED-TECH STARTUP</Chip>
-          <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.1, margin: "24px 0" }}>
+          <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.1, margin: "24px 0" }}>
             Born in Prayagraj.<br /><span style={{ color: "#6c63ff" }}>Built for the World.</span>
           </h1>
-          <p style={{ fontSize: 20, color: "#666", maxWidth: 800, margin: "0 auto 48px", lineHeight: 1.7 }}>
+          <p style={{ fontSize: 20, color: "var(--text-muted)", maxWidth: 800, margin: "0 auto 48px", lineHeight: 1.7 }}>
             PathEd is a deeply technical, hyper-focused startup engineered in the heart of India with a vision to redefine global engineering education.
           </p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
-          <HoverCard style={{ width: "100%", height: 500, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(108,99,255,0.15)", border: "1px solid #eaecff", position: "relative" }}>
+          <HoverCard style={{ width: "100%", height: 500, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(108,99,255,0.15)", border: "1px solid var(--border-light)", position: "relative" }}>
             <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1600&q=80" alt="Tech Workspace" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "50%", background: "linear-gradient(to top, rgba(26,26,46,0.9), transparent)" }} />
           </HoverCard>
@@ -65,7 +65,7 @@ export default function Company() {
       </section>
 
       {/* 2. The Core Team */}
-      <section style={{ padding: "100px 32px", background: "#1a1a2e", color: "#fff" }}>
+      <section style={{ padding: "100px 32px", background: "var(--text-main)", color: "var(--bg-card)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 80 }}>
             <motion.div {...fadeInUp}>
@@ -91,15 +91,15 @@ export default function Company() {
       </section>
 
       {/* 3. The Ethos */}
-      <section style={{ padding: "120px 32px", background: "#fff" }}>
+      <section style={{ padding: "120px 32px", background: "var(--bg-card)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap" }}>
           
           <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>
             <Chip bg="#e8faf5" border="#b2eed9" color="#00a67e">▸ ENGINEERING EXCELLENCE</Chip>
-            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.15, margin: "24px 0" }}>
               Built by engineers,<br />for engineers.
             </h2>
-            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8, marginBottom: 24 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", lineHeight: 1.8, marginBottom: 24 }}>
               We aren't just building another ed-tech tool. We are fundamentally re-architecting the educational journey to map directly to real-world career demands.
             </p>
           </motion.div>
@@ -117,19 +117,19 @@ export default function Company() {
       <section style={{ padding: "100px 32px", background: "#f8f9ff" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap-reverse" }}>
           <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
-            <HoverCard style={{ height: 400, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.08)", border: "1px solid #eaecff" }}>
+            <HoverCard style={{ height: 400, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.08)", border: "1px solid var(--border-light)" }}>
               <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80" alt="Origin Story" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </HoverCard>
           </motion.div>
           <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>
-            <Chip bg="#e6f4ff" border="#bae0ff" color="#1677ff">▸ THE PRAYAGRAJ ROOTS</Chip>
-            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+            <Chip bg="#e6f4ff" border="var(--border-strong)" color="#1677ff">▸ THE PRAYAGRAJ ROOTS</Chip>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.15, margin: "24px 0" }}>
               Our Origin Story.
             </h2>
-            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8, marginBottom: 24 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", lineHeight: 1.8, marginBottom: 24 }}>
               PathEd wasn't born in Silicon Valley. It was built in Prayagraj by engineers who experienced the friction of traditional tech education firsthand.
             </p>
-            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", lineHeight: 1.8 }}>
               We realized that if we wanted a system that actually cared about careers, we had to build it ourselves. What started as a local experiment is now scaling to redefine how engineers prepare for the workforce globally.
             </p>
           </motion.div>
@@ -137,14 +137,14 @@ export default function Company() {
       </section>
 
       {/* 5. Core Engineering Values */}
-      <section style={{ padding: "100px 32px", background: "#fff" }}>
+      <section style={{ padding: "100px 32px", background: "var(--bg-card)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", textAlign: "center" }}>
           <motion.div {...fadeInUp}>
             <Chip bg="#fdf0ff" border="#e8b3ff" color="#9c27b0">▸ PRINCIPLES</Chip>
-            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, margin: "24px 0" }}>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.15, margin: "24px 0" }}>
               Core Engineering Values.
             </h2>
-            <p style={{ fontSize: 18, color: "#666", maxWidth: 800, margin: "0 auto 60px", lineHeight: 1.8 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", maxWidth: 800, margin: "0 auto 60px", lineHeight: 1.8 }}>
               Our product philosophy is simple: cut the noise, build for performance, and optimize for actual student outcomes.
             </p>
           </motion.div>
@@ -154,10 +154,10 @@ export default function Company() {
               { icon: "🛡️", title: "Uncompromising Quality", desc: "No broken links. No buggy code editors. Just smooth experiences." },
               { icon: "🧠", title: "Data-Driven Decisions", desc: "We rely on metrics, not intuition, to guide our product roadmap." }
             ].map((item, i) => (
-              <InteractiveCard key={i} delay={i * 0.1} style={{ background: "#fcfdff", padding: "40px 30px", borderRadius: 20, border: "1.5px solid #eaecff", textAlign: "left" }}>
+              <InteractiveCard key={i} delay={i * 0.1} style={{ background: "var(--bg-main)", padding: "40px 30px", borderRadius: 20, border: "1.5px solid var(--border-light)", textAlign: "left" }}>
                 <div style={{ fontSize: 32, marginBottom: 16 }}>{item.icon}</div>
-                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "#1a1a2e", marginBottom: 16 }}>{item.title}</h3>
-                <p style={{ fontSize: 16, color: "#666", lineHeight: 1.6 }}>{item.desc}</p>
+                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "var(--text-main)", marginBottom: 16 }}>{item.title}</h3>
+                <p style={{ fontSize: 16, color: "var(--text-muted)", lineHeight: 1.6 }}>{item.desc}</p>
               </InteractiveCard>
             ))}
           </div>
@@ -165,7 +165,7 @@ export default function Company() {
       </section>
 
       {/* PathEd Company Gallery */}
-      <section style={{ padding: "100px 32px", background: "#1a1a2e", color: "#fff" }}>
+      <section style={{ padding: "100px 32px", background: "var(--text-main)", color: "var(--bg-card)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", textAlign: "center" }}>
           <motion.div {...fadeInUp}>
             <Chip bg="rgba(108,99,255,0.2)" border="rgba(108,99,255,0.4)" color="#b2aeff">▸ BEHIND THE SCENES</Chip>
@@ -194,7 +194,7 @@ export default function Company() {
               onClick={() => setVisibleGalleryCount(prev => prev + 16)}
               style={{
                 background: "linear-gradient(135deg, #6c63ff, #00c9a7)",
-                color: "#fff",
+                color: "var(--bg-card)",
                 border: "none",
                 padding: "16px 40px",
                 borderRadius: 30,
@@ -226,22 +226,22 @@ export default function Company() {
       />
 
       {/* Contact Section */}
-      <section id="contact" style={{ padding: "100px 32px", background: "#f8f9fa", borderTop: "1px solid #eaecff" }}>
+      <section id="contact" style={{ padding: "100px 32px", background: "#f8f9fa", borderTop: "1px solid var(--border-light)" }}>
         <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
           <motion.div {...fadeInUp}>
-            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "#1a1a2e", marginBottom: 24 }}>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "var(--text-main)", marginBottom: 24 }}>
               Get in Touch
             </h2>
-            <p style={{ fontSize: 18, color: "#666", lineHeight: 1.8, marginBottom: 48 }}>
+            <p style={{ fontSize: 18, color: "var(--text-muted)", lineHeight: 1.8, marginBottom: 48 }}>
               Whether you're a student looking to accelerate your career, or a company looking to hire vetted engineering talent, we'd love to hear from you.
             </p>
             <div style={{ display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
-              <InteractiveCard style={{ background: "#fff", border: "1px solid #eaecff", padding: 32, borderRadius: 16, minWidth: 280 }}>
-                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 700, color: "#1a1a2e", marginBottom: 12 }}>General Inquiries</h3>
+              <InteractiveCard style={{ background: "var(--bg-card)", border: "1px solid var(--border-light)", padding: 32, borderRadius: 16, minWidth: 280 }}>
+                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 700, color: "var(--text-main)", marginBottom: 12 }}>General Inquiries</h3>
                 <a href="mailto:hello@pathed.in" style={{ color: "#1677ff", fontSize: 18, textDecoration: "none", fontWeight: 600 }}>hello@pathed.in</a>
               </InteractiveCard>
-              <InteractiveCard style={{ background: "#fff", border: "1px solid #eaecff", padding: 32, borderRadius: 16, minWidth: 280 }}>
-                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 700, color: "#1a1a2e", marginBottom: 12 }}>Corporate Partnerships</h3>
+              <InteractiveCard style={{ background: "var(--bg-card)", border: "1px solid var(--border-light)", padding: 32, borderRadius: 16, minWidth: 280 }}>
+                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 700, color: "var(--text-main)", marginBottom: 12 }}>Corporate Partnerships</h3>
                 <a href="mailto:partners@pathed.in" style={{ color: "#00c9a7", fontSize: 18, textDecoration: "none", fontWeight: 600 }}>partners@pathed.in</a>
               </InteractiveCard>
             </div>

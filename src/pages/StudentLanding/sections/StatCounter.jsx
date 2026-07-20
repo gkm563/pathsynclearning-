@@ -14,7 +14,7 @@ export default function StatCounter() {
   ];
 
   return (
-    <section style={{ padding: "80px 32px", background: "#1a1a2e", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+    <section style={{ padding: "80px 32px", background: "var(--text-main)", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 32 }}>
           {stats.map((stat, i) => (
@@ -23,10 +23,10 @@ export default function StatCounter() {
                 <div style={{ background: "rgba(255,255,255,0.05)", width: 64, height: 64, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
                   {stat.icon}
                 </div>
-                <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 48, fontWeight: 800, color: "#fff", marginBottom: 8 }}>
+                <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 48, fontWeight: 800, color: "var(--bg-card)", marginBottom: 8 }}>
                   {stat.value}
                 </div>
-                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 16, color: "#9ca3af", fontWeight: 500, letterSpacing: 1, textTransform: "uppercase" }}>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 16, color: "var(--text-light)", fontWeight: 500, letterSpacing: 1, textTransform: "uppercase" }}>
                   {stat.label}
                 </div>
               </InteractiveCard>
