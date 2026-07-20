@@ -156,49 +156,49 @@ export default function Register() {
       </div>
 
       {/* Left Hero Column */}
-      <div style={{ flex: "1 1 50%", display: "flex", flexDirection: "column", padding: "24px 50px 20px", position: "relative", zIndex: 1, justifyContent: "flex-start" }}>
+      <div style={{ flex: "1 1 50%", display: "flex", flexDirection: "column", padding: "50px 60px", position: "relative", zIndex: 1, justifyContent: "space-between" }}>
         
         {/* Brand Header */}
-        <Link to="/" style={{ fontFamily: "'Syne', sans-serif", fontSize: 32, fontWeight: 800, color: "var(--text-main)", textDecoration: "none", width: "fit-content", marginBottom: 12 }}>
+        <Link to="/" style={{ fontFamily: "'Syne', sans-serif", fontSize: 28, fontWeight: 800, color: "var(--text-main)", textDecoration: "none", width: "fit-content" }}>
           Path<span style={{ color: activeRole.accent }}>Ed</span>
         </Link>
         
-        <div style={{ maxWidth: 500, margin: "0" }}>
+        <div style={{ maxWidth: 500, margin: "auto 0" }}>
           <motion.div 
             key={activeRole.id}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: activeRole.bg, border: `1px solid ${activeRole.accent}40`, padding: "4px 12px", borderRadius: 20, marginBottom: 10 }}>
-              <Sparkles size={13} color={activeRole.accent} />
-              <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700, color: activeRole.accent, letterSpacing: 1 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: activeRole.bg, border: `1px solid ${activeRole.accent}40`, padding: "6px 14px", borderRadius: 20, marginBottom: 20 }}>
+              <Sparkles size={14} color={activeRole.accent} />
+              <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 700, color: activeRole.accent, letterSpacing: 1 }}>
                 CREATE FREE ACCOUNT
               </span>
             </div>
 
-            <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(30px, 3.2vw, 44px)", fontWeight: 800, lineHeight: 1.1, marginBottom: 8, color: "var(--text-main)" }}>
+            <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 3.8vw, 52px)", fontWeight: 800, lineHeight: 1.1, marginBottom: 16, color: "var(--text-main)" }}>
               Start your journey to <span style={{ color: activeRole.accent }}>mastery.</span>
             </h1>
-            <p style={{ color: "var(--text-muted)", fontSize: 16, marginBottom: 16, lineHeight: 1.5 }}>{activeRole.tag}</p>
+            <p style={{ color: "var(--text-muted)", fontSize: 18, marginBottom: 32, lineHeight: 1.6 }}>{activeRole.tag}</p>
 
             {/* Role Perks Checklist */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 36 }}>
               {activeRole.perks.map((perk, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 20, height: 20, borderRadius: "50%", background: activeRole.bg, border: `1px solid ${activeRole.accent}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Check size={12} color={activeRole.accent} />
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ width: 22, height: 22, borderRadius: "50%", background: activeRole.bg, border: `1px solid ${activeRole.accent}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Check size={14} color={activeRole.accent} />
                   </div>
-                  <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 600, color: "var(--text-main)" }}>{perk}</span>
+                  <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, fontWeight: 600, color: "var(--text-main)" }}>{perk}</span>
                 </div>
               ))}
             </div>
 
             {/* Floating Live Animated CRI Preview Card (Looping 0 -> 78%) */}
             <motion.div 
-              animate={{ y: [-3, 3, -3] }}
+              animate={{ y: [-4, 4, -4] }}
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              style={{ display: "flex", alignItems: "center", gap: 16, background: "var(--bg-card)", border: `1.5px solid ${activeRole.accent}40`, padding: "12px 18px", borderRadius: 16, boxShadow: `0 8px 24px ${activeRole.accent}15` }}
+              style={{ display: "flex", alignItems: "center", gap: 20, background: "var(--bg-card)", border: `1.5px solid ${activeRole.accent}40`, padding: "16px 22px", borderRadius: 20, boxShadow: `0 12px 30px ${activeRole.accent}15` }}
             >
               <div style={{ position: "relative", width: 64, height: 64, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <svg width="64" height="64" viewBox="0 0 100 100">
