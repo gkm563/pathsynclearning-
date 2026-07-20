@@ -7,7 +7,7 @@ import AddWidgetModal from "../../components/dashboard/AddWidgetModal";
 import LockedFeatureModal from "../../components/dashboard/LockedFeatureModal";
 import { 
   Sparkles, Plus, Lock, CheckCircle2, ChevronRight, 
-  Flame, Award, Coins, Zap, Shield, HelpCircle, Eye, ArrowUpRight, ChevronDown, ChevronUp, ExternalLink
+  Flame, Award, Coins, Zap, Shield, HelpCircle, Eye, ArrowUpRight, ChevronDown, ChevronUp, Play
 } from "lucide-react";
 
 export default function PlatformDashboard() {
@@ -59,8 +59,69 @@ export default function PlatformDashboard() {
       skills: ["DSA", "Programming", "DBMS", "OS", "Web Development"],
       timeline: "4 Years · Full UG",
       outcome: "Industry-ready with strong fundamentals and portfolio projects"
-    }
+    },
+    skillsProgress: [
+      { label: "DSA", pct: 72, col: "#6c63ff" },
+      { label: "System Design", pct: 45, col: "#00c9a7" },
+      { label: "Web Dev", pct: 88, col: "#f7971e" },
+      { label: "Algorithms", pct: 60, col: "#e040fb" },
+    ]
   };
+
+  const dailyChallenges = [
+    {
+      icon: "🌳",
+      title: "Implement Binary Search Tree",
+      category: "DSA",
+      time: "45 min",
+      diff: "Medium",
+      xp: 150,
+      pct: 68,
+      isStarted: true,
+      col: "#6c63ff",
+      bg: "rgba(108,99,255,0.08)",
+      border: "#6c63ff40"
+    },
+    {
+      icon: "🔥",
+      title: "Reverse a Linked List in-place",
+      category: "DSA",
+      time: "20 min",
+      diff: "Easy",
+      xp: 80,
+      pct: 0,
+      isStarted: false,
+      col: "#f7971e",
+      bg: "rgba(247,151,30,0.08)",
+      border: "#f7971e40"
+    },
+    {
+      icon: "🧠",
+      title: "Design a Rate Limiter System",
+      category: "System Design",
+      time: "90 min",
+      diff: "Hard",
+      xp: 300,
+      pct: 0,
+      isStarted: false,
+      col: "#00c9a7",
+      bg: "rgba(0,201,167,0.08)",
+      border: "#00c9a740"
+    },
+    {
+      icon: "🎨",
+      title: "Build a Responsive Card Component",
+      category: "Web Dev",
+      time: "15 min",
+      diff: "Easy",
+      xp: 60,
+      pct: 0,
+      isStarted: false,
+      col: "#e040fb",
+      bg: "rgba(224,64,251,0.08)",
+      border: "#e040fb40"
+    }
+  ];
 
   const roadmapNodes = [
     { id: 1, label: "Programming\nBasics", done: true, topics: "5 of 5 Topics Covered", mastery: 100, current: "Pointers, Memory & Functions" },
@@ -122,50 +183,50 @@ export default function PlatformDashboard() {
     <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
       
       {/* 1. TOP METRICS & CAREER GOAL BANNER WITH EXPANDABLE DETAILS */}
-      <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: "24px 28px", marginBottom: 28, boxShadow: "0 10px 30px rgba(0,0,0,0.04)" }}>
+      <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: "28px 32px", marginBottom: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.04)" }}>
         
         {/* User Profile & Top Metrics Bar */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20, marginBottom: 20, paddingBottom: 20, borderBottom: "1px solid var(--border-light)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg, #6c63ff, #00c9a7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, color: "#fff", flexShrink: 0, boxShadow: "0 6px 20px rgba(108,99,255,0.3)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20, marginBottom: 24, paddingBottom: 24, borderBottom: "1.5px solid var(--border-light)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            <div style={{ width: 64, height: 64, borderRadius: "50%", background: "linear-gradient(135deg, #6c63ff, #00c9a7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, color: "#fff", flexShrink: 0, boxShadow: "0 6px 20px rgba(108,99,255,0.3)" }}>
               🎓
             </div>
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 800, color: "var(--text-main)", margin: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 28, fontWeight: 800, color: "var(--text-main)", margin: 0 }}>
                   Welcome back, {user.name}!
                 </h1>
-                <span style={{ padding: "4px 10px", borderRadius: 20, background: "rgba(108,99,255,0.12)", border: "1px solid #6c63ff40", color: "#6c63ff", fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 700 }}>
+                <span style={{ padding: "5px 12px", borderRadius: 20, background: "rgba(108,99,255,0.14)", border: "1.5px solid #6c63ff50", color: "#6c63ff", fontFamily: "'Fira Code', monospace", fontSize: 13, fontWeight: 800 }}>
                   LEVEL {user.level}
                 </span>
               </div>
-              <p style={{ color: "var(--text-muted)", fontSize: 13, margin: "4px 0 0" }}>{user.degree} · {user.institute}</p>
+              <p style={{ color: "var(--text-muted)", fontSize: 15, margin: "6px 0 0", fontWeight: 500 }}>{user.degree} · {user.institute}</p>
             </div>
           </div>
 
-          {/* XP, Points & Coins Metrics */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(108,99,255,0.1)", border: "1px solid #6c63ff40", padding: "10px 16px", borderRadius: 16 }}>
-              <Zap size={18} color="#6c63ff" />
+          {/* XP, Points & Coins Metrics (Enlarged Text & Comfortable Spacing) */}
+          <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(108,99,255,0.1)", border: "1.5px solid #6c63ff40", padding: "12px 20px", borderRadius: 18 }}>
+              <Zap size={22} color="#6c63ff" />
               <div>
-                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)", fontWeight: 700 }}>TOTAL XP</div>
-                <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800, color: "#6c63ff" }}>{user.xp} XP</div>
+                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, color: "var(--text-muted)", fontWeight: 800, letterSpacing: 0.5 }}>TOTAL XP</div>
+                <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 800, color: "#6c63ff" }}>{user.xp} XP</div>
               </div>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(247,151,30,0.1)", border: "1px solid #f7971e40", padding: "10px 16px", borderRadius: 16 }}>
-              <Coins size={18} color="#f7971e" />
+            <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(247,151,30,0.1)", border: "1.5px solid #f7971e40", padding: "12px 20px", borderRadius: 18 }}>
+              <Coins size={22} color="#f7971e" />
               <div>
-                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)", fontWeight: 700 }}>COINS</div>
-                <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800, color: "#f7971e" }}>{user.coins}</div>
+                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, color: "var(--text-muted)", fontWeight: 800, letterSpacing: 0.5 }}>COINS</div>
+                <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 800, color: "#f7971e" }}>{user.coins}</div>
               </div>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(239,68,68,0.1)", border: "1px solid #ef444440", padding: "10px 16px", borderRadius: 16 }}>
-              <Flame size={18} color="#ef4444" />
+            <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(239,68,68,0.1)", border: "1.5px solid #ef444440", padding: "12px 20px", borderRadius: 18 }}>
+              <Flame size={22} color="#ef4444" />
               <div>
-                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)", fontWeight: 700 }}>STREAK</div>
-                <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800, color: "#ef4444" }}>{user.streak} Days</div>
+                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, color: "var(--text-muted)", fontWeight: 800, letterSpacing: 0.5 }}>STREAK</div>
+                <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 800, color: "#ef4444" }}>{user.streak} Days</div>
               </div>
             </div>
           </div>
@@ -173,94 +234,94 @@ export default function PlatformDashboard() {
 
         {/* CAREER GOAL HEADER & CORE SKILLS MAPPED */}
         <div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
             <div>
-              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700, color: "#6c63ff", letterSpacing: 1.5, marginBottom: 2 }}>
+              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, color: "#6c63ff", letterSpacing: 1.5, marginBottom: 4 }}>
                 YOUR CAREER GOAL
               </div>
-              <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 32, fontWeight: 800, color: "var(--text-main)", margin: 0, display: "flex", alignItems: "center", gap: 12 }}>
+              <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 34, fontWeight: 800, color: "var(--text-main)", margin: 0, display: "flex", alignItems: "center", gap: 14 }}>
                 {user.goal.role}
-                <span style={{ fontSize: 12, fontFamily: "'Fira Code', monospace", fontWeight: 700, padding: "4px 12px", borderRadius: 20, background: "rgba(108,99,255,0.12)", color: "#6c63ff", border: "1px solid #6c63ff40" }}>
+                <span style={{ fontSize: 13, fontFamily: "'Fira Code', monospace", fontWeight: 800, padding: "5px 14px", borderRadius: 20, background: "rgba(108,99,255,0.14)", color: "#6c63ff", border: "1.5px solid #6c63ff40" }}>
                   {user.goal.tag}
                 </span>
               </h2>
             </div>
 
-            {/* Expand / Collapse Button */}
+            {/* Expand / Collapse Details Button */}
             <button
               onClick={() => setIsGoalExpanded(!isGoalExpanded)}
               style={{
-                display: "flex", alignItems: "center", gap: 8, padding: "8px 16px", borderRadius: 14,
-                background: "var(--bg-alt)", border: "1px solid var(--border-light)", color: "#6c63ff",
-                fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 700, cursor: "pointer",
+                display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 16,
+                background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "#6c63ff",
+                fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800, cursor: "pointer",
                 transition: "all 0.2s"
               }}
             >
-              {isGoalExpanded ? <>Collapse Details <ChevronUp size={16} /></> : <>Expand Details <ChevronDown size={16} /></>}
+              {isGoalExpanded ? <>Collapse Details <ChevronUp size={18} /></> : <>Expand Details <ChevronDown size={18} /></>}
             </button>
           </div>
 
           {/* Mapped Skills Chips Row */}
-          <div style={{ background: "var(--bg-alt)", border: "1px solid var(--border-light)", borderRadius: 16, padding: "12px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-            <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700, color: "var(--text-muted)", letterSpacing: 1 }}>
+          <div style={{ background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", borderRadius: 18, padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 14 }}>
+            <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, color: "var(--text-muted)", letterSpacing: 1.5 }}>
               CORE SKILLS MAPPED
             </span>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
               {user.goal.skills.map((sk, idx) => (
-                <span key={idx} style={{ padding: "6px 14px", borderRadius: 12, background: "var(--bg-card)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700, color: "#6c63ff" }}>
+                <span key={idx} style={{ padding: "8px 16px", borderRadius: 14, background: "var(--bg-card)", border: "1.5px solid var(--border-light)", fontSize: 14, fontWeight: 800, color: "#6c63ff" }}>
                   {sk}
                 </span>
               ))}
             </div>
           </div>
 
-          {/* EXPANDED 4-CARD CAREER DETAILS GRID (Matching Reference UI Image) */}
+          {/* EXPANDED 4-CARD CAREER DETAILS GRID (Matching Reference Image) */}
           <AnimatePresence>
             {isGoalExpanded && (
               <motion.div
                 initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                animate={{ opacity: 1, height: "auto", marginTop: 20 }}
+                animate={{ opacity: 1, height: "auto", marginTop: 22 }}
                 exit={{ opacity: 0, height: 0, marginTop: 0 }}
                 style={{ overflow: "hidden" }}
               >
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 18 }}>
                   
                   {/* Card 1: Target Role */}
-                  <div style={{ background: "rgba(108,99,255,0.06)", border: "1.5px solid #6c63ff30", borderRadius: 18, padding: 18 }}>
-                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700, color: "#6c63ff", letterSpacing: 1, marginBottom: 8, textAlign: "center" }}>
+                  <div style={{ background: "rgba(108,99,255,0.08)", border: "2px solid #6c63ff40", borderRadius: 20, padding: 22 }}>
+                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, color: "#6c63ff", letterSpacing: 1.5, marginBottom: 10, textAlign: "center" }}>
                       TARGET ROLE
                     </div>
-                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 800, color: "#6c63ff", textAlign: "center" }}>
+                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 800, color: "#6c63ff", textAlign: "center" }}>
                       {user.goal.role}
                     </div>
                   </div>
 
                   {/* Card 2: Timeline */}
-                  <div style={{ background: "rgba(0,201,167,0.06)", border: "1.5px solid #00c9a730", borderRadius: 18, padding: 18 }}>
-                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700, color: "#00c9a7", letterSpacing: 1, marginBottom: 8, textAlign: "center" }}>
+                  <div style={{ background: "rgba(0,201,167,0.08)", border: "2px solid #00c9a740", borderRadius: 20, padding: 22 }}>
+                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, color: "#00c9a7", letterSpacing: 1.5, marginBottom: 10, textAlign: "center" }}>
                       TIMELINE
                     </div>
-                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 800, color: "#00c9a7", textAlign: "center" }}>
+                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 800, color: "#00c9a7", textAlign: "center" }}>
                       {user.goal.timeline}
                     </div>
                   </div>
 
                   {/* Card 3: Motivation */}
-                  <div style={{ background: "rgba(247,151,30,0.06)", border: "1.5px solid #f7971e30", borderRadius: 18, padding: 18 }}>
-                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700, color: "#f7971e", letterSpacing: 1, marginBottom: 8, textAlign: "center" }}>
+                  <div style={{ background: "rgba(247,151,30,0.08)", border: "2px solid #f7971e40", borderRadius: 20, padding: 22 }}>
+                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, color: "#f7971e", letterSpacing: 1.5, marginBottom: 10, textAlign: "center" }}>
                       MOTIVATION
                     </div>
-                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, color: "var(--text-main)", textAlign: "center", lineHeight: 1.4 }}>
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 700, color: "var(--text-main)", textAlign: "center", lineHeight: 1.5 }}>
                       {user.goal.why}
                     </div>
                   </div>
 
                   {/* Card 4: Expected Outcome */}
-                  <div style={{ background: "rgba(224,64,251,0.06)", border: "1.5px solid #e040fb30", borderRadius: 18, padding: 18 }}>
-                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700, color: "#e040fb", letterSpacing: 1, marginBottom: 8, textAlign: "center" }}>
+                  <div style={{ background: "rgba(224,64,251,0.08)", border: "2px solid #e040fb40", borderRadius: 20, padding: 22 }}>
+                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, color: "#e040fb", letterSpacing: 1.5, marginBottom: 10, textAlign: "center" }}>
                       EXPECTED OUTCOME
                     </div>
-                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, color: "var(--text-main)", textAlign: "center", lineHeight: 1.4 }}>
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 700, color: "var(--text-main)", textAlign: "center", lineHeight: 1.5 }}>
                       {user.goal.outcome}
                     </div>
                   </div>
@@ -276,77 +337,187 @@ export default function PlatformDashboard() {
       {/* 2. EXPERIENCE-BASED AI DAILY MOTIVATIONAL QUOTE BANNER */}
       <QuoteBanner userLevel={user.level} userStreak={user.streak} />
 
-      {/* 3. CRI SCORE GAUGE & ACTIVITY HEATMAP */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 24, marginBottom: 28 }}>
+      {/* 3. YOUR LEARNING JOURNEY (PROGRESS BARS + STAT CARDS) & CONSISTENCY HEATMAP MATRIX */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 24, marginBottom: 32 }}>
         
-        {/* CRI Score Gauge Card (Animated 0 -> 62%) */}
-        <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 20, padding: 24, textAlign: "center", position: "relative" }}>
-          <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 700, color: "#6c63ff", letterSpacing: 1, marginBottom: 12 }}>
-            CAREER READINESS INDEX (CRI)
+        {/* PANEL A: YOUR LEARNING JOURNEY */}
+        <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 28 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+            <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 13, fontWeight: 800, color: "#6c63ff", letterSpacing: 1.5 }}>
+              YOUR LEARNING JOURNEY
+            </div>
+            <span style={{ padding: "4px 12px", borderRadius: 12, background: "rgba(0,201,167,0.12)", border: "1px solid #00c9a740", color: "#00c9a7", fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 800 }}>
+              Daily compounding, no burnout
+            </span>
           </div>
-          
-          <div style={{ position: "relative", width: 140, height: 140, margin: "0 auto 12px" }}>
-            <svg width="140" height="140" viewBox="0 0 140 140">
-              <circle cx="70" cy="70" r="54" fill="none" stroke="var(--border-light)" strokeWidth="10" />
-              <circle 
-                cx="70" cy="70" r="54" fill="none" stroke="#6c63ff" strokeWidth="10" 
-                strokeDasharray="339" strokeDashoffset={339 - (339 * criScore) / 100} 
-                strokeLinecap="round" transform="rotate(-90 70 70)" 
-                style={{ transition: "stroke-dashoffset 0.1s linear" }} 
-              />
-            </svg>
-            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: 36, fontWeight: 800, color: "#6c63ff", lineHeight: 1 }}>{criScore}%</span>
-              <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 9, color: "var(--text-muted)", letterSpacing: 0.5 }}>TARGET: 100%</span>
+
+          {/* Skill Progress Bars */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 24 }}>
+            {user.skillsProgress.map((sk, idx) => (
+              <div key={idx}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                  <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 700, color: "var(--text-main)" }}>{sk.label}</span>
+                  <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 14, fontWeight: 800, color: sk.col }}>{sk.pct}%</span>
+                </div>
+                <div style={{ height: 10, borderRadius: 6, background: "var(--bg-alt)", overflow: "hidden", border: "1px solid var(--border-light)" }}>
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${sk.pct}%` }}
+                    transition={{ duration: 1.2, delay: idx * 0.1 }}
+                    style={{ height: "100%", background: `linear-gradient(90deg, ${sk.col}, ${sk.col}88)`, borderRadius: 6 }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* 3 Quick Stat Cards Row */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+            <div style={{ background: "var(--bg-alt)", border: "1px solid var(--border-light)", borderRadius: 16, padding: 14, textAlign: "center" }}>
+              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)", fontWeight: 800, letterSpacing: 1 }}>PROGRESS</div>
+              <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 22, fontWeight: 800, color: "#6c63ff", marginTop: 4 }}>8 / 8</div>
+              <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Skills · 24 topics</div>
+            </div>
+
+            <div style={{ background: "var(--bg-alt)", border: "1px solid var(--border-light)", borderRadius: 16, padding: 14, textAlign: "center" }}>
+              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)", fontWeight: 800, letterSpacing: 1 }}>XP EARNED</div>
+              <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 22, fontWeight: 800, color: "#f7971e", marginTop: 4 }}>1,340</div>
+              <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>This week</div>
+            </div>
+
+            <div style={{ background: "rgba(247,151,30,0.08)", border: "1px solid #f7971e40", borderRadius: 16, padding: 14, textAlign: "center" }}>
+              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "#f7971e", fontWeight: 800, letterSpacing: 1 }}>NEXT SESSION</div>
+              <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 800, color: "var(--text-main)", marginTop: 4 }}>Data Structures</div>
+              <div style={{ fontSize: 11, color: "#f7971e", fontWeight: 700, marginTop: 2 }}>45 min focused</div>
             </div>
           </div>
 
-          <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
-            Top 15% percentile among B.Tech candidates nationwide.
+        </div>
+
+        {/* PANEL B: CONSISTENCY HEATMAP & STREAK MATRIX */}
+        <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 28, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 13, fontWeight: 800, color: "#00c9a7", letterSpacing: 1.5 }}>
+                CONSISTENCY HEATMAP — 12 WEEKS
+              </div>
+              <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600 }}>98 Active Days</span>
+            </div>
+
+            {/* Heatmap Grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(14, 1fr)", gap: 6, marginBottom: 20 }}>
+              {Array.from({ length: 98 }).map((_, idx) => {
+                const activeLevels = ["var(--bg-alt)", "rgba(108,99,255,0.3)", "rgba(108,99,255,0.6)", "#6c63ff", "#00c9a7"];
+                const randomCol = activeLevels[idx % 5];
+                return (
+                  <div
+                    key={idx}
+                    style={{ width: "100%", aspectRatio: "1", borderRadius: 4, background: randomCol, transition: "transform 0.2s" }}
+                    title={`Day ${idx + 1}: Code activity verified`}
+                  />
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 4 Streak Stat Cards Grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+            <div style={{ background: "var(--bg-alt)", border: "1px solid var(--border-light)", borderRadius: 16, padding: 14, textAlign: "center" }}>
+              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)", fontWeight: 800, letterSpacing: 1 }}>CURRENT STREAK</div>
+              <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 800, color: "#f7971e", marginTop: 2 }}>7 days</div>
+            </div>
+
+            <div style={{ background: "var(--bg-alt)", border: "1px solid var(--border-light)", borderRadius: 16, padding: 14, textAlign: "center" }}>
+              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)", fontWeight: 800, letterSpacing: 1 }}>BEST STREAK</div>
+              <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 800, color: "#6c63ff", marginTop: 2 }}>14 days</div>
+            </div>
+
+            <div style={{ background: "var(--bg-alt)", border: "1px solid var(--border-light)", borderRadius: 16, padding: 14, textAlign: "center" }}>
+              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)", fontWeight: 800, letterSpacing: 1 }}>THIS MONTH</div>
+              <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 800, color: "#00c9a7", marginTop: 2 }}>22 / 30</div>
+            </div>
+
+            <div style={{ background: "var(--bg-alt)", border: "1px solid var(--border-light)", borderRadius: 16, padding: 14, textAlign: "center" }}>
+              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)", fontWeight: 800, letterSpacing: 1 }}>TOTAL DAYS</div>
+              <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 800, color: "#e040fb", marginTop: 2 }}>47 days</div>
+            </div>
           </div>
         </div>
 
-        {/* Career Journey Activity Heatmap */}
-        <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 20, padding: 24 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-            <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 700, color: "#00c9a7", letterSpacing: 1 }}>
-              CONSISTENCY HEATMAP
+      </div>
+
+      {/* 4. TODAY'S CHALLENGES CARD GRID SECTION */}
+      <div style={{ marginBottom: 36 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+          <div>
+            <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, color: "#f7971e", letterSpacing: 1.5, marginBottom: 4 }}>
+              ⚡ TODAY'S CHALLENGES
             </div>
-            <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600 }}>Last 14 Weeks</span>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 28, fontWeight: 800, color: "var(--text-main)", margin: 0 }}>
+              4 tasks · Keep your streak alive 🔥
+            </h2>
           </div>
 
-          {/* Heatmap Cell Grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(14, 1fr)", gap: 6, marginBottom: 16 }}>
-            {Array.from({ length: 98 }).map((_, idx) => {
-              const activeLevels = ["var(--bg-alt)", "rgba(108,99,255,0.3)", "rgba(108,99,255,0.6)", "#6c63ff", "#00c9a7"];
-              const randomCol = activeLevels[idx % 5];
-              return (
-                <div
-                  key={idx}
-                  style={{ width: "100%", aspectRatio: "1", borderRadius: 4, background: randomCol, transition: "transform 0.2s" }}
-                  title={`Day ${idx + 1}: Activity recorded`}
-                />
-              );
-            })}
-          </div>
+          <span style={{ padding: "6px 16px", borderRadius: 20, background: "rgba(247,151,30,0.12)", border: "1px solid #f7971e40", color: "#f7971e", fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800 }}>
+            7-day streak active
+          </span>
+        </div>
 
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11, color: "var(--text-muted)", fontFamily: "'Fira Code', monospace" }}>
-            <span>Less Active</span>
-            <div style={{ display: "flex", gap: 4 }}>
-              <span style={{ width: 10, height: 10, borderRadius: 2, background: "var(--bg-alt)" }} />
-              <span style={{ width: 10, height: 10, borderRadius: 2, background: "rgba(108,99,255,0.4)" }} />
-              <span style={{ width: 10, height: 10, borderRadius: 2, background: "#6c63ff" }} />
-              <span style={{ width: 10, height: 10, borderRadius: 2, background: "#00c9a7" }} />
+        {/* 4 Daily Challenge Task Cards */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 18 }}>
+          {dailyChallenges.map((task, idx) => (
+            <div
+              key={idx}
+              style={{
+                background: task.bg, border: `1.5px solid ${task.border}`, borderRadius: 22, padding: 22,
+                display: "flex", flexDirection: "column", justifyContent: "space-between",
+                boxShadow: "0 8px 24px rgba(0,0,0,0.03)", transition: "transform 0.2s"
+              }}
+            >
+              <div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                  <span style={{ fontSize: 32 }}>{task.icon}</span>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <span style={{ padding: "3px 8px", borderRadius: 8, background: "var(--bg-card)", border: "1px solid var(--border-light)", fontSize: 11, fontWeight: 700, color: "var(--text-main)" }}>
+                      {task.diff}
+                    </span>
+                    <span style={{ padding: "3px 8px", borderRadius: 8, background: task.col, color: "#fff", fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 800 }}>
+                      +{task.xp} XP
+                    </span>
+                  </div>
+                </div>
+
+                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 800, color: "var(--text-main)", marginBottom: 8, lineHeight: 1.3 }}>
+                  {task.title}
+                </h3>
+                <p style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 600, margin: "0 0 16px" }}>
+                  {task.category} · {task.time}
+                </p>
+              </div>
+
+              <button
+                onClick={() => alert(`Starting challenge: ${task.title}`)}
+                style={{
+                  width: "100%", padding: "12px", borderRadius: 14, border: "none",
+                  background: task.isStarted ? task.col : "var(--bg-card)",
+                  color: task.isStarted ? "#ffffff" : task.col,
+                  border: task.isStarted ? "none" : `1.5px solid ${task.col}`,
+                  fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
+                  cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  boxShadow: task.isStarted ? `0 6px 18px ${task.col}40` : "none"
+                }}
+              >
+                <Play size={15} fill={task.isStarted ? "#fff" : task.col} /> {task.isStarted ? "Resume Challenge" : "Start Challenge"}
+              </button>
             </div>
-            <span>More Active</span>
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* 4. VISUAL CURVY ROAD SKILL NODE ROADMAP TIMELINE WITH NODE HOVER TOOLTIPS */}
-      <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 20, padding: 24, marginBottom: 28, position: "relative" }}>
+      {/* 5. VISUAL CURVY ROAD SKILL NODE ROADMAP TIMELINE WITH NODE HOVER TOOLTIPS */}
+      <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 28, marginBottom: 32, position: "relative" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
-          <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 700, color: "#6c63ff", letterSpacing: 1 }}>
+          <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 13, fontWeight: 800, color: "#6c63ff", letterSpacing: 1.5 }}>
             4-YEAR CURVY ROAD SKILL TIMELINE
           </div>
           
@@ -354,12 +525,12 @@ export default function PlatformDashboard() {
           <button
             onClick={() => navigate("/roadmap")}
             style={{
-              display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 12,
-              background: "rgba(108,99,255,0.12)", border: "1px solid #6c63ff40", color: "#6c63ff",
-              fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 700, cursor: "pointer"
+              display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 14,
+              background: "rgba(108,99,255,0.12)", border: "1.5px solid #6c63ff40", color: "#6c63ff",
+              fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800, cursor: "pointer"
             }}
           >
-            Full View <ArrowUpRight size={15} />
+            Full View <ArrowUpRight size={16} />
           </button>
         </div>
 
@@ -398,8 +569,8 @@ export default function PlatformDashboard() {
                 <motion.div
                   whileHover={{ scale: 1.25, y: -4 }}
                   style={{
-                    width: 48, height: 48, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-                    fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: node.active ? 10 : 13,
+                    width: 52, height: 52, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+                    fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: node.active ? 11 : 14,
                     background: node.done ? "linear-gradient(135deg, #00c9a7, #6c63ff)" : node.active ? "linear-gradient(135deg, #6c63ff, #f7971e)" : "var(--bg-alt)",
                     color: node.done || node.active ? "#ffffff" : "var(--text-muted)",
                     border: !node.done && !node.active ? "2px solid var(--border-light)" : "none",
@@ -409,7 +580,7 @@ export default function PlatformDashboard() {
                   {node.done ? "✓" : node.active ? "NOW" : node.id}
                 </motion.div>
 
-                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 9, color: node.done ? "#00c9a7" : node.active ? "#6c63ff" : "var(--text-muted)", textAlign: "center", marginTop: 8, whiteSpace: "pre-line", fontWeight: node.active ? 700 : 500 }}>
+                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: node.done ? "#00c9a7" : node.active ? "#6c63ff" : "var(--text-muted)", textAlign: "center", marginTop: 10, whiteSpace: "pre-line", fontWeight: node.active ? 800 : 600 }}>
                   {node.label}
                 </div>
 
@@ -421,19 +592,19 @@ export default function PlatformDashboard() {
                       animate={{ opacity: 1, y: -10, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.9 }}
                       style={{
-                        position: "absolute", bottom: "100%", width: 220,
+                        position: "absolute", bottom: "100%", width: 240,
                         background: "var(--bg-card)", border: "1.5px solid #6c63ff",
-                        borderRadius: 16, padding: 14, boxShadow: "0 15px 35px rgba(0,0,0,0.3)",
+                        borderRadius: 18, padding: 16, boxShadow: "0 15px 35px rgba(0,0,0,0.3)",
                         zIndex: 50, pointerEvents: "none"
                       }}
                     >
-                      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800, color: "var(--text-main)", marginBottom: 4 }}>
+                      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800, color: "var(--text-main)", marginBottom: 4 }}>
                         {node.label.replace("\n", " ")}
                       </div>
-                      <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "#6c63ff", fontWeight: 700, marginBottom: 6 }}>
+                      <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, color: "#6c63ff", fontWeight: 800, marginBottom: 8 }}>
                         MASTERY: {node.mastery}% • {node.topics}
                       </div>
-                      <div style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.4 }}>
+                      <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4, fontWeight: 500 }}>
                         {node.current}
                       </div>
 
@@ -449,56 +620,56 @@ export default function PlatformDashboard() {
         </div>
       </div>
 
-      {/* 5. WORKSPACE MODULE (SPECIAL CARDS ROW + STANDARD CARDS GRID + NO CROSS ICON) */}
+      {/* 6. WORKSPACE MODULE (SPECIAL CARDS ROW + STANDARD CARDS GRID + NO CROSS ICON) */}
       <div style={{ marginBottom: 36 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <div>
-            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 800, color: "var(--text-main)", margin: 0 }}>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 26, fontWeight: 800, color: "var(--text-main)", margin: 0 }}>
               Custom Workspace
             </h2>
-            <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "4px 0 0" }}>Add or configure feature widgets below. Remove or manage via the + button.</p>
+            <p style={{ fontSize: 14, color: "var(--text-muted)", margin: "4px 0 0" }}>Add or configure feature widgets below. Manage widgets via the + button.</p>
           </div>
 
           <button
             onClick={() => setIsAddModalOpen(true)}
             style={{
-              display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 14,
+              display: "flex", alignItems: "center", gap: 8, padding: "12px 20px", borderRadius: 16,
               background: "linear-gradient(135deg, #6c63ff, #00c9a7)", border: "none", color: "#ffffff",
-              fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800, cursor: "pointer",
+              fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, cursor: "pointer",
               boxShadow: "0 6px 20px rgba(108,99,255,0.3)"
             }}
           >
-            <Plus size={16} /> Add Feature Widget
+            <Plus size={18} /> Add Feature Widget
           </button>
         </div>
 
         {/* Dedicated Row for Special Colored Cards */}
         {specialActiveCards.length > 0 && (
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700, color: "#b45309", letterSpacing: 1, marginBottom: 10 }}>
+          <div style={{ marginBottom: 22 }}>
+            <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 800, color: "#b45309", letterSpacing: 1.5, marginBottom: 12 }}>
               SPECIAL FEATURE CARDS
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 18 }}>
               {specialActiveCards.map(card => (
                 <div
                   key={card.id}
                   onMouseEnter={() => setHoveredCardId(card.id)}
                   onMouseLeave={() => setHoveredCardId(null)}
                   style={{
-                    background: card.bg, border: `2px solid ${card.border}`, borderRadius: 20, padding: 20,
+                    background: card.bg, border: `2px solid ${card.border}`, borderRadius: 22, padding: 22,
                     position: "relative", overflow: "hidden", transition: "all 0.3s ease",
                     transform: hoveredCardId === card.id ? "translateY(-4px)" : "none",
                     boxShadow: hoveredCardId === card.id ? `0 12px 30px ${card.accent}30` : "none"
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                    <span style={{ fontSize: 28 }}>{card.icon}</span>
-                    <span style={{ fontSize: 9, fontFamily: "'Fira Code', monospace", padding: "2px 8px", borderRadius: 12, background: card.accent, color: "#ffffff", fontWeight: 700 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                    <span style={{ fontSize: 32 }}>{card.icon}</span>
+                    <span style={{ fontSize: 10, fontFamily: "'Fira Code', monospace", padding: "3px 10px", borderRadius: 12, background: card.accent, color: "#ffffff", fontWeight: 800 }}>
                       SPECIAL
                     </span>
                   </div>
-                  <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>{card.label}</h3>
-                  <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4, margin: 0 }}>{card.desc}</p>
+                  <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 800, color: "var(--text-main)", marginBottom: 8 }}>{card.label}</h3>
+                  <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5, margin: 0 }}>{card.desc}</p>
                 </div>
               ))}
             </div>
@@ -506,24 +677,24 @@ export default function PlatformDashboard() {
         )}
 
         {/* Standard Workspace Cards Grid (Cross icon removed as requested!) */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 18 }}>
           {standardActiveCards.map(card => (
             <div
               key={card.id}
               onMouseEnter={() => setHoveredCardId(card.id)}
               onMouseLeave={() => setHoveredCardId(null)}
               style={{
-                background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 20, padding: 20,
+                background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 22, padding: 22,
                 position: "relative", overflow: "hidden", transition: "all 0.3s ease",
                 transform: hoveredCardId === card.id ? "translateY(-4px)" : "none",
                 boxShadow: hoveredCardId === card.id ? "0 12px 30px rgba(108,99,255,0.15)" : "none"
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                <span style={{ fontSize: 28 }}>{card.icon}</span>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                <span style={{ fontSize: 32 }}>{card.icon}</span>
               </div>
-              <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>{card.label}</h3>
-              <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4, margin: 0 }}>
+              <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 800, color: "var(--text-main)", marginBottom: 8 }}>{card.label}</h3>
+              <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5, margin: 0 }}>
                 {card.desc}
               </p>
             </div>
@@ -533,84 +704,84 @@ export default function PlatformDashboard() {
           <div
             onClick={() => setIsAddModalOpen(true)}
             style={{
-              background: "var(--bg-alt)", border: "2px dashed var(--border-light)", borderRadius: 20, padding: 30,
+              background: "var(--bg-alt)", border: "2px dashed var(--border-light)", borderRadius: 22, padding: 32,
               display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-              cursor: "pointer", minHeight: 180, transition: "all 0.2s ease"
+              cursor: "pointer", minHeight: 200, transition: "all 0.2s ease"
             }}
             onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#6c63ff"; e.currentTarget.style.background = "rgba(108,99,255,0.05)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border-light)"; e.currentTarget.style.background = "var(--bg-alt)"; }}
           >
-            <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(108,99,255,0.12)", border: "1px solid #6c63ff40", display: "flex", alignItems: "center", justifyContent: "center", color: "#6c63ff", marginBottom: 12 }}>
-              <Plus size={22} />
+            <div style={{ width: 50, height: 50, borderRadius: "50%", background: "rgba(108,99,255,0.12)", border: "1.5px solid #6c63ff40", display: "flex", alignItems: "center", justifyContent: "center", color: "#6c63ff", marginBottom: 14 }}>
+              <Plus size={24} />
             </div>
-            <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: "var(--text-main)" }}>Add Feature Widget</div>
-            <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>Click to browse available modules</div>
+            <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800, color: "var(--text-main)" }}>Add Feature Widget</div>
+            <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 4 }}>Click to browse available modules</div>
           </div>
         </div>
       </div>
 
-      {/* 6. COLLABORATION & COMMUNITIES SECTION (STORE UNLOCK POPUP FLOW) */}
+      {/* 7. COLLABORATION & COMMUNITIES SECTION (RESPONSIVE MULTI-ROW GRID + STORE POPUP) */}
       <div style={{ marginBottom: 36 }}>
         <div style={{ marginBottom: 20 }}>
-          <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 800, color: "var(--text-main)", margin: 0 }}>
+          <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 26, fontWeight: 800, color: "var(--text-main)", margin: 0 }}>
             Collaboration & Communities
           </h2>
-          <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "4px 0 0" }}>Connect with industry mentors, peer squads, and alumni.</p>
+          <p style={{ fontSize: 14, color: "var(--text-muted)", margin: "4px 0 0" }}>Connect with industry mentors, peer squads, and alumni.</p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 18 }}>
           {communityCards.map(item => (
             <div
               key={item.id}
               onClick={() => setLockedModalFeature(item)}
               style={{
-                background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 18, padding: 20,
+                background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 20, padding: 22,
                 cursor: "pointer", transition: "all 0.3s ease", position: "relative"
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = item.accent; e.currentTarget.style.transform = "translateY(-3px)"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = item.accent; e.currentTarget.style.transform = "translateY(-4px)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border-light)"; e.currentTarget.style.transform = "none"; }}
             >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                <span style={{ fontSize: 28 }}>{item.icon}</span>
-                <div style={{ width: 26, height: 26, borderRadius: "50%", background: "rgba(239,68,68,0.15)", border: "1px solid #ef4444", display: "flex", alignItems: "center", justifyContent: "center", color: "#ef4444" }}>
-                  <Lock size={13} />
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <span style={{ fontSize: 32 }}>{item.icon}</span>
+                <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(239,68,68,0.15)", border: "1.5px solid #ef4444", display: "flex", alignItems: "center", justifyContent: "center", color: "#ef4444" }}>
+                  <Lock size={14} />
                 </div>
               </div>
 
-              <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800, color: "var(--text-main)", marginBottom: 4 }}>{item.label}</h3>
-              <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4, margin: "0 0 12px" }}>{item.desc}</p>
+              <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>{item.label}</h3>
+              <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5, margin: "0 0 16px" }}>{item.desc}</p>
 
-              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 9, fontWeight: 700, color: item.accent, display: "flex", alignItems: "center", gap: 4 }}>
-                UNLOCK REQUIREMENT <ChevronRight size={10} />
+              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 800, color: item.accent, display: "flex", alignItems: "center", gap: 4 }}>
+                UNLOCK REQUIREMENT <ChevronRight size={12} />
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* 7. LIVE TECH NEWS FEED (MINI DESCRIPTIONS + READ MORE BUTTONS) */}
-      <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 20, padding: 24 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-          <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 700, color: "#6c63ff", letterSpacing: 1 }}>
+      {/* 8. LIVE TECH NEWS FEED (MINI DESCRIPTIONS + READ MORE BUTTONS) */}
+      <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 28 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+          <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 13, fontWeight: 800, color: "#6c63ff", letterSpacing: 1.5 }}>
             LIVE TECH & ENGINEERING HEADLINES
           </div>
-          <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600 }}>Updated hourly</span>
+          <span style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 600 }}>Updated hourly</span>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 18 }}>
           {techNews.map((news, idx) => (
-            <div key={idx} style={{ background: "var(--bg-alt)", border: "1px solid var(--border-light)", borderRadius: 16, padding: 18, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+            <div key={idx} style={{ background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", borderRadius: 18, padding: 20, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
               <div>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                  <span style={{ padding: "2px 8px", borderRadius: 6, background: `${news.col}20`, color: news.col, fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                  <span style={{ padding: "3px 10px", borderRadius: 8, background: `${news.col}20`, color: news.col, fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 800 }}>
                     {news.category}
                   </span>
-                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{news.time}</span>
+                  <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{news.time}</span>
                 </div>
-                <h4 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: "var(--text-main)", margin: "0 0 6px", lineHeight: 1.4 }}>
+                <h4 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800, color: "var(--text-main)", margin: "0 0 8px", lineHeight: 1.4 }}>
                   {news.title}
                 </h4>
-                <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5, margin: "0 0 16px" }}>
+                <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5, margin: "0 0 18px" }}>
                   {news.desc}
                 </p>
               </div>
@@ -620,11 +791,11 @@ export default function PlatformDashboard() {
                 onClick={() => navigate("/technews")}
                 style={{
                   display: "flex", alignItems: "center", gap: 6, background: "none", border: "none",
-                  color: news.col, fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 700,
+                  color: news.col, fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
                   cursor: "pointer", padding: 0
                 }}
               >
-                Read More <ChevronRight size={14} />
+                Read More <ChevronRight size={16} />
               </button>
             </div>
           ))}
