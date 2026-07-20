@@ -82,7 +82,7 @@ export default function Community() {
       </section>
 
       {/* 4. Teacher Connect */}
-      <section style={{ padding: "100px 32px", background: "var(--text-main)", color: "var(--bg-card)" }}>
+      <section style={{ padding: "100px 32px", background: "var(--bg-inverse)", color: "var(--text-inverse)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap-reverse" }}>
           
           <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
@@ -159,7 +159,7 @@ export default function Community() {
       </section>
 
       {/* 7. Industry Mentors */}
-      <section style={{ padding: "100px 32px", background: "var(--text-main)", color: "var(--bg-card)" }}>
+      <section style={{ padding: "100px 32px", background: "var(--bg-inverse)", color: "var(--text-inverse)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap-reverse" }}>
           <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
             <HoverCard style={{ height: 400, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.5)", border: "1px solid #333" }}>

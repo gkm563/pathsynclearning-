@@ -27,14 +27,14 @@ export default function PreFooterCTA() {
               display: "inline-flex", alignItems: "center", gap: "8px", 
               background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", 
               borderRadius: "20px", padding: "6px 16px", marginBottom: "24px",
-              fontFamily: "'DM Mono', monospace", fontSize: "12px", color: "var(--bg-card)", letterSpacing: "2px"
+              fontFamily: "'DM Mono', monospace", fontSize: "12px", color: "var(--text-inverse)", letterSpacing: "2px"
             }}>
               <Rocket size={14} /> BEGIN YOUR JOURNEY
             </div>
             
             <h2 style={{ 
               fontFamily: "'Outfit', sans-serif", fontSize: "clamp(44px, 6vw, 72px)", 
-              fontWeight: 800, color: "var(--bg-card)", lineHeight: 1.1, marginBottom: "24px"
+              fontWeight: 800, color: "var(--text-inverse)", lineHeight: 1.1, marginBottom: "24px"
             }}>
               Your roadmap starts<br />right now.
             </h2>

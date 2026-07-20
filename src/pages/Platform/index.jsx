@@ -82,7 +82,7 @@ export default function Platform() {
       </section>
 
       {/* Skill Trees Section */}
-      <section id="skill-trees" style={{ padding: "100px 32px", background: "var(--text-main)", color: "var(--bg-card)" }}>
+      <section id="skill-trees" style={{ padding: "100px 32px", background: "var(--bg-inverse)", color: "var(--text-inverse)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap" }}>
           <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>
             <Chip bg="rgba(0,201,167,0.1)" border="rgba(0,201,167,0.3)" color="#00c9a7">▸ VISUALIZE PROGRESS</Chip>
@@ -110,7 +110,7 @@ export default function Platform() {
               <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80" alt="Dashboard Analytics" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               <div style={{ position: "absolute", inset: 0, background: "rgba(26,26,46,0.8)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                 <div style={{ fontSize: 96, fontFamily: "'Outfit', sans-serif", fontWeight: 800, color: "#00c9a7", lineHeight: 1 }}>84<span style={{ fontSize: 60 }}>%</span></div>
-                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 18, color: "var(--bg-card)", letterSpacing: 3, marginTop: 12 }}>CRI SCORE</div>
+                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 18, color: "var(--text-inverse)", letterSpacing: 3, marginTop: 12 }}>CRI SCORE</div>
               </div>
             </HoverCard>
           </motion.div>
@@ -168,7 +168,7 @@ export default function Platform() {
       </section>
 
       {/* 4. Learning Memory Lane */}
-      <section style={{ padding: "100px 32px", background: "var(--text-main)", color: "var(--bg-card)" }}>
+      <section style={{ padding: "100px 32px", background: "var(--bg-inverse)", color: "var(--text-inverse)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap-reverse" }}>
           
           <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
@@ -257,7 +257,7 @@ export default function Platform() {
       </section>
 
       {/* 4. Continuous Feedback Loop */}
-      <section style={{ padding: "100px 32px", background: "var(--text-main)", color: "var(--bg-card)" }}>
+      <section style={{ padding: "100px 32px", background: "var(--bg-inverse)", color: "var(--text-inverse)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap" }}>
           
           <motion.div {...fadeInUp} style={{ flex: "1 1 500px" }}>

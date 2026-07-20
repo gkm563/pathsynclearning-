@@ -56,7 +56,7 @@ export default function Header() {
               background: "linear-gradient(135deg, #6c63ff, #00c9a7)",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: "18px",
-              color: "var(--bg-card)", boxShadow: "0 4px 14px rgba(108,99,255,0.25)"
+              color: "var(--text-inverse)", boxShadow: "0 4px 14px rgba(108,99,255,0.25)"
             }}>P</div>
             <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: "22px", color: "var(--text-main)" }}>
               Path<span style={{ color: "#6c63ff" }}>Ed</span>
@@ -119,8 +119,8 @@ export default function Header() {
 
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               <Link to="/register" style={{
-                background: "var(--text-main)",
-                color: "var(--bg-card)", fontFamily: "'Outfit', sans-serif", fontWeight: 700,
+                background: "var(--bg-inverse)",
+                color: "var(--text-inverse)", fontFamily: "'Outfit', sans-serif", fontWeight: 700,
                 fontSize: "14px", padding: "12px 24px", borderRadius: "14px",
                 display: "inline-block", boxShadow: "0 6px 16px rgba(26,26,46,0.15)"
               }}>

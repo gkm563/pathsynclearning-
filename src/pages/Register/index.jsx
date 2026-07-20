@@ -122,7 +122,7 @@ export default function Register() {
 
   if (success) {
     return (
-      <div style={{ minHeight: "100vh", background: "#0f0f1a", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter', sans-serif", color: "var(--bg-card)" }}>
+      <div style={{ minHeight: "100vh", background: "#0f0f1a", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter', sans-serif", color: "var(--text-inverse)" }}>
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ textAlign: "center" }}>
           <div style={{ width: 100, height: 100, borderRadius: "50%", background: activeRole.bg, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 32px", color: activeRole.accent }}>
             <ShieldCheck size={48} />
@@ -194,7 +194,7 @@ export default function Register() {
                     <CheckCircle size={20} />
                   </div>
                   <div>
-                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--bg-card)" }}>{f.title}</div>
+                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text-inverse)" }}>{f.title}</div>
                     <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, color: "var(--text-light)", letterSpacing: 1 }}>{f.sub}</div>
                   </div>
                 </motion.div>
@@ -289,7 +289,7 @@ export default function Register() {
                 type={showPassword ? "text" : "password"} 
                 value={form.confirm}
                 onChange={e => { setForm({...form, confirm: e.target.value}); setError(false); }}
-                style={{ width: "100%", padding: "14px 16px", background: "rgba(0,0,0,0.2)", border: `1px solid ${validConfirm ? "#10b981" : "rgba(255,255,255,0.1)"}`, borderRadius: 12, color: "var(--bg-card)", fontSize: 16, outline: "none", transition: "border 0.3s" }}
+                style={{ width: "100%", padding: "14px 16px", background: "rgba(0,0,0,0.2)", border: `1px solid ${validConfirm ? "#10b981" : "rgba(255,255,255,0.1)"}`, borderRadius: 12, color: "var(--text-inverse)", fontSize: 16, outline: "none", transition: "border 0.3s" }}
                 onFocus={(e) => e.target.style.borderColor = activeRole.accent}
                 onBlur={(e) => e.target.style.borderColor = validConfirm ? "#10b981" : "rgba(255,255,255,0.1)"}
               />
@@ -305,7 +305,7 @@ export default function Register() {
             <button 
               type="submit"
               disabled={loading || progress < 100 || !terms}
-              style={{ width: "100%", padding: 16, background: activeRole.accent, border: "none", borderRadius: 12, color: "var(--bg-card)", fontSize: 16, fontWeight: 700, cursor: (loading || progress < 100 || !terms) ? "not-allowed" : "pointer", opacity: (progress === 100 && terms) ? 1 : 0.5, display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: "all 0.3s" }}
+              style={{ width: "100%", padding: 16, background: activeRole.accent, border: "none", borderRadius: 12, color: "var(--text-inverse)", fontSize: 16, fontWeight: 700, cursor: (loading || progress < 100 || !terms) ? "not-allowed" : "pointer", opacity: (progress === 100 && terms) ? 1 : 0.5, display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: "all 0.3s" }}
             >
               {loading ? "Creating Account..." : <>Create Account <ArrowRight size={20} /></>}
             </button>

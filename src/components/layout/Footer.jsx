@@ -35,8 +35,8 @@ export default function Footer() {
 
   return (
     <footer style={{
-      background: "var(--text-main)",
-      color: "var(--bg-card)",
+      background: "var(--bg-inverse)",
+      color: "var(--text-inverse)",
       padding: "80px 32px 40px",
       marginTop: "auto",
       position: "relative",
@@ -53,9 +53,9 @@ export default function Footer() {
                 background: "linear-gradient(135deg, #6c63ff, #00c9a7)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: "18px",
-                color: "var(--bg-card)"
+                color: "var(--text-inverse)"
               }}>P</div>
-              <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: "28px", color: "var(--bg-card)" }}>
+              <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: "28px", color: "var(--text-inverse)" }}>
                 Path<span style={{ color: "#6c63ff" }}>Ed</span>
               </span>
             </Link>
@@ -79,7 +79,7 @@ export default function Footer() {
 
           {sections.map((section, idx) => (
             <div key={idx}>
-              <h4 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: "16px", marginBottom: "24px", color: "var(--bg-card)" }}>
+              <h4 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: "16px", marginBottom: "24px", color: "var(--text-inverse)" }}>
                 {section.title}
               </h4>
               <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "12px" }}>

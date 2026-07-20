@@ -72,7 +72,7 @@ export default function Reviews() {
                       width: "48px", height: "48px", borderRadius: "50%", 
                       background: "linear-gradient(135deg, #6c63ff, #00c9a7)", 
                       display: "flex", alignItems: "center", justifyContent: "center", 
-                      fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: "16px", color: "var(--bg-card)" 
+                      fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: "16px", color: "var(--text-inverse)" 
                     }}>
                       {review.avatar}
                     </div>

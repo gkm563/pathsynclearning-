@@ -108,7 +108,7 @@ export default function HeroRegion() {
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                 <button onClick={() => navigate("/register")} style={{ 
                   background: isC ? "linear-gradient(135deg,#6c63ff,#00c9a7)" : "linear-gradient(135deg,#f7971e,#e040fb)", 
-                  border: "none", color: "var(--bg-card)", fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 14, 
+                  border: "none", color: "var(--text-inverse)", fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 14, 
                   padding: "14px 36px", borderRadius: 12, cursor: "pointer", 
                   boxShadow: isC ? "0 8px 28px rgba(108,99,255,.35)" : "0 8px 28px rgba(247,151,30,.3)" 
                 }}>

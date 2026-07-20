@@ -72,7 +72,7 @@ export function RecruiterValidationSection({
 export function QuoteSection({ quote, author, role }) {
   const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
   return (
-    <section style={{ padding: "80px 32px", background: "linear-gradient(135deg, #1a1a2e, #2a2a4e)", color: "var(--bg-card)" }}>
+    <section style={{ padding: "80px 32px", background: "linear-gradient(135deg, #1a1a2e, #2a2a4e)", color: "var(--text-inverse)" }}>
       <div style={{ maxWidth: 1000, margin: "0 auto", textAlign: "center" }}>
         <motion.div {...fadeInUp}>
           <div style={{ fontSize: 64, color: "#6c63ff", opacity: 0.4, lineHeight: 0.5, marginBottom: 20 }}>"</div>

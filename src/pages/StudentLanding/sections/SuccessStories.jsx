@@ -96,7 +96,7 @@ export default function SuccessStories() {
                 <HoverCard style={{ height: 400, borderRadius: 24, overflow: "hidden", position: "relative" }}>
                   <img src={story.image} alt={story.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: story.imagePosition }} />
                   <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(to top, rgba(26,26,46,0.95), transparent)", padding: "40px 32px 32px" }}>
-                    <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 28, fontWeight: 700, color: "var(--bg-card)", marginBottom: 8 }}>{story.name}</h3>
+                    <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 28, fontWeight: 700, color: "var(--text-inverse)", marginBottom: 8 }}>{story.name}</h3>
                     <div style={{ color: "#00c9a7", fontFamily: "'Fira Code', monospace", fontSize: 14 }}>Hired at {story.company} • CRI: {story.cri}</div>
                   </div>
                 </HoverCard>

@@ -68,7 +68,7 @@ export default function Mission() {
       </section>
 
       {/* 3. The Vision */}
-      <section style={{ padding: "120px 32px", background: "var(--text-main)", color: "var(--bg-card)" }}>
+      <section style={{ padding: "120px 32px", background: "var(--bg-inverse)", color: "var(--text-inverse)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", textAlign: "center" }}>
           <motion.div {...fadeInUp}>
             <Chip bg="rgba(108,99,255,0.2)" border="rgba(108,99,255,0.4)" color="#b2aeff">▸ OUR VISION</Chip>
@@ -142,7 +142,7 @@ export default function Mission() {
       </section>
 
       {/* 6. Industry Alignment */}
-      <section style={{ padding: "100px 32px", background: "var(--text-main)", color: "var(--bg-card)" }}>
+      <section style={{ padding: "100px 32px", background: "var(--bg-inverse)", color: "var(--text-inverse)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap-reverse" }}>
           <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
             <HoverCard style={{ height: 400, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.5)", border: "1px solid #333" }}>

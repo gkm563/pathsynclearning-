@@ -20,6 +20,10 @@
   
   /* Shared Gradients / Transparents */
   --overlay-bg: rgba(255,255,255,0.9);
+  
+  /* Inverse components (always dark) */
+  --bg-inverse: #0f172a;
+  --text-inverse: #f8fafc;
 }
 
 [data-theme="dark"] {
@@ -35,6 +39,10 @@
   
   /* Shared Gradients / Transparents */
   --overlay-bg: rgba(11, 15, 25, 0.85);
+  
+  /* Inverse components (always dark, even darker in dark mode) */
+  --bg-inverse: #020617;
+  --text-inverse: #f8fafc;
   
   /* Desaturated brand colors for better dark mode contrast */
   --primary: #3b82f6;

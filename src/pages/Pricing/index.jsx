@@ -13,7 +13,7 @@ export default function Pricing() {
   }, []);
 
   return (
-    <div style={{ background: "#0f0f1a", minHeight: "100vh", fontFamily: "'Inter', sans-serif", color: "var(--bg-card)" }}>
+    <div style={{ background: "#0f0f1a", minHeight: "100vh", fontFamily: "'Inter', sans-serif", color: "var(--text-inverse)" }}>
       <Header />
       
       <section style={{ paddingTop: 180, paddingBottom: 100, textAlign: "center", maxWidth: 1200, margin: "0 auto", paddingLeft: 32, paddingRight: 32 }}>
@@ -81,7 +81,7 @@ export default function Pricing() {
             borderRadius: 24, padding: 48, position: "relative", overflow: "hidden",
             boxShadow: "0 20px 40px rgba(108,99,255,0.2)"
           }}>
-            <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", background: "#6c63ff", color: "var(--bg-card)", padding: "6px 20px", fontSize: 12, fontWeight: 800, letterSpacing: 1, borderBottomLeftRadius: 12, borderBottomRightRadius: 12, textTransform: "uppercase" }}>
+            <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", background: "#6c63ff", color: "var(--text-inverse)", padding: "6px 20px", fontSize: 12, fontWeight: 800, letterSpacing: 1, borderBottomLeftRadius: 12, borderBottomRightRadius: 12, textTransform: "uppercase" }}>
               Most Popular
             </div>
 
@@ -110,7 +110,7 @@ export default function Pricing() {
                 "Priority Project Reviews",
                 "Mock Interview Simulator"
               ].map((feature, i) => (
-                <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, color: "var(--bg-card)", fontSize: 16, fontWeight: i === 0 ? 700 : 400 }}>
+                <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, color: "var(--text-inverse)", fontSize: 16, fontWeight: i === 0 ? 700 : 400 }}>
                   <Check size={20} color="#00c9a7" style={{ marginTop: 2, flexShrink: 0 }} />
                   <span>{feature}</span>
                 </li>
@@ -119,7 +119,7 @@ export default function Pricing() {
             
             <motion.button 
               whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-              style={{ width: "100%", padding: "16px", borderRadius: 12, background: "linear-gradient(90deg, #6c63ff, #00c9a7)", border: "none", color: "var(--bg-card)", fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "'Inter', sans-serif" }}
+              style={{ width: "100%", padding: "16px", borderRadius: 12, background: "linear-gradient(90deg, #6c63ff, #00c9a7)", border: "none", color: "var(--text-inverse)", fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "'Inter', sans-serif" }}
             >
               Upgrade to Premium
             </motion.button>

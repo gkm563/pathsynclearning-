@@ -91,7 +91,7 @@ export default function Methodology() {
       </section>
 
       {/* 4. Serious Gamification */}
-      <section style={{ padding: "100px 32px", background: "var(--text-main)", color: "var(--bg-card)" }}>
+      <section style={{ padding: "100px 32px", background: "var(--bg-inverse)", color: "var(--text-inverse)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap-reverse" }}>
           
           <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
@@ -172,7 +172,7 @@ export default function Methodology() {
       </section>
 
       {/* 7. Animated Coding Environment */}
-      <section style={{ padding: "100px 32px", background: "var(--text-main)", color: "var(--bg-card)" }}>
+      <section style={{ padding: "100px 32px", background: "var(--bg-inverse)", color: "var(--text-inverse)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap-reverse" }}>
           
           <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>

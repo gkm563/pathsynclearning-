@@ -65,7 +65,7 @@ export default function Company() {
       </section>
 
       {/* 2. The Core Team */}
-      <section style={{ padding: "100px 32px", background: "var(--text-main)", color: "var(--bg-card)" }}>
+      <section style={{ padding: "100px 32px", background: "var(--bg-inverse)", color: "var(--text-inverse)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 80 }}>
             <motion.div {...fadeInUp}>
@@ -165,7 +165,7 @@ export default function Company() {
       </section>
 
       {/* PathEd Company Gallery */}
-      <section style={{ padding: "100px 32px", background: "var(--text-main)", color: "var(--bg-card)" }}>
+      <section style={{ padding: "100px 32px", background: "var(--bg-inverse)", color: "var(--text-inverse)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", textAlign: "center" }}>
           <motion.div {...fadeInUp}>
             <Chip bg="rgba(108,99,255,0.2)" border="rgba(108,99,255,0.4)" color="#b2aeff">▸ BEHIND THE SCENES</Chip>
@@ -194,7 +194,7 @@ export default function Company() {
               onClick={() => setVisibleGalleryCount(prev => prev + 16)}
               style={{
                 background: "linear-gradient(135deg, #6c63ff, #00c9a7)",
-                color: "var(--bg-card)",
+                color: "var(--text-inverse)",
                 border: "none",
                 padding: "16px 40px",
                 borderRadius: 30,

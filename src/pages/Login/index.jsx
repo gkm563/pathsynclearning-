@@ -245,7 +245,7 @@ export default function Login() {
             <button 
               type="submit"
               disabled={loading}
-              style={{ width: "100%", padding: 16, background: activeRole.accent, border: "none", borderRadius: 12, color: "var(--bg-card)", fontSize: 16, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: "opacity 0.3s" }}
+              style={{ width: "100%", padding: 16, background: activeRole.accent, border: "none", borderRadius: 12, color: "var(--text-inverse)", fontSize: 16, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: "opacity 0.3s" }}
             >
               {loading ? "Authenticating..." : <>Sign In <ArrowRight size={20} /></>}
             </button>
@@ -258,10 +258,10 @@ export default function Login() {
           </div>
 
           <div style={{ display: "flex", gap: 16 }}>
-            <button style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: 12, borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "var(--bg-card)", fontWeight: 600, transition: "all 0.2s", cursor: "pointer" }} onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.08)"} onMouseLeave={e => e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
+            <button style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: 12, borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "var(--text-inverse)", fontWeight: 600, transition: "all 0.2s", cursor: "pointer" }} onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.08)"} onMouseLeave={e => e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
               <GithubIcon size={20} /> GitHub
             </button>
-            <button style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: 12, borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "var(--bg-card)", fontWeight: 600, transition: "all 0.2s", cursor: "pointer" }} onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.08)"} onMouseLeave={e => e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
+            <button style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: 12, borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "var(--text-inverse)", fontWeight: 600, transition: "all 0.2s", cursor: "pointer" }} onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.08)"} onMouseLeave={e => e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
               <LinkedinIcon size={20} /> LinkedIn
             </button>
           </div>
