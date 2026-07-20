@@ -167,14 +167,14 @@ export default function Login() {
       </div>
 
       {/* Left Hero Column with Dynamic Floating Widgets */}
-      <div style={{ flex: "1 1 50%", display: "flex", flexDirection: "column", padding: "50px 60px", position: "relative", zIndex: 1, justifyContent: "space-between" }}>
+      <div style={{ flex: "1 1 50%", display: "flex", flexDirection: "column", padding: "36px 60px 40px", position: "relative", zIndex: 1, justifyContent: "flex-start" }}>
         
         {/* Brand Header */}
-        <Link to="/" style={{ fontFamily: "'Syne', sans-serif", fontSize: 26, fontWeight: 800, color: "var(--text-main)", textDecoration: "none", width: "fit-content" }}>
+        <Link to="/" style={{ fontFamily: "'Syne', sans-serif", fontSize: 38, fontWeight: 800, color: "var(--text-main)", textDecoration: "none", width: "fit-content", marginBottom: 28 }}>
           Path<span style={{ color: activeRole.accent }}>Ed</span>
         </Link>
         
-        <div style={{ maxWidth: 500, margin: "auto 0" }}>
+        <div style={{ maxWidth: 500, margin: "0 0 24px" }}>
           <motion.div 
             key={activeRole.id}
             initial={{ opacity: 0, x: -20 }}
