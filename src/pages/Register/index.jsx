@@ -80,7 +80,7 @@ export default function Register() {
   const [terms, setTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   // Looping CRI Score 0 -> 78 -> 0 Animation
@@ -118,14 +118,54 @@ export default function Register() {
 
   const activeRole = ROLES.find(r => r.id === role);
 
+  // Field Specific Validation Function
+  const validateForm = (currentForm = form, currentTerms = terms) => {
+    if (!currentForm.name.trim()) {
+      return "Full Name is required.";
+    }
+    if (/^\d+$/.test(currentForm.name.trim())) {
+      return "Full Name cannot contain numbers only.";
+    }
+    if (currentForm.name.trim().length < 2) {
+      return "Full Name must be at least 2 characters long.";
+    }
+
+    if (!currentForm.email.trim()) {
+      return "Email address is required.";
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(currentForm.email.trim())) {
+      return "Please enter a valid email address (e.g. name@domain.com).";
+    }
+
+    if (!currentForm.password) {
+      return "Password is required.";
+    }
+    if (currentForm.password.length < 6) {
+      return "Password must be at least 6 characters long.";
+    }
+
+    if (currentForm.password !== currentForm.confirm) {
+      return "Passwords do not match. Please re-enter.";
+    }
+
+    if (!currentTerms) {
+      return "You must agree to the Terms of Service & Privacy Policy.";
+    }
+
+    return "";
+  };
+
   const handleRegister = (e) => {
     e.preventDefault();
-    if (!form.name || !form.email || form.password.length < 6 || form.password !== form.confirm || !terms) {
-      setError(true);
-      setTimeout(() => setError(false), 600);
+    const errorMsg = validateForm();
+    if (errorMsg) {
+      setErrorMessage(errorMsg);
+      // Persistent warning: remains fixed until user corrects the input!
       return;
     }
     
+    setErrorMessage("");
     setLoading(true);
     let p = 0;
     const interval = setInterval(() => {
@@ -139,6 +179,22 @@ export default function Register() {
         setTimeout(() => navigate('/platform'), 400);
       }
     }, 300);
+  };
+
+  const handleInputChange = (field, value) => {
+    const updatedForm = { ...form, [field]: value };
+    setForm(updatedForm);
+    if (errorMessage) {
+      // Real-time re-validation so error clears or updates as user types!
+      setErrorMessage(validateForm(updatedForm, terms));
+    }
+  };
+
+  const handleTermsChange = (checked) => {
+    setTerms(checked);
+    if (errorMessage) {
+      setErrorMessage(validateForm(form, checked));
+    }
   };
 
   return (
@@ -310,22 +366,16 @@ export default function Register() {
       {/* Right Form Column */}
       <div style={{ flex: "1 1 50%", display: "flex", alignItems: "center", justifyContent: "center", padding: "30px 40px", position: "relative", zIndex: 1 }}>
         <motion.div 
-          animate={error ? { x: [-10, 10, -10, 10, 0] } : {}}
+          animate={errorMessage ? { x: [-10, 10, -10, 10, 0] } : {}}
           transition={{ duration: 0.4 }}
           style={{ width: "100%", maxWidth: 480, background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: "40px", position: "relative", overflow: "hidden", boxShadow: "0 20px 50px rgba(0,0,0,0.08)" }}
         >
-          {loading && (
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: "rgba(255,255,255,0.1)" }}>
-              <div style={{ height: "100%", background: activeRole.accent, width: `${progress}%`, transition: "width 0.3s ease" }} />
-            </div>
-          )}
-
           {/* Role Switcher */}
           <div style={{ display: "flex", gap: 8, marginBottom: 24, background: "var(--bg-alt)", padding: 6, borderRadius: 16, border: "1px solid var(--border-light)" }}>
             {ROLES.map(r => (
               <button 
                 key={r.id} 
-                onClick={() => { setRole(r.id); setError(false); }}
+                onClick={() => { setRole(r.id); setErrorMessage(""); }}
                 style={{ 
                   flex: 1, padding: "10px 6px", borderRadius: 12, border: "none", cursor: "pointer", 
                   background: role === r.id ? r.bg : "transparent",
@@ -340,17 +390,36 @@ export default function Register() {
             ))}
           </div>
 
+          {/* Persistent Field-Specific Error Message Banner */}
+          <AnimatePresence>
+            {errorMessage && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                animate={{ opacity: 1, height: "auto", marginBottom: 20 }}
+                exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                style={{
+                  background: "rgba(239,68,68,0.1)", border: "1.5px solid #ef4444", borderRadius: 12,
+                  padding: "12px 16px", display: "flex", alignItems: "center", gap: 10,
+                  color: "#ef4444", fontSize: 13, fontWeight: 600, overflow: "hidden"
+                }}
+              >
+                <AlertCircle size={18} style={{ flexShrink: 0 }} />
+                <span>{errorMessage}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <form onSubmit={handleRegister}>
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--text-muted)", marginBottom: 6, fontFamily: "'Fira Code', monospace", letterSpacing: 1 }}>FULL NAME</label>
               <input 
                 type="text" 
                 value={form.name}
-                onChange={e => { setForm({...form, name: e.target.value}); setError(false); }}
+                onChange={e => handleInputChange("name", e.target.value)}
                 placeholder="Alex Morgan"
-                style={{ width: "100%", padding: "12px 16px", background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", borderRadius: 12, color: "var(--text-main)", fontSize: 15, outline: "none", transition: "all 0.3s" }}
+                style={{ width: "100%", padding: "12px 16px", background: "var(--bg-alt)", border: `1.5px solid ${errorMessage && (!form.name.trim() || /^\d+$/.test(form.name.trim())) ? "#ef4444" : "var(--border-light)"}`, borderRadius: 12, color: "var(--text-main)", fontSize: 15, outline: "none", transition: "all 0.3s" }}
                 onFocus={(e) => { e.target.style.borderColor = activeRole.accent; e.target.style.boxShadow = `0 0 0 3px ${activeRole.accent}30`; }}
-                onBlur={(e) => { e.target.style.borderColor = "var(--border-light)"; e.target.style.boxShadow = "none"; }}
+                onBlur={(e) => { e.target.style.borderColor = errorMessage && (!form.name.trim() || /^\d+$/.test(form.name.trim())) ? "#ef4444" : "var(--border-light)"; e.target.style.boxShadow = "none"; }}
               />
             </div>
 
@@ -359,11 +428,11 @@ export default function Register() {
               <input 
                 type="email" 
                 value={form.email}
-                onChange={e => { setForm({...form, email: e.target.value}); setError(false); }}
+                onChange={e => handleInputChange("email", e.target.value)}
                 placeholder="you@pathed.org"
-                style={{ width: "100%", padding: "12px 16px", background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", borderRadius: 12, color: "var(--text-main)", fontSize: 15, outline: "none", transition: "all 0.3s" }}
+                style={{ width: "100%", padding: "12px 16px", background: "var(--bg-alt)", border: `1.5px solid ${errorMessage && (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) ? "#ef4444" : "var(--border-light)"}`, borderRadius: 12, color: "var(--text-main)", fontSize: 15, outline: "none", transition: "all 0.3s" }}
                 onFocus={(e) => { e.target.style.borderColor = activeRole.accent; e.target.style.boxShadow = `0 0 0 3px ${activeRole.accent}30`; }}
-                onBlur={(e) => { e.target.style.borderColor = "var(--border-light)"; e.target.style.boxShadow = "none"; }}
+                onBlur={(e) => { e.target.style.borderColor = errorMessage && (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) ? "#ef4444" : "var(--border-light)"; e.target.style.boxShadow = "none"; }}
               />
             </div>
             
@@ -374,11 +443,11 @@ export default function Register() {
                   <input 
                     type={showPassword ? "text" : "password"} 
                     value={form.password}
-                    onChange={e => { setForm({...form, password: e.target.value}); setError(false); }}
+                    onChange={e => handleInputChange("password", e.target.value)}
                     placeholder="••••••••"
-                    style={{ width: "100%", padding: "12px 36px 12px 16px", background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", borderRadius: 12, color: "var(--text-main)", fontSize: 15, outline: "none", transition: "all 0.3s" }}
+                    style={{ width: "100%", padding: "12px 36px 12px 16px", background: "var(--bg-alt)", border: `1.5px solid ${errorMessage && form.password.length < 6 ? "#ef4444" : "var(--border-light)"}`, borderRadius: 12, color: "var(--text-main)", fontSize: 15, outline: "none", transition: "all 0.3s" }}
                     onFocus={(e) => { e.target.style.borderColor = activeRole.accent; e.target.style.boxShadow = `0 0 0 3px ${activeRole.accent}30`; }}
-                    onBlur={(e) => { e.target.style.borderColor = "var(--border-light)"; e.target.style.boxShadow = "none"; }}
+                    onBlur={(e) => { e.target.style.borderColor = errorMessage && form.password.length < 6 ? "#ef4444" : "var(--border-light)"; e.target.style.boxShadow = "none"; }}
                   />
                   <button 
                     type="button"
@@ -396,32 +465,26 @@ export default function Register() {
                 <input 
                   type={showPassword ? "text" : "password"} 
                   value={form.confirm}
-                  onChange={e => { setForm({...form, confirm: e.target.value}); setError(false); }}
+                  onChange={e => handleInputChange("confirm", e.target.value)}
                   placeholder="••••••••"
-                  style={{ width: "100%", padding: "12px 16px", background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", borderRadius: 12, color: "var(--text-main)", fontSize: 15, outline: "none", transition: "all 0.3s" }}
+                  style={{ width: "100%", padding: "12px 16px", background: "var(--bg-alt)", border: `1.5px solid ${errorMessage && form.password !== form.confirm ? "#ef4444" : "var(--border-light)"}`, borderRadius: 12, color: "var(--text-main)", fontSize: 15, outline: "none", transition: "all 0.3s" }}
                   onFocus={(e) => { e.target.style.borderColor = activeRole.accent; e.target.style.boxShadow = `0 0 0 3px ${activeRole.accent}30`; }}
-                  onBlur={(e) => { e.target.style.borderColor = "var(--border-light)"; e.target.style.boxShadow = "none"; }}
+                  onBlur={(e) => { e.target.style.borderColor = errorMessage && form.password !== form.confirm ? "#ef4444" : "var(--border-light)"; e.target.style.boxShadow = "none"; }}
                 />
               </div>
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
-              <input type="checkbox" id="terms" checked={terms} onChange={e => { setTerms(e.target.checked); setError(false); }} style={{ width: 16, height: 16, accentColor: activeRole.accent, cursor: "pointer" }} />
+              <input type="checkbox" id="terms" checked={terms} onChange={e => handleTermsChange(e.target.checked)} style={{ width: 16, height: 16, accentColor: activeRole.accent, cursor: "pointer" }} />
               <label htmlFor="terms" style={{ color: "var(--text-muted)", fontSize: 13, lineHeight: 1.4, cursor: "pointer" }}>
                 I agree to the <Link to="/terms-of-service" style={{ color: activeRole.accent, fontWeight: 600 }}>Terms of Service</Link> and <Link to="/privacy-policy" style={{ color: activeRole.accent, fontWeight: 600 }}>Privacy Policy</Link>.
               </label>
             </div>
 
-            {error && (
-              <div style={{ color: "#ef4444", fontSize: 13, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
-                <AlertCircle size={16} /> Please fill all fields correctly and agree to the terms.
-              </div>
-            )}
-
             <button 
               type="submit"
-              disabled={loading || !terms}
-              style={{ width: "100%", padding: "15px", background: activeRole.accent, border: "none", borderRadius: 12, color: "#ffffff", fontSize: 16, fontWeight: 700, cursor: (!terms || loading) ? "not-allowed" : "pointer", opacity: (!terms || loading) ? 0.6 : 1, display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: "all 0.2s", boxShadow: `0 8px 24px ${activeRole.accent}40` }}
+              disabled={loading}
+              style={{ width: "100%", padding: "15px", background: activeRole.accent, border: "none", borderRadius: 12, color: "#ffffff", fontSize: 16, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1, display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: "all 0.2s", boxShadow: `0 8px 24px ${activeRole.accent}40` }}
             >
               {loading ? "Creating Account..." : <>Create {activeRole.name} Account <ArrowRight size={18} /></>}
             </button>

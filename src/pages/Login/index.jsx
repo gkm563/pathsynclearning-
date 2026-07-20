@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { GraduationCap, Briefcase, BookOpen, Eye, EyeOff, AlertCircle, ArrowRight, Zap, ShieldCheck, Sparkles, Award } from "lucide-react";
+import { GraduationCap, Briefcase, BookOpen, Eye, EyeOff, AlertCircle, ArrowRight, Sparkles, ShieldCheck } from "lucide-react";
 
 const GoogleIcon = ({ size = 20 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -91,7 +91,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   // Looping CRI Score 0 -> 78 -> 0 Animation
@@ -129,14 +129,32 @@ export default function Login() {
 
   const activeRole = ROLES.find(r => r.id === role);
 
+  const validateLoginForm = (currentForm = form) => {
+    if (!currentForm.identifier.trim()) {
+      return "Email or username is required.";
+    }
+    if (currentForm.identifier.trim().length < 3) {
+      return "Email or username must be at least 3 characters.";
+    }
+    if (!currentForm.password) {
+      return "Password is required.";
+    }
+    if (currentForm.password.length < 6) {
+      return "Password must be at least 6 characters long.";
+    }
+    return "";
+  };
+
   const handleLogin = (e) => {
     e.preventDefault();
-    if (form.identifier.length < 3 || form.password.length < 6) {
-      setError(true);
-      setTimeout(() => setError(false), 600);
+    const errorMsg = validateLoginForm();
+    if (errorMsg) {
+      setErrorMessage(errorMsg);
+      // Persistent warning banner until corrected
       return;
     }
     
+    setErrorMessage("");
     setLoading(true);
     let p = 0;
     const interval = setInterval(() => {
@@ -150,6 +168,14 @@ export default function Login() {
         setTimeout(() => navigate(role === 'student' ? '/platform' : '/'), 400);
       }
     }, 300);
+  };
+
+  const handleInputChange = (field, value) => {
+    const updatedForm = { ...form, [field]: value };
+    setForm(updatedForm);
+    if (errorMessage) {
+      setErrorMessage(validateLoginForm(updatedForm));
+    }
   };
 
   return (
@@ -242,7 +268,7 @@ export default function Login() {
         <div style={{ position: "absolute", inset: 0, opacity: 0.04, backgroundImage: "linear-gradient(to right, var(--text-main) 1px, transparent 1px), linear-gradient(to bottom, var(--text-main) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
       </div>
 
-      {/* Left Hero Column with Dynamic Floating Widgets */}
+      {/* Left Hero Column */}
       <div style={{ flex: "1 1 50%", display: "flex", flexDirection: "column", padding: "16px 60px 20px", position: "relative", zIndex: 1, justifyContent: "flex-start" }}>
         
         {/* Brand Header */}
@@ -331,22 +357,16 @@ export default function Login() {
       {/* Right Form Column */}
       <div style={{ flex: "1 1 50%", display: "flex", alignItems: "center", justifyContent: "center", padding: "30px 40px", position: "relative", zIndex: 1 }}>
         <motion.div 
-          animate={error ? { x: [-10, 10, -10, 10, 0] } : {}}
+          animate={errorMessage ? { x: [-10, 10, -10, 10, 0] } : {}}
           transition={{ duration: 0.4 }}
           style={{ width: "100%", maxWidth: 460, background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: "40px", position: "relative", overflow: "hidden", boxShadow: "0 20px 50px rgba(0,0,0,0.08)" }}
         >
-          {loading && (
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: "rgba(255,255,255,0.1)" }}>
-              <div style={{ height: "100%", background: activeRole.accent, width: `${progress}%`, transition: "width 0.3s ease" }} />
-            </div>
-          )}
-
           {/* Role Switcher */}
           <div style={{ display: "flex", gap: 8, marginBottom: 32, background: "var(--bg-alt)", padding: 6, borderRadius: 16, border: "1px solid var(--border-light)" }}>
             {ROLES.map(r => (
               <button 
                 key={r.id} 
-                onClick={() => { setRole(r.id); setError(false); }}
+                onClick={() => { setRole(r.id); setErrorMessage(""); }}
                 style={{ 
                   flex: 1, padding: "10px 6px", borderRadius: 12, border: "none", cursor: "pointer", 
                   background: role === r.id ? r.bg : "transparent",
@@ -361,17 +381,36 @@ export default function Login() {
             ))}
           </div>
 
+          {/* Persistent Field-Specific Error Message Banner */}
+          <AnimatePresence>
+            {errorMessage && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                animate={{ opacity: 1, height: "auto", marginBottom: 24 }}
+                exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                style={{
+                  background: "rgba(239,68,68,0.1)", border: "1.5px solid #ef4444", borderRadius: 12,
+                  padding: "12px 16px", display: "flex", alignItems: "center", gap: 10,
+                  color: "#ef4444", fontSize: 13, fontWeight: 600, overflow: "hidden"
+                }}
+              >
+                <AlertCircle size={18} style={{ flexShrink: 0 }} />
+                <span>{errorMessage}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <form onSubmit={handleLogin}>
             <div style={{ marginBottom: 20 }}>
               <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--text-muted)", marginBottom: 8, fontFamily: "'Fira Code', monospace", letterSpacing: 1 }}>EMAIL OR USERNAME</label>
               <input 
                 type="text" 
                 value={form.identifier}
-                onChange={e => { setForm({...form, identifier: e.target.value}); setError(false); }}
+                onChange={e => handleInputChange("identifier", e.target.value)}
                 placeholder="you@pathed.org"
-                style={{ width: "100%", padding: "14px 18px", background: "var(--bg-alt)", border: `1.5px solid ${error ? "#ef4444" : "var(--border-light)"}`, borderRadius: 12, color: "var(--text-main)", fontSize: 15, outline: "none", transition: "all 0.3s" }}
+                style={{ width: "100%", padding: "14px 18px", background: "var(--bg-alt)", border: `1.5px solid ${errorMessage && (!form.identifier.trim() || form.identifier.trim().length < 3) ? "#ef4444" : "var(--border-light)"}`, borderRadius: 12, color: "var(--text-main)", fontSize: 15, outline: "none", transition: "all 0.3s" }}
                 onFocus={(e) => { e.target.style.borderColor = activeRole.accent; e.target.style.boxShadow = `0 0 0 3px ${activeRole.accent}30`; }}
-                onBlur={(e) => { e.target.style.borderColor = error ? "#ef4444" : "var(--border-light)"; e.target.style.boxShadow = "none"; }}
+                onBlur={(e) => { e.target.style.borderColor = errorMessage && (!form.identifier.trim() || form.identifier.trim().length < 3) ? "#ef4444" : "var(--border-light)"; e.target.style.boxShadow = "none"; }}
               />
             </div>
             
@@ -384,11 +423,11 @@ export default function Login() {
                 <input 
                   type={showPassword ? "text" : "password"} 
                   value={form.password}
-                  onChange={e => { setForm({...form, password: e.target.value}); setError(false); }}
+                  onChange={e => handleInputChange("password", e.target.value)}
                   placeholder="••••••••"
-                  style={{ width: "100%", padding: "14px 48px 14px 18px", background: "var(--bg-alt)", border: `1.5px solid ${error ? "#ef4444" : "var(--border-light)"}`, borderRadius: 12, color: "var(--text-main)", fontSize: 15, outline: "none", transition: "all 0.3s" }}
+                  style={{ width: "100%", padding: "14px 48px 14px 18px", background: "var(--bg-alt)", border: `1.5px solid ${errorMessage && (!form.password || form.password.length < 6) ? "#ef4444" : "var(--border-light)"}`, borderRadius: 12, color: "var(--text-main)", fontSize: 15, outline: "none", transition: "all 0.3s" }}
                   onFocus={(e) => { e.target.style.borderColor = activeRole.accent; e.target.style.boxShadow = `0 0 0 3px ${activeRole.accent}30`; }}
-                  onBlur={(e) => { e.target.style.borderColor = error ? "#ef4444" : "var(--border-light)"; e.target.style.boxShadow = "none"; }}
+                  onBlur={(e) => { e.target.style.borderColor = errorMessage && (!form.password || form.password.length < 6) ? "#ef4444" : "var(--border-light)"; e.target.style.boxShadow = "none"; }}
                 />
                 <button 
                   type="button"
@@ -400,12 +439,6 @@ export default function Login() {
                 </button>
               </div>
             </div>
-
-            {error && (
-              <div style={{ color: "#ef4444", fontSize: 13, marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}>
-                <AlertCircle size={16} /> Invalid credentials. Please check your username and password.
-              </div>
-            )}
 
             <button 
               type="submit"
