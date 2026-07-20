@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Bell, Search, Sparkles, LayoutDashboard, Map, Zap, BookOpen, Newspaper } from "lucide-react";
+import { Bell, Search, Sparkles, LayoutDashboard, Map, Zap, BookOpen, Newspaper, GraduationCap, Briefcase } from "lucide-react";
 
 export default function DashboardHeader({ activeTab, setActiveTab }) {
+  const [mode, setMode] = useState("career"); // "career" or "academic"
+
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={15} /> },
     { id: "roadmap", label: "Roadmap", icon: <Map size={15} /> },
@@ -54,16 +56,48 @@ export default function DashboardHeader({ activeTab, setActiveTab }) {
         </nav>
       </div>
 
-      {/* Right: Search, Notifications, Avatar */}
+      {/* Right: Career/Academic Mode Toggle, Search, Notifications, Avatar */}
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        
+        {/* CAREER ⟷ ACADEMIC MODE TOGGLE SWITCH */}
+        <div style={{
+          display: "flex", alignItems: "center", background: "var(--bg-alt)",
+          border: "1px solid var(--border-light)", borderRadius: 20, padding: 3
+        }}>
+          <button
+            onClick={() => setMode("career")}
+            style={{
+              display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 16, border: "none",
+              background: mode === "career" ? "linear-gradient(135deg, #6c63ff, #00c9a7)" : "transparent",
+              color: mode === "career" ? "#ffffff" : "var(--text-muted)",
+              fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 700, cursor: "pointer",
+              transition: "all 0.2s ease"
+            }}
+          >
+            <Briefcase size={13} /> Career
+          </button>
+          <button
+            onClick={() => setMode("academic")}
+            style={{
+              display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 16, border: "none",
+              background: mode === "academic" ? "linear-gradient(135deg, #f7971e, #00c9a7)" : "transparent",
+              color: mode === "academic" ? "#ffffff" : "var(--text-muted)",
+              fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 700, cursor: "pointer",
+              transition: "all 0.2s ease"
+            }}
+          >
+            <GraduationCap size={13} /> Academic
+          </button>
+        </div>
+
         {/* Quick Search */}
-        <div style={{ position: "relative", width: 220 }}>
+        <div style={{ position: "relative", width: 180 }}>
           <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
           <input
             type="text"
-            placeholder="Search skills, challenges..."
+            placeholder="Search skills..."
             style={{
-              width: "100%", padding: "8px 12px 8px 34px", background: "var(--bg-alt)",
+              width: "100%", padding: "7px 12px 7px 32px", background: "var(--bg-alt)",
               border: "1px solid var(--border-light)", borderRadius: 20,
               fontSize: 12, color: "var(--text-main)", outline: "none",
               transition: "all 0.2s"
@@ -79,24 +113,24 @@ export default function DashboardHeader({ activeTab, setActiveTab }) {
           whileTap={{ scale: 0.95 }}
           onClick={() => alert("Notifications: 2 new daily challenges dropped!")}
           style={{
-            position: "relative", width: 38, height: 38, borderRadius: 12,
+            position: "relative", width: 36, height: 36, borderRadius: 12,
             background: "var(--bg-alt)", border: "1px solid var(--border-light)",
             display: "flex", alignItems: "center", justifyContent: "center",
             color: "var(--text-main)", cursor: "pointer"
           }}
         >
-          <Bell size={17} />
-          <span style={{ position: "absolute", top: 8, right: 8, width: 8, height: 8, borderRadius: "50%", background: "#ef4444" }} />
+          <Bell size={16} />
+          <span style={{ position: "absolute", top: 6, right: 6, width: 8, height: 8, borderRadius: "50%", background: "#ef4444" }} />
         </motion.button>
 
         {/* User Profile Avatar */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "4px 10px 4px 4px", background: "var(--bg-alt)", borderRadius: 24, border: "1px solid var(--border-light)" }}>
-          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg, #6c63ff, #00c9a7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: "#fff" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 10px 4px 4px", background: "var(--bg-alt)", borderRadius: 24, border: "1px solid var(--border-light)" }}>
+          <div style={{ width: 30, height: 30, borderRadius: "50%", background: "linear-gradient(135deg, #6c63ff, #00c9a7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "#fff" }}>
             🎓
           </div>
-          <div style={{ textAlign: "left", paddingRight: 6 }}>
-            <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 700, color: "var(--text-main)", lineHeight: 1 }}>Rahul K.</div>
-            <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "#6c63ff", fontWeight: 600 }}>SDE Trainee</div>
+          <div style={{ textAlign: "left", paddingRight: 4 }}>
+            <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 700, color: "var(--text-main)", lineHeight: 1 }}>Rahul K.</div>
+            <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 9, color: "#6c63ff", fontWeight: 600 }}>SDE Trainee</div>
           </div>
         </div>
       </div>

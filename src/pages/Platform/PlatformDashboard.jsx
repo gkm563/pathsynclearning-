@@ -1,27 +1,53 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import QuoteBanner from "../../components/dashboard/QuoteBanner";
-import AddWidgetModal, { ALL_AVAILABLE_WIDGETS } from "../../components/dashboard/AddWidgetModal";
+import AddWidgetModal from "../../components/dashboard/AddWidgetModal";
 import LockedFeatureModal from "../../components/dashboard/LockedFeatureModal";
 import { 
   Sparkles, Plus, Lock, CheckCircle2, ChevronRight, 
-  Flame, Award, Coins, Zap, Shield, HelpCircle, Eye, ArrowUpRight 
+  Flame, Award, Coins, Zap, Shield, HelpCircle, Eye, ArrowUpRight, ChevronDown, ChevronUp, ExternalLink
 } from "lucide-react";
 
 export default function PlatformDashboard() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [activeWidgets, setActiveWidgets] = useState([]); // Default empty workspace
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [lockedModalFeature, setLockedModalFeature] = useState(null);
   const [hoveredCardId, setHoveredCardId] = useState(null);
+  
+  // Expandable Career Goal Details State
+  const [isGoalExpanded, setIsGoalExpanded] = useState(false);
+
+  // Animated CRI Score (0 -> 62)
+  const [criScore, setCriScore] = useState(0);
+
+  useEffect(() => {
+    let current = 0;
+    const target = 62;
+    const timer = setInterval(() => {
+      current += 1;
+      if (current >= target) {
+        setCriScore(target);
+        clearInterval(timer);
+      } else {
+        setCriScore(current);
+      }
+    }, 25);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Hovered Roadmap Node Tooltip State
+  const [hoveredNode, setHoveredNode] = useState(null);
 
   // Student metrics
   const user = {
     name: "Rahul Kushwaha",
     degree: "B.Tech · Computer Science",
     institute: "IIT Kanpur",
-    cri: 62,
+    criTarget: 62,
     xp: 1340,
     coins: 2480,
     streak: 7,
@@ -37,28 +63,46 @@ export default function PlatformDashboard() {
   };
 
   const roadmapNodes = [
-    { label: "Programming\nBasics", done: true },
-    { label: "Data\nStructures", done: true },
-    { label: "Algorithms", done: true },
-    { label: "DBMS", done: false, active: true },
-    { label: "OS\nConcepts", done: false },
-    { label: "Networking", done: false },
-    { label: "System\nDesign", done: false },
-    { label: "Portfolio", done: false },
+    { id: 1, label: "Programming\nBasics", done: true, topics: "5 of 5 Topics Covered", mastery: 100, current: "Pointers, Memory & Functions" },
+    { id: 2, label: "Data\nStructures", done: true, topics: "4 of 4 Topics Covered", mastery: 100, current: "Arrays, Linked Lists & Trees" },
+    { id: 3, label: "Algorithms", done: true, topics: "4 of 4 Topics Covered", mastery: 100, current: "Sorting, Searching & Recursion" },
+    { id: 4, label: "DBMS", done: false, active: true, topics: "3 of 5 Topics Covered", mastery: 60, current: "Currently Learning: Relational Algebra & Indexing" },
+    { id: 5, label: "OS\nConcepts", done: false, topics: "0 of 5 Topics Covered", mastery: 0, current: "Upcoming: Process Scheduling & Threads" },
+    { id: 6, label: "Networking", done: false, topics: "0 of 4 Topics Covered", mastery: 0, current: "Upcoming: TCP/IP & HTTP Protocols" },
+    { id: 7, label: "System\nDesign", done: false, topics: "0 of 6 Topics Covered", mastery: 0, current: "Upcoming: Load Balancing & Caching" },
+    { id: 8, label: "Portfolio", done: false, topics: "0 of 3 Projects Built", mastery: 0, current: "Upcoming: Capstone Microservice App" },
   ];
 
   const communityCards = [
-    { id: "mentorship", label: "Industry Mentorship", desc: "1-on-1 sessions with senior engineers", req: "1,500 Coins or PASS", icon: "🤝", accent: "#6c63ff" },
-    { id: "project-collab", label: "Project Collab", desc: "Build production apps with peers", req: "Intermediate Level + 1 Project", icon: "🚀", accent: "#f7971e" },
-    { id: "alumni-network", label: "Alumni Network", desc: "Direct referral access to placed seniors", req: "2,000 XP or Store Pass", icon: "🌐", accent: "#00c9a7" },
-    { id: "events", label: "Events & Summits", desc: "Live workshops, webinars & hackathons", req: "500 XP + Verified Email", icon: "🎪", accent: "#e040fb" },
-    { id: "hack-squad", label: "Hack Squad", desc: "Lead or join institutional coding squads", req: "Top 20% CRI Score", icon: "⚔️", accent: "#ef4444" }
+    { id: "mentorship", label: "Industry Mentorship", desc: "1-on-1 sessions with senior engineers from Tier-1 product tech companies.", req: "1,500 Coins or PASS", icon: "🤝", accent: "#6c63ff" },
+    { id: "project-collab", label: "Project Collab", desc: "Build production apps with peers in team-based sprint environments.", req: "Intermediate Level + 1 Project", icon: "🚀", accent: "#f7971e" },
+    { id: "alumni-network", label: "Alumni Network", desc: "Direct referral access to placed seniors across Microsoft, Google, and Amazon.", req: "2,000 XP or Store Pass", icon: "🌐", accent: "#00c9a7" },
+    { id: "events", label: "Events & Summits", desc: "Live workshops, technical webinars & national hackathon summits.", req: "500 XP + Verified Email", icon: "🎪", accent: "#e040fb" },
+    { id: "hack-squad", label: "Hack Squad", desc: "Lead or join institutional coding squads for competitive hackathons.", req: "Top 20% CRI Score", icon: "⚔️", accent: "#ef4444" }
   ];
 
   const techNews = [
-    { title: "DeepMind Releases AlphaCode 3 with Advanced Reasoning", category: "AI & ML", time: "2h ago", col: "#6c63ff" },
-    { title: "React 19 Official Release Candidate Announced", category: "Web Dev", time: "4h ago", col: "#00c9a7" },
-    { title: "Quantum Computing Milestone: 1000-Qubit Processor Live", category: "Hardware", time: "6h ago", col: "#f7971e" }
+    { 
+      title: "DeepMind Releases AlphaCode 3 with Advanced Reasoning", 
+      desc: "New AI model achieves competitive programming mastery surpassing 99% of human software engineers on complex algorithmic benchmarks.",
+      category: "AI & ML", 
+      time: "2h ago", 
+      col: "#6c63ff" 
+    },
+    { 
+      title: "React 19 Official Release Candidate Announced", 
+      desc: "Features automatic memoization compiler, server actions integration, and asset loading hooks for supercharged web applications.",
+      category: "Web Dev", 
+      time: "4h ago", 
+      col: "#00c9a7" 
+    },
+    { 
+      title: "Quantum Computing Milestone: 1000-Qubit Processor Live", 
+      desc: "Researchers demonstrate fault-tolerant quantum logic gates executing cryptography protocols with record fidelity.",
+      category: "Hardware", 
+      time: "6h ago", 
+      col: "#f7971e" 
+    }
   ];
 
   const handleAddWidget = (widget) => {
@@ -71,18 +115,17 @@ export default function PlatformDashboard() {
     setActiveWidgets(activeWidgets.filter(w => w.id !== widgetId));
   };
 
-  // Separate special colored cards from standard cards
   const specialActiveCards = activeWidgets.filter(w => w.specialColor);
   const standardActiveCards = activeWidgets.filter(w => !w.specialColor);
 
   return (
     <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
       
-      {/* 1. TOP METRICS & USER CAREER GOAL BANNER */}
+      {/* 1. TOP METRICS & CAREER GOAL BANNER WITH EXPANDABLE DETAILS */}
       <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: "24px 28px", marginBottom: 28, boxShadow: "0 10px 30px rgba(0,0,0,0.04)" }}>
+        
+        {/* User Profile & Top Metrics Bar */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20, marginBottom: 20, paddingBottom: 20, borderBottom: "1px solid var(--border-light)" }}>
-          
-          {/* User Profile Info */}
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg, #6c63ff, #00c9a7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, color: "#fff", flexShrink: 0, boxShadow: "0 6px 20px rgba(108,99,255,0.3)" }}>
               🎓
@@ -100,7 +143,7 @@ export default function PlatformDashboard() {
             </div>
           </div>
 
-          {/* XP, Points & Coins Metrics (Moved out of top bar / sidebar as requested) */}
+          {/* XP, Points & Coins Metrics */}
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(108,99,255,0.1)", border: "1px solid #6c63ff40", padding: "10px 16px", borderRadius: 16 }}>
               <Zap size={18} color="#6c63ff" />
@@ -128,24 +171,105 @@ export default function PlatformDashboard() {
           </div>
         </div>
 
-        {/* Target Career Goal Details */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
-          <div>
-            <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 700, color: "#00c9a7", letterSpacing: 1, marginBottom: 4 }}>
-              TARGET CAREER GOAL
+        {/* CAREER GOAL HEADER & CORE SKILLS MAPPED */}
+        <div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <div>
+              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700, color: "#6c63ff", letterSpacing: 1.5, marginBottom: 2 }}>
+                YOUR CAREER GOAL
+              </div>
+              <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 32, fontWeight: 800, color: "var(--text-main)", margin: 0, display: "flex", alignItems: "center", gap: 12 }}>
+                {user.goal.role}
+                <span style={{ fontSize: 12, fontFamily: "'Fira Code', monospace", fontWeight: 700, padding: "4px 12px", borderRadius: 20, background: "rgba(108,99,255,0.12)", color: "#6c63ff", border: "1px solid #6c63ff40" }}>
+                  {user.goal.tag}
+                </span>
+              </h2>
             </div>
-            <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 800, color: "var(--text-main)" }}>
-              {user.goal.role} <span style={{ color: "var(--text-muted)", fontSize: 14, fontWeight: 500 }}>({user.goal.tag})</span>
+
+            {/* Expand / Collapse Button */}
+            <button
+              onClick={() => setIsGoalExpanded(!isGoalExpanded)}
+              style={{
+                display: "flex", alignItems: "center", gap: 8, padding: "8px 16px", borderRadius: 14,
+                background: "var(--bg-alt)", border: "1px solid var(--border-light)", color: "#6c63ff",
+                fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 700, cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              {isGoalExpanded ? <>Collapse Details <ChevronUp size={16} /></> : <>Expand Details <ChevronDown size={16} /></>}
+            </button>
+          </div>
+
+          {/* Mapped Skills Chips Row */}
+          <div style={{ background: "var(--bg-alt)", border: "1px solid var(--border-light)", borderRadius: 16, padding: "12px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+            <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700, color: "var(--text-muted)", letterSpacing: 1 }}>
+              CORE SKILLS MAPPED
+            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              {user.goal.skills.map((sk, idx) => (
+                <span key={idx} style={{ padding: "6px 14px", borderRadius: 12, background: "var(--bg-card)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700, color: "#6c63ff" }}>
+                  {sk}
+                </span>
+              ))}
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            {user.goal.skills.map((sk, idx) => (
-              <span key={idx} style={{ padding: "5px 12px", borderRadius: 12, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 600, color: "var(--text-main)" }}>
-                {sk}
-              </span>
-            ))}
-          </div>
+          {/* EXPANDED 4-CARD CAREER DETAILS GRID (Matching Reference UI Image) */}
+          <AnimatePresence>
+            {isGoalExpanded && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                animate={{ opacity: 1, height: "auto", marginTop: 20 }}
+                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                style={{ overflow: "hidden" }}
+              >
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
+                  
+                  {/* Card 1: Target Role */}
+                  <div style={{ background: "rgba(108,99,255,0.06)", border: "1.5px solid #6c63ff30", borderRadius: 18, padding: 18 }}>
+                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700, color: "#6c63ff", letterSpacing: 1, marginBottom: 8, textAlign: "center" }}>
+                      TARGET ROLE
+                    </div>
+                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 800, color: "#6c63ff", textAlign: "center" }}>
+                      {user.goal.role}
+                    </div>
+                  </div>
+
+                  {/* Card 2: Timeline */}
+                  <div style={{ background: "rgba(0,201,167,0.06)", border: "1.5px solid #00c9a730", borderRadius: 18, padding: 18 }}>
+                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700, color: "#00c9a7", letterSpacing: 1, marginBottom: 8, textAlign: "center" }}>
+                      TIMELINE
+                    </div>
+                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 800, color: "#00c9a7", textAlign: "center" }}>
+                      {user.goal.timeline}
+                    </div>
+                  </div>
+
+                  {/* Card 3: Motivation */}
+                  <div style={{ background: "rgba(247,151,30,0.06)", border: "1.5px solid #f7971e30", borderRadius: 18, padding: 18 }}>
+                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700, color: "#f7971e", letterSpacing: 1, marginBottom: 8, textAlign: "center" }}>
+                      MOTIVATION
+                    </div>
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, color: "var(--text-main)", textAlign: "center", lineHeight: 1.4 }}>
+                      {user.goal.why}
+                    </div>
+                  </div>
+
+                  {/* Card 4: Expected Outcome */}
+                  <div style={{ background: "rgba(224,64,251,0.06)", border: "1.5px solid #e040fb30", borderRadius: 18, padding: 18 }}>
+                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700, color: "#e040fb", letterSpacing: 1, marginBottom: 8, textAlign: "center" }}>
+                      EXPECTED OUTCOME
+                    </div>
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, color: "var(--text-main)", textAlign: "center", lineHeight: 1.4 }}>
+                      {user.goal.outcome}
+                    </div>
+                  </div>
+
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
         </div>
       </div>
 
@@ -155,20 +279,25 @@ export default function PlatformDashboard() {
       {/* 3. CRI SCORE GAUGE & ACTIVITY HEATMAP */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 24, marginBottom: 28 }}>
         
-        {/* CRI Score Gauge Card */}
+        {/* CRI Score Gauge Card (Animated 0 -> 62%) */}
         <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 20, padding: 24, textAlign: "center", position: "relative" }}>
           <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 700, color: "#6c63ff", letterSpacing: 1, marginBottom: 12 }}>
-            CAREER READINESS INDEX
+            CAREER READINESS INDEX (CRI)
           </div>
           
           <div style={{ position: "relative", width: 140, height: 140, margin: "0 auto 12px" }}>
             <svg width="140" height="140" viewBox="0 0 140 140">
               <circle cx="70" cy="70" r="54" fill="none" stroke="var(--border-light)" strokeWidth="10" />
-              <circle cx="70" cy="70" r="54" fill="none" stroke="#6c63ff" strokeWidth="10" strokeDasharray="339" strokeDashoffset={339 - (339 * user.cri) / 100} strokeLinecap="round" transform="rotate(-90 70 70)" style={{ transition: "stroke-dashoffset 1.5s ease" }} />
+              <circle 
+                cx="70" cy="70" r="54" fill="none" stroke="#6c63ff" strokeWidth="10" 
+                strokeDasharray="339" strokeDashoffset={339 - (339 * criScore) / 100} 
+                strokeLinecap="round" transform="rotate(-90 70 70)" 
+                style={{ transition: "stroke-dashoffset 0.1s linear" }} 
+              />
             </svg>
             <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: 32, fontWeight: 800, color: "#6c63ff", lineHeight: 1 }}>{user.cri}%</span>
-              <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)" }}>GLOBAL SCORE</span>
+              <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: 36, fontWeight: 800, color: "#6c63ff", lineHeight: 1 }}>{criScore}%</span>
+              <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 9, color: "var(--text-muted)", letterSpacing: 0.5 }}>TARGET: 100%</span>
             </div>
           </div>
 
@@ -214,44 +343,120 @@ export default function PlatformDashboard() {
         </div>
       </div>
 
-      {/* 4. VISUAL SKILL NODE ROADMAP TIMELINE */}
-      <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 20, padding: 24, marginBottom: 28 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+      {/* 4. VISUAL CURVY ROAD SKILL NODE ROADMAP TIMELINE WITH NODE HOVER TOOLTIPS */}
+      <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 20, padding: 24, marginBottom: 28, position: "relative" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
           <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 700, color: "#6c63ff", letterSpacing: 1 }}>
-            4-YEAR SKILL NODE TIMELINE
+            4-YEAR CURVY ROAD SKILL TIMELINE
           </div>
-          <span style={{ fontSize: 12, color: "#00c9a7", fontWeight: 700 }}>Stage 4 of 8 Active</span>
+          
+          {/* Full View Button (Links to /roadmap) */}
+          <button
+            onClick={() => navigate("/roadmap")}
+            style={{
+              display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 12,
+              background: "rgba(108,99,255,0.12)", border: "1px solid #6c63ff40", color: "#6c63ff",
+              fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 700, cursor: "pointer"
+            }}
+          >
+            Full View <ArrowUpRight size={15} />
+          </button>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", overflowX: "auto", paddingBottom: 10, gap: 12 }}>
-          {roadmapNodes.map((node, idx) => (
-            <div key={idx} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, minWidth: 70 }}>
-              <div style={{
-                width: 44, height: 44, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-                fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: node.active ? 10 : 13,
-                background: node.done ? "linear-gradient(135deg, #00c9a7, #6c63ff)" : node.active ? "linear-gradient(135deg, #6c63ff, #f7971e)" : "var(--bg-alt)",
-                color: node.done || node.active ? "#ffffff" : "var(--text-muted)",
-                border: !node.done && !node.active ? "1.5px solid var(--border-light)" : "none",
-                boxShadow: node.done ? "0 4px 14px rgba(0,201,167,0.3)" : node.active ? "0 0 0 4px rgba(108,99,255,0.25)" : "none"
-              }}>
-                {node.done ? "✓" : node.active ? "NOW" : idx + 1}
+        {/* Curvy Road View Container */}
+        <div style={{ position: "relative", width: "100%", padding: "30px 0 20px" }}>
+          
+          {/* SVG Animated Curvy Road Line */}
+          <svg width="100%" height="80" viewBox="0 0 800 80" preserveAspectRatio="none" style={{ position: "absolute", top: 10, left: 0, width: "100%", pointerEvents: "none" }}>
+            <path
+              d="M 40 40 Q 150 10, 250 40 T 450 40 T 650 40 T 760 40"
+              fill="none"
+              stroke="#6c63ff30"
+              strokeWidth="6"
+              strokeDasharray="10 6"
+            />
+            <path
+              d="M 40 40 Q 150 10, 250 40 T 450 40 T 650 40 T 760 40"
+              fill="none"
+              stroke="#6c63ff"
+              strokeWidth="4"
+              strokeDasharray="200"
+              strokeDashoffset="0"
+            />
+          </svg>
+
+          {/* Connected Skill Nodes */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative", zIndex: 2 }}>
+            {roadmapNodes.map((node) => (
+              <div
+                key={node.id}
+                onMouseEnter={() => setHoveredNode(node)}
+                onMouseLeave={() => setHoveredNode(null)}
+                style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", cursor: "pointer" }}
+              >
+                {/* Node Circle */}
+                <motion.div
+                  whileHover={{ scale: 1.25, y: -4 }}
+                  style={{
+                    width: 48, height: 48, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+                    fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: node.active ? 10 : 13,
+                    background: node.done ? "linear-gradient(135deg, #00c9a7, #6c63ff)" : node.active ? "linear-gradient(135deg, #6c63ff, #f7971e)" : "var(--bg-alt)",
+                    color: node.done || node.active ? "#ffffff" : "var(--text-muted)",
+                    border: !node.done && !node.active ? "2px solid var(--border-light)" : "none",
+                    boxShadow: node.done ? "0 4px 14px rgba(0,201,167,0.4)" : node.active ? "0 0 0 6px rgba(108,99,255,0.25)" : "none"
+                  }}
+                >
+                  {node.done ? "✓" : node.active ? "NOW" : node.id}
+                </motion.div>
+
+                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 9, color: node.done ? "#00c9a7" : node.active ? "#6c63ff" : "var(--text-muted)", textAlign: "center", marginTop: 8, whiteSpace: "pre-line", fontWeight: node.active ? 700 : 500 }}>
+                  {node.label}
+                </div>
+
+                {/* Floating Interactive Hover Tooltip Dialog Box with Arrow */}
+                <AnimatePresence>
+                  {hoveredNode?.id === node.id && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                      animate={{ opacity: 1, y: -10, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                      style={{
+                        position: "absolute", bottom: "100%", width: 220,
+                        background: "var(--bg-card)", border: "1.5px solid #6c63ff",
+                        borderRadius: 16, padding: 14, boxShadow: "0 15px 35px rgba(0,0,0,0.3)",
+                        zIndex: 50, pointerEvents: "none"
+                      }}
+                    >
+                      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800, color: "var(--text-main)", marginBottom: 4 }}>
+                        {node.label.replace("\n", " ")}
+                      </div>
+                      <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "#6c63ff", fontWeight: 700, marginBottom: 6 }}>
+                        MASTERY: {node.mastery}% • {node.topics}
+                      </div>
+                      <div style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.4 }}>
+                        {node.current}
+                      </div>
+
+                      {/* Tooltip Down Arrow */}
+                      <div style={{ position: "absolute", bottom: -8, left: "50%", transform: "translateX(-50%) rotate(45deg)", width: 14, height: 14, background: "var(--bg-card)", borderRight: "1.5px solid #6c63ff", borderBottom: "1.5px solid #6c63ff" }} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
               </div>
-              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 9, color: node.done ? "#00c9a7" : node.active ? "#6c63ff" : "var(--text-muted)", textAlign: "center", whiteSpace: "pre-line", fontWeight: node.active ? 700 : 500 }}>
-                {node.label}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* 5. WORKSPACE MODULE (SPECIAL CARDS ROW + STANDARD CARDS GRID + HOVER DESCRIPTIONS) */}
+      {/* 5. WORKSPACE MODULE (SPECIAL CARDS ROW + STANDARD CARDS GRID + NO CROSS ICON) */}
       <div style={{ marginBottom: 36 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <div>
             <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 800, color: "var(--text-main)", margin: 0 }}>
               Custom Workspace
             </h2>
-            <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "4px 0 0" }}>Add, configure, or hover over feature widgets below.</p>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "4px 0 0" }}>Add or configure feature widgets below. Remove or manage via the + button.</p>
           </div>
 
           <button
@@ -288,7 +493,9 @@ export default function PlatformDashboard() {
                 >
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                     <span style={{ fontSize: 28 }}>{card.icon}</span>
-                    <button onClick={() => handleRemoveWidget(card.id)} style={{ background: "none", border: "none", cursor: "pointer", color: card.accent, fontSize: 12, fontWeight: 700 }}>✕</button>
+                    <span style={{ fontSize: 9, fontFamily: "'Fira Code', monospace", padding: "2px 8px", borderRadius: 12, background: card.accent, color: "#ffffff", fontWeight: 700 }}>
+                      SPECIAL
+                    </span>
                   </div>
                   <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>{card.label}</h3>
                   <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4, margin: 0 }}>{card.desc}</p>
@@ -298,7 +505,7 @@ export default function PlatformDashboard() {
           </div>
         )}
 
-        {/* Standard Workspace Cards Grid */}
+        {/* Standard Workspace Cards Grid (Cross icon removed as requested!) */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
           {standardActiveCards.map(card => (
             <div
@@ -314,18 +521,15 @@ export default function PlatformDashboard() {
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                 <span style={{ fontSize: 28 }}>{card.icon}</span>
-                <button onClick={() => handleRemoveWidget(card.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", fontSize: 12 }}>✕</button>
               </div>
               <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>{card.label}</h3>
-              
-              {/* Rich Description on Hover */}
               <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4, margin: 0 }}>
                 {card.desc}
               </p>
             </div>
           ))}
 
-          {/* Default Empty State + Card */}
+          {/* Default Empty State Card */}
           <div
             onClick={() => setIsAddModalOpen(true)}
             style={{
@@ -345,7 +549,7 @@ export default function PlatformDashboard() {
         </div>
       </div>
 
-      {/* 6. COLLABORATION & COMMUNITIES SECTION (LOCKED STORE POPUP FLOW) */}
+      {/* 6. COLLABORATION & COMMUNITIES SECTION (STORE UNLOCK POPUP FLOW) */}
       <div style={{ marginBottom: 36 }}>
         <div style={{ marginBottom: 20 }}>
           <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 800, color: "var(--text-main)", margin: 0 }}>
@@ -384,7 +588,7 @@ export default function PlatformDashboard() {
         </div>
       </div>
 
-      {/* 7. LIVE TECH NEWS FEED */}
+      {/* 7. LIVE TECH NEWS FEED (MINI DESCRIPTIONS + READ MORE BUTTONS) */}
       <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 20, padding: 24 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
           <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 700, color: "#6c63ff", letterSpacing: 1 }}>
@@ -395,16 +599,33 @@ export default function PlatformDashboard() {
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
           {techNews.map((news, idx) => (
-            <div key={idx} style={{ background: "var(--bg-alt)", border: "1px solid var(--border-light)", borderRadius: 14, padding: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                <span style={{ padding: "2px 8px", borderRadius: 6, background: `${news.col}20`, color: news.col, fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700 }}>
-                  {news.category}
-                </span>
-                <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{news.time}</span>
+            <div key={idx} style={{ background: "var(--bg-alt)", border: "1px solid var(--border-light)", borderRadius: 16, padding: 18, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <span style={{ padding: "2px 8px", borderRadius: 6, background: `${news.col}20`, color: news.col, fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700 }}>
+                    {news.category}
+                  </span>
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{news.time}</span>
+                </div>
+                <h4 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: "var(--text-main)", margin: "0 0 6px", lineHeight: 1.4 }}>
+                  {news.title}
+                </h4>
+                <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5, margin: "0 0 16px" }}>
+                  {news.desc}
+                </p>
               </div>
-              <h4 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 700, color: "var(--text-main)", margin: 0, lineHeight: 1.4 }}>
-                {news.title}
-              </h4>
+
+              {/* Read More Link Button (Routes to /technews) */}
+              <button
+                onClick={() => navigate("/technews")}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6, background: "none", border: "none",
+                  color: news.col, fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 700,
+                  cursor: "pointer", padding: 0
+                }}
+              >
+                Read More <ChevronRight size={14} />
+              </button>
             </div>
           ))}
         </div>
