@@ -136,8 +136,8 @@ export function RoleCard({ icon, title, tagline, desc, active, onClick }) {
       whileHover={{ y: -6, scale: 1.02, transition: { type: "spring", stiffness: 400, damping: 17 } }}
       style={{ 
         flex: 1, minWidth: 155, 
-        background: active ? "linear-gradient(145deg,#f0f0ff,#e8f9f5)" : "var(--bg-card)", 
-        border: `2px solid ${active ? "#6c63ff" : "#e8ecff"}`, 
+        background: active ? "var(--role-card-active)" : "var(--bg-card)", 
+        border: `2px solid ${active ? "#6c63ff" : "var(--border-light)"}`, 
         borderRadius: 18, padding: "26px 22px", cursor: "pointer", textAlign: "left", 
         position: "relative", overflow: "hidden", 
         boxShadow: active ? "0 16px 48px rgba(108,99,255,.2),0 0 0 4px rgba(108,99,255,.08)" : "0 4px 14px rgba(0,0,0,0.03)"
@@ -146,17 +146,17 @@ export function RoleCard({ icon, title, tagline, desc, active, onClick }) {
       {active && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg,#6c63ff,#00c9a7)", borderRadius: "18px 18px 0 0" }} />}
       <div style={{ 
         width: 44, height: 44, borderRadius: 12, 
-        background: active ? "linear-gradient(135deg,#6c63ff,#00c9a7)" : "#f5f5f5", 
+        background: active ? "linear-gradient(135deg,#6c63ff,#00c9a7)" : "var(--bg-alt)", 
         display: "flex", alignItems: "center", justifyContent: "center", 
         fontSize: 22, marginBottom: 14, 
         boxShadow: active ? "0 6px 18px rgba(108,99,255,.3)" : "none", 
-        color: active ? "var(--bg-card)" : "#bbb", transition: "all .3s" 
+        color: active ? "var(--bg-card)" : "var(--text-muted)", transition: "all .3s" 
       }}>
         {icon}
       </div>
-      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 800, color: active ? "var(--text-main)" : "#bbb", marginBottom: 5 }}>{title}</div>
-      <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 13, color: active ? "#6c63ff" : "#ccc", letterSpacing: 1, marginBottom: 12 }}>{tagline}</div>
-      <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: active ? "#999" : "#ccc", lineHeight: 1.6 }}>{desc}</div>
+      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 800, color: active ? "var(--text-main)" : "var(--text-muted)", marginBottom: 5 }}>{title}</div>
+      <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 13, color: active ? "#6c63ff" : "var(--text-light)", letterSpacing: 1, marginBottom: 12 }}>{tagline}</div>
+      <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: active ? "var(--text-muted)" : "var(--text-light)", lineHeight: 1.6 }}>{desc}</div>
     </motion.button>
   );
 }

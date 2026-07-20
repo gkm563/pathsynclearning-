@@ -28,6 +28,9 @@
   /* Hero Gradients */
   --hero-card-gradient-c: linear-gradient(135deg, #f0f0ff 0%, #e8faf5 60%, #fff9ee 100%);
   --hero-card-gradient-a: linear-gradient(135deg, #fff9ee 0%, #fdf0ff 60%, #f0f0ff 100%);
+
+  /* Role Selection Card */
+  --role-card-active: linear-gradient(145deg, #f0f0ff, #e8f9f5);
 }
 
 [data-theme="dark"] {
@@ -58,6 +61,9 @@
   /* Hero Gradients */
   --hero-card-gradient-c: linear-gradient(135deg, #f0f0ff 0%, #e8faf5 60%, #fff9ee 100%);
   --hero-card-gradient-a: linear-gradient(135deg, #fff9ee 0%, #fdf0ff 60%, #f0f0ff 100%);
+
+  /* Role Selection Card */
+  --role-card-active: linear-gradient(145deg, rgba(108,99,255,0.1), rgba(0,201,167,0.1));
 }
 *, *::before, *::after {
   box-sizing: border-box;
