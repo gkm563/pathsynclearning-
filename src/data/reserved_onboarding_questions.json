@@ -1,0 +1,104 @@
+{
+  "phase1_reserved": {
+    "sectionB_remaining": [
+      {
+        "id": 8,
+        "title": "Daily Peak Energy Hours",
+        "hint": "PathEd will schedule hard Learn & Practice tasks during your most productive window.",
+        "type": "icon_tiles",
+        "options": [
+          { "emoji": "🌅", "label": "Morning", "sub": "5AM–12PM" },
+          { "emoji": "☀️", "label": "Afternoon", "sub": "12PM–5PM" },
+          { "emoji": "🌆", "label": "Evening", "sub": "5PM–9PM" },
+          { "emoji": "🌙", "label": "Night", "sub": "9PM–3AM" }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Primary Device for Study",
+        "hint": "Optimises the UI and resource types — mobile quizzes vs. desktop labs.",
+        "type": "icon_tiles",
+        "options": [
+          { "emoji": "💻", "label": "Laptop / Desktop", "sub": "Full features" },
+          { "emoji": "📱", "label": "Mobile", "sub": "On-the-go" },
+          { "emoji": "📓", "label": "Tablet", "sub": "Touch-optimised" }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Internet Connectivity Status",
+        "hint": "Helps suggest offline-downloadable study materials.",
+        "type": "select",
+        "options": [
+          "High Speed (Fibre / 5G)",
+          "Stable (4G / Broadband)",
+          "Intermittent / Limited",
+          "Offline-First Preferred"
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Current Academic Load",
+        "hint": "Auto-adjusts your Learning Pace to prevent burnout during exams.",
+        "type": "slider",
+        "range": [1, 10]
+      },
+      {
+        "id": 12,
+        "title": "Extracurricular Involvement",
+        "hint": "Factors in commitments for weekly time-management planning.",
+        "type": "pills",
+        "options": ["Sports", "Tech Clubs", "Arts / Creative", "Music / Dance", "Student Council", "None"]
+      },
+      {
+        "id": 13,
+        "title": "Preferred Learning Language",
+        "hint": "Language for video explanations and AI hints.",
+        "type": "select",
+        "options": ["English", "Hinglish", "Hindi", "Regional"]
+      }
+    ],
+    "sectionC_environmental": [
+      {
+        "id": 14,
+        "title": "Weekly Available Study Hours",
+        "hint": "Total hours dedicated to self-learning outside college lectures.",
+        "type": "number",
+        "default": 15
+      },
+      {
+        "id": 15,
+        "title": "Study Group Preference",
+        "hint": "Do you prefer solo self-study or peer study circles?",
+        "type": "pills",
+        "options": ["Solo Learner", "Pair Programming", "Study Circle Squad"]
+      }
+    ]
+  },
+  "phase2_reserved": {
+    "sectionB_advanced_dna": [
+      {
+        "id": "b1",
+        "title": "Lab & Practical Exam Confidence",
+        "hint": "Confidence in performing university practical lab exams.",
+        "type": "rating",
+        "scale": 5
+      },
+      {
+        "id": "b2",
+        "title": "Backlog History & Clearing Plan",
+        "hint": "Track active or past backlogs for remedial preparation.",
+        "type": "select",
+        "options": ["No Backlogs", "1 Active Backlog", "2+ Active Backlogs", "Cleared Past Backlogs"]
+      }
+    ],
+    "sectionC_exam_calendar": [
+      {
+        "id": "c1",
+        "title": "Upcoming Semester Exam Dates",
+        "hint": "Dates for mid-term and end-term university exams.",
+        "type": "date_range"
+      }
+    ]
+  }
+}

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from "react-route
 import StudentLanding from "./pages/StudentLanding";
 import PlatformDashboard from "./pages/Platform/PlatformDashboard";
 import Store from "./pages/Store";
+import OnboardingStage1 from "./pages/Onboarding/OnboardingStage1";
 import Methodology from "./pages/Methodology";
 import Mission from "./pages/Mission";
 import Company from "./pages/Company";
@@ -51,6 +52,8 @@ function App() {
           <Route path="/platform" element={<PlatformDashboard />} />
           <Route path="/dashboard" element={<PlatformDashboard />} />
           <Route path="/store" element={<Store />} />
+          
+          <Route path="/onboarding/stage1" element={<OnboardingStage1 />} />
           
           <Route path="/methodology" element={<Methodology />} />
           <Route path="/mission" element={<Mission />} />

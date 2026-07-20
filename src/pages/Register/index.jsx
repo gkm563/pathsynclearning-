@@ -176,7 +176,7 @@ export default function Register() {
         localStorage.setItem("isAuthenticated", "true");
         localStorage.setItem("userRegistered", "true");
         window.dispatchEvent(new Event("storage"));
-        setTimeout(() => navigate('/platform'), 400);
+        setTimeout(() => navigate('/onboarding/stage1'), 400);
       }
     }, 300);
   };
