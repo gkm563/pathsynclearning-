@@ -311,14 +311,14 @@ export default function PlatformDashboard() {
 
         {/* CAREER GOAL HEADER & CORE SKILLS MAPPED */}
         <div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
             <div>
-              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, color: "#6c63ff", letterSpacing: 1.5, marginBottom: 4 }}>
+              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 800, color: "#6c63ff", letterSpacing: 1.2, marginBottom: 2 }}>
                 YOUR CAREER GOAL
               </div>
-              <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 34, fontWeight: 800, color: "var(--text-main)", margin: 0, display: "flex", alignItems: "center", gap: 14 }}>
+              <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 26, fontWeight: 800, color: "var(--text-main)", margin: 0, display: "flex", alignItems: "center", gap: 10 }}>
                 {user.goal.role}
-                <span style={{ fontSize: 13, fontFamily: "'Fira Code', monospace", fontWeight: 800, padding: "5px 14px", borderRadius: 20, background: "rgba(108,99,255,0.14)", color: "#6c63ff", border: "1.5px solid #6c63ff40" }}>
+                <span style={{ fontSize: 11, fontFamily: "'Fira Code', monospace", fontWeight: 800, padding: "4px 10px", borderRadius: 18, background: "rgba(108,99,255,0.12)", color: "#6c63ff", border: "1px solid #6c63ff40" }}>
                   {user.goal.tag}
                 </span>
               </h2>
@@ -328,24 +328,24 @@ export default function PlatformDashboard() {
             <button
               onClick={() => setIsGoalExpanded(!isGoalExpanded)}
               style={{
-                display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 16,
+                display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 14,
                 background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "#6c63ff",
-                fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800, cursor: "pointer",
+                fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 800, cursor: "pointer",
                 transition: "all 0.2s"
               }}
             >
-              {isGoalExpanded ? <>Collapse Details <ChevronUp size={18} /></> : <>Expand Details <ChevronDown size={18} /></>}
+              {isGoalExpanded ? <>Collapse Details <ChevronUp size={16} /></> : <>Expand Details <ChevronDown size={16} /></>}
             </button>
           </div>
 
           {/* Mapped Skills Chips Row */}
-          <div style={{ background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", borderRadius: 18, padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 14 }}>
-            <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, color: "var(--text-muted)", letterSpacing: 1.5 }}>
+          <div style={{ background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", borderRadius: 16, padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+            <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 800, color: "var(--text-muted)", letterSpacing: 1.2 }}>
               CORE SKILLS MAPPED
             </span>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
               {user.goal.skills.map((sk, idx) => (
-                <span key={idx} style={{ padding: "8px 16px", borderRadius: 14, background: "var(--bg-card)", border: "1.5px solid var(--border-light)", fontSize: 14, fontWeight: 800, color: "#6c63ff" }}>
+                <span key={idx} style={{ padding: "5px 12px", borderRadius: 12, background: "var(--bg-card)", border: "1px solid var(--border-light)", fontSize: 12.5, fontWeight: 700, color: "#6c63ff" }}>
                   {sk}
                 </span>
               ))}
@@ -357,48 +357,48 @@ export default function PlatformDashboard() {
             {isGoalExpanded && (
               <motion.div
                 initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                animate={{ opacity: 1, height: "auto", marginTop: 22 }}
+                animate={{ opacity: 1, height: "auto", marginTop: 16 }}
                 exit={{ opacity: 0, height: 0, marginTop: 0 }}
                 style={{ overflow: "hidden" }}
               >
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 18 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14 }}>
                   
                   {/* Card 1: Target Role */}
-                  <div style={{ background: "rgba(108,99,255,0.08)", border: "2px solid #6c63ff40", borderRadius: 20, padding: 22 }}>
-                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, color: "#6c63ff", letterSpacing: 1.5, marginBottom: 10, textAlign: "center" }}>
+                  <div style={{ background: "rgba(108,99,255,0.06)", border: "1.5px solid #6c63ff30", borderRadius: 16, padding: 16 }}>
+                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10.5, fontWeight: 800, color: "#6c63ff", letterSpacing: 1.2, marginBottom: 6, textAlign: "center" }}>
                       TARGET ROLE
                     </div>
-                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 800, color: "#6c63ff", textAlign: "center" }}>
+                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800, color: "#6c63ff", textAlign: "center" }}>
                       {user.goal.role}
                     </div>
                   </div>
 
                   {/* Card 2: Timeline */}
-                  <div style={{ background: "rgba(0,201,167,0.08)", border: "2px solid #00c9a740", borderRadius: 20, padding: 22 }}>
-                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, color: "#00c9a7", letterSpacing: 1.5, marginBottom: 10, textAlign: "center" }}>
+                  <div style={{ background: "rgba(0,201,167,0.06)", border: "1.5px solid #00c9a730", borderRadius: 16, padding: 16 }}>
+                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10.5, fontWeight: 800, color: "#00c9a7", letterSpacing: 1.2, marginBottom: 6, textAlign: "center" }}>
                       TIMELINE
                     </div>
-                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 800, color: "#00c9a7", textAlign: "center" }}>
+                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800, color: "#00c9a7", textAlign: "center" }}>
                       {user.goal.timeline}
                     </div>
                   </div>
 
                   {/* Card 3: Motivation */}
-                  <div style={{ background: "rgba(247,151,30,0.08)", border: "2px solid #f7971e40", borderRadius: 20, padding: 22 }}>
-                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, color: "#f7971e", letterSpacing: 1.5, marginBottom: 10, textAlign: "center" }}>
+                  <div style={{ background: "rgba(247,151,30,0.06)", border: "1.5px solid #f7971e30", borderRadius: 16, padding: 16 }}>
+                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10.5, fontWeight: 800, color: "#f7971e", letterSpacing: 1.2, marginBottom: 6, textAlign: "center" }}>
                       MOTIVATION
                     </div>
-                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 700, color: "var(--text-main)", textAlign: "center", lineHeight: 1.5 }}>
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12.5, fontWeight: 600, color: "var(--text-main)", textAlign: "center", lineHeight: 1.4 }}>
                       {user.goal.why}
                     </div>
                   </div>
 
                   {/* Card 4: Expected Outcome */}
-                  <div style={{ background: "rgba(224,64,251,0.08)", border: "2px solid #e040fb40", borderRadius: 20, padding: 22 }}>
-                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, color: "#e040fb", letterSpacing: 1.5, marginBottom: 10, textAlign: "center" }}>
+                  <div style={{ background: "rgba(224,64,251,0.06)", border: "1.5px solid #e040fb30", borderRadius: 16, padding: 16 }}>
+                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10.5, fontWeight: 800, color: "#e040fb", letterSpacing: 1.2, marginBottom: 6, textAlign: "center" }}>
                       EXPECTED OUTCOME
                     </div>
-                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 700, color: "var(--text-main)", textAlign: "center", lineHeight: 1.5 }}>
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12.5, fontWeight: 600, color: "var(--text-main)", textAlign: "center", lineHeight: 1.4 }}>
                       {user.goal.outcome}
                     </div>
                   </div>

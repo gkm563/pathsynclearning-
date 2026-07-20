@@ -87,15 +87,15 @@ export default function QuoteBanner({ userLevel = 1, userStreak = 7 }) {
       style={{
         background: `linear-gradient(135deg, ${getPhaseColor()}12, var(--bg-card))`,
         border: `1.5px solid ${getPhaseColor()}35`,
-        borderRadius: 20, padding: "22px 28px", marginBottom: 28,
+        borderRadius: 22, padding: "26px 32px", marginBottom: 32,
         position: "relative", overflow: "hidden",
         boxShadow: `0 8px 30px ${getPhaseColor()}10`
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Sparkles size={16} color={getPhaseColor()} />
-          <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 700, color: getPhaseColor(), letterSpacing: 1 }}>
+          <Sparkles size={18} color={getPhaseColor()} />
+          <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, color: getPhaseColor(), letterSpacing: 1.5 }}>
             {getPhaseTitle()}
           </span>
         </div>
@@ -103,21 +103,22 @@ export default function QuoteBanner({ userLevel = 1, userStreak = 7 }) {
         <button
           onClick={fetchQuote}
           disabled={loading}
-          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6, fontSize: 12, opacity: loading ? 0.5 : 1 }}
+          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, opacity: loading ? 0.5 : 1 }}
           title="Refresh Daily AI Quote"
         >
-          <RefreshCw size={13} style={{ animation: loading ? "spin 1s linear infinite" : "none" }} />
+          <RefreshCw size={14} style={{ animation: loading ? "spin 1s linear infinite" : "none" }} />
           <span>New Quote</span>
         </button>
       </div>
 
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
-        <Quote size={28} color={getPhaseColor()} style={{ opacity: 0.6, flexShrink: 0, marginTop: 4 }} />
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 18 }}>
+        <Quote size={36} color={getPhaseColor()} style={{ opacity: 0.6, flexShrink: 0, marginTop: 4 }} />
         <div>
-          <blockquote style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 700, color: "var(--text-main)", lineHeight: 1.4, margin: "0 0 8px" }}>
+          {/* Increased Quote Text Size to 24px Bold as Requested */}
+          <blockquote style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 800, color: "var(--text-main)", lineHeight: 1.4, margin: "0 0 10px" }}>
             "{quote.text}"
           </blockquote>
-          <cite style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, color: "var(--text-muted)", fontStyle: "normal" }}>
+          <cite style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, fontWeight: 700, color: "var(--text-muted)", fontStyle: "normal" }}>
             — {quote.author}
           </cite>
         </div>
