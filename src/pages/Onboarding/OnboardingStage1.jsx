@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import StageTransitionOverlay from "../../components/onboarding/StageTransitionOverlay";
-import OnboardingSnapshotDrawer from "../../components/onboarding/OnboardingSnapshotDrawer";
 import { 
   Sun, Moon, Sparkles, ArrowRight, GraduationCap, 
   BookOpen, Code, Trophy, ShieldCheck, User, Building, Hash, Cpu 
@@ -22,7 +21,7 @@ export default function OnboardingStage1() {
     document.documentElement.setAttribute("data-theme", nextTheme);
   };
 
-  // Form State
+  // Form State — ALL PREFILLED DEFAULTS REMOVED
   const [fullName, setFullName] = useState("");
   const [university, setUniversity] = useState("");
   const [rollNumber, setRollNumber] = useState("");
@@ -31,9 +30,9 @@ export default function OnboardingStage1() {
   const [cgpa, setCgpa] = useState("");
   const [board, setBoard] = useState("");
   
-  // Academic DNA State
+  // Academic DNA State — ALL PREFILLED DEFAULTS REMOVED
   const [subjectRatings, setSubjectRatings] = useState({
-    DSA: 3, DBMS: 2, OS: 2, Networks: 1, OOPs: 3
+    DSA: 0, DBMS: 0, OS: 0, Networks: 0, OOPs: 0
   });
   const [codingExp, setCodingExp] = useState("");
   const [primaryLang, setPrimaryLang] = useState("");
@@ -43,11 +42,13 @@ export default function OnboardingStage1() {
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Calculate completion percentage
+  const ratedCount = Object.values(subjectRatings).filter(v => v > 0).length;
   const fields = [
     fullName.trim(), university.trim(), rollNumber.trim(), branch, 
-    semester, cgpa.trim(), board, codingExp, primaryLang, academicGoal
+    semester, cgpa.trim(), board, ratedCount > 0 ? "rated" : "", 
+    codingExp, primaryLang, academicGoal
   ].filter(Boolean);
-  const completionPct = Math.round((fields.length / 10) * 100);
+  const completionPct = Math.round((fields.length / 11) * 100);
 
   const stages = [
     { num: 1, title: "Academic Foundation & DNA", status: "active" },
@@ -74,27 +75,8 @@ export default function OnboardingStage1() {
     }, 2200);
   };
 
-  // Snapshot tags for drawer
-  const snapshotTags = [
-    fullName.trim() ? `👤 ${fullName}` : null,
-    university.trim() ? `🏫 ${university}` : null,
-    branch ? `💻 ${branch}` : null,
-    semester ? `📅 Sem ${semester}` : null,
-    cgpa.trim() ? `📊 CGPA ${cgpa}` : null,
-    primaryLang ? `⚡ ${primaryLang}` : null,
-  ].filter(Boolean);
-
-  const expandedData = [
-    { label: "FULL NAME", value: fullName || "Not entered" },
-    { label: "COLLEGE / UNIV", value: university || "Not entered", sub: rollNumber ? `Roll: ${rollNumber}` : null },
-    { label: "BRANCH & SEMESTER", value: branch ? `${branch} · Sem ${semester || "-"}` : "Not selected" },
-    { label: "CGPA & BOARD", value: cgpa ? `${cgpa} CGPA` : "Not entered", sub: board || null },
-    { label: "CODING BACKGROUND", value: codingExp || "Not selected", sub: primaryLang ? `Language: ${primaryLang}` : null },
-    { label: "ACADEMIC GOAL", value: academicGoal || "Not selected" },
-  ];
-
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg-main)", color: "var(--text-main)", fontFamily: "'Inter', sans-serif", paddingBottom: 140 }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-main)", color: "var(--text-main)", fontFamily: "'Inter', sans-serif", paddingBottom: 120 }}>
       
       {/* 1. TOP STICKY NAVIGATION BAR */}
       <header style={{
@@ -399,8 +381,8 @@ export default function OnboardingStage1() {
                           onClick={() => handleRatingChange(sub, star)}
                           style={{
                             width: 34, height: 34, borderRadius: 10, border: "none",
-                            background: star <= rating ? "#6c63ff" : "var(--bg-card)",
-                            color: star <= rating ? "#ffffff" : "var(--text-muted)",
+                            background: star <= rating && rating > 0 ? "#6c63ff" : "var(--bg-card)",
+                            color: star <= rating && rating > 0 ? "#ffffff" : "var(--text-muted)",
                             fontFamily: "'Fira Code', monospace", fontSize: 13, fontWeight: 800,
                             cursor: "pointer", transition: "all 0.2s"
                           }}
@@ -549,12 +531,27 @@ export default function OnboardingStage1() {
         </form>
       </main>
 
-      {/* UNIFIED LIVE SNAPSHOT DRAWER */}
-      <OnboardingSnapshotDrawer
-        completionPct={completionPct}
-        tags={snapshotTags}
-        expandedData={expandedData}
-      />
+      {/* CLEAN PROFILE SYNCHRONIZATION BOTTOM BAR (NO PREFILLED SNAPSHOT DRAWER) */}
+      <div style={{
+        position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 90,
+        background: "var(--bg-card)", borderTop: "1.5px solid var(--border-light)",
+        padding: "14px 40px", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        boxShadow: "0 -10px 30px rgba(0,0,0,0.06)"
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, fontFamily: "'Fira Code', monospace", fontSize: 13, fontWeight: 800, color: "#6c63ff" }}>
+          <Sparkles size={16} /> PROFILE SYNCHRONIZATION ACTIVE
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 13, fontWeight: 800, color: "#00c9a7" }}>
+            {completionPct}% FILLED
+          </span>
+          <div style={{ width: 140, height: 8, borderRadius: 4, background: "var(--bg-alt)", border: "1px solid var(--border-light)", overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${completionPct}%`, background: "linear-gradient(90deg, #6c63ff, #00c9a7)", borderRadius: 4, transition: "width 0.4s ease" }} />
+          </div>
+        </div>
+      </div>
 
       {/* Stage Transition Celebration Loading Overlay */}
       <StageTransitionOverlay

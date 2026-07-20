@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import StageTransitionOverlay from "../../components/onboarding/StageTransitionOverlay";
-import OnboardingSnapshotDrawer from "../../components/onboarding/OnboardingSnapshotDrawer";
 import { 
   Sun, Moon, Sparkles, ArrowRight, ArrowLeft, Rocket, 
   Briefcase, Target, Zap, Layers, Cpu, Plus 
@@ -22,51 +21,53 @@ export default function OnboardingStage2() {
     document.documentElement.setAttribute("data-theme", nextTheme);
   };
 
-  // Stage 2 Form State (ALL 12 QUESTIONS FROM REFERENCE)
+  // Stage 2 Form State (ALL PREFILLED DEFAULT STATES REMOVED)
   // Q1: Tech Domains
-  const [domains, setDomains] = useState(["Software Dev", "AI / ML"]);
+  const [domains, setDomains] = useState([]);
   const [customDomain, setCustomDomain] = useState("");
   const [showCustomDomain, setShowCustomDomain] = useState(false);
 
   // Q2: Industry Focus
-  const [industry, setIndustry] = useState("Fintech");
+  const [industry, setIndustry] = useState("");
   const [customIndustry, setCustomIndustry] = useState("");
   const [showCustomIndustry, setShowCustomIndustry] = useState(false);
 
-  // Q3: Builder Archetype (Displayed in a Single Row)
-  const [passion, setPassion] = useState("build");
+  // Q3: Builder Archetype (Single Row Layout)
+  const [passion, setPassion] = useState("");
 
   // Q4: Work Environment Preference Slider
   const [envSlider, setEnvSlider] = useState(50);
 
   // Q5: Problem Solving Style
-  const [pstyle, setPstyle] = useState("The Architect");
+  const [pstyle, setPstyle] = useState("");
 
   // Q6: Salary vs Social Impact Priority Slider
   const [impactSlider, setImpactSlider] = useState(50);
 
   // Q7: Risk Appetite
-  const [risk, setRisk] = useState("🚀 Aggressive");
+  const [risk, setRisk] = useState("");
   const [customRisk, setCustomRisk] = useState("");
   const [showCustomRisk, setShowCustomRisk] = useState(false);
 
   // Q8: Favorite Tools Tag Input
-  const [tags, setTags] = useState(["React", "Python", "SQL"]);
+  const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
 
   // Q9: Dream Company Type
-  const [company, setCompany] = useState("🦄 Unicorn Startups");
+  const [company, setCompany] = useState("");
   const [customCompany, setCustomCompany] = useState("");
   const [showCustomCompany, setShowCustomCompany] = useState(false);
 
-  // Q10: Long-Term Career Vision
-  const [vision, setVision] = useState("🧑‍💻 Technical Expert");
+  // Q10: Long-Term Career Vision + CUSTOM OPTION
+  const [vision, setVision] = useState("");
+  const [customVision, setCustomVision] = useState("");
+  const [showCustomVision, setShowCustomVision] = useState(false);
 
   // Q11: Cognitive Challenge Preference
-  const [puzzle, setPuzzle] = useState("Logic Bug");
+  const [puzzle, setPuzzle] = useState("");
 
   // Q12: Invention vs Optimization
-  const [invent, setInvent] = useState("💡 Create Something New");
+  const [invent, setInvent] = useState("");
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedCareerMatch, setSelectedCareerMatch] = useState(null);
@@ -108,9 +109,9 @@ export default function OnboardingStage2() {
   ];
 
   const visionOptions = [
-    { label: "🧑‍💻 Technical Expert", sub: "Stay deep in code" },
-    { label: "📋 Management Track", sub: "Lead teams & product strategy" },
-    { label: "🚀 Entrepreneur / Founder", sub: "Start my own company" }
+    { label: "🧑‍💻 Technical Expert", sub: "Stay deep in code & architecture" },
+    { label: "📋 Management Track", sub: "Lead engineering teams & product strategy" },
+    { label: "🚀 Entrepreneur / Founder", sub: "Start my own tech company" }
   ];
 
   const puzzleOptions = [
@@ -193,30 +194,10 @@ export default function OnboardingStage2() {
 
   // Calculate completion percentage
   const answeredCount = [
-    domains.length > 0, industry, passion, envSlider !== 50, pstyle, 
-    impactSlider !== 50, risk, tags.length > 0, company, vision, puzzle, invent
+    domains.length > 0, industry, passion, pstyle, 
+    risk, tags.length > 0, company, vision, puzzle, invent
   ].filter(Boolean).length;
-  const completionPct = Math.round((answeredCount / 12) * 100);
-
-  // Shared Snapshot Data
-  const snapshotTags = [
-    domains.length > 0 ? `⚙️ ${domains.slice(0, 2).join(", ")}` : null,
-    industry ? `💼 ${industry}` : null,
-    pstyle ? `🧭 ${pstyle}` : null,
-    risk ? `🚀 ${risk}` : null,
-    company ? `🏛️ ${company}` : null,
-  ].filter(Boolean);
-
-  const expandedData = [
-    { label: "TARGET TECH DOMAINS", value: domains.join(", ") || "None selected" },
-    { label: "PREFERRED INDUSTRY", value: industry || "Not selected" },
-    { label: "BUILDER ARCHETYPE", value: passion === "build" ? "The Builder 🏗️" : passion === "fix" ? "The Firefighter 🔥" : passion === "analyze" ? "The Researcher 🔭" : "The Designer ✨" },
-    { label: "WORKING STYLE", value: pstyle || "Not selected" },
-    { label: "FAVORITE TOOLS", value: tags.join(", ") || "None" },
-    { label: "RISK & COMPANY TYPE", value: `${risk} · ${company}` },
-    { label: "CAREER VISION", value: vision || "Not selected" },
-    { label: "INVENTION PREFERENCE", value: invent || "Not selected" },
-  ];
+  const completionPct = Math.round((answeredCount / 10) * 100);
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg-main)", color: "var(--text-main)", fontFamily: "'Inter', sans-serif", paddingBottom: 140 }}>
@@ -430,7 +411,7 @@ export default function OnboardingStage2() {
                     type="text"
                     value={customIndustry}
                     onChange={e => { setCustomIndustry(e.target.value); setIndustry(`✨ ${e.target.value}`); }}
-                    placeholder="Type custom industry (e.g. Bio-Informatics)..."
+                    placeholder="Type custom industry..."
                     style={{
                       width: "100%", maxWidth: 420, padding: "12px 16px", borderRadius: 14,
                       background: "var(--bg-alt)", border: "1.5px solid #00c9a7",
@@ -659,7 +640,7 @@ export default function OnboardingStage2() {
 
           </div>
 
-          {/* CARD 4: COMPANY TYPE, VISION & AI JUDGMENT */}
+          {/* CARD 4: COMPANY TYPE, VISION (WITH CUSTOM OPTION) & AI JUDGMENT */}
           <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
             
             {/* Q9: Dream Company Type + Custom Option */}
@@ -718,18 +699,18 @@ export default function OnboardingStage2() {
               )}
             </div>
 
-            {/* Q10: Long-Term Career Vision */}
+            {/* Q10: Long-Term Career Vision + 4th CUSTOM OPTION BUTTON */}
             <div style={{ marginBottom: 32 }}>
               <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
                 <Rocket size={18} color="#6c63ff" /> Q10. Long-Term Career Vision?
               </label>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 10 }}>
                 {visionOptions.map(v => {
                   const isSelected = vision === v.label;
                   return (
                     <div
                       key={v.label}
-                      onClick={() => setVision(v.label)}
+                      onClick={() => { setVision(v.label); setShowCustomVision(false); }}
                       style={{
                         padding: 16, borderRadius: 16,
                         border: `1.5px solid ${isSelected ? "#6c63ff" : "var(--border-light)"}`,
@@ -744,7 +725,38 @@ export default function OnboardingStage2() {
                     </div>
                   );
                 })}
+
+                {/* 4th Custom Option Button for Q10 */}
+                <div
+                  onClick={() => setShowCustomVision(!showCustomVision)}
+                  style={{
+                    padding: 16, borderRadius: 16,
+                    border: "1.5px dashed #6c63ff", background: "rgba(108,99,255,0.08)",
+                    cursor: "pointer", transition: "all 0.2s", display: "flex", flexDirection: "column",
+                    alignItems: "center", justifyContent: "center", textAlignment: "center"
+                  }}
+                >
+                  <Plus size={22} color="#6c63ff" />
+                  <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: "#6c63ff", marginTop: 4 }}>
+                    + Enter Custom Vision
+                  </div>
+                  <div style={{ fontSize: 11.5, color: "var(--text-muted)" }}>Write your own career goal</div>
+                </div>
               </div>
+
+              {showCustomVision && (
+                <input
+                  type="text"
+                  value={customVision}
+                  onChange={e => { setCustomVision(e.target.value); setVision(`✨ ${e.target.value}`); }}
+                  placeholder="Enter your custom long-term career goal..."
+                  style={{
+                    width: "100%", maxWidth: 420, padding: "12px 16px", borderRadius: 14,
+                    background: "var(--bg-alt)", border: "1.5px solid #6c63ff",
+                    fontSize: 14, color: "var(--text-main)", outline: "none", marginTop: 8
+                  }}
+                />
+              )}
             </div>
 
             {/* Q11: Cognitive Challenge Preference */}
@@ -898,12 +910,27 @@ export default function OnboardingStage2() {
         </div>
       </main>
 
-      {/* UNIFIED LIVE SNAPSHOT DRAWER */}
-      <OnboardingSnapshotDrawer
-        completionPct={completionPct}
-        tags={snapshotTags}
-        expandedData={expandedData}
-      />
+      {/* CLEAN PROFILE SYNCHRONIZATION BOTTOM BAR (NO PREFILLED SNAPSHOT DRAWER) */}
+      <div style={{
+        position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 90,
+        background: "var(--bg-card)", borderTop: "1.5px solid var(--border-light)",
+        padding: "14px 40px", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        boxShadow: "0 -10px 30px rgba(0,0,0,0.06)"
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, fontFamily: "'Fira Code', monospace", fontSize: 13, fontWeight: 800, color: "#6c63ff" }}>
+          <Sparkles size={16} /> PROFILE SYNCHRONIZATION ACTIVE
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 13, fontWeight: 800, color: "#00c9a7" }}>
+            {completionPct}% FILLED
+          </span>
+          <div style={{ width: 140, height: 8, borderRadius: 4, background: "var(--bg-alt)", border: "1px solid var(--border-light)", overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${completionPct}%`, background: "linear-gradient(90deg, #6c63ff, #00c9a7)", borderRadius: 4, transition: "width 0.4s ease" }} />
+          </div>
+        </div>
+      </div>
 
       {/* Stage Transition Celebration Loading Overlay */}
       <StageTransitionOverlay
