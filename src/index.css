@@ -24,6 +24,10 @@
   /* Inverse components (always dark) */
   --bg-inverse: #0f172a;
   --text-inverse: #f8fafc;
+
+  /* Hero Gradients */
+  --hero-card-gradient-c: linear-gradient(135deg, #f0f0ff 0%, #e8faf5 60%, #fff9ee 100%);
+  --hero-card-gradient-a: linear-gradient(135deg, #fff9ee 0%, #fdf0ff 60%, #f0f0ff 100%);
 }
 
 [data-theme="dark"] {
@@ -50,6 +54,10 @@
   --purple: #818cf8;
   --magenta: #c026d3;
   --accent: #f59e0b;
+
+  /* Hero Gradients */
+  --hero-card-gradient-c: linear-gradient(135deg, rgba(108,99,255,0.05) 0%, rgba(0,201,167,0.05) 60%, rgba(247,151,30,0.05) 100%);
+  --hero-card-gradient-a: linear-gradient(135deg, rgba(247,151,30,0.05) 0%, rgba(224,64,251,0.05) 60%, rgba(108,99,255,0.05) 100%);
 }
 *, *::before, *::after {
   box-sizing: border-box;
