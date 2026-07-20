@@ -57,6 +57,21 @@ const ROLES = [
   }
 ];
 
+const getEyeIconColor = (pwd) => {
+  if (!pwd) return "var(--text-muted)";
+  if (pwd.length < 6) return "#ef4444"; // Less secure (Red)
+  const hasLetters = /[a-zA-Z]/.test(pwd);
+  const hasNumbers = /[0-9]/.test(pwd);
+  const hasSpecial = /[^a-zA-Z0-9]/.test(pwd);
+  if (pwd.length >= 8 && hasLetters && hasNumbers && hasSpecial) {
+    return "#10b981"; // Highly secure (Green)
+  }
+  if (pwd.length >= 6 && ((hasLetters && hasNumbers) || (hasLetters && hasSpecial) || (hasNumbers && hasSpecial))) {
+    return "#eab308"; // More secure (Yellow)
+  }
+  return "#ef4444"; // Weak (Red)
+};
+
 export default function Register() {
   const navigate = useNavigate();
   const [role, setRole] = useState("student");
@@ -368,7 +383,8 @@ export default function Register() {
                   <button 
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}
+                    style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: getEyeIconColor(form.password), cursor: "pointer", transition: "all 0.3s ease", filter: form.password ? `drop-shadow(0 0 6px ${getEyeIconColor(form.password)}88)` : "none" }}
+                    title={!form.password ? "Enter password" : form.password.length < 6 ? "Weak Security (Red)" : getEyeIconColor(form.password) === "#10b981" ? "High Security (Green)" : "Medium Security (Yellow)"}
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
