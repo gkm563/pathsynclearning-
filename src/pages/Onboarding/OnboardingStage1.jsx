@@ -21,7 +21,7 @@ export default function OnboardingStage1() {
     document.documentElement.setAttribute("data-theme", nextTheme);
   };
 
-  // Form State — ALL PREFILLED DEFAULTS REMOVED
+  // Form State
   const [fullName, setFullName] = useState("");
   const [university, setUniversity] = useState("");
   const [rollNumber, setRollNumber] = useState("");
@@ -30,7 +30,7 @@ export default function OnboardingStage1() {
   const [cgpa, setCgpa] = useState("");
   const [board, setBoard] = useState("");
   
-  // Academic DNA State — ALL PREFILLED DEFAULTS REMOVED
+  // Academic DNA State
   const [subjectRatings, setSubjectRatings] = useState({
     DSA: 0, DBMS: 0, OS: 0, Networks: 0, OOPs: 0
   });
@@ -99,6 +99,7 @@ export default function OnboardingStage1() {
             <Sparkles size={14} /> STAGE 1 OF 4 ONBOARDING
           </div>
 
+          {/* DYNAMIC LIGHT & DARK MODE THEME TOGGLE */}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -158,15 +159,15 @@ export default function OnboardingStage1() {
           </div>
         </div>
 
-        {/* 3. SPLIT-COLOR GRADIENT HEADER TITLE */}
+        {/* 3. LARGER SPLIT-COLOR GRADIENT HEADER TITLE */}
         <div style={{ textAlign: "center", marginBottom: 36 }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 16px", borderRadius: 20, background: "rgba(0,201,167,0.12)", border: "1px solid #00c9a740", color: "#00c9a7", fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, marginBottom: 12 }}>
             <GraduationCap size={16} /> ACADEMIC IDENTITY & DNA SETUP
           </div>
-          <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 36, fontWeight: 800, margin: "0 0 10px", lineHeight: 1.2, color: "var(--text-main)" }}>
+          <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 42, fontWeight: 800, margin: "0 0 12px", lineHeight: 1.15, color: "var(--text-main)" }}>
             Let's Build Your <span style={{ background: "linear-gradient(135deg, #6c63ff, #00c9a7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Student Profile & Academic DNA</span>
           </h1>
-          <p style={{ fontSize: 16, color: "var(--text-muted)", maxWidth: 580, margin: "0 auto", lineHeight: 1.5 }}>
+          <p style={{ fontSize: 16.5, color: "var(--text-muted)", maxWidth: 600, margin: "0 auto", lineHeight: 1.5 }}>
             Help us calibrate your course syllabus, daily study pace, and skill baseline before setting up your 4-year SDE roadmap.
           </p>
         </div>
@@ -285,7 +286,7 @@ export default function OnboardingStage1() {
                         border: `1.5px solid ${isSelected ? "#6c63ff" : "var(--border-light)"}`,
                         background: isSelected ? "rgba(108,99,255,0.12)" : "var(--bg-alt)",
                         color: isSelected ? "#6c63ff" : "var(--text-main)",
-                        fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: isSelected ? 800 : 600,
+                        fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: isSelected ? 600 : 500,
                         cursor: "pointer", transition: "all 0.2s"
                       }}
                     >
@@ -369,7 +370,7 @@ export default function OnboardingStage1() {
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 {Object.entries(subjectRatings).map(([sub, rating]) => (
                   <div key={sub} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, background: "var(--bg-alt)", padding: "12px 18px", borderRadius: 16, border: "1px solid var(--border-light)" }}>
-                    <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 700, color: "var(--text-main)", width: 140 }}>
+                    <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 600, color: "var(--text-main)", width: 140 }}>
                       {sub}
                     </span>
 
@@ -383,7 +384,7 @@ export default function OnboardingStage1() {
                             width: 34, height: 34, borderRadius: 10, border: "none",
                             background: star <= rating && rating > 0 ? "#6c63ff" : "var(--bg-card)",
                             color: star <= rating && rating > 0 ? "#ffffff" : "var(--text-muted)",
-                            fontFamily: "'Fira Code', monospace", fontSize: 13, fontWeight: 800,
+                            fontFamily: "'Fira Code', monospace", fontSize: 13, fontWeight: 700,
                             cursor: "pointer", transition: "all 0.2s"
                           }}
                         >
@@ -396,7 +397,7 @@ export default function OnboardingStage1() {
               </div>
             </div>
 
-            {/* Q9: Prior Coding Experience */}
+            {/* Q9: Prior Coding Experience (EXPLICIT SINGLE ROW LAYOUT FOR ALL 4 OPTIONS) */}
             <div style={{ marginBottom: 32 }}>
               <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
                 <Sparkles size={18} color="#00c9a7" /> Q9. Prior Coding Experience
@@ -404,12 +405,14 @@ export default function OnboardingStage1() {
               <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "0 0 14px" }}>
                 Select the option that best describes your hands-on coding background.
               </p>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12 }}>
+              
+              {/* SINGLE ROW FLEX GRID FOR ALL 4 OPTIONS */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, width: "100%" }}>
                 {[
-                  { id: "beginner", emoji: "🌱", label: "Absolute Beginner", sub: "Never written code before" },
-                  { id: "syntax", emoji: "💻", label: "Basic Syntax", sub: "Know loops & basic arrays" },
-                  { id: "intermediate", emoji: "⚙️", label: "Intermediate", sub: "Solved 50+ DSA problems" },
-                  { id: "advanced", emoji: "🚀", label: "Advanced CP", sub: "Active on LeetCode / Codeforces" }
+                  { id: "beginner", emoji: "🌱", label: "Absolute Beginner", sub: "Never written code" },
+                  { id: "syntax", emoji: "💻", label: "Basic Syntax", sub: "Loops & arrays" },
+                  { id: "intermediate", emoji: "⚙️", label: "Intermediate", sub: "50+ DSA solved" },
+                  { id: "advanced", emoji: "🚀", label: "Advanced CP", sub: "LeetCode / CP active" }
                 ].map(item => {
                   const isSelected = codingExp === item.label;
                   return (
@@ -417,17 +420,17 @@ export default function OnboardingStage1() {
                       key={item.id}
                       onClick={() => setCodingExp(item.label)}
                       style={{
-                        padding: 16, borderRadius: 16,
+                        padding: 16, borderRadius: 16, textAlign: "center",
                         border: `1.5px solid ${isSelected ? "#6c63ff" : "var(--border-light)"}`,
                         background: isSelected ? "rgba(108,99,255,0.12)" : "var(--bg-alt)",
                         cursor: "pointer", transition: "all 0.2s"
                       }}
                     >
                       <div style={{ fontSize: 24, marginBottom: 6 }}>{item.emoji}</div>
-                      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isSelected ? "#6c63ff" : "var(--text-main)" }}>
+                      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14.5, fontWeight: isSelected ? 700 : 500, color: isSelected ? "#6c63ff" : "var(--text-main)" }}>
                         {item.label}
                       </div>
-                      <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{item.sub}</div>
+                      <div style={{ fontSize: 11.5, color: "var(--text-muted)", marginTop: 2 }}>{item.sub}</div>
                     </div>
                   );
                 })}
@@ -455,7 +458,7 @@ export default function OnboardingStage1() {
                         border: `1.5px solid ${isSelected ? "#f7971e" : "var(--border-light)"}`,
                         background: isSelected ? "rgba(247,151,30,0.12)" : "var(--bg-alt)",
                         color: isSelected ? "#f7971e" : "var(--text-main)",
-                        fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: isSelected ? 800 : 600,
+                        fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: isSelected ? 700 : 500,
                         cursor: "pointer", transition: "all 0.2s"
                       }}
                     >
@@ -491,7 +494,7 @@ export default function OnboardingStage1() {
                         border: `1.5px solid ${isSelected ? "#e040fb" : "var(--border-light)"}`,
                         background: isSelected ? "rgba(224,64,251,0.12)" : "var(--bg-alt)",
                         color: isSelected ? "#e040fb" : "var(--text-main)",
-                        fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: isSelected ? 800 : 600,
+                        fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: isSelected ? 700 : 500,
                         cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", gap: 10
                       }}
                     >
@@ -531,7 +534,7 @@ export default function OnboardingStage1() {
         </form>
       </main>
 
-      {/* CLEAN PROFILE SYNCHRONIZATION BOTTOM BAR (NO PREFILLED SNAPSHOT DRAWER) */}
+      {/* CLEAN PROFILE SYNCHRONIZATION BOTTOM BAR */}
       <div style={{
         position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 90,
         background: "var(--bg-card)", borderTop: "1.5px solid var(--border-light)",

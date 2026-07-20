@@ -35,13 +35,10 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    if (isDark) {
-      document.body.setAttribute("data-theme", "dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.body.removeAttribute("data-theme");
-      localStorage.setItem("theme", "light");
-    }
+    const themeVal = isDark ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", themeVal);
+    document.body.setAttribute("data-theme", themeVal);
+    localStorage.setItem("theme", themeVal);
   }, [isDark]);
 
   return (

@@ -24,7 +24,7 @@ export default function OnboardingStage2() {
   // Phase Control inside Stage 2 (Phase 1: Profiling Form -> Phase 2: AI Career Blueprints)
   const [phase, setPhase] = useState(1);
 
-  // Form State
+  // Form State (No Prefilled Defaults)
   const [domains, setDomains] = useState([]);
   const [customDomain, setCustomDomain] = useState("");
   const [showCustomDomain, setShowCustomDomain] = useState(false);
@@ -56,7 +56,7 @@ export default function OnboardingStage2() {
   const [puzzle, setPuzzle] = useState("");
   const [invent, setInvent] = useState("");
 
-  // AI Analysis Loading & Selection State
+  // AI Loading & Launching State
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisTextIndex, setAnalysisTextIndex] = useState(0);
   const [selectedCareerTitle, setSelectedCareerTitle] = useState("");
@@ -117,7 +117,6 @@ export default function OnboardingStage2() {
     { label: "⚡ Make Existing 10× Better", sub: "Optimization & refactoring" }
   ];
 
-  // 5 AI GENERATED CAREERS + 6TH CUSTOM CAREER
   const aiGeneratedCareers = [
     {
       title: "Application Security Engineer",
@@ -193,6 +192,20 @@ export default function OnboardingStage2() {
     "Generating 5 Tailored SDE Career Blueprints..."
   ];
 
+  // Dynamic Color Calculation for Q4 (Work Environment)
+  const getEnvColor = (val) => {
+    if (val < 30) return "#7c3aed"; // Startup Purple
+    if (val > 70) return "#00c9a7"; // Corporate Teal
+    return "#c084fc"; // Transition Lavender
+  };
+
+  // Dynamic Color Calculation for Q6 (Salary vs Impact)
+  const getImpactColor = (val) => {
+    if (val < 30) return "#f7971e"; // High Salary Amber
+    if (val > 70) return "#00c9a7"; // Social Impact Teal
+    return "#f43f5e"; // Mid Rose
+  };
+
   const toggleDomain = (lbl) => {
     setDomains(prev => prev.includes(lbl) ? prev.filter(x => x !== lbl) : [...prev, lbl]);
   };
@@ -215,7 +228,6 @@ export default function OnboardingStage2() {
     }
   };
 
-  // Start AI Analysis Process
   const handleAnalyze = () => {
     setIsAnalyzing(true);
     setAnalysisTextIndex(0);
@@ -237,7 +249,6 @@ export default function OnboardingStage2() {
     }, 2400);
   };
 
-  // Launch Path Journey
   const handleLaunchPath = (title) => {
     const finalTitle = title === "custom" ? customCareerInput || "Custom SDE Career Path" : title;
     setSelectedCareerTitle(finalTitle);
@@ -249,7 +260,6 @@ export default function OnboardingStage2() {
     }, 2400);
   };
 
-  // Completion calculation
   const answeredCount = [
     domains.length > 0, industry, passion, pstyle, 
     risk, tags.length > 0, company, vision, puzzle, invent
@@ -334,10 +344,10 @@ export default function OnboardingStage2() {
               <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 16px", borderRadius: 20, background: "rgba(108,99,255,0.12)", border: "1px solid #6c63ff40", color: "#6c63ff", fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, marginBottom: 12 }}>
                 <Rocket size={16} /> CAREER AMBITION & ROLE PROFILING
               </div>
-              <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 36, fontWeight: 800, margin: "0 0 10px", lineHeight: 1.2, color: "var(--text-main)" }}>
+              <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 42, fontWeight: 800, margin: "0 0 12px", lineHeight: 1.15, color: "var(--text-main)" }}>
                 Define Your <span style={{ background: "linear-gradient(135deg, #6c63ff, #00c9a7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Professional Career DNA</span>
               </h1>
-              <p style={{ fontSize: 16, color: "var(--text-muted)", maxWidth: 580, margin: "0 auto", lineHeight: 1.5 }}>
+              <p style={{ fontSize: 16.5, color: "var(--text-muted)", maxWidth: 600, margin: "0 auto", lineHeight: 1.5 }}>
                 Complete all 12 career profiling questions below so PathEd AI can generate your 4-year SDE roadmap.
               </p>
             </div>
@@ -367,7 +377,7 @@ export default function OnboardingStage2() {
                             border: `1.5px solid ${isSelected ? "#6c63ff" : "var(--border-light)"}`,
                             background: isSelected ? "rgba(108,99,255,0.12)" : "var(--bg-alt)",
                             color: isSelected ? "#6c63ff" : "var(--text-main)",
-                            fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: isSelected ? 800 : 600,
+                            fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: isSelected ? 600 : 500,
                             cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", gap: 10
                           }}
                         >
@@ -385,7 +395,7 @@ export default function OnboardingStage2() {
                       style={{
                         padding: "10px 18px", borderRadius: 14,
                         border: "1.5px dashed #6c63ff", background: "rgba(108,99,255,0.08)",
-                        color: "#6c63ff", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
+                        color: "#6c63ff", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 700,
                         cursor: "pointer", display: "flex", alignItems: "center", gap: 6
                       }}
                     >
@@ -411,7 +421,7 @@ export default function OnboardingStage2() {
                         onClick={handleAddCustomDomain}
                         style={{
                           padding: "12px 20px", borderRadius: 14, background: "#6c63ff", color: "#fff",
-                          border: "none", fontWeight: 800, cursor: "pointer"
+                          border: "none", fontWeight: 700, cursor: "pointer"
                         }}
                       >
                         Add
@@ -441,7 +451,7 @@ export default function OnboardingStage2() {
                             border: `1.5px solid ${isSelected ? "#00c9a7" : "var(--border-light)"}`,
                             background: isSelected ? "rgba(0,201,167,0.12)" : "var(--bg-alt)",
                             color: isSelected ? "#00c9a7" : "var(--text-main)",
-                            fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: isSelected ? 800 : 600,
+                            fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: isSelected ? 600 : 500,
                             cursor: "pointer", transition: "all 0.2s"
                           }}
                         >
@@ -456,7 +466,7 @@ export default function OnboardingStage2() {
                       style={{
                         padding: "10px 18px", borderRadius: 14,
                         border: "1.5px dashed #00c9a7", background: "rgba(0,201,167,0.08)",
-                        color: "#00c9a7", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
+                        color: "#00c9a7", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 700,
                         cursor: "pointer", display: "flex", alignItems: "center", gap: 6
                       }}
                     >
@@ -515,7 +525,7 @@ export default function OnboardingStage2() {
                           }}
                         >
                           <div style={{ fontSize: 28, marginBottom: 6 }}>{item.emoji}</div>
-                          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isSelected ? "#f7971e" : "var(--text-main)" }}>
+                          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14.5, fontWeight: isSelected ? 600 : 500, color: isSelected ? "#f7971e" : "var(--text-main)" }}>
                             {item.label}
                           </div>
                           <div style={{ fontSize: 11.5, color: "var(--text-muted)", marginTop: 2, lineHeight: 1.3 }}>{item.sub}</div>
@@ -525,14 +535,18 @@ export default function OnboardingStage2() {
                   </div>
                 </div>
 
-                {/* Q4: Work Environment Preference Slider */}
+                {/* Q4: Work Environment Preference Slider (DYNAMIC COLOR BASED ON THRESHOLD) */}
                 <div style={{ marginBottom: 32 }}>
                   <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
-                    <Layers size={18} color="#e040fb" /> Q4. Work Environment Preference
+                    <Layers size={18} color={getEnvColor(envSlider)} /> Q4. Work Environment Preference
                   </label>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 12, fontFamily: "'Fira Code', monospace", fontWeight: 700 }}>
-                    <span style={{ color: "#6c63ff" }}>⚡ Fast-Paced Startup</span>
-                    <span style={{ color: "#00c9a7" }}>🏛️ Established Corporate</span>
+                    <span style={{ color: envSlider < 50 ? "#7c3aed" : "var(--text-muted)" }}>
+                      {envSlider < 30 ? "🔥 Deep Startup Focus" : "⚡ Fast-Paced Startup"}
+                    </span>
+                    <span style={{ color: envSlider > 50 ? "#00c9a7" : "var(--text-muted)" }}>
+                      {envSlider > 70 ? "🏛️ Deep Corporate Focus" : "🏛️ Established Corporate"}
+                    </span>
                   </div>
                   <input
                     type="range"
@@ -540,7 +554,10 @@ export default function OnboardingStage2() {
                     max="100"
                     value={envSlider}
                     onChange={e => setEnvSlider(parseInt(e.target.value))}
-                    style={{ width: "100%", height: 8, borderRadius: 4, accentColor: "#6c63ff", cursor: "pointer" }}
+                    style={{
+                      width: "100%", height: 8, borderRadius: 4, cursor: "pointer",
+                      accentColor: getEnvColor(envSlider)
+                    }}
                   />
                 </div>
 
@@ -567,7 +584,7 @@ export default function OnboardingStage2() {
                           }}
                         >
                           <div style={{ fontSize: 24, marginBottom: 6 }}>{s.icon}</div>
-                          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isSelected ? "#6c63ff" : "var(--text-main)" }}>
+                          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: isSelected ? 600 : 500, color: isSelected ? "#6c63ff" : "var(--text-main)" }}>
                             {s.label}
                           </div>
                           <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{s.sub}</div>
@@ -582,14 +599,18 @@ export default function OnboardingStage2() {
               {/* CARD 3: SALARY, RISK & FAVORITE TOOLS */}
               <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
                 
-                {/* Q6: Salary vs Social Impact Priority */}
+                {/* Q6: Salary vs Social Impact Priority (DYNAMIC COLOR SLIDER) */}
                 <div style={{ marginBottom: 32 }}>
                   <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
-                    <Rocket size={18} color="#f7971e" /> Q6. Salary vs. Social Impact Priority
+                    <Rocket size={18} color={getImpactColor(impactSlider)} /> Q6. Salary vs. Social Impact Priority
                   </label>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 12, fontFamily: "'Fira Code', monospace", fontWeight: 700 }}>
-                    <span style={{ color: "#f7971e" }}>💰 High Salary Package</span>
-                    <span style={{ color: "#00c9a7" }}>🌍 Social Impact & Mission</span>
+                    <span style={{ color: impactSlider < 50 ? "#f7971e" : "var(--text-muted)" }}>
+                      {impactSlider < 30 ? "💎 Top Salary Focus" : "💰 High Salary Package"}
+                    </span>
+                    <span style={{ color: impactSlider > 50 ? "#00c9a7" : "var(--text-muted)" }}>
+                      {impactSlider > 70 ? "🌱 High Social Impact" : "🌍 Social Impact & Mission"}
+                    </span>
                   </div>
                   <input
                     type="range"
@@ -597,7 +618,10 @@ export default function OnboardingStage2() {
                     max="100"
                     value={impactSlider}
                     onChange={e => setImpactSlider(parseInt(e.target.value))}
-                    style={{ width: "100%", height: 8, borderRadius: 4, accentColor: "#f7971e", cursor: "pointer" }}
+                    style={{
+                      width: "100%", height: 8, borderRadius: 4, cursor: "pointer",
+                      accentColor: getImpactColor(impactSlider)
+                    }}
                   />
                 </div>
 
@@ -607,7 +631,7 @@ export default function OnboardingStage2() {
                     <Briefcase size={18} color="#00c9a7" /> Q7. Risk Appetite
                   </label>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 10 }}>
-                    {["🛡️ Conservative", "秤️ Moderate", "🚀 Aggressive"].map(r => {
+                    {["🛡️ Conservative", "⚖️ Moderate", "🚀 Aggressive"].map(r => {
                       const isSelected = risk === r;
                       return (
                         <button
@@ -619,7 +643,7 @@ export default function OnboardingStage2() {
                             border: `1.5px solid ${isSelected ? "#00c9a7" : "var(--border-light)"}`,
                             background: isSelected ? "rgba(0,201,167,0.12)" : "var(--bg-alt)",
                             color: isSelected ? "#00c9a7" : "var(--text-main)",
-                            fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: isSelected ? 800 : 600,
+                            fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: isSelected ? 600 : 500,
                             cursor: "pointer", transition: "all 0.2s"
                           }}
                         >
@@ -634,7 +658,7 @@ export default function OnboardingStage2() {
                       style={{
                         padding: "10px 18px", borderRadius: 14,
                         border: "1.5px dashed #00c9a7", background: "rgba(0,201,167,0.08)",
-                        color: "#00c9a7", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
+                        color: "#00c9a7", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 700,
                         cursor: "pointer", display: "flex", alignItems: "center", gap: 6
                       }}
                     >
@@ -674,7 +698,7 @@ export default function OnboardingStage2() {
                         style={{
                           padding: "6px 14px", borderRadius: 12, background: "rgba(108,99,255,0.12)",
                           border: "1px solid #6c63ff40", color: "#6c63ff", fontFamily: "'Fira Code', monospace",
-                          fontSize: 12, fontWeight: 800, cursor: "pointer"
+                          fontSize: 12, fontWeight: 700, cursor: "pointer"
                         }}
                       >
                         {t} ×
@@ -719,7 +743,7 @@ export default function OnboardingStage2() {
                             border: `1.5px solid ${isSelected ? "#e040fb" : "var(--border-light)"}`,
                             background: isSelected ? "rgba(224,64,251,0.12)" : "var(--bg-alt)",
                             color: isSelected ? "#e040fb" : "var(--text-main)",
-                            fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: isSelected ? 800 : 600,
+                            fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: isSelected ? 600 : 500,
                             cursor: "pointer", transition: "all 0.2s"
                           }}
                         >
@@ -734,7 +758,7 @@ export default function OnboardingStage2() {
                       style={{
                         padding: "10px 18px", borderRadius: 14,
                         border: "1.5px dashed #e040fb", background: "rgba(224,64,251,0.08)",
-                        color: "#e040fb", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
+                        color: "#e040fb", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 700,
                         cursor: "pointer", display: "flex", alignItems: "center", gap: 6
                       }}
                     >
@@ -776,7 +800,7 @@ export default function OnboardingStage2() {
                             cursor: "pointer", transition: "all 0.2s"
                           }}
                         >
-                          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isSelected ? "#6c63ff" : "var(--text-main)" }}>
+                          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: isSelected ? 600 : 500, color: isSelected ? "#6c63ff" : "var(--text-main)" }}>
                             {v.label}
                           </div>
                           <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{v.sub}</div>
@@ -794,7 +818,7 @@ export default function OnboardingStage2() {
                       }}
                     >
                       <Plus size={22} color="#6c63ff" />
-                      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: "#6c63ff", marginTop: 4 }}>
+                      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14.5, fontWeight: 700, color: "#6c63ff", marginTop: 4 }}>
                         + Enter Custom Vision
                       </div>
                       <div style={{ fontSize: 11.5, color: "var(--text-muted)" }}>Write your own career goal</div>
@@ -839,7 +863,7 @@ export default function OnboardingStage2() {
                           }}
                         >
                           <div style={{ fontSize: 24, marginBottom: 6 }}>{p.icon}</div>
-                          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isSelected ? "#00c9a7" : "var(--text-main)" }}>
+                          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: isSelected ? 600 : 500, color: isSelected ? "#00c9a7" : "var(--text-main)" }}>
                             {p.label}
                           </div>
                           <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{p.sub}</div>
@@ -868,7 +892,7 @@ export default function OnboardingStage2() {
                             cursor: "pointer", transition: "all 0.2s"
                           }}
                         >
-                          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isSelected ? "#f7971e" : "var(--text-main)" }}>
+                          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: isSelected ? 600 : 500, color: isSelected ? "#f7971e" : "var(--text-main)" }}>
                             {o.label}
                           </div>
                           <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{o.sub}</div>
@@ -911,20 +935,18 @@ export default function OnboardingStage2() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            {/* Header Description */}
             <div style={{ textAlign: "left", marginBottom: 32 }}>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 16, background: "rgba(0,201,167,0.12)", border: "1px solid #00c9a740", fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 800, color: "#00c9a7", marginBottom: 12 }}>
                 ▸ PHASE 2 — AI CAREER BLUEPRINTS DISCOVERY
               </div>
-              <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 36, fontWeight: 800, color: "var(--text-main)", margin: "0 0 10px" }}>
+              <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 42, fontWeight: 800, color: "var(--text-main)", margin: "0 0 10px" }}>
                 Your Top 5 <span style={{ background: "linear-gradient(135deg, #6c63ff, #00c9a7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AI Career Blueprints</span>
               </h1>
-              <p style={{ fontSize: 15, color: "var(--text-muted)", margin: 0, lineHeight: 1.6, maxWidth: 620 }}>
+              <p style={{ fontSize: 16.5, color: "var(--text-muted)", margin: 0, lineHeight: 1.6, maxWidth: 620 }}>
                 Based on your professional DNA, problem-solving style, and industry interests, Gemini AI has synthesized these high-potential engineering paths.
               </p>
             </div>
 
-            {/* 5 AI GENERATED CAREER CARDS */}
             <div style={{ display: "flex", flexDirection: "column", gap: 24, marginBottom: 32 }}>
               {aiGeneratedCareers.map((c, i) => (
                 <CareerCardItem
@@ -984,7 +1006,6 @@ export default function OnboardingStage2() {
               </div>
             </div>
 
-            {/* Recalibrate Link */}
             <div style={{ textAlign: "center", marginBottom: 40 }}>
               <button
                 onClick={() => setPhase(1)}
@@ -1024,7 +1045,7 @@ export default function OnboardingStage2() {
         </div>
       </div>
 
-      {/* AI ANALYSIS LOADING OVERLAY */}
+      {/* REPLACED MODERN GLOWING ORB AI ANALYSIS OVERLAY */}
       <AnimatePresence>
         {isAnalyzing && (
           <div style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
@@ -1032,33 +1053,41 @@ export default function OnboardingStage2() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              style={{ position: "absolute", inset: 0, background: "rgba(10, 10, 20, 0.88)", backdropFilter: "blur(20px)" }}
+              style={{ position: "absolute", inset: 0, background: "rgba(10, 10, 24, 0.92)", backdropFilter: "blur(24px)" }}
             />
+            
+            {/* Glowing Particle Orb Ring */}
+            <div style={{ position: "absolute", width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle, rgba(108,99,255,0.25) 0%, rgba(0,201,167,0.05) 70%, transparent 100%)", filter: "blur(20px)" }} />
+
             <motion.div
-              initial={{ scale: 0.85, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.85, opacity: 0 }}
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
               style={{
                 position: "relative", zIndex: 10, background: "var(--bg-card)",
-                border: "2px solid #6c63ff", borderRadius: 28, padding: "40px 36px",
-                textAlign: "center", maxWidth: 480, width: "100%", boxShadow: "0 25px 60px rgba(108,99,255,0.3)"
+                border: "2px solid #6c63ff60", borderRadius: 32, padding: "44px 40px",
+                textAlign: "center", maxWidth: 500, width: "100%", boxShadow: "0 25px 70px rgba(108,99,255,0.35)"
               }}
             >
-              <div style={{ width: 70, height: 70, borderRadius: "50%", background: "linear-gradient(135deg, #6c63ff, #00c9a7)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 32, margin: "0 auto 20px" }}>
+              <div style={{ width: 80, height: 80, borderRadius: 24, background: "linear-gradient(135deg, #6c63ff, #00c9a7)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 38, margin: "0 auto 24px", boxShadow: "0 12px 30px rgba(108,99,255,0.4)" }}>
                 🤖
               </div>
-              <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 800, color: "var(--text-main)", margin: "0 0 10px" }}>
-                Analyzing Professional DNA
+
+              <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 26, fontWeight: 800, color: "var(--text-main)", margin: "0 0 10px" }}>
+                Synthesizing AI Career Blueprints
               </h3>
-              <p style={{ fontSize: 14, color: "#6c63ff", fontFamily: "'Fira Code', monospace", fontWeight: 700, margin: "0 0 20px" }}>
+              
+              <p style={{ fontSize: 14, color: "#6c63ff", fontFamily: "'Fira Code', monospace", fontWeight: 700, margin: "0 0 24px", lineHeight: 1.4 }}>
                 {analysisSteps[analysisTextIndex]}
               </p>
-              <div style={{ height: 6, borderRadius: 3, background: "var(--bg-alt)", overflow: "hidden" }}>
+
+              {/* Glowing Pulse Bar */}
+              <div style={{ height: 8, borderRadius: 4, background: "var(--bg-alt)", overflow: "hidden", border: "1px solid var(--border-light)" }}>
                 <motion.div
                   initial={{ width: "0%" }}
                   animate={{ width: "100%" }}
                   transition={{ duration: 2.2, ease: "easeInOut" }}
-                  style={{ height: "100%", background: "linear-gradient(90deg, #6c63ff, #00c9a7)" }}
+                  style={{ height: "100%", background: "linear-gradient(90deg, #6c63ff, #00c9a7, #f7971e)" }}
                 />
               </div>
             </motion.div>
@@ -1078,16 +1107,13 @@ export default function OnboardingStage2() {
   );
 }
 
-/* ════════════════════════════════════════════════════════════
-   CAREER CARD ITEM COMPONENT WITH ANIMATED COMPATIBILITY GAUGE
-════════════════════════════════════════════════════════════ */
+/* CAREER CARD ITEM COMPONENT */
 function CareerCardItem({ career, index, selected, onSelect }) {
   const [animatedScore, setAnimatedScore] = useState(0);
   
-  const circumference = 2 * Math.PI * 48; // Radius = 48
+  const circumference = 2 * Math.PI * 48;
   const strokeDashoffset = circumference - (circumference * animatedScore) / 100;
 
-  // Animate score from 0 up to target score (e.g. 94%)
   useEffect(() => {
     let current = 0;
     const interval = setInterval(() => {
@@ -1118,9 +1144,7 @@ function CareerCardItem({ career, index, selected, onSelect }) {
     >
       <div style={{ display: "flex", justifyContent: "space-between", gap: 24, flexWrap: "wrap" }}>
         
-        {/* LEFT CONTENT */}
         <div style={{ flex: 1, minWidth: 260 }}>
-          {/* Header Title + Badges */}
           <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 14 }}>
             <div style={{ width: 48, height: 48, borderRadius: 14, background: `${career.accent}15`, border: `1.5px solid ${career.accent}30`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>
               {career.icon}
@@ -1149,12 +1173,10 @@ function CareerCardItem({ career, index, selected, onSelect }) {
             </div>
           </div>
 
-          {/* Brief Description */}
           <p style={{ fontSize: 14, color: "var(--text-muted)", lineHeight: 1.6, margin: "0 0 16px" }}>
             {career.brief}
           </p>
 
-          {/* Skills Chips */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
             {career.skills.map(s => (
               <span key={s} style={{ padding: "5px 12px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700, color: "#6c63ff" }}>
@@ -1163,7 +1185,6 @@ function CareerCardItem({ career, index, selected, onSelect }) {
             ))}
           </div>
 
-          {/* AI Match Reason Banner */}
           <div style={{ padding: "8px 14px", borderRadius: 12, background: "rgba(108,99,255,0.08)", border: "1px solid #6c63ff30", display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
             <span style={{ fontSize: 14 }}>🤖</span>
             <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 11.5, fontWeight: 700, color: "#6c63ff" }}>
@@ -1171,13 +1192,11 @@ function CareerCardItem({ career, index, selected, onSelect }) {
             </span>
           </div>
 
-          {/* Sector & Verified Label */}
           <div style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
             🏢 Top sector: <span style={{ color: "var(--text-main)", fontWeight: 700 }}>{career.sector}</span> &nbsp;·&nbsp; 🧑‍🏫 <span style={{ color: "#00c9a7", fontWeight: 700 }}>Teacher Verified</span>
           </div>
         </div>
 
-        {/* RIGHT SIDE: ANIMATED CIRCULAR GAUGE (STARTS FROM 0%) */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0, minWidth: 120 }}>
           <div style={{ position: "relative", width: 110, height: 110, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="110" height="110" viewBox="0 0 110 110">
@@ -1212,7 +1231,6 @@ function CareerCardItem({ career, index, selected, onSelect }) {
 
       </div>
 
-      {/* ACTION SELECT BUTTON */}
       <button
         onClick={() => onSelect(career.title)}
         style={{
