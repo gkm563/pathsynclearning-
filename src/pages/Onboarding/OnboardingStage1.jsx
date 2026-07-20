@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import StageTransitionOverlay from "../../components/onboarding/StageTransitionOverlay";
 import { 
   Sun, Moon, Sparkles, CheckCircle2, ArrowRight, GraduationCap, 
-  BookOpen, Code, Trophy, ShieldCheck, HelpCircle, User, Building, Hash, Cpu 
+  BookOpen, Code, Trophy, ShieldCheck, User, Building, Hash, Cpu, ChevronUp, ChevronDown 
 } from "lucide-react";
 
 export default function OnboardingStage1() {
@@ -42,6 +43,8 @@ export default function OnboardingStage1() {
   const [academicGoal, setAcademicGoal] = useState("");
 
   const [validationError, setValidationError] = useState("");
+  const [isSnapshotExpanded, setIsSnapshotExpanded] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Calculate completion percentage
   const fields = [
@@ -67,13 +70,16 @@ export default function OnboardingStage1() {
       setValidationError("Please fill out your Name, University, Branch, and Semester to continue.");
       return;
     }
-    // Save onboarding state & navigate to next stage or dashboard
-    alert("Stage 1 Completed! Saving profile & proceeding to Stage 2.");
-    navigate("/platform");
+    setValidationError("");
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setIsTransitioning(false);
+      navigate("/onboarding/stage2");
+    }, 2200);
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg-main)", color: "var(--text-main)", fontFamily: "'Inter', sans-serif", paddingBottom: 120 }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-main)", color: "var(--text-main)", fontFamily: "'Inter', sans-serif", paddingBottom: 140 }}>
       
       {/* 1. TOP STICKY NAVIGATION BAR */}
       <header style={{
@@ -119,7 +125,6 @@ export default function OnboardingStage1() {
         {/* 2. TOP 4-STAGE MINIMAP PROGRESS TRACKER */}
         <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: "24px 28px", marginBottom: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.04)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative", marginBottom: 20 }}>
-            {/* Background Connecting Line */}
             <div style={{ position: "absolute", left: 30, right: 30, top: 18, height: 3, background: "var(--border-light)", zIndex: 0 }} />
             <div style={{ position: "absolute", left: 30, top: 18, height: 3, background: "linear-gradient(90deg, #6c63ff, #00c9a7)", zIndex: 1, width: `${(completionPct / 100) * 25}%`, transition: "width 0.4s ease" }} />
 
@@ -142,7 +147,6 @@ export default function OnboardingStage1() {
             ))}
           </div>
 
-          {/* Progress Bar & Percentage */}
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 12, fontFamily: "'Fira Code', monospace", fontWeight: 700 }}>
               <span style={{ color: "#6c63ff" }}>STAGE 1 COMPLETION</span>
@@ -531,29 +535,88 @@ export default function OnboardingStage1() {
         </form>
       </main>
 
-      {/* 4. LIVE STICKY BOTTOM SNAPSHOT BAR */}
+      {/* 4. EXPANDABLE LIVE STICKY BOTTOM SNAPSHOT DRAWER */}
       <div style={{
         position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 90,
         background: "var(--bg-card)", borderTop: "1.5px solid var(--border-light)",
         padding: "12px 32px", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
-        boxShadow: "0 -10px 30px rgba(0,0,0,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between"
+        boxShadow: "0 -10px 30px rgba(0,0,0,0.06)"
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-          <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 800, color: "#6c63ff", letterSpacing: 1 }}>
-            LIVE SNAPSHOT:
-          </span>
-          {fullName.trim() && <span style={{ padding: "4px 10px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700 }}>👤 {fullName}</span>}
-          {university.trim() && <span style={{ padding: "4px 10px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700 }}>🏫 {university}</span>}
-          {branch && <span style={{ padding: "4px 10px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700 }}>💻 {branch}</span>}
-          {semester && <span style={{ padding: "4px 10px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700 }}>📅 Sem {semester}</span>}
-          {cgpa.trim() && <span style={{ padding: "4px 10px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700 }}>📊 CGPA {cgpa}</span>}
-          {primaryLang && <span style={{ padding: "4px 10px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700 }}>⚡ {primaryLang}</span>}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 800, color: "#6c63ff", letterSpacing: 1 }}>
+              LIVE SNAPSHOT:
+            </span>
+            {fullName.trim() && <span style={{ padding: "4px 10px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700 }}>👤 {fullName}</span>}
+            {university.trim() && <span style={{ padding: "4px 10px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700 }}>🏫 {university}</span>}
+            {branch && <span style={{ padding: "4px 10px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700 }}>💻 {branch}</span>}
+            {semester && <span style={{ padding: "4px 10px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700 }}>📅 Sem {semester}</span>}
+            {cgpa.trim() && <span style={{ padding: "4px 10px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700 }}>📊 CGPA {cgpa}</span>}
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, color: "#00c9a7" }}>
+              {completionPct}% FILLED
+            </div>
+
+            <button
+              onClick={() => setIsSnapshotExpanded(!isSnapshotExpanded)}
+              style={{
+                display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 12,
+                background: "var(--bg-alt)", border: "1px solid var(--border-light)", color: "#6c63ff",
+                fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 800, cursor: "pointer"
+              }}
+            >
+              {isSnapshotExpanded ? <>Collapse Snapshot <ChevronDown size={14} /></> : <>Expand Snapshot <ChevronUp size={14} /></>}
+            </button>
+          </div>
         </div>
 
-        <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, color: "#00c9a7" }}>
-          {completionPct}% PROFILE SYNCHRONIZED
-        </div>
+        {/* Expandable Summary Grid */}
+        <AnimatePresence>
+          {isSnapshotExpanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0, marginTop: 0 }}
+              animate={{ height: "auto", opacity: 1, marginTop: 14 }}
+              exit={{ height: 0, opacity: 0, marginTop: 0 }}
+              style={{ overflow: "hidden", paddingTop: 12, borderTop: "1px solid var(--border-light)" }}
+            >
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
+                <div style={{ background: "var(--bg-alt)", padding: 12, borderRadius: 12, border: "1px solid var(--border-light)" }}>
+                  <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)" }}>STUDENT IDENTITY</div>
+                  <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 800, color: "var(--text-main)", marginTop: 2 }}>{fullName || "Not provided"}</div>
+                  <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{university || "No college set"} ({rollNumber || "No Roll"})</div>
+                </div>
+
+                <div style={{ background: "var(--bg-alt)", padding: 12, borderRadius: 12, border: "1px solid var(--border-light)" }}>
+                  <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)" }}>ACADEMICS</div>
+                  <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 800, color: "var(--text-main)", marginTop: 2 }}>{branch || "Branch TBD"} · Sem {semester || "-"}</div>
+                  <div style={{ fontSize: 11, color: "var(--text-muted)" }}>CGPA: {cgpa || "N/A"} · Board: {board || "N/A"}</div>
+                </div>
+
+                <div style={{ background: "var(--bg-alt)", padding: 12, borderRadius: 12, border: "1px solid var(--border-light)" }}>
+                  <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)" }}>CODING DNA</div>
+                  <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 800, color: "var(--text-main)", marginTop: 2 }}>Lang: {primaryLang || "TBD"}</div>
+                  <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Exp: {codingExp || "Unselected"}</div>
+                </div>
+
+                <div style={{ background: "var(--bg-alt)", padding: 12, borderRadius: 12, border: "1px solid var(--border-light)" }}>
+                  <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)" }}>YEAR GOAL</div>
+                  <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 700, color: "#6c63ff", marginTop: 2, lineHeight: 1.3 }}>{academicGoal || "Goal TBD"}</div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
+
+      {/* Stage Transition Celebration Loading Overlay */}
+      <StageTransitionOverlay
+        isOpen={isTransitioning}
+        currentStageTitle="Stage 1: Academic Foundation & DNA"
+        nextStageTitle="Stage 2: Career Ambition & Target Roles"
+        roleColor="#6c63ff"
+      />
 
     </div>
   );
