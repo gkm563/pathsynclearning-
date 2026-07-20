@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import StudentLanding from "./pages/StudentLanding";
-import Platform from "./pages/Platform";
+import PlatformDashboard from "./pages/Platform/PlatformDashboard";
+import Store from "./pages/Store";
 import Methodology from "./pages/Methodology";
 import Mission from "./pages/Mission";
 import Company from "./pages/Company";
@@ -47,7 +48,10 @@ function App() {
       <div className="app-container">
         <Routes>
           <Route path="/" element={<StudentLanding />} />
-          <Route path="/platform" element={<Platform />} />
+          <Route path="/platform" element={<PlatformDashboard />} />
+          <Route path="/dashboard" element={<PlatformDashboard />} />
+          <Route path="/store" element={<Store />} />
+          
           <Route path="/methodology" element={<Methodology />} />
           <Route path="/mission" element={<Mission />} />
           <Route path="/company" element={<Company />} />
