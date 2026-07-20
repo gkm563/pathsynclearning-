@@ -68,11 +68,11 @@ export default function DashboardSidebar({ isOpen, onClose, activeTab, setActive
             <div>
               {/* Sidebar Header with Brand & Close Button */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, paddingBottom: 16, borderBottom: "1.5px solid var(--border-light)" }}>
-                <Link to="/" style={{ fontFamily: "'Syne', sans-serif", fontSize: 26, fontWeight: 800, color: "var(--text-main)", textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
+                <Link to="/" style={{ fontFamily: "'Syne', sans-serif", fontSize: 26, fontWeight: 800, color: "var(--text-main)", textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ width: 38, height: 38, borderRadius: 10, background: "linear-gradient(135deg, #6c63ff, #00c9a7)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 900, fontSize: 18 }}>
                     P
                   </div>
-                  Path<span style={{ color: "#6c63ff" }}>Ed</span>
+                  <span>Path<span style={{ color: "#6c63ff" }}>Ed</span></span>
                 </Link>
 
                 <button onClick={onClose} style={{ background: "var(--bg-alt)", border: "1px solid var(--border-light)", borderRadius: 12, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--text-main)" }}>

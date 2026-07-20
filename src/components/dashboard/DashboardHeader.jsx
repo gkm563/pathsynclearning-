@@ -46,7 +46,7 @@ export default function DashboardHeader({ activeTab, setActiveTab, onToggleSideb
           <div style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg, #6c63ff, #00c9a7)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 900, fontSize: 16, boxShadow: "0 4px 12px rgba(108,99,255,0.3)" }}>
             P
           </div>
-          Path<span style={{ color: "#6c63ff" }}>Ed</span>
+          <span>Path<span style={{ color: "#6c63ff" }}>Ed</span></span>
         </Link>
 
         {/* Header Navigation Links (Adjusted Size & Spacing) */}
