@@ -23,18 +23,25 @@
 }
 
 [data-theme="dark"] {
-  /* Dark Theme Overrides */
-  --bg-main: #0a0a0a;
-  --bg-alt: #121212;
-  --bg-card: #1a1a1a;
-  --text-main: #ffffff;
-  --text-muted: #a1a1aa;
-  --text-light: #71717a;
-  --border-light: #27272a;
-  --border-strong: #3f3f46;
+  /* Dark Theme Overrides - Premium Slate */
+  --bg-main: #0b0f19;
+  --bg-alt: #0f1523;
+  --bg-card: #151b2b;
+  --text-main: #e2e8f0;
+  --text-muted: #94a3b8;
+  --text-light: #64748b;
+  --border-light: rgba(255,255,255,0.08);
+  --border-strong: rgba(255,255,255,0.15);
   
   /* Shared Gradients / Transparents */
-  --overlay-bg: rgba(10,10,10,0.9);
+  --overlay-bg: rgba(11, 15, 25, 0.85);
+  
+  /* Desaturated brand colors for better dark mode contrast */
+  --primary: #3b82f6;
+  --secondary: #14b8a6;
+  --purple: #818cf8;
+  --magenta: #c026d3;
+  --accent: #f59e0b;
 }
 *, *::before, *::after {
   box-sizing: border-box;

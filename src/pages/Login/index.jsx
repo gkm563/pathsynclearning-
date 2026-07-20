@@ -68,6 +68,15 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
 
   const activeRole = ROLES.find(r => r.id === role);
 
@@ -93,24 +102,36 @@ export default function Login() {
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg-main)", display: "flex", fontFamily: "'Inter', sans-serif", color: "var(--text-main)", position: "relative", overflow: "hidden" }}>
-      {/* Animated Background */}
+      
+      {/* Interactive Cursor Glow (Spotlight) */}
+      <motion.div
+        animate={{ x: mousePos.x - 400, y: mousePos.y - 400 }}
+        transition={{ type: "tween", ease: "easeOut", duration: 0 }}
+        style={{
+          position: "absolute", width: 800, height: 800, borderRadius: "50%",
+          background: `radial-gradient(circle, ${activeRole.accent}15 0%, transparent 70%)`,
+          pointerEvents: "none", zIndex: 0, filter: "blur(60px)"
+        }}
+      />
+
+      {/* Premium Glassmorphism Mesh Background */}
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0 }}>
         <motion.div 
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3], rotate: [0, 90, 0] }} 
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          style={{ position: "absolute", left: "-10%", top: "-10%", width: 600, height: 600, background: `radial-gradient(circle, ${activeRole.accent} 0%, transparent 70%)`, filter: "blur(60px)" }} 
+          animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.4, 0.2], rotate: [0, 45, 0] }} 
+          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+          style={{ position: "absolute", left: "-5%", top: "-10%", width: "50vw", height: "50vw", background: `radial-gradient(ellipse, ${activeRole.accent} 0%, transparent 60%)`, filter: "blur(100px)", opacity: 0.15 }} 
         />
         <motion.div 
-          animate={{ scale: [1, 1.5, 1], opacity: [0.2, 0.4, 0.2], x: [0, 50, 0], y: [0, -50, 0] }} 
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          style={{ position: "absolute", right: "-5%", bottom: "-10%", width: 500, height: 500, background: `radial-gradient(circle, ${activeRole.accent} 0%, transparent 70%)`, filter: "blur(80px)" }} 
+          animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.3, 0.15], x: [0, 100, 0], y: [0, -100, 0] }} 
+          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+          style={{ position: "absolute", right: "-10%", bottom: "-10%", width: "60vw", height: "60vw", background: `radial-gradient(ellipse, var(--purple) 0%, transparent 60%)`, filter: "blur(120px)", opacity: 0.1 }} 
         />
-        <div style={{ position: "absolute", inset: 0, opacity: 0.05, backgroundImage: "linear-gradient(to right, var(--text-main) 1px, transparent 1px), linear-gradient(to bottom, var(--text-main) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+        <div style={{ position: "absolute", inset: 0, opacity: 0.03, backgroundImage: "linear-gradient(to right, var(--text-main) 1px, transparent 1px), linear-gradient(to bottom, var(--text-main) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
       </div>
 
       {/* Left Hero Column */}
       <div style={{ flex: "1 1 50%", display: "flex", flexDirection: "column", padding: "60px", position: "relative", zIndex: 1, justifyContent: "center" }}>
-        <Link to="/" style={{ position: "absolute", top: 40, left: 40, fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, color: "var(--bg-card)", textDecoration: "none" }}>
+        <Link to="/" style={{ position: "absolute", top: 40, left: 40, fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, color: "var(--text-main)", textDecoration: "none" }}>
           Path<span style={{ color: activeRole.accent }}>Ed</span>
         </Link>
         
@@ -133,13 +154,13 @@ export default function Login() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  style={{ display: "flex", alignItems: "center", gap: 16, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", padding: "16px 20px", borderRadius: 16 }}
+                  style={{ display: "flex", alignItems: "center", gap: 16, background: "var(--bg-card)", border: "1px solid var(--border-light)", padding: "16px 20px", borderRadius: 16, boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}
                 >
                   <div style={{ background: activeRole.bg, color: activeRole.accent, width: 40, height: 40, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     {activeRole.icon}
                   </div>
                   <div>
-                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--bg-card)" }}>{f.title}</div>
+                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text-main)" }}>{f.title}</div>
                     <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, color: "var(--text-light)", letterSpacing: 1 }}>{f.sub}</div>
                   </div>
                 </motion.div>
@@ -154,7 +175,7 @@ export default function Login() {
         <motion.div 
           animate={error ? { x: [-10, 10, -10, 10, 0] } : {}}
           transition={{ duration: 0.4 }}
-          style={{ width: "100%", maxWidth: 440, background: "rgba(255,255,255,0.02)", backdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 24, padding: 40, position: "relative", overflow: "hidden" }}
+          style={{ width: "100%", maxWidth: 440, background: "var(--overlay-bg)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid var(--border-light)", borderRadius: 24, padding: 40, position: "relative", overflow: "hidden", boxShadow: "0 20px 40px rgba(0,0,0,0.1)" }}
         >
           {loading && (
             <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: "rgba(255,255,255,0.1)" }}>
@@ -163,7 +184,7 @@ export default function Login() {
           )}
 
           {/* Role Switcher */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 32, background: "rgba(0,0,0,0.2)", padding: 8, borderRadius: 16 }}>
+          <div style={{ display: "flex", gap: 8, marginBottom: 32, background: "var(--bg-main)", padding: 8, borderRadius: 16, border: "1px solid var(--border-light)" }}>
             {ROLES.map(r => (
               <button 
                 key={r.id} 
