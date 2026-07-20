@@ -140,6 +140,67 @@ export default function Login() {
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg-main)", display: "flex", fontFamily: "'Inter', sans-serif", color: "var(--text-main)", position: "relative", overflow: "hidden" }}>
       
+      {/* Full-screen Loading Background Animation Overlay */}
+      <AnimatePresence>
+        {loading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: "fixed", inset: 0, zIndex: 999,
+              background: `radial-gradient(circle at center, ${activeRole.accent}25 0%, var(--bg-main) 85%)`,
+              backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center"
+            }}
+          >
+            {/* Animated Expanding Radar Pulse Rings */}
+            <motion.div
+              animate={{ scale: [0.8, 1.8, 2.4], opacity: [0.6, 0.2, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+              style={{ position: "absolute", width: 200, height: 200, borderRadius: "50%", border: `2px solid ${activeRole.accent}` }}
+            />
+            <motion.div
+              animate={{ scale: [0.8, 1.8, 2.4], opacity: [0.6, 0.2, 0] }}
+              transition={{ duration: 2, delay: 0.6, repeat: Infinity, ease: "easeOut" }}
+              style={{ position: "absolute", width: 200, height: 200, borderRadius: "50%", border: `2px solid ${activeRole.accent}` }}
+            />
+
+            {/* Glowing Icon Container */}
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+              style={{
+                width: 100, height: 100, borderRadius: 28,
+                background: `linear-gradient(135deg, ${activeRole.accent}, ${activeRole.accent}88)`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                boxShadow: `0 0 50px ${activeRole.accent}88`, color: "#ffffff", marginBottom: 28
+              }}
+            >
+              {activeRole.icon}
+            </motion.div>
+
+            {/* Authenticating Text */}
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 28, fontWeight: 800, color: "var(--text-main)", marginBottom: 8 }}>
+              Authenticating {activeRole.name} Account...
+            </h2>
+            <p style={{ color: activeRole.accent, fontFamily: "'Fira Code', monospace", fontSize: 14, fontWeight: 700, letterSpacing: 1, marginBottom: 24 }}>
+              SECURE ENCRYPTED HANDSHAKE
+            </p>
+
+            {/* Loading Progress Bar Container */}
+            <div style={{ width: 300, height: 8, background: "var(--bg-alt)", borderRadius: 4, overflow: "hidden", border: "1px solid var(--border-light)", boxShadow: `0 0 20px ${activeRole.accent}30` }}>
+              <motion.div
+                style={{ height: "100%", background: activeRole.accent, width: `${progress}%`, borderRadius: 4, transition: "width 0.3s ease" }}
+              />
+            </div>
+            <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 13, fontWeight: 700, color: "var(--text-main)", marginTop: 12 }}>
+              {progress}%
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
       {/* Interactive Cursor Glow (Spotlight) */}
       <motion.div
         animate={{ x: mousePos.x - 400, y: mousePos.y - 400 }}
