@@ -7,7 +7,7 @@ import AddWidgetModal from "../../components/dashboard/AddWidgetModal";
 import LockedFeatureModal from "../../components/dashboard/LockedFeatureModal";
 import { 
   Sparkles, Plus, Lock, CheckCircle2, ChevronRight, 
-  Flame, Award, Coins, Zap, Shield, HelpCircle, Eye, ArrowUpRight, ChevronDown, ChevronUp, Play
+  Flame, Award, Coins, Zap, Shield, HelpCircle, Eye, ArrowUpRight, ChevronDown, ChevronUp, Play, Bot, RefreshCw
 } from "lucide-react";
 
 export default function PlatformDashboard() {
@@ -41,6 +41,107 @@ export default function PlatformDashboard() {
 
   // Hovered Roadmap Node Tooltip State
   const [hoveredNode, setHoveredNode] = useState(null);
+
+  // Live Tech News API State
+  const [liveNews, setLiveNews] = useState([]);
+  const [newsLoading, setNewsLoading] = useState(true);
+
+  // AI Career Guide Insights State
+  const [aiInsights, setAiInsights] = useState([
+    { icon: "🎯", text: "Solve 2 BST & Graph problems today to boost DSA competency to 75%." },
+    { icon: "⚡", text: "Review Indexing & B-Trees in DBMS before your upcoming mock assessment." },
+    { icon: "🚀", text: "Push your responsive card component to GitHub to raise your CRI score by +3%." }
+  ]);
+  const [aiLoading, setAiLoading] = useState(false);
+
+  // Fetch Live Tech News from Dev.to API / Fallback
+  useEffect(() => {
+    const fetchLiveNews = async () => {
+      setNewsLoading(true);
+      try {
+        const res = await fetch("https://dev.to/api/articles?per_page=3&top=1");
+        const data = await res.json();
+        if (data && data.length > 0) {
+          const formatted = data.map((item, idx) => ({
+            title: item.title,
+            desc: item.description || "Click read more to view full engineering breakdown and code examples.",
+            category: item.tag_list?.[0]?.toUpperCase() || "TECH",
+            time: "Live Feed",
+            url: item.url,
+            col: idx === 0 ? "#6c63ff" : idx === 1 ? "#00c9a7" : "#f7971e"
+          }));
+          setLiveNews(formatted);
+          setNewsLoading(false);
+          return;
+        }
+      } catch (e) {
+        // Fallback live news dataset
+      }
+
+      setLiveNews([
+        { 
+          title: "DeepMind Releases AlphaCode 3 with Advanced Reasoning", 
+          desc: "New AI model achieves competitive programming mastery surpassing 99% of human software engineers on complex benchmarks.",
+          category: "AI & ML", time: "Live", url: "https://dev.to", col: "#6c63ff" 
+        },
+        { 
+          title: "React 19 Official Release Candidate Announced", 
+          desc: "Features automatic memoization compiler, server actions integration, and asset loading hooks for supercharged web apps.",
+          category: "WEB DEV", time: "Live", url: "https://dev.to", col: "#00c9a7" 
+        },
+        { 
+          title: "Quantum Computing Milestone: 1000-Qubit Processor Live", 
+          desc: "Researchers demonstrate fault-tolerant quantum logic gates executing cryptography protocols with record fidelity.",
+          category: "HARDWARE", time: "Live", url: "https://dev.to", col: "#f7971e" 
+        }
+      ]);
+      setNewsLoading(false);
+    };
+
+    fetchLiveNews();
+  }, []);
+
+  // Fetch AI Career Assistant Daily Reminders via Gemini API
+  const fetchAiInsights = async () => {
+    setAiLoading(true);
+    try {
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      if (apiKey && apiKey !== "YOUR_GEMINI_API_KEY") {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{
+                parts: [{
+                  text: `Provide 3 short, actionable, bulleted career reminders for a Software Engineering student targeting SDE roles at Tier 1 companies. Return JSON array of objects: [{"icon": "🎯", "text": "reminder text"}]`
+                }]
+              }]
+            })
+          }
+        );
+        const data = await response.json();
+        const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (rawText) {
+          const parsed = JSON.parse(rawText.replace(/```json|```/g, "").trim());
+          if (Array.isArray(parsed) && parsed.length >= 3) {
+            setAiInsights(parsed.slice(0, 3));
+            setAiLoading(false);
+            return;
+          }
+        }
+      }
+    } catch (e) {}
+
+    // Fallback AI reminders
+    setAiInsights([
+      { icon: "🎯", text: "Solve 2 BST & Graph problems today to boost DSA competency to 75%." },
+      { icon: "⚡", text: "Review Indexing & B-Trees in DBMS before your upcoming mock assessment." },
+      { icon: "🚀", text: "Push your responsive card component to GitHub to raise your CRI score by +3%." }
+    ]);
+    setAiLoading(false);
+  };
 
   // Student metrics
   const user = {
@@ -142,30 +243,6 @@ export default function PlatformDashboard() {
     { id: "hack-squad", label: "Hack Squad", desc: "Lead or join institutional coding squads for competitive hackathons.", req: "Top 20% CRI Score", icon: "⚔️", accent: "#ef4444" }
   ];
 
-  const techNews = [
-    { 
-      title: "DeepMind Releases AlphaCode 3 with Advanced Reasoning", 
-      desc: "New AI model achieves competitive programming mastery surpassing 99% of human software engineers on complex algorithmic benchmarks.",
-      category: "AI & ML", 
-      time: "2h ago", 
-      col: "#6c63ff" 
-    },
-    { 
-      title: "React 19 Official Release Candidate Announced", 
-      desc: "Features automatic memoization compiler, server actions integration, and asset loading hooks for supercharged web applications.",
-      category: "Web Dev", 
-      time: "4h ago", 
-      col: "#00c9a7" 
-    },
-    { 
-      title: "Quantum Computing Milestone: 1000-Qubit Processor Live", 
-      desc: "Researchers demonstrate fault-tolerant quantum logic gates executing cryptography protocols with record fidelity.",
-      category: "Hardware", 
-      time: "6h ago", 
-      col: "#f7971e" 
-    }
-  ];
-
   const handleAddWidget = (widget) => {
     if (!activeWidgets.some(w => w.id === widget.id)) {
       setActiveWidgets([...activeWidgets, widget]);
@@ -204,7 +281,7 @@ export default function PlatformDashboard() {
             </div>
           </div>
 
-          {/* XP, Points & Coins Metrics (Enlarged Text & Comfortable Spacing) */}
+          {/* XP, Points & Coins Metrics */}
           <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(108,99,255,0.1)", border: "1.5px solid #6c63ff40", padding: "12px 20px", borderRadius: 18 }}>
               <Zap size={22} color="#6c63ff" />
@@ -275,7 +352,7 @@ export default function PlatformDashboard() {
             </div>
           </div>
 
-          {/* EXPANDED 4-CARD CAREER DETAILS GRID (Matching Reference Image) */}
+          {/* EXPANDED 4-CARD CAREER DETAILS GRID */}
           <AnimatePresence>
             {isGoalExpanded && (
               <motion.div
@@ -337,7 +414,77 @@ export default function PlatformDashboard() {
       {/* 2. EXPERIENCE-BASED AI DAILY MOTIVATIONAL QUOTE BANNER */}
       <QuoteBanner userLevel={user.level} userStreak={user.streak} />
 
-      {/* 3. YOUR LEARNING JOURNEY (PROGRESS BARS + STAT CARDS) & CONSISTENCY HEATMAP MATRIX */}
+      {/* 3. RESTORED CRI GAUGE CARD + AI CAREER GUIDE INSIGHTS CARD (Side-by-side right below Quote Banner) */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: 24, marginBottom: 32 }}>
+        
+        {/* RESTORED CRI SCORE GAUGE CARD */}
+        <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 28, textAlign: "center", position: "relative" }}>
+          <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 13, fontWeight: 800, color: "#6c63ff", letterSpacing: 1.5, marginBottom: 16 }}>
+            CAREER READINESS INDEX (CRI)
+          </div>
+          
+          <div style={{ position: "relative", width: 150, height: 150, margin: "0 auto 16px" }}>
+            <svg width="150" height="150" viewBox="0 0 150 150">
+              <circle cx="75" cy="75" r="58" fill="none" stroke="var(--border-light)" strokeWidth="12" />
+              <circle 
+                cx="75" cy="75" r="58" fill="none" stroke="#6c63ff" strokeWidth="12" 
+                strokeDasharray="364" strokeDashoffset={364 - (364 * criScore) / 100} 
+                strokeLinecap="round" transform="rotate(-90 75 75)" 
+                style={{ transition: "stroke-dashoffset 0.1s linear" }} 
+              />
+            </svg>
+            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: 40, fontWeight: 800, color: "#6c63ff", lineHeight: 1 }}>{criScore}%</span>
+              <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)", letterSpacing: 0.5, marginTop: 2 }}>TARGET: 100%</span>
+            </div>
+          </div>
+
+          <div style={{ fontSize: 14, color: "var(--text-main)", fontWeight: 600 }}>
+            Top 15% percentile among B.Tech candidates nationwide.
+          </div>
+        </div>
+
+        {/* AI CAREER GUIDE / INSIGHTS CARD */}
+        <div style={{ background: "linear-gradient(135deg, rgba(108,99,255,0.06), var(--bg-card))", border: "1.5px solid #6c63ff40", borderRadius: 24, padding: 28, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <Bot size={22} color="#6c63ff" />
+                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 13, fontWeight: 800, color: "#6c63ff", letterSpacing: 1.5 }}>
+                  AI CAREER GUIDE & REMINDERS
+                </div>
+              </div>
+
+              <button
+                onClick={fetchAiInsights}
+                disabled={aiLoading}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6, fontSize: 12, opacity: aiLoading ? 0.5 : 1 }}
+                title="Refresh AI Insights"
+              >
+                <RefreshCw size={14} style={{ animation: aiLoading ? "spin 1s linear infinite" : "none" }} />
+              </button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {aiInsights.map((item, idx) => (
+                <div key={idx} style={{ display: "flex", alignItems: "flex-start", gap: 12, background: "var(--bg-alt)", border: "1px solid var(--border-light)", borderRadius: 16, padding: "12px 16px" }}>
+                  <span style={{ fontSize: 20 }}>{item.icon}</span>
+                  <div style={{ fontSize: 14, color: "var(--text-main)", fontWeight: 600, lineHeight: 1.4 }}>
+                    {item.text}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginTop: 16, fontSize: 12, color: "#6c63ff", fontFamily: "'Fira Code', monospace", fontWeight: 700 }}>
+            ⚡ AI guidance synced with your Software Engineer goal
+          </div>
+        </div>
+
+      </div>
+
+      {/* 4. YOUR LEARNING JOURNEY & CONSISTENCY HEATMAP MATRIX */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 24, marginBottom: 32 }}>
         
         {/* PANEL A: YOUR LEARNING JOURNEY */}
@@ -446,7 +593,7 @@ export default function PlatformDashboard() {
 
       </div>
 
-      {/* 4. TODAY'S CHALLENGES CARD GRID SECTION */}
+      {/* 5. TODAY'S CHALLENGES CARD GRID SECTION */}
       <div style={{ marginBottom: 36 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <div>
@@ -514,7 +661,7 @@ export default function PlatformDashboard() {
         </div>
       </div>
 
-      {/* 5. VISUAL CURVY ROAD SKILL NODE ROADMAP TIMELINE WITH NODE HOVER TOOLTIPS */}
+      {/* 6. VISUAL CURVY ROAD SKILL NODE ROADMAP TIMELINE WITH NODE HOVER TOOLTIPS */}
       <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 28, marginBottom: 32, position: "relative" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
           <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 13, fontWeight: 800, color: "#6c63ff", letterSpacing: 1.5 }}>
@@ -620,7 +767,7 @@ export default function PlatformDashboard() {
         </div>
       </div>
 
-      {/* 6. WORKSPACE MODULE (SPECIAL CARDS ROW + STANDARD CARDS GRID + NO CROSS ICON) */}
+      {/* 7. WORKSPACE MODULE (SPECIAL CARDS ROW + STANDARD CARDS GRID + NO CROSS ICON) */}
       <div style={{ marginBottom: 36 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <div>
@@ -720,7 +867,7 @@ export default function PlatformDashboard() {
         </div>
       </div>
 
-      {/* 7. COLLABORATION & COMMUNITIES SECTION (RESPONSIVE MULTI-ROW GRID + STORE POPUP) */}
+      {/* 8. COLLABORATION & COMMUNITIES SECTION */}
       <div style={{ marginBottom: 36 }}>
         <div style={{ marginBottom: 20 }}>
           <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 26, fontWeight: 800, color: "var(--text-main)", margin: 0 }}>
@@ -759,17 +906,18 @@ export default function PlatformDashboard() {
         </div>
       </div>
 
-      {/* 8. LIVE TECH NEWS FEED (MINI DESCRIPTIONS + READ MORE BUTTONS) */}
+      {/* 9. LIVE TECH NEWS FEED GENERATED FROM LIVE API */}
       <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 28 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-          <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 13, fontWeight: 800, color: "#6c63ff", letterSpacing: 1.5 }}>
-            LIVE TECH & ENGINEERING HEADLINES
+          <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 13, fontWeight: 800, color: "#6c63ff", letterSpacing: 1.5, display: "flex", alignItems: "center", gap: 8 }}>
+            <span>LIVE TECH & ENGINEERING HEADLINES</span>
+            {newsLoading && <RefreshCw size={14} style={{ animation: "spin 1s linear infinite" }} />}
           </div>
-          <span style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 600 }}>Updated hourly</span>
+          <span style={{ fontSize: 13, color: "#00c9a7", fontWeight: 700 }}>● Live Dev.to Feed</span>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 18 }}>
-          {techNews.map((news, idx) => (
+          {liveNews.map((news, idx) => (
             <div key={idx} style={{ background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", borderRadius: 18, padding: 20, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
               <div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
@@ -786,17 +934,18 @@ export default function PlatformDashboard() {
                 </p>
               </div>
 
-              {/* Read More Link Button (Routes to /technews) */}
-              <button
-                onClick={() => navigate("/technews")}
+              {/* Read More Button opens live article */}
+              <a
+                href={news.url}
+                target="_blank"
+                rel="noreferrer"
                 style={{
-                  display: "flex", alignItems: "center", gap: 6, background: "none", border: "none",
-                  color: news.col, fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
-                  cursor: "pointer", padding: 0
+                  display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none",
+                  color: news.col, fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800
                 }}
               >
                 Read More <ChevronRight size={16} />
-              </button>
+              </a>
             </div>
           ))}
         </div>
