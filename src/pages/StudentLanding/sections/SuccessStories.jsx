@@ -110,11 +110,11 @@ export default function SuccessStories() {
                   "{story.text}"
                 </p>
                 <div style={{ display: "inline-flex", gap: 16 }}>
-                  <div style={{ background: "#f0f0ff", padding: "12px 24px", borderRadius: 12 }}>
+                  <div style={{ background: "rgba(108,99,255,0.15)", padding: "12px 24px", borderRadius: 12 }}>
                     <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, color: "#6c63ff", fontWeight: 800, marginBottom: 4 }}>BEFORE PATHED</div>
                     <div style={{ color: "var(--text-main)", fontWeight: 600 }}>{story.before}</div>
                   </div>
-                  <div style={{ background: "#e8faf5", padding: "12px 24px", borderRadius: 12 }}>
+                  <div style={{ background: "rgba(0,201,167,0.15)", padding: "12px 24px", borderRadius: 12 }}>
                     <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, color: "#00c9a7", fontWeight: 800, marginBottom: 4 }}>AFTER PATHED</div>
                     <div style={{ color: "var(--text-main)", fontWeight: 600 }}>{story.after}</div>
                   </div>

@@ -75,12 +75,12 @@ export default function Header() {
           <nav style={{ display: "flex", gap: "2px", alignItems: "center" }}>
             {links.map((link) => (
               <Link key={link.label} to={link.path} style={{
-                color: "#555", fontFamily: "'Inter', sans-serif", fontSize: "14px",
+                color: "var(--text-main)", fontFamily: "'Inter', sans-serif", fontSize: "14px",
                 padding: "8px 12px", borderRadius: "10px", fontWeight: 500,
                 transition: "all 0.2s"
               }}
               onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text-main)"; e.currentTarget.style.background = "var(--bg-alt)" }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = "#555"; e.currentTarget.style.background = "transparent" }}>
+              onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.background = "transparent" }}>
                 {link.label}
               </Link>
             ))}

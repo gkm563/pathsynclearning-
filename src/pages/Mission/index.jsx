@@ -26,7 +26,7 @@ export default function Mission() {
         <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
           <HoverCard style={{ width: "100%", height: 500, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(247,151,30,0.15)", border: "1px solid #fff3cd", position: "relative" }}>
             <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80" alt="Students bridging gap" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "50%", background: "linear-gradient(to top, rgba(26,26,46,0.9), transparent)" }} />
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "50%", background: "var(--bg-card)" }} />
           </HoverCard>
         </motion.div>
       </section>
@@ -162,7 +162,7 @@ export default function Mission() {
       </section>
 
       {/* 7. The Long-Term Vision */}
-      <section style={{ padding: "100px 32px", background: "linear-gradient(135deg, #fdf0ff, #fff)" }}>
+      <section style={{ padding: "100px 32px", background: "var(--bg-card)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", textAlign: "center" }}>
           <motion.div {...fadeInUp}>
             <Chip bg="#fdf0ff" border="#e8b3ff" color="#9c27b0">▸ THE 10-YEAR HORIZON</Chip>

@@ -114,7 +114,7 @@ export function SkillBar({ label, pct, c, delay = 0 }) {
     <div style={{ marginBottom: label ? 10 : 0 }}>
       {label && (
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: "#555" }}>{label}</span>
+          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: "var(--text-muted)" }}>{label}</span>
           <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: c }}>{pct}%</span>
         </div>
       )}

@@ -231,7 +231,7 @@ export default function Platform() {
       </section>
 
       {/* 6. Skill Decay */}
-      <section style={{ padding: "100px 32px", background: "linear-gradient(135deg, #fff9ee, #fff)" }}>
+      <section style={{ padding: "100px 32px", background: "var(--bg-alt)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", textAlign: "center" }}>
           <motion.div {...fadeInUp}>
             <Chip bg="#fff3cd" border="#ffe08a" color="#c68a00">▸ KNOWLEDGE MAINTENANCE</Chip>

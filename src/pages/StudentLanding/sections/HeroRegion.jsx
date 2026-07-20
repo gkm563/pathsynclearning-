@@ -83,7 +83,7 @@ export default function HeroRegion() {
       {/* S3 HERO */}
       <section style={{ paddingBottom: 80, position: "relative", zIndex: 2, maxWidth: 1360, margin: "0 auto", padding: "0 32px 80px" }}>
         <div style={{ 
-          background: isC ? "linear-gradient(135deg,#f0f0ff 0%,#e8faf5 60%,#fff9ee 100%)" : "linear-gradient(135deg,#fff9ee 0%,#fdf0ff 60%,#f0f0ff 100%)", 
+          background: "var(--bg-card)", 
           border: `2px solid ${isC ? "#d8d4ff" : "#ffe0a0"}`, borderRadius: 24, padding: "56px 64px", marginBottom: 40, 
           position: "relative", overflow: "hidden", boxShadow: "0 8px 40px rgba(108,99,255,.1)" 
         }}>
@@ -107,7 +107,7 @@ export default function HeroRegion() {
               </div>
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                 <button onClick={() => navigate("/register")} style={{ 
-                  background: isC ? "linear-gradient(135deg,#6c63ff,#00c9a7)" : "linear-gradient(135deg,#f7971e,#e040fb)", 
+                  background: "var(--bg-card)", 
                   border: "none", color: "var(--text-inverse)", fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 14, 
                   padding: "14px 36px", borderRadius: 12, cursor: "pointer", 
                   boxShadow: isC ? "0 8px 28px rgba(108,99,255,.35)" : "0 8px 28px rgba(247,151,30,.3)" 
