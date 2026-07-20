@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Chip, RoleCard, SkillBar } from "../../../components/ui/Shared";
 
 export default function HeroRegion() {
