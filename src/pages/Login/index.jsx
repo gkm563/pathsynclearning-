@@ -167,34 +167,34 @@ export default function Login() {
       </div>
 
       {/* Left Hero Column with Dynamic Floating Widgets */}
-      <div style={{ flex: "1 1 50%", display: "flex", flexDirection: "column", padding: "32px 50px 24px", position: "relative", zIndex: 1, justifyContent: "flex-start" }}>
+      <div style={{ flex: "1 1 50%", display: "flex", flexDirection: "column", padding: "16px 60px 20px", position: "relative", zIndex: 1, justifyContent: "flex-start" }}>
         
         {/* Brand Header */}
-        <Link to="/" style={{ fontFamily: "'Syne', sans-serif", fontSize: 32, fontWeight: 800, color: "var(--text-main)", textDecoration: "none", width: "fit-content", marginBottom: 16 }}>
+        <Link to="/" style={{ fontFamily: "'Syne', sans-serif", fontSize: 38, fontWeight: 800, color: "var(--text-main)", textDecoration: "none", width: "fit-content", marginBottom: 14 }}>
           Path<span style={{ color: activeRole.accent }}>Ed</span>
         </Link>
         
-        <div style={{ maxWidth: 480, margin: "0" }}>
+        <div style={{ maxWidth: 500, margin: "0 0 16px" }}>
           <motion.div 
             key={activeRole.id}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: activeRole.bg, border: `1px solid ${activeRole.accent}40`, padding: "4px 12px", borderRadius: 20, marginBottom: 12 }}>
-              <Sparkles size={13} color={activeRole.accent} />
-              <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700, color: activeRole.accent, letterSpacing: 1 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: activeRole.bg, border: `1px solid ${activeRole.accent}40`, padding: "6px 14px", borderRadius: 20, marginBottom: 20 }}>
+              <Sparkles size={14} color={activeRole.accent} />
+              <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 700, color: activeRole.accent, letterSpacing: 1 }}>
                 ROLE MODE ACTIVE
               </span>
             </div>
 
-            <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(30px, 3.2vw, 44px)", fontWeight: 800, lineHeight: 1.1, marginBottom: 10, color: "var(--text-main)" }}>
+            <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 3.8vw, 52px)", fontWeight: 800, lineHeight: 1.1, marginBottom: 16, color: "var(--text-main)" }}>
               Welcome back to your <span style={{ color: activeRole.accent }}>future.</span>
             </h1>
-            <p style={{ color: "var(--text-muted)", fontSize: 16, marginBottom: 18, lineHeight: 1.5 }}>{activeRole.tag}</p>
+            <p style={{ color: "var(--text-muted)", fontSize: 18, marginBottom: 36, lineHeight: 1.6 }}>{activeRole.tag}</p>
 
             {/* Role Features List */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 36 }}>
               {activeRole.features.map((f, i) => (
                 <motion.div 
                   key={i}
@@ -202,14 +202,14 @@ export default function Login() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
                   whileHover={{ x: 6, transition: { type: "spring", stiffness: 300 } }}
-                  style={{ display: "flex", alignItems: "center", gap: 14, background: "var(--bg-card)", border: "1.5px solid var(--border-light)", padding: "10px 16px", borderRadius: 14, boxShadow: "0 4px 15px rgba(0,0,0,0.03)" }}
+                  style={{ display: "flex", alignItems: "center", gap: 16, background: "var(--bg-card)", border: "1.5px solid var(--border-light)", padding: "14px 18px", borderRadius: 16, boxShadow: "0 6px 20px rgba(0,0,0,0.04)" }}
                 >
-                  <div style={{ background: activeRole.bg, color: activeRole.accent, width: 34, height: 34, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <div style={{ background: activeRole.bg, color: activeRole.accent, width: 38, height: 38, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     {activeRole.icon}
                   </div>
                   <div>
-                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 700, color: "var(--text-main)" }}>{f.title}</div>
-                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 9, color: "var(--text-muted)", letterSpacing: 1, fontWeight: 600 }}>{f.sub}</div>
+                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text-main)" }}>{f.title}</div>
+                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)", letterSpacing: 1, fontWeight: 600 }}>{f.sub}</div>
                   </div>
                 </motion.div>
               ))}
@@ -217,9 +217,9 @@ export default function Login() {
 
             {/* Floating Live Animated CRI Preview Card (Looping 0 -> 78%) */}
             <motion.div 
-              animate={{ y: [-3, 3, -3] }}
+              animate={{ y: [-4, 4, -4] }}
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              style={{ display: "flex", alignItems: "center", gap: 16, background: "var(--bg-card)", border: `1.5px solid ${activeRole.accent}40`, padding: "12px 18px", borderRadius: 16, boxShadow: `0 10px 25px ${activeRole.accent}12` }}
+              style={{ display: "flex", alignItems: "center", gap: 20, background: "var(--bg-card)", border: `1.5px solid ${activeRole.accent}40`, padding: "16px 22px", borderRadius: 20, boxShadow: `0 12px 30px ${activeRole.accent}15` }}
             >
               <div style={{ position: "relative", width: 64, height: 64, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <svg width="64" height="64" viewBox="0 0 100 100">
@@ -253,7 +253,7 @@ export default function Login() {
       </div>
 
       {/* Right Form Column */}
-      <div style={{ flex: "1 1 50%", display: "flex", alignItems: "center", justifyContent: "center", padding: "40px", position: "relative", zIndex: 1 }}>
+      <div style={{ flex: "1 1 50%", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "16px 40px 20px", position: "relative", zIndex: 1 }}>
         <motion.div 
           animate={error ? { x: [-10, 10, -10, 10, 0] } : {}}
           transition={{ duration: 0.4 }}

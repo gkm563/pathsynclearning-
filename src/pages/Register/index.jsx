@@ -156,14 +156,14 @@ export default function Register() {
       </div>
 
       {/* Left Hero Column */}
-      <div style={{ flex: "1 1 50%", display: "flex", flexDirection: "column", padding: "50px 60px", position: "relative", zIndex: 1, justifyContent: "space-between" }}>
+      <div style={{ flex: "1 1 50%", display: "flex", flexDirection: "column", padding: "16px 60px 20px", position: "relative", zIndex: 1, justifyContent: "flex-start" }}>
         
         {/* Brand Header */}
-        <Link to="/" style={{ fontFamily: "'Syne', sans-serif", fontSize: 28, fontWeight: 800, color: "var(--text-main)", textDecoration: "none", width: "fit-content" }}>
+        <Link to="/" style={{ fontFamily: "'Syne', sans-serif", fontSize: 38, fontWeight: 800, color: "var(--text-main)", textDecoration: "none", width: "fit-content", marginBottom: 14 }}>
           Path<span style={{ color: activeRole.accent }}>Ed</span>
         </Link>
         
-        <div style={{ maxWidth: 500, margin: "auto 0" }}>
+        <div style={{ maxWidth: 500, margin: "0 0 16px" }}>
           <motion.div 
             key={activeRole.id}
             initial={{ opacity: 0, x: -20 }}
@@ -232,7 +232,7 @@ export default function Register() {
       </div>
 
       {/* Right Form Column */}
-      <div style={{ flex: "1 1 50%", display: "flex", alignItems: "center", justifyContent: "center", padding: "40px", position: "relative", zIndex: 1 }}>
+      <div style={{ flex: "1 1 50%", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "16px 40px 20px", position: "relative", zIndex: 1 }}>
         <motion.div 
           animate={error ? { x: [-10, 10, -10, 10, 0] } : {}}
           transition={{ duration: 0.4 }}
