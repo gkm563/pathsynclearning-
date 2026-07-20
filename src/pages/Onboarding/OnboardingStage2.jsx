@@ -256,7 +256,7 @@ export default function OnboardingStage2() {
 
     setTimeout(() => {
       setIsLaunching(false);
-      navigate("/platform");
+      navigate("/onboarding/stage3");
     }, 2400);
   };
 
@@ -1099,7 +1099,7 @@ export default function OnboardingStage2() {
       <StageTransitionOverlay
         isOpen={isLaunching}
         currentStageTitle={`Selected Target Path: ${selectedCareerTitle}`}
-        nextStageTitle="Launching Custom 4-Year PathEd Roadmap Journey"
+        nextStageTitle="Stage 3: Public Identity Review"
         roleColor="#00c9a7"
       />
 
