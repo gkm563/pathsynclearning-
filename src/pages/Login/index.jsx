@@ -170,7 +170,7 @@ export default function Login() {
       <div style={{ flex: "1 1 50%", display: "flex", flexDirection: "column", padding: "16px 60px 20px", position: "relative", zIndex: 1, justifyContent: "flex-start" }}>
         
         {/* Brand Header */}
-        <Link to="/" style={{ fontFamily: "'Syne', sans-serif", fontSize: 38, fontWeight: 800, color: "var(--text-main)", textDecoration: "none", width: "fit-content", marginBottom: 14 }}>
+        <Link to="/" style={{ fontFamily: "'Syne', sans-serif", fontSize: 46, fontWeight: 800, color: "var(--text-main)", textDecoration: "none", width: "fit-content", marginBottom: 14 }}>
           Path<span style={{ color: activeRole.accent }}>Ed</span>
         </Link>
         
@@ -253,7 +253,7 @@ export default function Login() {
       </div>
 
       {/* Right Form Column */}
-      <div style={{ flex: "1 1 50%", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "16px 40px 20px", position: "relative", zIndex: 1 }}>
+      <div style={{ flex: "1 1 50%", display: "flex", alignItems: "center", justifyContent: "center", padding: "30px 40px", position: "relative", zIndex: 1 }}>
         <motion.div 
           animate={error ? { x: [-10, 10, -10, 10, 0] } : {}}
           transition={{ duration: 0.4 }}
