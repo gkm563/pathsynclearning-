@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { HoverCard } from "../../../components/ui/Shared";
+import { InteractiveCard } from "../../../components/ui/Shared";
 import { Target, Layers, Compass, TrendingUp } from "lucide-react";
 
 const features = [
@@ -54,8 +54,9 @@ export default function VisualFeatures() {
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "32px" }}>
           {features.map((item, i) => (
-            <HoverCard 
+            <InteractiveCard 
               key={i}
+              hoverColor={item.color}
               style={{
                 background: "var(--bg-alt)", borderRadius: "24px", padding: "12px",
                 border: "1px solid var(--border-light)", boxShadow: "0 10px 30px rgba(0,0,0,0.03)",
@@ -76,7 +77,7 @@ export default function VisualFeatures() {
                 <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "20px", fontWeight: 800, color: "var(--text-main)", marginBottom: "12px" }}>{item.title}</h3>
                 <p style={{ color: "var(--text-muted)", fontSize: "14px", lineHeight: 1.6 }}>{item.desc}</p>
               </div>
-            </HoverCard>
+            </InteractiveCard>
           ))}
         </div>
 

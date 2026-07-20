@@ -3,7 +3,7 @@ import { Chip, SkillBar, InteractiveCard } from "../../../components/ui/Shared";
 
 export default function WhyPathEd() {
   return (
-    <section style={{ paddingBottom: 80, position: "relative", zIndex: 2, maxWidth: 1360, margin: "0 auto", padding: "0 32px 80px" }}>
+    <section style={{ padding: "100px 32px 80px", position: "relative", zIndex: 2, maxWidth: 1360, margin: "0 auto" }}>
       <div style={{ display: "flex", gap: 40, flexWrap: "wrap", alignItems: "flex-start" }}>
         
         {/* Left Column */}
@@ -49,7 +49,7 @@ export default function WhyPathEd() {
               ["⚡", "∞", "#f7971e", "Daily Challenges", "Gamified XP engine"],
               ["🧑‍🏫", "24/7", "#e040fb", "Teacher Connect", "Beat every plateau"]
             ].map(([em, stat, c, lbl, sub]) => (
-              <InteractiveCard key={lbl} style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 16, padding: "26px 20px", textAlign: "center", transition: "all .3s ease", boxShadow: "0 2px 10px rgba(0,0,0,.04)" }}>
+              <InteractiveCard key={lbl} hoverColor={c} style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 16, padding: "26px 20px", textAlign: "center", transition: "all .3s ease", boxShadow: "0 2px 10px rgba(0,0,0,.04)" }}>
                 <div style={{ fontSize: 32, marginBottom: 8 }}>{em}</div>
                 <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 36, fontWeight: 800, color: c, marginBottom: 4 }}>{stat}</div>
                 <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text-main)", marginBottom: 4 }}>{lbl}</div>

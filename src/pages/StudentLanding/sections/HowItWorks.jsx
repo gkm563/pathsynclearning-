@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Chip } from "../../../components/ui/Shared";
+import { Chip, InteractiveCard } from "../../../components/ui/Shared";
 import { Target, Code, TrendingUp, Briefcase } from "lucide-react";
 
 export default function HowItWorks() {
@@ -43,16 +43,16 @@ export default function HowItWorks() {
           {steps.map((step, i) => (
             <motion.div key={i} className="step-row" {...fadeInUp} transition={{ delay: i * 0.15 }} style={{ display: "flex", alignItems: "center", gap: 40, position: "relative", zIndex: 1, flexWrap: "wrap", justifyContent: "center" }}>
               <div style={{ flex: "1 1 300px", maxWidth: 400, display: "flex", justifyContent: "center" }}>
-                <div style={{ width: 120, height: 120, borderRadius: "50%", background: step.bg, border: `2px solid ${step.color}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 10px 30px ${step.bg}` }}>
+                <motion.div whileHover={{ scale: 1.1, rotate: 5 }} transition={{ type: "spring", stiffness: 300 }} style={{ width: 120, height: 120, borderRadius: "50%", background: step.bg, border: `2px solid ${step.color}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 10px 30px ${step.bg}`, cursor: "pointer" }}>
                   {step.icon}
-                </div>
+                </motion.div>
               </div>
               
-              <div className="step-content" style={{ flex: "1 1 300px", maxWidth: 400, textAlign: "center", padding: 24 }}>
+              <InteractiveCard hoverColor={step.color} className="step-content" style={{ flex: "1 1 300px", maxWidth: 400, textAlign: "center", padding: "24px 32px", background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 16 }}>
                 <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 14, color: step.color, fontWeight: 800, letterSpacing: 2, marginBottom: 12 }}>STEP {step.num}</div>
                 <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 28, fontWeight: 700, color: "var(--text-main)", marginBottom: 16 }}>{step.title}</h3>
                 <p style={{ color: "var(--text-muted)", fontSize: 18, lineHeight: 1.7 }}>{step.desc}</p>
-              </div>
+              </InteractiveCard>
             </motion.div>
           ))}
         </div>

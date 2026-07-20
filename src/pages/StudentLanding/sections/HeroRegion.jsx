@@ -52,10 +52,16 @@ export default function HeroRegion() {
         </div>
 
         <div className="f5" style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginTop: 36 }}>
-          <Chip bg="#f0f0ff" border="#d8d4ff" color="#6c63ff">🎓 40,000+ Students</Chip>
-          <Chip bg="#e8faf5" border="#b2eed9" color="#00a67e">✓ 95% Placement Rate</Chip>
-          <Chip bg="#fff8ee" border="#ffe0a0" color="#c67c00">⚡ 500+ Companies</Chip>
-          <Chip bg="#fdf0ff" border="#e8b3ff" color="#9c27b0">🏆 1M+ XP Daily</Chip>
+          {[
+            ["🎓 40,000+ Students", "#f0f0ff", "#d8d4ff", "#6c63ff"],
+            ["✓ 95% Placement Rate", "#e8faf5", "#b2eed9", "#00a67e"],
+            ["⚡ 500+ Companies", "#fff8ee", "#ffe0a0", "#c67c00"],
+            ["🏆 1M+ XP Daily", "#fdf0ff", "#e8b3ff", "#9c27b0"]
+          ].map(([text, bg, border, color]) => (
+            <motion.div key={text} whileHover={{ scale: 1.05, boxShadow: `0 0 0 2px ${color}, 0 4px 15px ${color}40`, borderRadius: 100 }} style={{ borderRadius: 100, transition: "box-shadow 0.2s" }}>
+              <Chip bg={bg} border={border} color={color}>{text}</Chip>
+            </motion.div>
+          ))}
         </div>
       </section>
 
