@@ -96,10 +96,10 @@ export default function HeroRegion() {
               <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 600, color: isC ? "#6c63ff" : "#c68a00", letterSpacing: 2, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
                 <div style={{ width: 6, height: 6, borderRadius: "50%", background: isC ? "#6c63ff" : "#f7971e", animation: "pulse 1.5s ease infinite" }} />▸ {isC ? "CAREER" : "ACADEMIC"} MODE ACTIVE
               </div>
-              <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(24px,3.5vw,42px)", fontWeight: 800, lineHeight: 1.15, marginBottom: 16, color: "var(--text-main)" }}>
+              <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(24px,3.5vw,42px)", fontWeight: 800, lineHeight: 1.15, marginBottom: 16, color: "#1a1a2e" }}>
                 {isC ? <>Turn your B.Tech degree into a<br/><span style={{ color: "#6c63ff" }}>career-ready roadmap.</span></> : <>Master your University Curriculum<br/><span style={{ color: "#f7971e" }}>with structured precision.</span></>}
               </h2>
-              <p style={{ color: "var(--text-muted)", fontSize: 17, lineHeight: 1.8, maxWidth: 480, marginBottom: 12, fontFamily: "'Inter', sans-serif" }}>
+              <p style={{ color: "#666666", fontSize: 17, lineHeight: 1.8, maxWidth: 480, marginBottom: 12, fontFamily: "'Inter', sans-serif" }}>
                 {isC ? "AI-powered skill paths calibrated to Google, Microsoft, Razorpay & 500+ companies. Build what the industry demands — skip what it doesn't." : "Week-by-week syllabus breakdowns with live exam countdowns. No more last-minute cramming. Structured mastery from Day 1."}
               </p>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
