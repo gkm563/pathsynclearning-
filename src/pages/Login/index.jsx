@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { GraduationCap, Briefcase, BookOpen, Eye, EyeOff, AlertCircle, ArrowRight } from "lucide-react";
+import { GraduationCap, Briefcase, BookOpen, Eye, EyeOff, AlertCircle, ArrowRight, Zap, ShieldCheck, Sparkles, Award } from "lucide-react";
+
+const GoogleIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+  </svg>
+);
 
 const GithubIcon = ({ size = 20 }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -11,7 +20,7 @@ const GithubIcon = ({ size = 20 }) => (
 );
 
 const LinkedinIcon = ({ size = 20 }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#0a66c2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
     <rect width="4" height="12" x="2" y="9"/>
     <circle cx="4" cy="4" r="2"/>
@@ -23,39 +32,39 @@ const ROLES = [
     id: "student", 
     icon: <GraduationCap size={24} />, 
     name: "Student", 
-    tag: "Access Your Roadmap",
+    tag: "Access Your AI Roadmap & Skill Graph",
     accent: "#6c63ff",
-    bg: "rgba(108,99,255,0.1)",
+    bg: "rgba(108,99,255,0.12)",
     features: [
-      { title: "CRI Tracker Active", sub: "CAREER READINESS INDEX" },
-      { title: "AI Roadmap Ready", sub: "SKILL PATHS" },
-      { title: "XP Streaks On", sub: "DAILY CHALLENGES" },
+      { title: "Skill Decay Protection", sub: "98% KNOWLEDGE RETENTION" },
+      { title: "AI-Calibrated Skill Graph", sub: "GOOGLE & MICROSOFT READY" },
+      { title: "CRI Readiness Tracker", sub: "REAL-TIME SCORING" },
     ]
   },
   {
     id: "teacher", 
     icon: <BookOpen size={24} />, 
     name: "Educator", 
-    tag: "Enter Command Center",
+    tag: "Enter Educator Command Center",
     accent: "#f7971e",
-    bg: "rgba(247,151,30,0.1)",
+    bg: "rgba(247,151,30,0.12)",
     features: [
-      { title: "12,000+ Educators", sub: "ACTIVE TEACHERS" },
-      { title: "Class Analytics", sub: "LIVE INSIGHTS" },
-      { title: "AI Grader On", sub: "AUTO-ASSESSMENTS" },
+      { title: "12,000+ Classrooms Connected", sub: "ACTIVE ACADEMICS" },
+      { title: "Automated AI Evaluator", sub: "SUBMISSION ANALYTICS" },
+      { title: "Real-Time Student Heatmap", sub: "SKILL GAP MONITORING" },
     ]
   },
   {
     id: "recruiter", 
     icon: <Briefcase size={24} />, 
     name: "Recruiter", 
-    tag: "Access Talent Portal",
+    tag: "Access Verified Talent Portal",
     accent: "#00c9a7",
-    bg: "rgba(0,201,167,0.1)",
+    bg: "rgba(0,201,167,0.12)",
     features: [
-      { title: "500+ Companies", sub: "VERIFIED HIRING" },
-      { title: "CRI-Verified Talent", sub: "SKILL-MATCHED" },
-      { title: "Live Pipeline", sub: "REAL-TIME TRACKING" },
+      { title: "500+ Hiring Partners", sub: "VERIFIED SKILL RESUMES" },
+      { title: "Zero-Resume Friction", sub: "DIRECT CRI SCORED CANDIDATES" },
+      { title: "Pipeline Intelligence", sub: "REAL-TIME MATCHING" },
     ]
   }
 ];
@@ -69,6 +78,31 @@ export default function Login() {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  // Looping CRI Score 0 -> 78 -> 0 Animation
+  const [criScore, setCriScore] = useState(0);
+
+  useEffect(() => {
+    let timer;
+    let current = 0;
+    const runAnimation = () => {
+      timer = setInterval(() => {
+        current += 1;
+        if (current > 78) {
+          clearInterval(timer);
+          setTimeout(() => {
+            current = 0;
+            setCriScore(0);
+            runAnimation();
+          }, 2000);
+        } else {
+          setCriScore(current);
+        }
+      }, 40);
+    };
+    runAnimation();
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -109,64 +143,109 @@ export default function Login() {
         transition={{ type: "tween", ease: "easeOut", duration: 0 }}
         style={{
           position: "absolute", width: 800, height: 800, borderRadius: "50%",
-          background: `radial-gradient(circle, ${activeRole.accent}15 0%, transparent 70%)`,
+          background: `radial-gradient(circle, ${activeRole.accent}18 0%, transparent 70%)`,
           pointerEvents: "none", zIndex: 0, filter: "blur(60px)"
         }}
       />
 
-      {/* Premium Glassmorphism Mesh Background */}
+      {/* Premium Ambient Background Blobs */}
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0 }}>
         <motion.div 
-          animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.4, 0.2], rotate: [0, 45, 0] }} 
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          style={{ position: "absolute", left: "-5%", top: "-10%", width: "50vw", height: "50vw", background: `radial-gradient(ellipse, ${activeRole.accent} 0%, transparent 60%)`, filter: "blur(100px)", opacity: 0.15 }} 
+          animate={{ scale: [1, 1.15, 1], opacity: [0.2, 0.4, 0.2], rotate: [0, 45, 0] }} 
+          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+          style={{ position: "absolute", left: "-5%", top: "-10%", width: "50vw", height: "50vw", background: `radial-gradient(ellipse, ${activeRole.accent} 0%, transparent 60%)`, filter: "blur(100px)", opacity: 0.18 }} 
         />
         <motion.div 
-          animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.3, 0.15], x: [0, 100, 0], y: [0, -100, 0] }} 
-          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-          style={{ position: "absolute", right: "-10%", bottom: "-10%", width: "60vw", height: "60vw", background: `radial-gradient(ellipse, var(--purple) 0%, transparent 60%)`, filter: "blur(120px)", opacity: 0.1 }} 
+          animate={{ scale: [1, 1.25, 1], opacity: [0.15, 0.35, 0.15], x: [0, 80, 0], y: [0, -80, 0] }} 
+          transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+          style={{ position: "absolute", right: "-10%", bottom: "-10%", width: "60vw", height: "60vw", background: `radial-gradient(ellipse, #00c9a7 0%, transparent 60%)`, filter: "blur(120px)", opacity: 0.12 }} 
         />
-        <div style={{ position: "absolute", inset: 0, opacity: 0.03, backgroundImage: "linear-gradient(to right, var(--text-main) 1px, transparent 1px), linear-gradient(to bottom, var(--text-main) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+        <div style={{ position: "absolute", inset: 0, opacity: 0.04, backgroundImage: "linear-gradient(to right, var(--text-main) 1px, transparent 1px), linear-gradient(to bottom, var(--text-main) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
       </div>
 
-      {/* Left Hero Column */}
-      <div style={{ flex: "1 1 50%", display: "flex", flexDirection: "column", padding: "60px", position: "relative", zIndex: 1, justifyContent: "center" }}>
-        <Link to="/" style={{ position: "absolute", top: 40, left: 40, fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, color: "var(--text-main)", textDecoration: "none" }}>
+      {/* Left Hero Column with Dynamic Floating Widgets */}
+      <div style={{ flex: "1 1 50%", display: "flex", flexDirection: "column", padding: "50px 60px", position: "relative", zIndex: 1, justifyContent: "space-between" }}>
+        
+        {/* Brand Header */}
+        <Link to="/" style={{ fontFamily: "'Syne', sans-serif", fontSize: 26, fontWeight: 800, color: "var(--text-main)", textDecoration: "none", width: "fit-content" }}>
           Path<span style={{ color: activeRole.accent }}>Ed</span>
         </Link>
         
-        <div style={{ maxWidth: 440, margin: "0 auto" }}>
+        <div style={{ maxWidth: 500, margin: "auto 0" }}>
           <motion.div 
             key={activeRole.id}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.4 }}
           >
-            <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(40px, 4vw, 56px)", fontWeight: 800, lineHeight: 1.1, marginBottom: 16 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: activeRole.bg, border: `1px solid ${activeRole.accent}40`, padding: "6px 14px", borderRadius: 20, marginBottom: 20 }}>
+              <Sparkles size={14} color={activeRole.accent} />
+              <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 700, color: activeRole.accent, letterSpacing: 1 }}>
+                ROLE MODE ACTIVE
+              </span>
+            </div>
+
+            <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 3.8vw, 52px)", fontWeight: 800, lineHeight: 1.1, marginBottom: 16, color: "var(--text-main)" }}>
               Welcome back to your <span style={{ color: activeRole.accent }}>future.</span>
             </h1>
-            <p style={{ color: "var(--text-light)", fontSize: 18, marginBottom: 48 }}>{activeRole.tag}</p>
+            <p style={{ color: "var(--text-muted)", fontSize: 18, marginBottom: 36, lineHeight: 1.6 }}>{activeRole.tag}</p>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {/* Role Features List */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 36 }}>
               {activeRole.features.map((f, i) => (
                 <motion.div 
                   key={i}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  style={{ display: "flex", alignItems: "center", gap: 16, background: "var(--bg-card)", border: "1px solid var(--border-light)", padding: "16px 20px", borderRadius: 16, boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}
+                  whileHover={{ x: 6, transition: { type: "spring", stiffness: 300 } }}
+                  style={{ display: "flex", alignItems: "center", gap: 16, background: "var(--bg-card)", border: "1.5px solid var(--border-light)", padding: "14px 18px", borderRadius: 16, boxShadow: "0 6px 20px rgba(0,0,0,0.04)" }}
                 >
-                  <div style={{ background: activeRole.bg, color: activeRole.accent, width: 40, height: 40, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <div style={{ background: activeRole.bg, color: activeRole.accent, width: 38, height: 38, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     {activeRole.icon}
                   </div>
                   <div>
                     <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text-main)" }}>{f.title}</div>
-                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, color: "var(--text-light)", letterSpacing: 1 }}>{f.sub}</div>
+                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)", letterSpacing: 1, fontWeight: 600 }}>{f.sub}</div>
                   </div>
                 </motion.div>
               ))}
             </div>
+
+            {/* Floating Live Animated CRI Preview Card (Looping 0 -> 78%) */}
+            <motion.div 
+              animate={{ y: [-4, 4, -4] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              style={{ display: "flex", alignItems: "center", gap: 20, background: "var(--bg-card)", border: `1.5px solid ${activeRole.accent}40`, padding: "16px 22px", borderRadius: 20, boxShadow: `0 12px 30px ${activeRole.accent}15` }}
+            >
+              <div style={{ position: "relative", width: 64, height: 64, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="64" height="64" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="var(--border-light)" strokeWidth="8" />
+                  <circle cx="50" cy="50" r="42" fill="none" stroke={activeRole.accent} strokeWidth="8" strokeDasharray="264" strokeDashoffset={264 - (264 * criScore) / 100} strokeLinecap="round" transform="rotate(-90 50 50)" />
+                </svg>
+                <span style={{ position: "absolute", fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800, color: "var(--text-main)" }}>
+                  {criScore}%
+                </span>
+              </div>
+              <div>
+                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700, color: activeRole.accent, letterSpacing: 1.5, marginBottom: 2 }}>
+                  LIVE CRI CALIBRATOR
+                </div>
+                <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 700, color: "var(--text-main)" }}>
+                  Career Readiness Index Score
+                </div>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: "var(--text-muted)" }}>
+                  Real-time algorithmic skill evaluation
+                </div>
+              </div>
+            </motion.div>
+
           </motion.div>
+        </div>
+
+        {/* Footer Badge */}
+        <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 8 }}>
+          <ShieldCheck size={16} color={activeRole.accent} /> 256-Bit Encrypted Platform Authentication
         </div>
       </div>
 
@@ -175,7 +254,7 @@ export default function Login() {
         <motion.div 
           animate={error ? { x: [-10, 10, -10, 10, 0] } : {}}
           transition={{ duration: 0.4 }}
-          style={{ width: "100%", maxWidth: 440, background: "var(--overlay-bg)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid var(--border-light)", borderRadius: 24, padding: 40, position: "relative", overflow: "hidden", boxShadow: "0 20px 40px rgba(0,0,0,0.1)" }}
+          style={{ width: "100%", maxWidth: 460, background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: "40px", position: "relative", overflow: "hidden", boxShadow: "0 20px 50px rgba(0,0,0,0.08)" }}
         >
           {loading && (
             <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: "rgba(255,255,255,0.1)" }}>
@@ -184,16 +263,17 @@ export default function Login() {
           )}
 
           {/* Role Switcher */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 32, background: "var(--bg-main)", padding: 8, borderRadius: 16, border: "1px solid var(--border-light)" }}>
+          <div style={{ display: "flex", gap: 8, marginBottom: 32, background: "var(--bg-alt)", padding: 6, borderRadius: 16, border: "1px solid var(--border-light)" }}>
             {ROLES.map(r => (
               <button 
                 key={r.id} 
                 onClick={() => { setRole(r.id); setError(false); }}
                 style={{ 
-                  flex: 1, padding: "12px 8px", borderRadius: 12, border: "none", cursor: "pointer", 
+                  flex: 1, padding: "10px 6px", borderRadius: 12, border: "none", cursor: "pointer", 
                   background: role === r.id ? r.bg : "transparent",
-                  color: role === r.id ? r.accent : "#6b7280",
-                  transition: "all 0.3s ease", display: "flex", flexDirection: "column", alignItems: "center", gap: 4
+                  color: role === r.id ? r.accent : "var(--text-muted)",
+                  transition: "all 0.3s ease", display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                  boxShadow: role === r.id ? `0 4px 12px ${r.accent}25` : "none"
                 }}
               >
                 {r.icon}
@@ -204,69 +284,96 @@ export default function Login() {
 
           <form onSubmit={handleLogin}>
             <div style={{ marginBottom: 20 }}>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--text-light)", marginBottom: 8, fontFamily: "'Fira Code', monospace" }}>EMAIL OR USERNAME</label>
+              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--text-muted)", marginBottom: 8, fontFamily: "'Fira Code', monospace", letterSpacing: 1 }}>EMAIL OR USERNAME</label>
               <input 
                 type="text" 
                 value={form.identifier}
                 onChange={e => { setForm({...form, identifier: e.target.value}); setError(false); }}
-                style={{ width: "100%", padding: "16px 20px", background: "var(--bg-alt)", border: `1px solid ${error ? "#ef4444" : "var(--border-light)"}`, borderRadius: 12, color: "var(--text-main)", fontSize: 16, outline: "none", transition: "all 0.3s" }}
-                onFocus={(e) => { e.target.style.borderColor = activeRole.accent; e.target.style.boxShadow = `0 0 0 3px ${activeRole.accent}40`; }}
+                placeholder="you@pathed.org"
+                style={{ width: "100%", padding: "14px 18px", background: "var(--bg-alt)", border: `1.5px solid ${error ? "#ef4444" : "var(--border-light)"}`, borderRadius: 12, color: "var(--text-main)", fontSize: 15, outline: "none", transition: "all 0.3s" }}
+                onFocus={(e) => { e.target.style.borderColor = activeRole.accent; e.target.style.boxShadow = `0 0 0 3px ${activeRole.accent}30`; }}
                 onBlur={(e) => { e.target.style.borderColor = error ? "#ef4444" : "var(--border-light)"; e.target.style.boxShadow = "none"; }}
               />
             </div>
             
             <div style={{ marginBottom: 24 }}>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--text-light)", marginBottom: 8, fontFamily: "'Fira Code', monospace" }}>PASSWORD</label>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", fontFamily: "'Fira Code', monospace", letterSpacing: 1 }}>PASSWORD</label>
+                <a href="#forgot" onClick={(e) => { e.preventDefault(); alert("Password reset link sent to your registered email."); }} style={{ fontSize: 12, color: activeRole.accent, textDecoration: "none", fontWeight: 600 }}>Forgot?</a>
+              </div>
               <div style={{ position: "relative" }}>
                 <input 
                   type={showPassword ? "text" : "password"} 
                   value={form.password}
                   onChange={e => { setForm({...form, password: e.target.value}); setError(false); }}
-                  style={{ width: "100%", padding: "16px 48px 16px 20px", background: "var(--bg-alt)", border: `1px solid ${error ? "#ef4444" : "var(--border-light)"}`, borderRadius: 12, color: "var(--text-main)", fontSize: 16, outline: "none", transition: "all 0.3s" }}
-                  onFocus={(e) => { e.target.style.borderColor = activeRole.accent; e.target.style.boxShadow = `0 0 0 3px ${activeRole.accent}40`; }}
+                  placeholder="••••••••"
+                  style={{ width: "100%", padding: "14px 48px 14px 18px", background: "var(--bg-alt)", border: `1.5px solid ${error ? "#ef4444" : "var(--border-light)"}`, borderRadius: 12, color: "var(--text-main)", fontSize: 15, outline: "none", transition: "all 0.3s" }}
+                  onFocus={(e) => { e.target.style.borderColor = activeRole.accent; e.target.style.boxShadow = `0 0 0 3px ${activeRole.accent}30`; }}
                   onBlur={(e) => { e.target.style.borderColor = error ? "#ef4444" : "var(--border-light)"; e.target.style.boxShadow = "none"; }}
                 />
                 <button 
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#6b7280", cursor: "pointer" }}
+                  style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}
                 >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
             {error && (
-              <div style={{ color: "#ef4444", fontSize: 14, marginBottom: 24, display: "flex", alignItems: "center", gap: 8 }}>
-                <AlertCircle size={16} /> Invalid credentials. Please try again.
+              <div style={{ color: "#ef4444", fontSize: 13, marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}>
+                <AlertCircle size={16} /> Invalid credentials. Please check your username and password.
               </div>
             )}
 
             <button 
               type="submit"
               disabled={loading}
-              style={{ width: "100%", padding: 16, background: activeRole.accent, border: "none", borderRadius: 12, color: "var(--text-inverse)", fontSize: 16, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: "opacity 0.3s" }}
+              style={{ width: "100%", padding: "16px", background: activeRole.accent, border: "none", borderRadius: 12, color: "#ffffff", fontSize: 16, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: "transform 0.2s, boxShadow 0.2s", boxShadow: `0 8px 24px ${activeRole.accent}40` }}
             >
-              {loading ? "Authenticating..." : <>Sign In <ArrowRight size={20} /></>}
+              {loading ? "Authenticating..." : <>Sign In to {activeRole.name} <ArrowRight size={18} /></>}
             </button>
           </form>
 
-          <div style={{ display: "flex", alignItems: "center", margin: "32px 0", gap: 16 }}>
-            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.1)" }} />
-            <span style={{ color: "#6b7280", fontSize: 14 }}>or continue with</span>
-            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.1)" }} />
+          {/* Social Logins Divider */}
+          <div style={{ display: "flex", alignItems: "center", margin: "28px 0", gap: 16 }}>
+            <div style={{ flex: 1, height: 1, background: "var(--border-light)" }} />
+            <span style={{ color: "var(--text-muted)", fontSize: 12, fontFamily: "'Fira Code', monospace", fontWeight: 600 }}>OR CONTINUE WITH</span>
+            <div style={{ flex: 1, height: 1, background: "var(--border-light)" }} />
           </div>
 
-          <div style={{ display: "flex", gap: 16 }}>
-            <button style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: 12, borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "var(--text-inverse)", fontWeight: 600, transition: "all 0.2s", cursor: "pointer" }} onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.08)"} onMouseLeave={e => e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
-              <GithubIcon size={20} /> GitHub
+          {/* Social Login Buttons (Google, GitHub, LinkedIn) */}
+          <div style={{ display: "flex", gap: 10 }}>
+            <button 
+              onClick={() => alert("Google OAuth initialised.")}
+              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px 10px", borderRadius: 12, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "#4285F4"; e.currentTarget.style.boxShadow = "0 4px 15px rgba(66,133,244,0.2)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border-light)"; e.currentTarget.style.boxShadow = "none"; }}
+            >
+              <GoogleIcon size={18} /> Google
             </button>
-            <button style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: 12, borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "var(--text-inverse)", fontWeight: 600, transition: "all 0.2s", cursor: "pointer" }} onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.08)"} onMouseLeave={e => e.currentTarget.style.background="rgba(255,255,255,0.03)"}>
-              <LinkedinIcon size={20} /> LinkedIn
+            
+            <button 
+              onClick={() => alert("GitHub OAuth initialised.")}
+              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px 10px", borderRadius: 12, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--text-main)"; e.currentTarget.style.boxShadow = "0 4px 15px rgba(0,0,0,0.2)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border-light)"; e.currentTarget.style.boxShadow = "none"; }}
+            >
+              <GithubIcon size={18} /> GitHub
+            </button>
+
+            <button 
+              onClick={() => alert("LinkedIn OAuth initialised.")}
+              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px 10px", borderRadius: 12, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "#0a66c2"; e.currentTarget.style.boxShadow = "0 4px 15px rgba(10,102,194,0.2)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border-light)"; e.currentTarget.style.boxShadow = "none"; }}
+            >
+              <LinkedinIcon size={18} /> LinkedIn
             </button>
           </div>
 
-          <div style={{ textAlign: "center", marginTop: 32, fontSize: 14, color: "var(--text-light)" }}>
+          <div style={{ textAlign: "center", marginTop: 28, fontSize: 14, color: "var(--text-muted)" }}>
             Don't have an account? <Link to="/register" style={{ color: activeRole.accent, textDecoration: "none", fontWeight: 700 }}>Create one</Link>
           </div>
         </motion.div>
