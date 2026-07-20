@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import StageTransitionOverlay from "../../components/onboarding/StageTransitionOverlay";
 import { 
   Sun, Moon, Sparkles, ArrowRight, ArrowLeft, Rocket, 
-  Briefcase, Target, Zap, Layers, Cpu, Plus 
+  Briefcase, Target, Zap, Layers, Cpu, Plus, CheckCircle2, Award 
 } from "lucide-react";
 
 export default function OnboardingStage2() {
@@ -21,57 +21,47 @@ export default function OnboardingStage2() {
     document.documentElement.setAttribute("data-theme", nextTheme);
   };
 
-  // Stage 2 Form State (ALL PREFILLED DEFAULT STATES REMOVED)
-  // Q1: Tech Domains
+  // Phase Control inside Stage 2 (Phase 1: Profiling Form -> Phase 2: AI Career Blueprints)
+  const [phase, setPhase] = useState(1);
+
+  // Form State
   const [domains, setDomains] = useState([]);
   const [customDomain, setCustomDomain] = useState("");
   const [showCustomDomain, setShowCustomDomain] = useState(false);
 
-  // Q2: Industry Focus
   const [industry, setIndustry] = useState("");
   const [customIndustry, setCustomIndustry] = useState("");
   const [showCustomIndustry, setShowCustomIndustry] = useState(false);
 
-  // Q3: Builder Archetype (Single Row Layout)
   const [passion, setPassion] = useState("");
-
-  // Q4: Work Environment Preference Slider
   const [envSlider, setEnvSlider] = useState(50);
-
-  // Q5: Problem Solving Style
   const [pstyle, setPstyle] = useState("");
-
-  // Q6: Salary vs Social Impact Priority Slider
   const [impactSlider, setImpactSlider] = useState(50);
 
-  // Q7: Risk Appetite
   const [risk, setRisk] = useState("");
   const [customRisk, setCustomRisk] = useState("");
   const [showCustomRisk, setShowCustomRisk] = useState(false);
 
-  // Q8: Favorite Tools Tag Input
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
 
-  // Q9: Dream Company Type
   const [company, setCompany] = useState("");
   const [customCompany, setCustomCompany] = useState("");
   const [showCustomCompany, setShowCustomCompany] = useState(false);
 
-  // Q10: Long-Term Career Vision + CUSTOM OPTION
   const [vision, setVision] = useState("");
   const [customVision, setCustomVision] = useState("");
   const [showCustomVision, setShowCustomVision] = useState(false);
 
-  // Q11: Cognitive Challenge Preference
   const [puzzle, setPuzzle] = useState("");
-
-  // Q12: Invention vs Optimization
   const [invent, setInvent] = useState("");
 
+  // AI Analysis Loading & Selection State
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [selectedCareerMatch, setSelectedCareerMatch] = useState(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [analysisTextIndex, setAnalysisTextIndex] = useState(0);
+  const [selectedCareerTitle, setSelectedCareerTitle] = useState("");
+  const [customCareerInput, setCustomCareerInput] = useState("");
+  const [isLaunching, setIsLaunching] = useState(false);
 
   const stages = [
     { num: 1, title: "Academic Foundation & DNA", status: "done" },
@@ -127,31 +117,80 @@ export default function OnboardingStage2() {
     { label: "⚡ Make Existing 10× Better", sub: "Optimization & refactoring" }
   ];
 
-  const careerMatches = [
+  // 5 AI GENERATED CAREERS + 6TH CUSTOM CAREER
+  const aiGeneratedCareers = [
+    {
+      title: "Application Security Engineer",
+      score: 94,
+      difficulty: "Advanced", diffCol: "#e040fb", diffBg: "rgba(224,64,251,0.12)",
+      demand: "High Growth ↑", demandCol: "#00c9a7", demandBg: "rgba(0,201,167,0.12)",
+      cri: 88,
+      rank: 1,
+      accent: "#00c9a7", icon: "🔐",
+      brief: "Develop secure applications by integrating security measures, testing vulnerabilities, and ensuring code compliance. You're the last line of defence before a product ships.",
+      skills: ["Security Protocols", "Penetration Testing", "Secure Coding", "OWASP", "Python"],
+      why: "Matches your Firefighter style + Cybersecurity affinity",
+      sector: "Fintech / Banking"
+    },
+    {
+      title: "ML / AI Engineer",
+      score: 91,
+      difficulty: "Advanced", diffCol: "#e040fb", diffBg: "rgba(224,64,251,0.12)",
+      demand: "Very High ↑↑", demandCol: "#00c9a7", demandBg: "rgba(0,201,167,0.12)",
+      cri: 85,
+      rank: 2,
+      accent: "#6c63ff", icon: "🤖",
+      brief: "Build intelligent systems that learn from data — from training neural network models to deploying them in production microservices.",
+      skills: ["Python", "TensorFlow", "PyTorch", "Data Pipelines", "MLOps"],
+      why: "Matches your Researcher style + AI/ML domain interest",
+      sector: "Healthtech / Fintech"
+    },
     {
       title: "Full-Stack Product Engineer",
-      score: 95,
-      brief: "Own the full product lifecycle from architecture to pixel-perfect UI. High demand across top tech startups.",
-      skills: ["React", "Node.js", "TypeScript", "PostgreSQL", "System Design"],
-      icon: "🏗️",
-      accent: "#6c63ff"
-    },
-    {
-      title: "ML / AI Solutions Engineer",
-      score: 91,
-      brief: "Deploy deep neural network models into scalable cloud microservices.",
-      skills: ["Python", "TensorFlow", "PyTorch", "Data Pipelines", "MLOps"],
-      icon: "🤖",
-      accent: "#00c9a7"
-    },
-    {
-      title: "Application Security Specialist",
       score: 87,
-      brief: "Audit codebases, conduct penetration testing, and protect cloud infrastructure.",
-      skills: ["Penetration Testing", "OWASP", "Secure Coding", "Linux", "Python"],
-      icon: "🔐",
-      accent: "#f7971e"
+      difficulty: "Intermediate", diffCol: "#f7971e", diffBg: "rgba(247,151,30,0.12)",
+      demand: "Stable ↑", demandCol: "#f7971e", demandBg: "rgba(247,151,30,0.12)",
+      cri: 82,
+      rank: 3,
+      accent: "#f7971e", icon: "🏗️",
+      brief: "Own the full product lifecycle — from database schema to pixel-perfect UI. You're the generalist every startup needs to ship fast.",
+      skills: ["React", "Node.js", "PostgreSQL", "Docker", "REST APIs"],
+      why: "Matches your Builder passion + Startup preference",
+      sector: "EdTech / E-commerce"
+    },
+    {
+      title: "Data & BI Analyst",
+      score: 83,
+      difficulty: "Intermediate", diffCol: "#f7971e", diffBg: "rgba(247,151,30,0.12)",
+      demand: "High Growth ↑", demandCol: "#00c9a7", demandBg: "rgba(0,201,167,0.12)",
+      cri: 78,
+      rank: 4,
+      accent: "#e040fb", icon: "📊",
+      brief: "Transform raw data into strategic decisions. You'll build real-time dashboards, uncover trends, and present findings that shape product roadmaps.",
+      skills: ["SQL", "Python", "Tableau", "Power BI", "Statistics"],
+      why: "Matches your Researcher style + Data Analytics domain",
+      sector: "E-commerce / Fintech"
+    },
+    {
+      title: "DevOps / Platform Engineer",
+      score: 79,
+      difficulty: "Intermediate", diffCol: "#f7971e", diffBg: "rgba(247,151,30,0.12)",
+      demand: "High Growth ↑", demandCol: "#00c9a7", demandBg: "rgba(0,201,167,0.12)",
+      cri: 81,
+      rank: 5,
+      accent: "#00c9a7", icon: "☁️",
+      brief: "Keep the system running. Build CI/CD pipelines, manage cloud infra, and ensure zero-downtime deployments letting product teams ship fearlessly.",
+      skills: ["Kubernetes", "AWS", "Terraform", "Linux", "CI/CD"],
+      why: "Matches your Architect style + Cloud Systems interest",
+      sector: "Enterprise / SaaS"
     }
+  ];
+
+  const analysisSteps = [
+    "Synthesizing Professional DNA & Domain Preferences...",
+    "Calibrating Academic Pacing & Problem Solving Style...",
+    "Querying Gemini AI Model for SDE Career Fits...",
+    "Generating 5 Tailored SDE Career Blueprints..."
   ];
 
   const toggleDomain = (lbl) => {
@@ -176,23 +215,41 @@ export default function OnboardingStage2() {
     }
   };
 
+  // Start AI Analysis Process
   const handleAnalyze = () => {
     setIsAnalyzing(true);
+    setAnalysisTextIndex(0);
+
+    const stepInterval = setInterval(() => {
+      setAnalysisTextIndex(prev => {
+        if (prev >= analysisSteps.length - 1) {
+          clearInterval(stepInterval);
+          return prev;
+        }
+        return prev + 1;
+      });
+    }, 550);
+
     setTimeout(() => {
       setIsAnalyzing(false);
-      setSelectedCareerMatch(careerMatches[0]);
-    }, 1800);
+      setPhase(2);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 2400);
   };
 
-  const handleProceedStage3 = () => {
-    setIsTransitioning(true);
+  // Launch Path Journey
+  const handleLaunchPath = (title) => {
+    const finalTitle = title === "custom" ? customCareerInput || "Custom SDE Career Path" : title;
+    setSelectedCareerTitle(finalTitle);
+    setIsLaunching(true);
+
     setTimeout(() => {
-      setIsTransitioning(false);
+      setIsLaunching(false);
       navigate("/platform");
-    }, 2200);
+    }, 2400);
   };
 
-  // Calculate completion percentage
+  // Completion calculation
   const answeredCount = [
     domains.length > 0, industry, passion, pstyle, 
     risk, tags.length > 0, company, vision, puzzle, invent
@@ -268,649 +325,684 @@ export default function OnboardingStage2() {
           </div>
         </div>
 
-        {/* 3. SPLIT-COLOR HEADER TITLE */}
-        <div style={{ textAlign: "center", marginBottom: 36 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 16px", borderRadius: 20, background: "rgba(108,99,255,0.12)", border: "1px solid #6c63ff40", color: "#6c63ff", fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, marginBottom: 12 }}>
-            <Rocket size={16} /> CAREER AMBITION & ROLE PROFILING
-          </div>
-          <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 36, fontWeight: 800, margin: "0 0 10px", lineHeight: 1.2, color: "var(--text-main)" }}>
-            Define Your <span style={{ background: "linear-gradient(135deg, #6c63ff, #00c9a7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Professional Career DNA</span>
-          </h1>
-          <p style={{ fontSize: 16, color: "var(--text-muted)", maxWidth: 580, margin: "0 auto", lineHeight: 1.5 }}>
-            Complete all 12 career profiling questions below so PathEd AI can generate your 4-year SDE roadmap.
-          </p>
-        </div>
-
-        {/* QUESTIONS CONTAINER */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
-          
-          {/* CARD 1: TECHNICAL DOMAINS & INDUSTRY */}
-          <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
-            
-            {/* Q1: Tech Domains + Custom Option */}
-            <div style={{ marginBottom: 32 }}>
-              <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
-                <Cpu size={18} color="#6c63ff" /> Q1. Which tech domains spark your curiosity?
-              </label>
-              <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "0 0 14px" }}>
-                Select all that resonate — this seeds your roadmap node graph.
+        {/* ════════════════════════════════════════════════════════════
+           PHASE 1: PROFILING FORM (QUESTIONS 1 TO 12)
+        ════════════════════════════════════════════════════════════ */}
+        {phase === 1 && (
+          <div>
+            <div style={{ textAlign: "center", marginBottom: 36 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 16px", borderRadius: 20, background: "rgba(108,99,255,0.12)", border: "1px solid #6c63ff40", color: "#6c63ff", fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, marginBottom: 12 }}>
+                <Rocket size={16} /> CAREER AMBITION & ROLE PROFILING
+              </div>
+              <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 36, fontWeight: 800, margin: "0 0 10px", lineHeight: 1.2, color: "var(--text-main)" }}>
+                Define Your <span style={{ background: "linear-gradient(135deg, #6c63ff, #00c9a7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Professional Career DNA</span>
+              </h1>
+              <p style={{ fontSize: 16, color: "var(--text-muted)", maxWidth: 580, margin: "0 auto", lineHeight: 1.5 }}>
+                Complete all 12 career profiling questions below so PathEd AI can generate your 4-year SDE roadmap.
               </p>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 14 }}>
-                {domainOptions.map(d => {
-                  const isSelected = domains.includes(d.label);
-                  return (
-                    <div
-                      key={d.label}
-                      onClick={() => toggleDomain(d.label)}
-                      style={{
-                        padding: "14px 16px", borderRadius: 16,
-                        border: `1.5px solid ${isSelected ? "#6c63ff" : "var(--border-light)"}`,
-                        background: isSelected ? "rgba(108,99,255,0.12)" : "var(--bg-alt)",
-                        color: isSelected ? "#6c63ff" : "var(--text-main)",
-                        fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: isSelected ? 800 : 600,
-                        cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", gap: 10
-                      }}
-                    >
-                      <span style={{ fontSize: 20 }}>{d.icon}</span>
-                      <span>{d.label}</span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Plus Custom Domain Button */}
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-                <button
-                  type="button"
-                  onClick={() => setShowCustomDomain(!showCustomDomain)}
-                  style={{
-                    padding: "10px 18px", borderRadius: 14,
-                    border: "1.5px dashed #6c63ff", background: "rgba(108,99,255,0.08)",
-                    color: "#6c63ff", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
-                    cursor: "pointer", display: "flex", alignItems: "center", gap: 6
-                  }}
-                >
-                  <Plus size={16} /> Add Custom Domain
-                </button>
-              </div>
-
-              {showCustomDomain && (
-                <div style={{ marginTop: 12, display: "flex", gap: 10, maxWidth: 420 }}>
-                  <input
-                    type="text"
-                    value={customDomain}
-                    onChange={e => setCustomDomain(e.target.value)}
-                    placeholder="Type custom domain (e.g. Quantum Computing)..."
-                    style={{
-                      flex: 1, padding: "12px 16px", borderRadius: 14,
-                      background: "var(--bg-alt)", border: "1.5px solid #6c63ff",
-                      fontSize: 14, color: "var(--text-main)", outline: "none"
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddCustomDomain}
-                    style={{
-                      padding: "12px 20px", borderRadius: 14, background: "#6c63ff", color: "#fff",
-                      border: "none", fontWeight: 800, cursor: "pointer"
-                    }}
-                  >
-                    Add
-                  </button>
-                </div>
-              )}
             </div>
 
-            {/* Q2: Industry Focus + Custom Option */}
-            <div>
-              <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
-                <Briefcase size={18} color="#00c9a7" /> Q2. Which industry excites you most?
-              </label>
-              <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "0 0 14px" }}>
-                Calibrates which companies and verticals appear in your career matches.
-              </p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 12 }}>
-                {industryOptions.map(ind => {
-                  const isSelected = industry === ind;
-                  return (
-                    <button
-                      type="button"
-                      key={ind}
-                      onClick={() => { setIndustry(ind); setShowCustomIndustry(false); }}
-                      style={{
-                        padding: "10px 18px", borderRadius: 14,
-                        border: `1.5px solid ${isSelected ? "#00c9a7" : "var(--border-light)"}`,
-                        background: isSelected ? "rgba(0,201,167,0.12)" : "var(--bg-alt)",
-                        color: isSelected ? "#00c9a7" : "var(--text-main)",
-                        fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: isSelected ? 800 : 600,
-                        cursor: "pointer", transition: "all 0.2s"
-                      }}
-                    >
-                      {ind}
-                    </button>
-                  );
-                })}
-
-                <button
-                  type="button"
-                  onClick={() => setShowCustomIndustry(!showCustomIndustry)}
-                  style={{
-                    padding: "10px 18px", borderRadius: 14,
-                    border: "1.5px dashed #00c9a7", background: "rgba(0,201,167,0.08)",
-                    color: "#00c9a7", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
-                    cursor: "pointer", display: "flex", alignItems: "center", gap: 6
-                  }}
-                >
-                  <Plus size={16} /> Add Custom Industry
-                </button>
-              </div>
-
-              {showCustomIndustry && (
-                <div style={{ marginTop: 10 }}>
-                  <input
-                    type="text"
-                    value={customIndustry}
-                    onChange={e => { setCustomIndustry(e.target.value); setIndustry(`✨ ${e.target.value}`); }}
-                    placeholder="Type custom industry..."
-                    style={{
-                      width: "100%", maxWidth: 420, padding: "12px 16px", borderRadius: 14,
-                      background: "var(--bg-alt)", border: "1.5px solid #00c9a7",
-                      fontSize: 14, color: "var(--text-main)", outline: "none"
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-
-          </div>
-
-          {/* CARD 2: BUILDER ARCHETYPE (SINGLE ROW LAYOUT) & WORKING STYLE */}
-          <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
-            
-            {/* Q3: Builder Archetype (EXPLICIT SINGLE ROW LAYOUT) */}
-            <div style={{ marginBottom: 32 }}>
-              <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
-                <Target size={18} color="#f7971e" /> Q3. What kind of builder are you at heart?
-              </label>
-              <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "0 0 14px" }}>
-                Determines your primary working archetype across career roadmaps.
-              </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
               
-              {/* SINGLE ROW FLEX CONTAINER */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, width: "100%" }}>
-                {[
-                  { key: "build", emoji: "🏗️", label: "The Builder", sub: "Creates from scratch" },
-                  { key: "fix", emoji: "🔥", label: "The Firefighter", sub: "Finds & fixes flaws" },
-                  { key: "analyze", emoji: "🔭", label: "The Researcher", sub: "Analyzes patterns" },
-                  { key: "design", emoji: "✨", label: "The Designer", sub: "Crafts UX experience" }
-                ].map(item => {
-                  const isSelected = passion === item.key;
-                  return (
-                    <div
-                      key={item.key}
-                      onClick={() => setPassion(item.key)}
-                      style={{
-                        padding: 16, borderRadius: 16, textAlign: "center",
-                        border: `1.5px solid ${isSelected ? "#f7971e" : "var(--border-light)"}`,
-                        background: isSelected ? "rgba(247,151,30,0.12)" : "var(--bg-alt)",
-                        cursor: "pointer", transition: "all 0.2s"
-                      }}
-                    >
-                      <div style={{ fontSize: 28, marginBottom: 6 }}>{item.emoji}</div>
-                      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isSelected ? "#f7971e" : "var(--text-main)" }}>
-                        {item.label}
-                      </div>
-                      <div style={{ fontSize: 11.5, color: "var(--text-muted)", marginTop: 2, lineHeight: 1.3 }}>{item.sub}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+              {/* CARD 1: TECHNICAL DOMAINS & INDUSTRY */}
+              <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
+                
+                {/* Q1: Tech Domains + Custom Option */}
+                <div style={{ marginBottom: 32 }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
+                    <Cpu size={18} color="#6c63ff" /> Q1. Which tech domains spark your curiosity?
+                  </label>
+                  <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "0 0 14px" }}>
+                    Select all that resonate — this seeds your roadmap node graph.
+                  </p>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 14 }}>
+                    {domainOptions.map(d => {
+                      const isSelected = domains.includes(d.label);
+                      return (
+                        <div
+                          key={d.label}
+                          onClick={() => toggleDomain(d.label)}
+                          style={{
+                            padding: "14px 16px", borderRadius: 16,
+                            border: `1.5px solid ${isSelected ? "#6c63ff" : "var(--border-light)"}`,
+                            background: isSelected ? "rgba(108,99,255,0.12)" : "var(--bg-alt)",
+                            color: isSelected ? "#6c63ff" : "var(--text-main)",
+                            fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: isSelected ? 800 : 600,
+                            cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", gap: 10
+                          }}
+                        >
+                          <span style={{ fontSize: 20 }}>{d.icon}</span>
+                          <span>{d.label}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
 
-            {/* Q4: Work Environment Preference Slider */}
-            <div style={{ marginBottom: 32 }}>
-              <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
-                <Layers size={18} color="#e040fb" /> Q4. Work Environment Preference
-              </label>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 12, fontFamily: "'Fira Code', monospace", fontWeight: 700 }}>
-                <span style={{ color: "#6c63ff" }}>⚡ Fast-Paced Startup</span>
-                <span style={{ color: "#00c9a7" }}>🏛️ Established Corporate</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={envSlider}
-                onChange={e => setEnvSlider(parseInt(e.target.value))}
-                style={{ width: "100%", height: 8, borderRadius: 4, accentColor: "#6c63ff", cursor: "pointer" }}
-              />
-            </div>
-
-            {/* Q5: Problem Solving Style */}
-            <div>
-              <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
-                <Cpu size={18} color="#6c63ff" /> Q5. Problem-Solving Style
-              </label>
-              <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "0 0 14px" }}>
-                Your natural working identity when facing engineering challenges in a team.
-              </p>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
-                {pstyleOptions.map(s => {
-                  const isSelected = pstyle === s.label;
-                  return (
-                    <div
-                      key={s.key}
-                      onClick={() => setPstyle(s.label)}
-                      style={{
-                        padding: 16, borderRadius: 16,
-                        border: `1.5px solid ${isSelected ? "#6c63ff" : "var(--border-light)"}`,
-                        background: isSelected ? "rgba(108,99,255,0.12)" : "var(--bg-alt)",
-                        cursor: "pointer", transition: "all 0.2s"
-                      }}
-                    >
-                      <div style={{ fontSize: 24, marginBottom: 6 }}>{s.icon}</div>
-                      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isSelected ? "#6c63ff" : "var(--text-main)" }}>
-                        {s.label}
-                      </div>
-                      <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{s.sub}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-          </div>
-
-          {/* CARD 3: SALARY, RISK & FAVORITE TOOLS */}
-          <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
-            
-            {/* Q6: Salary vs Social Impact Priority */}
-            <div style={{ marginBottom: 32 }}>
-              <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
-                <Rocket size={18} color="#f7971e" /> Q6. Salary vs. Social Impact Priority
-              </label>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 12, fontFamily: "'Fira Code', monospace", fontWeight: 700 }}>
-                <span style={{ color: "#f7971e" }}>💰 High Salary Package</span>
-                <span style={{ color: "#00c9a7" }}>🌍 Social Impact & Mission</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={impactSlider}
-                onChange={e => setImpactSlider(parseInt(e.target.value))}
-                style={{ width: "100%", height: 8, borderRadius: 4, accentColor: "#f7971e", cursor: "pointer" }}
-              />
-            </div>
-
-            {/* Q7: Risk Appetite + Custom Option */}
-            <div style={{ marginBottom: 32 }}>
-              <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
-                <Briefcase size={18} color="#00c9a7" /> Q7. Risk Appetite
-              </label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 10 }}>
-                {["🛡️ Conservative", "⚖️ Moderate", "🚀 Aggressive"].map(r => {
-                  const isSelected = risk === r;
-                  return (
+                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
                     <button
                       type="button"
-                      key={r}
-                      onClick={() => { setRisk(r); setShowCustomRisk(false); }}
-                      style={{
-                        padding: "10px 20px", borderRadius: 14,
-                        border: `1.5px solid ${isSelected ? "#00c9a7" : "var(--border-light)"}`,
-                        background: isSelected ? "rgba(0,201,167,0.12)" : "var(--bg-alt)",
-                        color: isSelected ? "#00c9a7" : "var(--text-main)",
-                        fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: isSelected ? 800 : 600,
-                        cursor: "pointer", transition: "all 0.2s"
-                      }}
-                    >
-                      {r}
-                    </button>
-                  );
-                })}
-
-                <button
-                  type="button"
-                  onClick={() => setShowCustomRisk(!showCustomRisk)}
-                  style={{
-                    padding: "10px 18px", borderRadius: 14,
-                    border: "1.5px dashed #00c9a7", background: "rgba(0,201,167,0.08)",
-                    color: "#00c9a7", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
-                    cursor: "pointer", display: "flex", alignItems: "center", gap: 6
-                  }}
-                >
-                  <Plus size={16} /> Add Custom Risk
-                </button>
-              </div>
-
-              {showCustomRisk && (
-                <input
-                  type="text"
-                  value={customRisk}
-                  onChange={e => { setCustomRisk(e.target.value); setRisk(`⚡ ${e.target.value}`); }}
-                  placeholder="Type custom risk preference..."
-                  style={{
-                    width: "100%", maxWidth: 360, padding: "12px 16px", borderRadius: 14,
-                    background: "var(--bg-alt)", border: "1.5px solid #00c9a7",
-                    fontSize: 14, color: "var(--text-main)", outline: "none", marginTop: 8
-                  }}
-                />
-              )}
-            </div>
-
-            {/* Q8: Favorite Tools & Tech Tag Input */}
-            <div>
-              <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
-                <Zap size={18} color="#6c63ff" /> Q8. Favorite tools & technologies so far?
-              </label>
-              <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "0 0 12px" }}>
-                Type tools you enjoy (e.g. React, Python, Docker) and press ENTER to add.
-              </p>
-
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-                {tags.map(t => (
-                  <span
-                    key={t}
-                    onClick={() => setTags(tags.filter(x => x !== t))}
-                    style={{
-                      padding: "6px 14px", borderRadius: 12, background: "rgba(108,99,255,0.12)",
-                      border: "1px solid #6c63ff40", color: "#6c63ff", fontFamily: "'Fira Code', monospace",
-                      fontSize: 12, fontWeight: 800, cursor: "pointer"
-                    }}
-                  >
-                    {t} ×
-                  </span>
-                ))}
-              </div>
-
-              <input
-                type="text"
-                value={tagInput}
-                onChange={e => setTagInput(e.target.value)}
-                onKeyDown={handleAddTag}
-                placeholder="Type tool name & press Enter..."
-                style={{
-                  width: "100%", maxWidth: 380, padding: "12px 16px", borderRadius: 14,
-                  background: "var(--bg-alt)", border: "1.5px solid var(--border-light)",
-                  fontSize: 14, color: "var(--text-main)", outline: "none"
-                }}
-              />
-            </div>
-
-          </div>
-
-          {/* CARD 4: COMPANY TYPE, VISION (WITH CUSTOM OPTION) & AI JUDGMENT */}
-          <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
-            
-            {/* Q9: Dream Company Type + Custom Option */}
-            <div style={{ marginBottom: 32 }}>
-              <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
-                <Layers size={18} color="#e040fb" /> Q9. Dream Company Type?
-              </label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 10 }}>
-                {companyOptions.map(c => {
-                  const isSelected = company === c;
-                  return (
-                    <button
-                      type="button"
-                      key={c}
-                      onClick={() => { setCompany(c); setShowCustomCompany(false); }}
+                      onClick={() => setShowCustomDomain(!showCustomDomain)}
                       style={{
                         padding: "10px 18px", borderRadius: 14,
-                        border: `1.5px solid ${isSelected ? "#e040fb" : "var(--border-light)"}`,
-                        background: isSelected ? "rgba(224,64,251,0.12)" : "var(--bg-alt)",
-                        color: isSelected ? "#e040fb" : "var(--text-main)",
-                        fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: isSelected ? 800 : 600,
-                        cursor: "pointer", transition: "all 0.2s"
+                        border: "1.5px dashed #6c63ff", background: "rgba(108,99,255,0.08)",
+                        color: "#6c63ff", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
+                        cursor: "pointer", display: "flex", alignItems: "center", gap: 6
                       }}
                     >
-                      {c}
+                      <Plus size={16} /> Add Custom Domain
                     </button>
-                  );
-                })}
+                  </div>
 
+                  {showCustomDomain && (
+                    <div style={{ marginTop: 12, display: "flex", gap: 10, maxWidth: 420 }}>
+                      <input
+                        type="text"
+                        value={customDomain}
+                        onChange={e => setCustomDomain(e.target.value)}
+                        placeholder="Type custom domain..."
+                        style={{
+                          flex: 1, padding: "12px 16px", borderRadius: 14,
+                          background: "var(--bg-alt)", border: "1.5px solid #6c63ff",
+                          fontSize: 14, color: "var(--text-main)", outline: "none"
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddCustomDomain}
+                        style={{
+                          padding: "12px 20px", borderRadius: 14, background: "#6c63ff", color: "#fff",
+                          border: "none", fontWeight: 800, cursor: "pointer"
+                        }}
+                      >
+                        Add
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Q2: Industry Focus + Custom Option */}
+                <div>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
+                    <Briefcase size={18} color="#00c9a7" /> Q2. Which industry excites you most?
+                  </label>
+                  <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "0 0 14px" }}>
+                    Calibrates which companies and verticals appear in your career matches.
+                  </p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 12 }}>
+                    {industryOptions.map(ind => {
+                      const isSelected = industry === ind;
+                      return (
+                        <button
+                          type="button"
+                          key={ind}
+                          onClick={() => { setIndustry(ind); setShowCustomIndustry(false); }}
+                          style={{
+                            padding: "10px 18px", borderRadius: 14,
+                            border: `1.5px solid ${isSelected ? "#00c9a7" : "var(--border-light)"}`,
+                            background: isSelected ? "rgba(0,201,167,0.12)" : "var(--bg-alt)",
+                            color: isSelected ? "#00c9a7" : "var(--text-main)",
+                            fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: isSelected ? 800 : 600,
+                            cursor: "pointer", transition: "all 0.2s"
+                          }}
+                        >
+                          {ind}
+                        </button>
+                      );
+                    })}
+
+                    <button
+                      type="button"
+                      onClick={() => setShowCustomIndustry(!showCustomIndustry)}
+                      style={{
+                        padding: "10px 18px", borderRadius: 14,
+                        border: "1.5px dashed #00c9a7", background: "rgba(0,201,167,0.08)",
+                        color: "#00c9a7", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
+                        cursor: "pointer", display: "flex", alignItems: "center", gap: 6
+                      }}
+                    >
+                      <Plus size={16} /> Add Custom Industry
+                    </button>
+                  </div>
+
+                  {showCustomIndustry && (
+                    <div style={{ marginTop: 10 }}>
+                      <input
+                        type="text"
+                        value={customIndustry}
+                        onChange={e => { setCustomIndustry(e.target.value); setIndustry(`✨ ${e.target.value}`); }}
+                        placeholder="Type custom industry..."
+                        style={{
+                          width: "100%", maxWidth: 420, padding: "12px 16px", borderRadius: 14,
+                          background: "var(--bg-alt)", border: "1.5px solid #00c9a7",
+                          fontSize: 14, color: "var(--text-main)", outline: "none"
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+              </div>
+
+              {/* CARD 2: BUILDER ARCHETYPE (SINGLE ROW LAYOUT) & WORKING STYLE */}
+              <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
+                
+                {/* Q3: Builder Archetype (SINGLE ROW LAYOUT) */}
+                <div style={{ marginBottom: 32 }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
+                    <Target size={18} color="#f7971e" /> Q3. What kind of builder are you at heart?
+                  </label>
+                  <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "0 0 14px" }}>
+                    Determines your primary working archetype across career roadmaps.
+                  </p>
+                  
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, width: "100%" }}>
+                    {[
+                      { key: "build", emoji: "🏗️", label: "The Builder", sub: "Creates from scratch" },
+                      { key: "fix", emoji: "🔥", label: "The Firefighter", sub: "Finds & fixes flaws" },
+                      { key: "analyze", emoji: "🔭", label: "The Researcher", sub: "Analyzes patterns" },
+                      { key: "design", emoji: "✨", label: "The Designer", sub: "Crafts UX experience" }
+                    ].map(item => {
+                      const isSelected = passion === item.key;
+                      return (
+                        <div
+                          key={item.key}
+                          onClick={() => setPassion(item.key)}
+                          style={{
+                            padding: 16, borderRadius: 16, textAlign: "center",
+                            border: `1.5px solid ${isSelected ? "#f7971e" : "var(--border-light)"}`,
+                            background: isSelected ? "rgba(247,151,30,0.12)" : "var(--bg-alt)",
+                            cursor: "pointer", transition: "all 0.2s"
+                          }}
+                        >
+                          <div style={{ fontSize: 28, marginBottom: 6 }}>{item.emoji}</div>
+                          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isSelected ? "#f7971e" : "var(--text-main)" }}>
+                            {item.label}
+                          </div>
+                          <div style={{ fontSize: 11.5, color: "var(--text-muted)", marginTop: 2, lineHeight: 1.3 }}>{item.sub}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Q4: Work Environment Preference Slider */}
+                <div style={{ marginBottom: 32 }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
+                    <Layers size={18} color="#e040fb" /> Q4. Work Environment Preference
+                  </label>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 12, fontFamily: "'Fira Code', monospace", fontWeight: 700 }}>
+                    <span style={{ color: "#6c63ff" }}>⚡ Fast-Paced Startup</span>
+                    <span style={{ color: "#00c9a7" }}>🏛️ Established Corporate</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={envSlider}
+                    onChange={e => setEnvSlider(parseInt(e.target.value))}
+                    style={{ width: "100%", height: 8, borderRadius: 4, accentColor: "#6c63ff", cursor: "pointer" }}
+                  />
+                </div>
+
+                {/* Q5: Problem Solving Style */}
+                <div>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
+                    <Cpu size={18} color="#6c63ff" /> Q5. Problem-Solving Style
+                  </label>
+                  <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "0 0 14px" }}>
+                    Your natural working identity when facing engineering challenges in a team.
+                  </p>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+                    {pstyleOptions.map(s => {
+                      const isSelected = pstyle === s.label;
+                      return (
+                        <div
+                          key={s.key}
+                          onClick={() => setPstyle(s.label)}
+                          style={{
+                            padding: 16, borderRadius: 16,
+                            border: `1.5px solid ${isSelected ? "#6c63ff" : "var(--border-light)"}`,
+                            background: isSelected ? "rgba(108,99,255,0.12)" : "var(--bg-alt)",
+                            cursor: "pointer", transition: "all 0.2s"
+                          }}
+                        >
+                          <div style={{ fontSize: 24, marginBottom: 6 }}>{s.icon}</div>
+                          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isSelected ? "#6c63ff" : "var(--text-main)" }}>
+                            {s.label}
+                          </div>
+                          <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{s.sub}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* CARD 3: SALARY, RISK & FAVORITE TOOLS */}
+              <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
+                
+                {/* Q6: Salary vs Social Impact Priority */}
+                <div style={{ marginBottom: 32 }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
+                    <Rocket size={18} color="#f7971e" /> Q6. Salary vs. Social Impact Priority
+                  </label>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 12, fontFamily: "'Fira Code', monospace", fontWeight: 700 }}>
+                    <span style={{ color: "#f7971e" }}>💰 High Salary Package</span>
+                    <span style={{ color: "#00c9a7" }}>🌍 Social Impact & Mission</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={impactSlider}
+                    onChange={e => setImpactSlider(parseInt(e.target.value))}
+                    style={{ width: "100%", height: 8, borderRadius: 4, accentColor: "#f7971e", cursor: "pointer" }}
+                  />
+                </div>
+
+                {/* Q7: Risk Appetite + Custom Option */}
+                <div style={{ marginBottom: 32 }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
+                    <Briefcase size={18} color="#00c9a7" /> Q7. Risk Appetite
+                  </label>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 10 }}>
+                    {["🛡️ Conservative", "秤️ Moderate", "🚀 Aggressive"].map(r => {
+                      const isSelected = risk === r;
+                      return (
+                        <button
+                          type="button"
+                          key={r}
+                          onClick={() => { setRisk(r); setShowCustomRisk(false); }}
+                          style={{
+                            padding: "10px 20px", borderRadius: 14,
+                            border: `1.5px solid ${isSelected ? "#00c9a7" : "var(--border-light)"}`,
+                            background: isSelected ? "rgba(0,201,167,0.12)" : "var(--bg-alt)",
+                            color: isSelected ? "#00c9a7" : "var(--text-main)",
+                            fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: isSelected ? 800 : 600,
+                            cursor: "pointer", transition: "all 0.2s"
+                          }}
+                        >
+                          {r}
+                        </button>
+                      );
+                    })}
+
+                    <button
+                      type="button"
+                      onClick={() => setShowCustomRisk(!showCustomRisk)}
+                      style={{
+                        padding: "10px 18px", borderRadius: 14,
+                        border: "1.5px dashed #00c9a7", background: "rgba(0,201,167,0.08)",
+                        color: "#00c9a7", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
+                        cursor: "pointer", display: "flex", alignItems: "center", gap: 6
+                      }}
+                    >
+                      <Plus size={16} /> Add Custom Risk
+                    </button>
+                  </div>
+
+                  {showCustomRisk && (
+                    <input
+                      type="text"
+                      value={customRisk}
+                      onChange={e => { setCustomRisk(e.target.value); setRisk(`⚡ ${e.target.value}`); }}
+                      placeholder="Type custom risk preference..."
+                      style={{
+                        width: "100%", maxWidth: 360, padding: "12px 16px", borderRadius: 14,
+                        background: "var(--bg-alt)", border: "1.5px solid #00c9a7",
+                        fontSize: 14, color: "var(--text-main)", outline: "none", marginTop: 8
+                      }}
+                    />
+                  )}
+                </div>
+
+                {/* Q8: Favorite Tools Tag Input */}
+                <div>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
+                    <Zap size={18} color="#6c63ff" /> Q8. Favorite tools & technologies so far?
+                  </label>
+                  <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "0 0 12px" }}>
+                    Type tools you enjoy (e.g. React, Python, Docker) and press ENTER to add.
+                  </p>
+
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+                    {tags.map(t => (
+                      <span
+                        key={t}
+                        onClick={() => setTags(tags.filter(x => x !== t))}
+                        style={{
+                          padding: "6px 14px", borderRadius: 12, background: "rgba(108,99,255,0.12)",
+                          border: "1px solid #6c63ff40", color: "#6c63ff", fontFamily: "'Fira Code', monospace",
+                          fontSize: 12, fontWeight: 800, cursor: "pointer"
+                        }}
+                      >
+                        {t} ×
+                      </span>
+                    ))}
+                  </div>
+
+                  <input
+                    type="text"
+                    value={tagInput}
+                    onChange={e => setTagInput(e.target.value)}
+                    onKeyDown={handleAddTag}
+                    placeholder="Type tool name & press Enter..."
+                    style={{
+                      width: "100%", maxWidth: 380, padding: "12px 16px", borderRadius: 14,
+                      background: "var(--bg-alt)", border: "1.5px solid var(--border-light)",
+                      fontSize: 14, color: "var(--text-main)", outline: "none"
+                    }}
+                  />
+                </div>
+
+              </div>
+
+              {/* CARD 4: COMPANY TYPE, VISION & AI JUDGMENT */}
+              <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
+                
+                {/* Q9: Dream Company Type + Custom Option */}
+                <div style={{ marginBottom: 32 }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
+                    <Layers size={18} color="#e040fb" /> Q9. Dream Company Type?
+                  </label>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 10 }}>
+                    {companyOptions.map(c => {
+                      const isSelected = company === c;
+                      return (
+                        <button
+                          type="button"
+                          key={c}
+                          onClick={() => { setCompany(c); setShowCustomCompany(false); }}
+                          style={{
+                            padding: "10px 18px", borderRadius: 14,
+                            border: `1.5px solid ${isSelected ? "#e040fb" : "var(--border-light)"}`,
+                            background: isSelected ? "rgba(224,64,251,0.12)" : "var(--bg-alt)",
+                            color: isSelected ? "#e040fb" : "var(--text-main)",
+                            fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: isSelected ? 800 : 600,
+                            cursor: "pointer", transition: "all 0.2s"
+                          }}
+                        >
+                          {c}
+                        </button>
+                      );
+                    })}
+
+                    <button
+                      type="button"
+                      onClick={() => setShowCustomCompany(!showCustomCompany)}
+                      style={{
+                        padding: "10px 18px", borderRadius: 14,
+                        border: "1.5px dashed #e040fb", background: "rgba(224,64,251,0.08)",
+                        color: "#e040fb", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
+                        cursor: "pointer", display: "flex", alignItems: "center", gap: 6
+                      }}
+                    >
+                      <Plus size={16} /> Add Custom Company Type
+                    </button>
+                  </div>
+
+                  {showCustomCompany && (
+                    <input
+                      type="text"
+                      value={customCompany}
+                      onChange={e => { setCustomCompany(e.target.value); setCompany(`✨ ${e.target.value}`); }}
+                      placeholder="Type custom company preference..."
+                      style={{
+                        width: "100%", maxWidth: 380, padding: "12px 16px", borderRadius: 14,
+                        background: "var(--bg-alt)", border: "1.5px solid #e040fb",
+                        fontSize: 14, color: "var(--text-main)", outline: "none", marginTop: 8
+                      }}
+                    />
+                  )}
+                </div>
+
+                {/* Q10: Long-Term Career Vision + 4th CUSTOM OPTION */}
+                <div style={{ marginBottom: 32 }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
+                    <Rocket size={18} color="#6c63ff" /> Q10. Long-Term Career Vision?
+                  </label>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 10 }}>
+                    {visionOptions.map(v => {
+                      const isSelected = vision === v.label;
+                      return (
+                        <div
+                          key={v.label}
+                          onClick={() => { setVision(v.label); setShowCustomVision(false); }}
+                          style={{
+                            padding: 16, borderRadius: 16,
+                            border: `1.5px solid ${isSelected ? "#6c63ff" : "var(--border-light)"}`,
+                            background: isSelected ? "rgba(108,99,255,0.12)" : "var(--bg-alt)",
+                            cursor: "pointer", transition: "all 0.2s"
+                          }}
+                        >
+                          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isSelected ? "#6c63ff" : "var(--text-main)" }}>
+                            {v.label}
+                          </div>
+                          <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{v.sub}</div>
+                        </div>
+                      );
+                    })}
+
+                    <div
+                      onClick={() => setShowCustomVision(!showCustomVision)}
+                      style={{
+                        padding: 16, borderRadius: 16,
+                        border: "1.5px dashed #6c63ff", background: "rgba(108,99,255,0.08)",
+                        cursor: "pointer", transition: "all 0.2s", display: "flex", flexDirection: "column",
+                        alignItems: "center", justifyContent: "center", textAlignment: "center"
+                      }}
+                    >
+                      <Plus size={22} color="#6c63ff" />
+                      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: "#6c63ff", marginTop: 4 }}>
+                        + Enter Custom Vision
+                      </div>
+                      <div style={{ fontSize: 11.5, color: "var(--text-muted)" }}>Write your own career goal</div>
+                    </div>
+                  </div>
+
+                  {showCustomVision && (
+                    <input
+                      type="text"
+                      value={customVision}
+                      onChange={e => { setCustomVision(e.target.value); setVision(`✨ ${e.target.value}`); }}
+                      placeholder="Enter custom career vision..."
+                      style={{
+                        width: "100%", maxWidth: 420, padding: "12px 16px", borderRadius: 14,
+                        background: "var(--bg-alt)", border: "1.5px solid #6c63ff",
+                        fontSize: 14, color: "var(--text-main)", outline: "none", marginTop: 8
+                      }}
+                    />
+                  )}
+                </div>
+
+                {/* Q11: Cognitive Challenge Preference */}
+                <div style={{ marginBottom: 32 }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
+                    <Target size={18} color="#00c9a7" /> Q11. Which challenge would you pick first?
+                  </label>
+                  <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "0 0 12px" }}>
+                    Cognitive pattern mapping question to fine-tune AI recommendations.
+                  </p>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+                    {puzzleOptions.map(p => {
+                      const isSelected = puzzle === p.label;
+                      return (
+                        <div
+                          key={p.key}
+                          onClick={() => setPuzzle(p.label)}
+                          style={{
+                            padding: 16, borderRadius: 16,
+                            border: `1.5px solid ${isSelected ? "#00c9a7" : "var(--border-light)"}`,
+                            background: isSelected ? "rgba(0,201,167,0.12)" : "var(--bg-alt)",
+                            cursor: "pointer", transition: "all 0.2s"
+                          }}
+                        >
+                          <div style={{ fontSize: 24, marginBottom: 6 }}>{p.icon}</div>
+                          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isSelected ? "#00c9a7" : "var(--text-main)" }}>
+                            {p.label}
+                          </div>
+                          <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{p.sub}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Q12: Invention vs Optimization */}
+                <div>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
+                    <Zap size={18} color="#f7971e" /> Q12. Invention vs. Optimization?
+                  </label>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+                    {inventOptions.map(o => {
+                      const isSelected = invent === o.label;
+                      return (
+                        <div
+                          key={o.label}
+                          onClick={() => setInvent(o.label)}
+                          style={{
+                            padding: 16, borderRadius: 16,
+                            border: `1.5px solid ${isSelected ? "#f7971e" : "var(--border-light)"}`,
+                            background: isSelected ? "rgba(247,151,30,0.12)" : "var(--bg-alt)",
+                            cursor: "pointer", transition: "all 0.2s"
+                          }}
+                        >
+                          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isSelected ? "#f7971e" : "var(--text-main)" }}>
+                            {o.label}
+                          </div>
+                          <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{o.sub}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* AI MATCH BUTTON ACTION */}
+              <div style={{ textAlign: "center", marginTop: 12 }}>
                 <button
                   type="button"
-                  onClick={() => setShowCustomCompany(!showCustomCompany)}
+                  onClick={handleAnalyze}
+                  disabled={isAnalyzing}
                   style={{
-                    padding: "10px 18px", borderRadius: 14,
-                    border: "1.5px dashed #e040fb", background: "rgba(224,64,251,0.08)",
-                    color: "#e040fb", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
-                    cursor: "pointer", display: "flex", alignItems: "center", gap: 6
+                    padding: "16px 40px", borderRadius: 18, border: "none",
+                    background: "linear-gradient(135deg, #6c63ff, #00c9a7)", color: "#ffffff",
+                    fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800,
+                    cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 10,
+                    boxShadow: "0 8px 24px rgba(108,99,255,0.35)"
                   }}
                 >
-                  <Plus size={16} /> Add Custom Company Type
+                  <Sparkles size={18} /> {isAnalyzing ? "Analyzing Career DNA..." : "Analyze & Match My Target Careers"}
                 </button>
               </div>
 
-              {showCustomCompany && (
-                <input
-                  type="text"
-                  value={customCompany}
-                  onChange={e => { setCustomCompany(e.target.value); setCompany(`✨ ${e.target.value}`); }}
-                  placeholder="Type custom company preference..."
-                  style={{
-                    width: "100%", maxWidth: 380, padding: "12px 16px", borderRadius: 14,
-                    background: "var(--bg-alt)", border: "1.5px solid #e040fb",
-                    fontSize: 14, color: "var(--text-main)", outline: "none", marginTop: 8
-                  }}
-                />
-              )}
             </div>
+          </div>
+        )}
 
-            {/* Q10: Long-Term Career Vision + 4th CUSTOM OPTION BUTTON */}
-            <div style={{ marginBottom: 32 }}>
-              <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
-                <Rocket size={18} color="#6c63ff" /> Q10. Long-Term Career Vision?
-              </label>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 10 }}>
-                {visionOptions.map(v => {
-                  const isSelected = vision === v.label;
-                  return (
-                    <div
-                      key={v.label}
-                      onClick={() => { setVision(v.label); setShowCustomVision(false); }}
-                      style={{
-                        padding: 16, borderRadius: 16,
-                        border: `1.5px solid ${isSelected ? "#6c63ff" : "var(--border-light)"}`,
-                        background: isSelected ? "rgba(108,99,255,0.12)" : "var(--bg-alt)",
-                        cursor: "pointer", transition: "all 0.2s"
-                      }}
-                    >
-                      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isSelected ? "#6c63ff" : "var(--text-main)" }}>
-                        {v.label}
-                      </div>
-                      <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{v.sub}</div>
-                    </div>
-                  );
-                })}
-
-                {/* 4th Custom Option Button for Q10 */}
-                <div
-                  onClick={() => setShowCustomVision(!showCustomVision)}
-                  style={{
-                    padding: 16, borderRadius: 16,
-                    border: "1.5px dashed #6c63ff", background: "rgba(108,99,255,0.08)",
-                    cursor: "pointer", transition: "all 0.2s", display: "flex", flexDirection: "column",
-                    alignItems: "center", justifyContent: "center", textAlignment: "center"
-                  }}
-                >
-                  <Plus size={22} color="#6c63ff" />
-                  <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: "#6c63ff", marginTop: 4 }}>
-                    + Enter Custom Vision
-                  </div>
-                  <div style={{ fontSize: 11.5, color: "var(--text-muted)" }}>Write your own career goal</div>
-                </div>
+        {/* ════════════════════════════════════════════════════════════
+           PHASE 2: AI CAREER BLUEPRINTS DISCOVERY (5 CARDS + 6TH CUSTOM)
+        ════════════════════════════════════════════════════════════ */}
+        {phase === 2 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            {/* Header Description */}
+            <div style={{ textAlign: "left", marginBottom: 32 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 16, background: "rgba(0,201,167,0.12)", border: "1px solid #00c9a740", fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 800, color: "#00c9a7", marginBottom: 12 }}>
+                ▸ PHASE 2 — AI CAREER BLUEPRINTS DISCOVERY
               </div>
-
-              {showCustomVision && (
-                <input
-                  type="text"
-                  value={customVision}
-                  onChange={e => { setCustomVision(e.target.value); setVision(`✨ ${e.target.value}`); }}
-                  placeholder="Enter your custom long-term career goal..."
-                  style={{
-                    width: "100%", maxWidth: 420, padding: "12px 16px", borderRadius: 14,
-                    background: "var(--bg-alt)", border: "1.5px solid #6c63ff",
-                    fontSize: 14, color: "var(--text-main)", outline: "none", marginTop: 8
-                  }}
-                />
-              )}
-            </div>
-
-            {/* Q11: Cognitive Challenge Preference */}
-            <div style={{ marginBottom: 32 }}>
-              <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
-                <Target size={18} color="#00c9a7" /> Q11. Which challenge would you pick first?
-              </label>
-              <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "0 0 12px" }}>
-                Cognitive pattern mapping question to fine-tune AI recommendations.
+              <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 36, fontWeight: 800, color: "var(--text-main)", margin: "0 0 10px" }}>
+                Your Top 5 <span style={{ background: "linear-gradient(135deg, #6c63ff, #00c9a7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AI Career Blueprints</span>
+              </h1>
+              <p style={{ fontSize: 15, color: "var(--text-muted)", margin: 0, lineHeight: 1.6, maxWidth: 620 }}>
+                Based on your professional DNA, problem-solving style, and industry interests, Gemini AI has synthesized these high-potential engineering paths.
               </p>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
-                {puzzleOptions.map(p => {
-                  const isSelected = puzzle === p.label;
-                  return (
-                    <div
-                      key={p.key}
-                      onClick={() => setPuzzle(p.label)}
-                      style={{
-                        padding: 16, borderRadius: 16,
-                        border: `1.5px solid ${isSelected ? "#00c9a7" : "var(--border-light)"}`,
-                        background: isSelected ? "rgba(0,201,167,0.12)" : "var(--bg-alt)",
-                        cursor: "pointer", transition: "all 0.2s"
-                      }}
-                    >
-                      <div style={{ fontSize: 24, marginBottom: 6 }}>{p.icon}</div>
-                      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isSelected ? "#00c9a7" : "var(--text-main)" }}>
-                        {p.label}
-                      </div>
-                      <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{p.sub}</div>
-                    </div>
-                  );
-                })}
-              </div>
             </div>
 
-            {/* Q12: Invention vs Optimization */}
-            <div>
-              <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
-                <Zap size={18} color="#f7971e" /> Q12. Invention vs. Optimization?
-              </label>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
-                {inventOptions.map(o => {
-                  const isSelected = invent === o.label;
-                  return (
-                    <div
-                      key={o.label}
-                      onClick={() => setInvent(o.label)}
-                      style={{
-                        padding: 16, borderRadius: 16,
-                        border: `1.5px solid ${isSelected ? "#f7971e" : "var(--border-light)"}`,
-                        background: isSelected ? "rgba(247,151,30,0.12)" : "var(--bg-alt)",
-                        cursor: "pointer", transition: "all 0.2s"
-                      }}
-                    >
-                      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isSelected ? "#f7971e" : "var(--text-main)" }}>
-                        {o.label}
-                      </div>
-                      <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{o.sub}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            {/* 5 AI GENERATED CAREER CARDS */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 24, marginBottom: 32 }}>
+              {aiGeneratedCareers.map((c, i) => (
+                <CareerCardItem
+                  key={c.title}
+                  career={c}
+                  index={i}
+                  selected={selectedCareerTitle === c.title}
+                  onSelect={handleLaunchPath}
+                />
+              ))}
 
-          </div>
-
-          {/* AI MATCH BUTTON ACTION */}
-          <div style={{ textAlign: "center", marginTop: 12 }}>
-            <button
-              onClick={handleAnalyze}
-              disabled={isAnalyzing}
-              style={{
-                padding: "16px 40px", borderRadius: 18, border: "none",
-                background: "linear-gradient(135deg, #6c63ff, #00c9a7)", color: "#ffffff",
-                fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800,
-                cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 10,
-                boxShadow: "0 8px 24px rgba(108,99,255,0.35)"
-              }}
-            >
-              <Sparkles size={18} /> {isAnalyzing ? "Analyzing Career DNA..." : "Analyze & Match My Target Careers"}
-            </button>
-          </div>
-
-          {/* AI CAREER MATCH RESULTS PANEL */}
-          <AnimatePresence>
-            {selectedCareerMatch && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                style={{ background: "var(--bg-card)", border: "2px solid #6c63ff", borderRadius: 24, padding: 32, boxShadow: "0 15px 40px rgba(108,99,255,0.15)", marginTop: 12 }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 14, background: "rgba(108,99,255,0.14)", border: "1px solid #6c63ff40", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>
-                    🤖
+              {/* 6TH CUSTOM CAREER CARD */}
+              <div style={{
+                background: "var(--bg-card)", border: "2px dashed #6c63ff", borderRadius: 24, padding: 28,
+                boxShadow: "0 10px 30px rgba(108,99,255,0.06)"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(108,99,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>
+                    ✏️
                   </div>
                   <div>
-                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 800, color: "#6c63ff", letterSpacing: 1.5 }}>
-                      PATHED AI CAREER MATCHING COMPLETE
-                    </div>
-                    <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 22, fontWeight: 800, color: "var(--text-main)", margin: 0 }}>
-                      Top 3 Tailored SDE Specializations
+                    <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 800, color: "var(--text-main)", margin: 0 }}>
+                      Option #6: Define Custom Career Path
                     </h3>
+                    <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
+                      If none of the above fits your specific dream goal, enter your custom role below.
+                    </div>
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16, marginBottom: 24 }}>
-                  {careerMatches.map((m, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        background: "var(--bg-alt)", border: `1.5px solid ${m.accent}50`, borderRadius: 18, padding: 20,
-                        position: "relative"
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                        <span style={{ fontSize: 28 }}>{m.icon}</span>
-                        <span style={{ padding: "4px 10px", borderRadius: 12, background: `${m.accent}20`, color: m.accent, fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800 }}>
-                          {m.score}% MATCH
-                        </span>
-                      </div>
-                      <h4 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800, color: "var(--text-main)", margin: "0 0 6px" }}>{m.title}</h4>
-                      <p style={{ fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.4, margin: "0 0 12px" }}>{m.brief}</p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                        {m.skills.map(sk => (
-                          <span key={sk} style={{ padding: "2px 8px", borderRadius: 6, background: "var(--bg-card)", border: "1px solid var(--border-light)", fontSize: 10, fontWeight: 700 }}>{sk}</span>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Submit Action */}
-                <div style={{ textAlign: "right" }}>
-                  <button
-                    onClick={handleProceedStage3}
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                  <input
+                    type="text"
+                    value={customCareerInput}
+                    onChange={e => setCustomCareerInput(e.target.value)}
+                    placeholder="e.g. Game Engine Developer, Blockchain Architect..."
                     style={{
-                      padding: "16px 36px", borderRadius: 18, border: "none",
-                      background: "linear-gradient(135deg, #6c63ff, #00c9a7)", color: "#ffffff",
-                      fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800,
-                      cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 10,
-                      boxShadow: "0 8px 24px rgba(108,99,255,0.35)"
+                      flex: 1, minWidth: 260, padding: "14px 18px", borderRadius: 14,
+                      background: "var(--bg-alt)", border: "1.5px solid var(--border-light)",
+                      fontSize: 15, color: "var(--text-main)", outline: "none"
+                    }}
+                  />
+                  <button
+                    onClick={() => handleLaunchPath("custom")}
+                    disabled={!customCareerInput.trim()}
+                    style={{
+                      padding: "14px 28px", borderRadius: 14, border: "none",
+                      background: customCareerInput.trim() ? "linear-gradient(135deg, #6c63ff, #00c9a7)" : "var(--bg-alt)",
+                      color: customCareerInput.trim() ? "#fff" : "var(--text-muted)",
+                      fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800,
+                      cursor: customCareerInput.trim() ? "pointer" : "not-allowed"
                     }}
                   >
-                    Confirm Career Matches & Proceed to Stage 3 <ArrowRight size={18} />
+                    Select Custom Path →
                   </button>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </div>
+            </div>
 
-        </div>
+            {/* Recalibrate Link */}
+            <div style={{ textAlign: "center", marginBottom: 40 }}>
+              <button
+                onClick={() => setPhase(1)}
+                style={{
+                  background: "none", border: "none", color: "#6c63ff",
+                  fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800,
+                  cursor: "pointer", textDecoration: "underline"
+                }}
+              >
+                ← None of these fit? Recalibrate my AI profile questions
+              </button>
+            </div>
+          </motion.div>
+        )}
+
       </main>
 
-      {/* CLEAN PROFILE SYNCHRONIZATION BOTTOM BAR (NO PREFILLED SNAPSHOT DRAWER) */}
+      {/* CLEAN PROFILE SYNCHRONIZATION BOTTOM BAR */}
       <div style={{
         position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 90,
         background: "var(--bg-card)", borderTop: "1.5px solid var(--border-light)",
@@ -932,14 +1024,209 @@ export default function OnboardingStage2() {
         </div>
       </div>
 
-      {/* Stage Transition Celebration Loading Overlay */}
+      {/* AI ANALYSIS LOADING OVERLAY */}
+      <AnimatePresence>
+        {isAnalyzing && (
+          <div style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              style={{ position: "absolute", inset: 0, background: "rgba(10, 10, 20, 0.88)", backdropFilter: "blur(20px)" }}
+            />
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.85, opacity: 0 }}
+              style={{
+                position: "relative", zIndex: 10, background: "var(--bg-card)",
+                border: "2px solid #6c63ff", borderRadius: 28, padding: "40px 36px",
+                textAlign: "center", maxWidth: 480, width: "100%", boxShadow: "0 25px 60px rgba(108,99,255,0.3)"
+              }}
+            >
+              <div style={{ width: 70, height: 70, borderRadius: "50%", background: "linear-gradient(135deg, #6c63ff, #00c9a7)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 32, margin: "0 auto 20px" }}>
+                🤖
+              </div>
+              <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 800, color: "var(--text-main)", margin: "0 0 10px" }}>
+                Analyzing Professional DNA
+              </h3>
+              <p style={{ fontSize: 14, color: "#6c63ff", fontFamily: "'Fira Code', monospace", fontWeight: 700, margin: "0 0 20px" }}>
+                {analysisSteps[analysisTextIndex]}
+              </p>
+              <div style={{ height: 6, borderRadius: 3, background: "var(--bg-alt)", overflow: "hidden" }}>
+                <motion.div
+                  initial={{ width: "0%" }}
+                  animate={{ width: "100%" }}
+                  transition={{ duration: 2.2, ease: "easeInOut" }}
+                  style={{ height: "100%", background: "linear-gradient(90deg, #6c63ff, #00c9a7)" }}
+                />
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* LAUNCHING JOURNEY ANIMATION OVERLAY */}
       <StageTransitionOverlay
-        isOpen={isTransitioning}
-        currentStageTitle="Stage 2: Career Ambition & Target Roles"
-        nextStageTitle="Stage 3: Public Identity & Projects"
+        isOpen={isLaunching}
+        currentStageTitle={`Selected Target Path: ${selectedCareerTitle}`}
+        nextStageTitle="Launching Custom 4-Year PathEd Roadmap Journey"
         roleColor="#00c9a7"
       />
 
     </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════
+   CAREER CARD ITEM COMPONENT WITH ANIMATED COMPATIBILITY GAUGE
+════════════════════════════════════════════════════════════ */
+function CareerCardItem({ career, index, selected, onSelect }) {
+  const [animatedScore, setAnimatedScore] = useState(0);
+  
+  const circumference = 2 * Math.PI * 48; // Radius = 48
+  const strokeDashoffset = circumference - (circumference * animatedScore) / 100;
+
+  // Animate score from 0 up to target score (e.g. 94%)
+  useEffect(() => {
+    let current = 0;
+    const interval = setInterval(() => {
+      current += 2;
+      if (current >= career.score) {
+        setAnimatedScore(career.score);
+        clearInterval(interval);
+      } else {
+        setAnimatedScore(current);
+      }
+    }, 20);
+    return () => clearInterval(interval);
+  }, [career.score]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.08 }}
+      style={{
+        background: "var(--bg-card)",
+        border: `1.5px solid ${selected ? career.accent : "var(--border-light)"}`,
+        borderRadius: 24,
+        padding: 28,
+        position: "relative",
+        boxShadow: selected ? `0 15px 40px ${career.accent}25` : "0 8px 24px rgba(0,0,0,0.03)"
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 24, flexWrap: "wrap" }}>
+        
+        {/* LEFT CONTENT */}
+        <div style={{ flex: 1, minWidth: 260 }}>
+          {/* Header Title + Badges */}
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 14 }}>
+            <div style={{ width: 48, height: 48, borderRadius: 14, background: `${career.accent}15`, border: `1.5px solid ${career.accent}30`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>
+              {career.icon}
+            </div>
+            <div>
+              <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 22, fontWeight: 800, color: "var(--text-main)", margin: "0 0 6px" }}>
+                {career.title}
+              </h3>
+              
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                <span style={{ padding: "3px 10px", borderRadius: 12, background: career.diffBg, border: `1px solid ${career.diffCol}40`, color: career.diffCol, fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 700 }}>
+                  {career.difficulty}
+                </span>
+                <span style={{ padding: "3px 10px", borderRadius: 12, background: career.demandBg, border: `1px solid ${career.demandCol}40`, color: career.demandCol, fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 700 }}>
+                  {career.demand}
+                </span>
+                <span style={{ padding: "3px 10px", borderRadius: 12, background: "rgba(108,99,255,0.12)", border: "1px solid #6c63ff40", color: "#6c63ff", fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 700 }}>
+                  CRI: {career.cri}%
+                </span>
+                {career.rank === 1 && (
+                  <span style={{ padding: "3px 10px", borderRadius: 12, background: "rgba(247,151,30,0.12)", border: "1px solid #f7971e40", color: "#f7971e", fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 800 }}>
+                    ⭐ Top Match
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Brief Description */}
+          <p style={{ fontSize: 14, color: "var(--text-muted)", lineHeight: 1.6, margin: "0 0 16px" }}>
+            {career.brief}
+          </p>
+
+          {/* Skills Chips */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+            {career.skills.map(s => (
+              <span key={s} style={{ padding: "5px 12px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700, color: "#6c63ff" }}>
+                ⬡ {s}
+              </span>
+            ))}
+          </div>
+
+          {/* AI Match Reason Banner */}
+          <div style={{ padding: "8px 14px", borderRadius: 12, background: "rgba(108,99,255,0.08)", border: "1px solid #6c63ff30", display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            <span style={{ fontSize: 14 }}>🤖</span>
+            <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 11.5, fontWeight: 700, color: "#6c63ff" }}>
+              {career.why}
+            </span>
+          </div>
+
+          {/* Sector & Verified Label */}
+          <div style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
+            🏢 Top sector: <span style={{ color: "var(--text-main)", fontWeight: 700 }}>{career.sector}</span> &nbsp;·&nbsp; 🧑‍🏫 <span style={{ color: "#00c9a7", fontWeight: 700 }}>Teacher Verified</span>
+          </div>
+        </div>
+
+        {/* RIGHT SIDE: ANIMATED CIRCULAR GAUGE (STARTS FROM 0%) */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0, minWidth: 120 }}>
+          <div style={{ position: "relative", width: 110, height: 110, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width="110" height="110" viewBox="0 0 110 110">
+              <circle cx="55" cy="55" r="48" fill="none" stroke="var(--bg-alt)" strokeWidth="8" />
+              <circle
+                cx="55"
+                cy="55"
+                r="48"
+                fill="none"
+                stroke={career.accent}
+                strokeWidth="8"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                transform="rotate(-90 55 55)"
+                style={{ transition: "stroke-dashoffset 0.1s linear" }}
+              />
+            </svg>
+            <div style={{ position: "absolute", textAlign: "center" }}>
+              <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 22, fontWeight: 900, color: "var(--text-main)", lineHeight: 1 }}>
+                {animatedScore}%
+              </div>
+              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 8, fontWeight: 800, color: career.accent, letterSpacing: 1, marginTop: 2 }}>
+                MATCH
+              </div>
+            </div>
+          </div>
+          <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700, color: "var(--text-muted)", marginTop: 6 }}>
+            #{career.rank} PICK
+          </div>
+        </div>
+
+      </div>
+
+      {/* ACTION SELECT BUTTON */}
+      <button
+        onClick={() => onSelect(career.title)}
+        style={{
+          width: "100%", padding: "14px", borderRadius: 14,
+          border: `1.5px solid ${selected ? "#00c9a7" : career.accent}`,
+          background: selected ? "linear-gradient(135deg, #00c9a7, #6c63ff)" : career.rank === 1 ? "rgba(0,201,167,0.12)" : "var(--bg-alt)",
+          color: selected ? "#ffffff" : career.accent,
+          fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800,
+          cursor: "pointer", transition: "all 0.2s", marginTop: 18,
+          boxShadow: selected ? "0 8px 24px rgba(0,201,167,0.3)" : "none"
+        }}
+      >
+        {selected ? "✓ Selected — Launching Your Journey..." : career.rank === 1 ? "⭐ Recommended — Select This Path" : "Select This Path →"}
+      </button>
+    </motion.div>
   );
 }
