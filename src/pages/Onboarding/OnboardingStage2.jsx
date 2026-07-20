@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import StageTransitionOverlay from "../../components/onboarding/StageTransitionOverlay";
+import OnboardingSnapshotDrawer from "../../components/onboarding/OnboardingSnapshotDrawer";
 import { 
-  Sun, Moon, Sparkles, CheckCircle2, ArrowRight, ArrowLeft, Rocket, 
-  Briefcase, Target, Zap, Shield, HelpCircle, Layers, Cpu, ChevronUp, ChevronDown, Plus 
+  Sun, Moon, Sparkles, ArrowRight, ArrowLeft, Rocket, 
+  Briefcase, Target, Zap, Layers, Cpu, Plus 
 } from "lucide-react";
 
 export default function OnboardingStage2() {
@@ -21,35 +22,54 @@ export default function OnboardingStage2() {
     document.documentElement.setAttribute("data-theme", nextTheme);
   };
 
-  // Stage 2 Form State
+  // Stage 2 Form State (ALL 12 QUESTIONS FROM REFERENCE)
+  // Q1: Tech Domains
   const [domains, setDomains] = useState(["Software Dev", "AI / ML"]);
+  const [customDomain, setCustomDomain] = useState("");
+  const [showCustomDomain, setShowCustomDomain] = useState(false);
+
+  // Q2: Industry Focus
   const [industry, setIndustry] = useState("Fintech");
   const [customIndustry, setCustomIndustry] = useState("");
   const [showCustomIndustry, setShowCustomIndustry] = useState(false);
 
+  // Q3: Builder Archetype (Displayed in a Single Row)
   const [passion, setPassion] = useState("build");
-  const [pstyle, setPstyle] = useState("The Architect");
+
+  // Q4: Work Environment Preference Slider
   const [envSlider, setEnvSlider] = useState(50);
+
+  // Q5: Problem Solving Style
+  const [pstyle, setPstyle] = useState("The Architect");
+
+  // Q6: Salary vs Social Impact Priority Slider
   const [impactSlider, setImpactSlider] = useState(50);
-  
+
+  // Q7: Risk Appetite
   const [risk, setRisk] = useState("🚀 Aggressive");
   const [customRisk, setCustomRisk] = useState("");
   const [showCustomRisk, setShowCustomRisk] = useState(false);
 
+  // Q8: Favorite Tools Tag Input
+  const [tags, setTags] = useState(["React", "Python", "SQL"]);
+  const [tagInput, setTagInput] = useState("");
+
+  // Q9: Dream Company Type
   const [company, setCompany] = useState("🦄 Unicorn Startups");
   const [customCompany, setCustomCompany] = useState("");
   const [showCustomCompany, setShowCustomCompany] = useState(false);
 
+  // Q10: Long-Term Career Vision
   const [vision, setVision] = useState("🧑‍💻 Technical Expert");
-  const [puzzle, setPuzzle] = useState("Logic Bug");
-  const [invent, setInvent] = useState("💡 Create Something New");
 
-  const [tags, setTags] = useState(["React", "Python", "SQL"]);
-  const [tagInput, setTagInput] = useState("");
+  // Q11: Cognitive Challenge Preference
+  const [puzzle, setPuzzle] = useState("Logic Bug");
+
+  // Q12: Invention vs Optimization
+  const [invent, setInvent] = useState("💡 Create Something New");
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedCareerMatch, setSelectedCareerMatch] = useState(null);
-  const [isSnapshotExpanded, setIsSnapshotExpanded] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   const stages = [
@@ -75,16 +95,42 @@ export default function OnboardingStage2() {
     "📚 EdTech", "🚀 Space-Tech", "🌱 Sustainability", "🛡️ Defence Tech"
   ];
 
+  const pstyleOptions = [
+    { key: "arch", icon: "🏛️", label: "The Architect", sub: "Plans structure first" },
+    { key: "fire", icon: "🔥", label: "The Firefighter", sub: "Fixes urgent bugs" },
+    { key: "res", icon: "🔬", label: "The Researcher", sub: "Deep dives into why" },
+    { key: "comm", icon: "🗣️", label: "The Communicator", sub: "Bridges tech & people" }
+  ];
+
   const companyOptions = [
     "🌐 FAANG / Big Tech", "🦄 Unicorn Startups", 
     "🏛️ Government / Public Sector", "💻 Freelancing / Self-Employed"
+  ];
+
+  const visionOptions = [
+    { label: "🧑‍💻 Technical Expert", sub: "Stay deep in code" },
+    { label: "📋 Management Track", sub: "Lead teams & product strategy" },
+    { label: "🚀 Entrepreneur / Founder", sub: "Start my own company" }
+  ];
+
+  const puzzleOptions = [
+    { key: "math", icon: "🔢", label: "Math Problem", sub: "Algorithmic logic" },
+    { key: "design", icon: "🎨", label: "Design Flaw", sub: "Visual intuition" },
+    { key: "bug", icon: "🐛", label: "Logic Bug", sub: "Code detective" },
+    { key: "system", icon: "🗂️", label: "System Chaos", sub: "Architecture fix" }
+  ];
+
+  const inventOptions = [
+    { label: "💡 Create Something New", sub: "Build product from zero" },
+    { label: "⚖️ Both Equally", sub: "Depends on project phase" },
+    { label: "⚡ Make Existing 10× Better", sub: "Optimization & refactoring" }
   ];
 
   const careerMatches = [
     {
       title: "Full-Stack Product Engineer",
       score: 95,
-      brief: "Own the full product lifecycle from architecture to pixel-perfect UI. The highest in-demand role for high-growth tech startups.",
+      brief: "Own the full product lifecycle from architecture to pixel-perfect UI. High demand across top tech startups.",
       skills: ["React", "Node.js", "TypeScript", "PostgreSQL", "System Design"],
       icon: "🏗️",
       accent: "#6c63ff"
@@ -92,7 +138,7 @@ export default function OnboardingStage2() {
     {
       title: "ML / AI Solutions Engineer",
       score: 91,
-      brief: "Build & deploy neural network models into real-world production systems. High impact at the intersection of algorithms & data.",
+      brief: "Deploy deep neural network models into scalable cloud microservices.",
       skills: ["Python", "TensorFlow", "PyTorch", "Data Pipelines", "MLOps"],
       icon: "🤖",
       accent: "#00c9a7"
@@ -100,7 +146,7 @@ export default function OnboardingStage2() {
     {
       title: "Application Security Specialist",
       score: 87,
-      brief: "Identify vulnerabilities, audit codebases, and secure cloud microservices against real-world threat actors.",
+      brief: "Audit codebases, conduct penetration testing, and protect cloud infrastructure.",
       skills: ["Penetration Testing", "OWASP", "Secure Coding", "Linux", "Python"],
       icon: "🔐",
       accent: "#f7971e"
@@ -109,6 +155,14 @@ export default function OnboardingStage2() {
 
   const toggleDomain = (lbl) => {
     setDomains(prev => prev.includes(lbl) ? prev.filter(x => x !== lbl) : [...prev, lbl]);
+  };
+
+  const handleAddCustomDomain = () => {
+    if (customDomain.trim()) {
+      setDomains([...domains, customDomain.trim()]);
+      setCustomDomain("");
+      setShowCustomDomain(false);
+    }
   };
 
   const handleAddTag = (e) => {
@@ -136,6 +190,33 @@ export default function OnboardingStage2() {
       navigate("/platform");
     }, 2200);
   };
+
+  // Calculate completion percentage
+  const answeredCount = [
+    domains.length > 0, industry, passion, envSlider !== 50, pstyle, 
+    impactSlider !== 50, risk, tags.length > 0, company, vision, puzzle, invent
+  ].filter(Boolean).length;
+  const completionPct = Math.round((answeredCount / 12) * 100);
+
+  // Shared Snapshot Data
+  const snapshotTags = [
+    domains.length > 0 ? `⚙️ ${domains.slice(0, 2).join(", ")}` : null,
+    industry ? `💼 ${industry}` : null,
+    pstyle ? `🧭 ${pstyle}` : null,
+    risk ? `🚀 ${risk}` : null,
+    company ? `🏛️ ${company}` : null,
+  ].filter(Boolean);
+
+  const expandedData = [
+    { label: "TARGET TECH DOMAINS", value: domains.join(", ") || "None selected" },
+    { label: "PREFERRED INDUSTRY", value: industry || "Not selected" },
+    { label: "BUILDER ARCHETYPE", value: passion === "build" ? "The Builder 🏗️" : passion === "fix" ? "The Firefighter 🔥" : passion === "analyze" ? "The Researcher 🔭" : "The Designer ✨" },
+    { label: "WORKING STYLE", value: pstyle || "Not selected" },
+    { label: "FAVORITE TOOLS", value: tags.join(", ") || "None" },
+    { label: "RISK & COMPANY TYPE", value: `${risk} · ${company}` },
+    { label: "CAREER VISION", value: vision || "Not selected" },
+    { label: "INVENTION PREFERENCE", value: invent || "Not selected" },
+  ];
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg-main)", color: "var(--text-main)", fontFamily: "'Inter', sans-serif", paddingBottom: 140 }}>
@@ -215,25 +296,25 @@ export default function OnboardingStage2() {
             Define Your <span style={{ background: "linear-gradient(135deg, #6c63ff, #00c9a7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Professional Career DNA</span>
           </h1>
           <p style={{ fontSize: 16, color: "var(--text-muted)", maxWidth: 580, margin: "0 auto", lineHeight: 1.5 }}>
-            Tell us what technical domains, engineering roles, and company cultures excite you most.
+            Complete all 12 career profiling questions below so PathEd AI can generate your 4-year SDE roadmap.
           </p>
         </div>
 
         {/* QUESTIONS CONTAINER */}
         <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
           
-          {/* SECTION 1: TECHNICAL DOMAIN & INDUSTRY */}
+          {/* CARD 1: TECHNICAL DOMAINS & INDUSTRY */}
           <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
             
-            {/* Tech Domains Selection */}
+            {/* Q1: Tech Domains + Custom Option */}
             <div style={{ marginBottom: 32 }}>
               <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
-                <Cpu size={18} color="#6c63ff" /> Q1. Which technical domains spark your curiosity?
+                <Cpu size={18} color="#6c63ff" /> Q1. Which tech domains spark your curiosity?
               </label>
               <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "0 0 14px" }}>
                 Select all that resonate — this seeds your roadmap node graph.
               </p>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 14 }}>
                 {domainOptions.map(d => {
                   const isSelected = domains.includes(d.label);
                   return (
@@ -255,9 +336,51 @@ export default function OnboardingStage2() {
                   );
                 })}
               </div>
+
+              {/* Plus Custom Domain Button */}
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                <button
+                  type="button"
+                  onClick={() => setShowCustomDomain(!showCustomDomain)}
+                  style={{
+                    padding: "10px 18px", borderRadius: 14,
+                    border: "1.5px dashed #6c63ff", background: "rgba(108,99,255,0.08)",
+                    color: "#6c63ff", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
+                    cursor: "pointer", display: "flex", alignItems: "center", gap: 6
+                  }}
+                >
+                  <Plus size={16} /> Add Custom Domain
+                </button>
+              </div>
+
+              {showCustomDomain && (
+                <div style={{ marginTop: 12, display: "flex", gap: 10, maxWidth: 420 }}>
+                  <input
+                    type="text"
+                    value={customDomain}
+                    onChange={e => setCustomDomain(e.target.value)}
+                    placeholder="Type custom domain (e.g. Quantum Computing)..."
+                    style={{
+                      flex: 1, padding: "12px 16px", borderRadius: 14,
+                      background: "var(--bg-alt)", border: "1.5px solid #6c63ff",
+                      fontSize: 14, color: "var(--text-main)", outline: "none"
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddCustomDomain}
+                    style={{
+                      padding: "12px 20px", borderRadius: 14, background: "#6c63ff", color: "#fff",
+                      border: "none", fontWeight: 800, cursor: "pointer"
+                    }}
+                  >
+                    Add
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* Industry Focus + Custom Option */}
+            {/* Q2: Industry Focus + Custom Option */}
             <div>
               <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
                 <Briefcase size={18} color="#00c9a7" /> Q2. Which industry excites you most?
@@ -287,14 +410,13 @@ export default function OnboardingStage2() {
                   );
                 })}
 
-                {/* Plus Custom Option Button */}
                 <button
                   type="button"
                   onClick={() => setShowCustomIndustry(!showCustomIndustry)}
                   style={{
                     padding: "10px 18px", borderRadius: 14,
-                    border: "1.5px dashed #6c63ff", background: "rgba(108,99,255,0.08)",
-                    color: "#6c63ff", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
+                    border: "1.5px dashed #00c9a7", background: "rgba(0,201,167,0.08)",
+                    color: "#00c9a7", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
                     cursor: "pointer", display: "flex", alignItems: "center", gap: 6
                   }}
                 >
@@ -302,17 +424,16 @@ export default function OnboardingStage2() {
                 </button>
               </div>
 
-              {/* Custom Write-In Input Field */}
               {showCustomIndustry && (
                 <div style={{ marginTop: 10 }}>
                   <input
                     type="text"
                     value={customIndustry}
                     onChange={e => { setCustomIndustry(e.target.value); setIndustry(`✨ ${e.target.value}`); }}
-                    placeholder="Type custom industry (e.g. Bio-Informatics, Climate Tech)..."
+                    placeholder="Type custom industry (e.g. Bio-Informatics)..."
                     style={{
                       width: "100%", maxWidth: 420, padding: "12px 16px", borderRadius: 14,
-                      background: "var(--bg-alt)", border: "1.5px solid #6c63ff",
+                      background: "var(--bg-alt)", border: "1.5px solid #00c9a7",
                       fontSize: 14, color: "var(--text-main)", outline: "none"
                     }}
                   />
@@ -322,10 +443,10 @@ export default function OnboardingStage2() {
 
           </div>
 
-          {/* SECTION 2: WORK STYLE & IDEOLOGY */}
+          {/* CARD 2: BUILDER ARCHETYPE (SINGLE ROW LAYOUT) & WORKING STYLE */}
           <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
             
-            {/* Q3: Builder Archetype */}
+            {/* Q3: Builder Archetype (EXPLICIT SINGLE ROW LAYOUT) */}
             <div style={{ marginBottom: 32 }}>
               <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
                 <Target size={18} color="#f7971e" /> Q3. What kind of builder are you at heart?
@@ -333,12 +454,14 @@ export default function OnboardingStage2() {
               <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "0 0 14px" }}>
                 Determines your primary working archetype across career roadmaps.
               </p>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
+              
+              {/* SINGLE ROW FLEX CONTAINER */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, width: "100%" }}>
                 {[
-                  { key: "build", emoji: "🏗️", label: "The Builder", sub: "Loves writing logic from scratch" },
-                  { key: "fix", emoji: "🔥", label: "The Firefighter", sub: "Thrives fixing flaws & bugs" },
-                  { key: "analyze", emoji: "🔭", label: "The Researcher", sub: "Finds patterns in complex data" },
-                  { key: "design", emoji: "✨", label: "The Designer", sub: "Bridges code & user intuition" }
+                  { key: "build", emoji: "🏗️", label: "The Builder", sub: "Creates from scratch" },
+                  { key: "fix", emoji: "🔥", label: "The Firefighter", sub: "Finds & fixes flaws" },
+                  { key: "analyze", emoji: "🔭", label: "The Researcher", sub: "Analyzes patterns" },
+                  { key: "design", emoji: "✨", label: "The Designer", sub: "Crafts UX experience" }
                 ].map(item => {
                   const isSelected = passion === item.key;
                   return (
@@ -346,17 +469,17 @@ export default function OnboardingStage2() {
                       key={item.key}
                       onClick={() => setPassion(item.key)}
                       style={{
-                        padding: 18, borderRadius: 16,
+                        padding: 16, borderRadius: 16, textAlign: "center",
                         border: `1.5px solid ${isSelected ? "#f7971e" : "var(--border-light)"}`,
                         background: isSelected ? "rgba(247,151,30,0.12)" : "var(--bg-alt)",
                         cursor: "pointer", transition: "all 0.2s"
                       }}
                     >
-                      <div style={{ fontSize: 26, marginBottom: 8 }}>{item.emoji}</div>
-                      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800, color: isSelected ? "#f7971e" : "var(--text-main)" }}>
+                      <div style={{ fontSize: 28, marginBottom: 6 }}>{item.emoji}</div>
+                      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isSelected ? "#f7971e" : "var(--text-main)" }}>
                         {item.label}
                       </div>
-                      <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>{item.sub}</div>
+                      <div style={{ fontSize: 11.5, color: "var(--text-muted)", marginTop: 2, lineHeight: 1.3 }}>{item.sub}</div>
                     </div>
                   );
                 })}
@@ -382,16 +505,128 @@ export default function OnboardingStage2() {
               />
             </div>
 
-            {/* Q5: Favorite Tools & Technologies Tag Input */}
+            {/* Q5: Problem Solving Style */}
             <div>
               <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
-                <Zap size={18} color="#6c63ff" /> Q5. Favorite tools & technologies so far?
+                <Cpu size={18} color="#6c63ff" /> Q5. Problem-Solving Style
+              </label>
+              <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "0 0 14px" }}>
+                Your natural working identity when facing engineering challenges in a team.
+              </p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+                {pstyleOptions.map(s => {
+                  const isSelected = pstyle === s.label;
+                  return (
+                    <div
+                      key={s.key}
+                      onClick={() => setPstyle(s.label)}
+                      style={{
+                        padding: 16, borderRadius: 16,
+                        border: `1.5px solid ${isSelected ? "#6c63ff" : "var(--border-light)"}`,
+                        background: isSelected ? "rgba(108,99,255,0.12)" : "var(--bg-alt)",
+                        cursor: "pointer", transition: "all 0.2s"
+                      }}
+                    >
+                      <div style={{ fontSize: 24, marginBottom: 6 }}>{s.icon}</div>
+                      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isSelected ? "#6c63ff" : "var(--text-main)" }}>
+                        {s.label}
+                      </div>
+                      <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{s.sub}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+          </div>
+
+          {/* CARD 3: SALARY, RISK & FAVORITE TOOLS */}
+          <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
+            
+            {/* Q6: Salary vs Social Impact Priority */}
+            <div style={{ marginBottom: 32 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
+                <Rocket size={18} color="#f7971e" /> Q6. Salary vs. Social Impact Priority
+              </label>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 12, fontFamily: "'Fira Code', monospace", fontWeight: 700 }}>
+                <span style={{ color: "#f7971e" }}>💰 High Salary Package</span>
+                <span style={{ color: "#00c9a7" }}>🌍 Social Impact & Mission</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={impactSlider}
+                onChange={e => setImpactSlider(parseInt(e.target.value))}
+                style={{ width: "100%", height: 8, borderRadius: 4, accentColor: "#f7971e", cursor: "pointer" }}
+              />
+            </div>
+
+            {/* Q7: Risk Appetite + Custom Option */}
+            <div style={{ marginBottom: 32 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
+                <Briefcase size={18} color="#00c9a7" /> Q7. Risk Appetite
+              </label>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 10 }}>
+                {["🛡️ Conservative", "⚖️ Moderate", "🚀 Aggressive"].map(r => {
+                  const isSelected = risk === r;
+                  return (
+                    <button
+                      type="button"
+                      key={r}
+                      onClick={() => { setRisk(r); setShowCustomRisk(false); }}
+                      style={{
+                        padding: "10px 20px", borderRadius: 14,
+                        border: `1.5px solid ${isSelected ? "#00c9a7" : "var(--border-light)"}`,
+                        background: isSelected ? "rgba(0,201,167,0.12)" : "var(--bg-alt)",
+                        color: isSelected ? "#00c9a7" : "var(--text-main)",
+                        fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: isSelected ? 800 : 600,
+                        cursor: "pointer", transition: "all 0.2s"
+                      }}
+                    >
+                      {r}
+                    </button>
+                  );
+                })}
+
+                <button
+                  type="button"
+                  onClick={() => setShowCustomRisk(!showCustomRisk)}
+                  style={{
+                    padding: "10px 18px", borderRadius: 14,
+                    border: "1.5px dashed #00c9a7", background: "rgba(0,201,167,0.08)",
+                    color: "#00c9a7", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
+                    cursor: "pointer", display: "flex", alignItems: "center", gap: 6
+                  }}
+                >
+                  <Plus size={16} /> Add Custom Risk
+                </button>
+              </div>
+
+              {showCustomRisk && (
+                <input
+                  type="text"
+                  value={customRisk}
+                  onChange={e => { setCustomRisk(e.target.value); setRisk(`⚡ ${e.target.value}`); }}
+                  placeholder="Type custom risk preference..."
+                  style={{
+                    width: "100%", maxWidth: 360, padding: "12px 16px", borderRadius: 14,
+                    background: "var(--bg-alt)", border: "1.5px solid #00c9a7",
+                    fontSize: 14, color: "var(--text-main)", outline: "none", marginTop: 8
+                  }}
+                />
+              )}
+            </div>
+
+            {/* Q8: Favorite Tools & Tech Tag Input */}
+            <div>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
+                <Zap size={18} color="#6c63ff" /> Q8. Favorite tools & technologies so far?
               </label>
               <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "0 0 12px" }}>
-                Type tools you enjoy (e.g. React, Python, Docker) and press ENTER.
+                Type tools you enjoy (e.g. React, Python, Docker) and press ENTER to add.
               </p>
 
-              {/* Tags Display */}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
                 {tags.map(t => (
                   <span
@@ -420,6 +655,158 @@ export default function OnboardingStage2() {
                   fontSize: 14, color: "var(--text-main)", outline: "none"
                 }}
               />
+            </div>
+
+          </div>
+
+          {/* CARD 4: COMPANY TYPE, VISION & AI JUDGMENT */}
+          <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
+            
+            {/* Q9: Dream Company Type + Custom Option */}
+            <div style={{ marginBottom: 32 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
+                <Layers size={18} color="#e040fb" /> Q9. Dream Company Type?
+              </label>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 10 }}>
+                {companyOptions.map(c => {
+                  const isSelected = company === c;
+                  return (
+                    <button
+                      type="button"
+                      key={c}
+                      onClick={() => { setCompany(c); setShowCustomCompany(false); }}
+                      style={{
+                        padding: "10px 18px", borderRadius: 14,
+                        border: `1.5px solid ${isSelected ? "#e040fb" : "var(--border-light)"}`,
+                        background: isSelected ? "rgba(224,64,251,0.12)" : "var(--bg-alt)",
+                        color: isSelected ? "#e040fb" : "var(--text-main)",
+                        fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: isSelected ? 800 : 600,
+                        cursor: "pointer", transition: "all 0.2s"
+                      }}
+                    >
+                      {c}
+                    </button>
+                  );
+                })}
+
+                <button
+                  type="button"
+                  onClick={() => setShowCustomCompany(!showCustomCompany)}
+                  style={{
+                    padding: "10px 18px", borderRadius: 14,
+                    border: "1.5px dashed #e040fb", background: "rgba(224,64,251,0.08)",
+                    color: "#e040fb", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
+                    cursor: "pointer", display: "flex", alignItems: "center", gap: 6
+                  }}
+                >
+                  <Plus size={16} /> Add Custom Company Type
+                </button>
+              </div>
+
+              {showCustomCompany && (
+                <input
+                  type="text"
+                  value={customCompany}
+                  onChange={e => { setCustomCompany(e.target.value); setCompany(`✨ ${e.target.value}`); }}
+                  placeholder="Type custom company preference..."
+                  style={{
+                    width: "100%", maxWidth: 380, padding: "12px 16px", borderRadius: 14,
+                    background: "var(--bg-alt)", border: "1.5px solid #e040fb",
+                    fontSize: 14, color: "var(--text-main)", outline: "none", marginTop: 8
+                  }}
+                />
+              )}
+            </div>
+
+            {/* Q10: Long-Term Career Vision */}
+            <div style={{ marginBottom: 32 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
+                <Rocket size={18} color="#6c63ff" /> Q10. Long-Term Career Vision?
+              </label>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+                {visionOptions.map(v => {
+                  const isSelected = vision === v.label;
+                  return (
+                    <div
+                      key={v.label}
+                      onClick={() => setVision(v.label)}
+                      style={{
+                        padding: 16, borderRadius: 16,
+                        border: `1.5px solid ${isSelected ? "#6c63ff" : "var(--border-light)"}`,
+                        background: isSelected ? "rgba(108,99,255,0.12)" : "var(--bg-alt)",
+                        cursor: "pointer", transition: "all 0.2s"
+                      }}
+                    >
+                      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isSelected ? "#6c63ff" : "var(--text-main)" }}>
+                        {v.label}
+                      </div>
+                      <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{v.sub}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Q11: Cognitive Challenge Preference */}
+            <div style={{ marginBottom: 32 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
+                <Target size={18} color="#00c9a7" /> Q11. Which challenge would you pick first?
+              </label>
+              <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "0 0 12px" }}>
+                Cognitive pattern mapping question to fine-tune AI recommendations.
+              </p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+                {puzzleOptions.map(p => {
+                  const isSelected = puzzle === p.label;
+                  return (
+                    <div
+                      key={p.key}
+                      onClick={() => setPuzzle(p.label)}
+                      style={{
+                        padding: 16, borderRadius: 16,
+                        border: `1.5px solid ${isSelected ? "#00c9a7" : "var(--border-light)"}`,
+                        background: isSelected ? "rgba(0,201,167,0.12)" : "var(--bg-alt)",
+                        cursor: "pointer", transition: "all 0.2s"
+                      }}
+                    >
+                      <div style={{ fontSize: 24, marginBottom: 6 }}>{p.icon}</div>
+                      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isSelected ? "#00c9a7" : "var(--text-main)" }}>
+                        {p.label}
+                      </div>
+                      <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{p.sub}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Q12: Invention vs Optimization */}
+            <div>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
+                <Zap size={18} color="#f7971e" /> Q12. Invention vs. Optimization?
+              </label>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+                {inventOptions.map(o => {
+                  const isSelected = invent === o.label;
+                  return (
+                    <div
+                      key={o.label}
+                      onClick={() => setInvent(o.label)}
+                      style={{
+                        padding: 16, borderRadius: 16,
+                        border: `1.5px solid ${isSelected ? "#f7971e" : "var(--border-light)"}`,
+                        background: isSelected ? "rgba(247,151,30,0.12)" : "var(--bg-alt)",
+                        cursor: "pointer", transition: "all 0.2s"
+                      }}
+                    >
+                      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isSelected ? "#f7971e" : "var(--text-main)" }}>
+                        {o.label}
+                      </div>
+                      <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{o.sub}</div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
           </div>
@@ -511,66 +898,12 @@ export default function OnboardingStage2() {
         </div>
       </main>
 
-      {/* 4. EXPANDABLE LIVE SNAPSHOT DRAWER */}
-      <div style={{
-        position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 90,
-        background: "var(--bg-card)", borderTop: "1.5px solid var(--border-light)",
-        padding: "12px 32px", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
-        boxShadow: "0 -10px 30px rgba(0,0,0,0.06)"
-      }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-            <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 800, color: "#6c63ff", letterSpacing: 1 }}>
-              CAREER DNA SNAPSHOT:
-            </span>
-            {domains.length > 0 && <span style={{ padding: "4px 10px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700 }}>⚙️ {domains.join(", ")}</span>}
-            {industry && <span style={{ padding: "4px 10px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700 }}>💼 {industry}</span>}
-            {risk && <span style={{ padding: "4px 10px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700 }}>{risk}</span>}
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <button
-              onClick={() => setIsSnapshotExpanded(!isSnapshotExpanded)}
-              style={{
-                display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 12,
-                background: "var(--bg-alt)", border: "1px solid var(--border-light)", color: "#6c63ff",
-                fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 800, cursor: "pointer"
-              }}
-            >
-              {isSnapshotExpanded ? <>Collapse Snapshot <ChevronDown size={14} /></> : <>Expand Snapshot <ChevronUp size={14} /></>}
-            </button>
-          </div>
-        </div>
-
-        {/* Expandable Summary Grid */}
-        <AnimatePresence>
-          {isSnapshotExpanded && (
-            <motion.div
-              initial={{ height: 0, opacity: 0, marginTop: 0 }}
-              animate={{ height: "auto", opacity: 1, marginTop: 14 }}
-              exit={{ height: 0, opacity: 0, marginTop: 0 }}
-              style={{ overflow: "hidden", paddingTop: 12, borderTop: "1px solid var(--border-light)" }}
-            >
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
-                <div style={{ background: "var(--bg-alt)", padding: 12, borderRadius: 12, border: "1px solid var(--border-light)" }}>
-                  <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)" }}>DOMAINS</div>
-                  <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 800, color: "var(--text-main)", marginTop: 2 }}>{domains.join(", ") || "None"}</div>
-                </div>
-
-                <div style={{ background: "var(--bg-alt)", padding: 12, borderRadius: 12, border: "1px solid var(--border-light)" }}>
-                  <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)" }}>INDUSTRY & RISK</div>
-                  <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 800, color: "var(--text-main)", marginTop: 2 }}>{industry} · {risk}</div>
-                </div>
-
-                <div style={{ background: "var(--bg-alt)", padding: 12, borderRadius: 12, border: "1px solid var(--border-light)" }}>
-                  <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)" }}>FAVORITE TOOLS</div>
-                  <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 800, color: "#6c63ff", marginTop: 2 }}>{tags.join(", ") || "None"}</div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      {/* UNIFIED LIVE SNAPSHOT DRAWER */}
+      <OnboardingSnapshotDrawer
+        completionPct={completionPct}
+        tags={snapshotTags}
+        expandedData={expandedData}
+      />
 
       {/* Stage Transition Celebration Loading Overlay */}
       <StageTransitionOverlay

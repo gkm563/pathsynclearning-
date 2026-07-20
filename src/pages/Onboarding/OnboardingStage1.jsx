@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import StageTransitionOverlay from "../../components/onboarding/StageTransitionOverlay";
+import OnboardingSnapshotDrawer from "../../components/onboarding/OnboardingSnapshotDrawer";
 import { 
-  Sun, Moon, Sparkles, CheckCircle2, ArrowRight, GraduationCap, 
-  BookOpen, Code, Trophy, ShieldCheck, User, Building, Hash, Cpu, ChevronUp, ChevronDown 
+  Sun, Moon, Sparkles, ArrowRight, GraduationCap, 
+  BookOpen, Code, Trophy, ShieldCheck, User, Building, Hash, Cpu 
 } from "lucide-react";
 
 export default function OnboardingStage1() {
@@ -32,18 +33,13 @@ export default function OnboardingStage1() {
   
   // Academic DNA State
   const [subjectRatings, setSubjectRatings] = useState({
-    DSA: 3,
-    DBMS: 2,
-    OS: 2,
-    Networks: 1,
-    OOPs: 3
+    DSA: 3, DBMS: 2, OS: 2, Networks: 1, OOPs: 3
   });
   const [codingExp, setCodingExp] = useState("");
   const [primaryLang, setPrimaryLang] = useState("");
   const [academicGoal, setAcademicGoal] = useState("");
 
   const [validationError, setValidationError] = useState("");
-  const [isSnapshotExpanded, setIsSnapshotExpanded] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Calculate completion percentage
@@ -55,7 +51,7 @@ export default function OnboardingStage1() {
 
   const stages = [
     { num: 1, title: "Academic Foundation & DNA", status: "active" },
-    { num: 2, title: "Career Ambition & Roles", status: "pending" },
+    { num: 2, title: "Career Ambition & Target Roles", status: "pending" },
     { num: 3, title: "Public Identity & Projects", status: "pending" },
     { num: 4, title: "Roadmap Setup", status: "pending" },
   ];
@@ -77,6 +73,25 @@ export default function OnboardingStage1() {
       navigate("/onboarding/stage2");
     }, 2200);
   };
+
+  // Snapshot tags for drawer
+  const snapshotTags = [
+    fullName.trim() ? `👤 ${fullName}` : null,
+    university.trim() ? `🏫 ${university}` : null,
+    branch ? `💻 ${branch}` : null,
+    semester ? `📅 Sem ${semester}` : null,
+    cgpa.trim() ? `📊 CGPA ${cgpa}` : null,
+    primaryLang ? `⚡ ${primaryLang}` : null,
+  ].filter(Boolean);
+
+  const expandedData = [
+    { label: "FULL NAME", value: fullName || "Not entered" },
+    { label: "COLLEGE / UNIV", value: university || "Not entered", sub: rollNumber ? `Roll: ${rollNumber}` : null },
+    { label: "BRANCH & SEMESTER", value: branch ? `${branch} · Sem ${semester || "-"}` : "Not selected" },
+    { label: "CGPA & BOARD", value: cgpa ? `${cgpa} CGPA` : "Not entered", sub: board || null },
+    { label: "CODING BACKGROUND", value: codingExp || "Not selected", sub: primaryLang ? `Language: ${primaryLang}` : null },
+    { label: "ACADEMIC GOAL", value: academicGoal || "Not selected" },
+  ];
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg-main)", color: "var(--text-main)", fontFamily: "'Inter', sans-serif", paddingBottom: 140 }}>
@@ -102,7 +117,6 @@ export default function OnboardingStage1() {
             <Sparkles size={14} /> STAGE 1 OF 4 ONBOARDING
           </div>
 
-          {/* DYNAMIC LIGHT & DARK MODE THEME TOGGLE */}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -358,7 +372,7 @@ export default function OnboardingStage1() {
 
           </div>
 
-          {/* ACADEMIC DNA & CODING EXPERIENCE QUESTIONS */}
+          {/* ACADEMIC DNA QUESTIONS */}
           <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
             
             {/* Q8: Core CS Subjects Proficiency Ratings */}
@@ -470,7 +484,7 @@ export default function OnboardingStage1() {
               </div>
             </div>
 
-            {/* Q11: Primary Academic & Career Goal */}
+            {/* Q11: Primary Academic Goal */}
             <div>
               <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
                 <Trophy size={18} color="#e040fb" /> Q11. Primary Goal for this Academic Year
@@ -535,80 +549,12 @@ export default function OnboardingStage1() {
         </form>
       </main>
 
-      {/* 4. EXPANDABLE LIVE STICKY BOTTOM SNAPSHOT DRAWER */}
-      <div style={{
-        position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 90,
-        background: "var(--bg-card)", borderTop: "1.5px solid var(--border-light)",
-        padding: "12px 32px", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
-        boxShadow: "0 -10px 30px rgba(0,0,0,0.06)"
-      }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-            <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 800, color: "#6c63ff", letterSpacing: 1 }}>
-              LIVE SNAPSHOT:
-            </span>
-            {fullName.trim() && <span style={{ padding: "4px 10px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700 }}>👤 {fullName}</span>}
-            {university.trim() && <span style={{ padding: "4px 10px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700 }}>🏫 {university}</span>}
-            {branch && <span style={{ padding: "4px 10px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700 }}>💻 {branch}</span>}
-            {semester && <span style={{ padding: "4px 10px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700 }}>📅 Sem {semester}</span>}
-            {cgpa.trim() && <span style={{ padding: "4px 10px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12, fontWeight: 700 }}>📊 CGPA {cgpa}</span>}
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, color: "#00c9a7" }}>
-              {completionPct}% FILLED
-            </div>
-
-            <button
-              onClick={() => setIsSnapshotExpanded(!isSnapshotExpanded)}
-              style={{
-                display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 12,
-                background: "var(--bg-alt)", border: "1px solid var(--border-light)", color: "#6c63ff",
-                fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 800, cursor: "pointer"
-              }}
-            >
-              {isSnapshotExpanded ? <>Collapse Snapshot <ChevronDown size={14} /></> : <>Expand Snapshot <ChevronUp size={14} /></>}
-            </button>
-          </div>
-        </div>
-
-        {/* Expandable Summary Grid */}
-        <AnimatePresence>
-          {isSnapshotExpanded && (
-            <motion.div
-              initial={{ height: 0, opacity: 0, marginTop: 0 }}
-              animate={{ height: "auto", opacity: 1, marginTop: 14 }}
-              exit={{ height: 0, opacity: 0, marginTop: 0 }}
-              style={{ overflow: "hidden", paddingTop: 12, borderTop: "1px solid var(--border-light)" }}
-            >
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
-                <div style={{ background: "var(--bg-alt)", padding: 12, borderRadius: 12, border: "1px solid var(--border-light)" }}>
-                  <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)" }}>STUDENT IDENTITY</div>
-                  <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 800, color: "var(--text-main)", marginTop: 2 }}>{fullName || "Not provided"}</div>
-                  <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{university || "No college set"} ({rollNumber || "No Roll"})</div>
-                </div>
-
-                <div style={{ background: "var(--bg-alt)", padding: 12, borderRadius: 12, border: "1px solid var(--border-light)" }}>
-                  <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)" }}>ACADEMICS</div>
-                  <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 800, color: "var(--text-main)", marginTop: 2 }}>{branch || "Branch TBD"} · Sem {semester || "-"}</div>
-                  <div style={{ fontSize: 11, color: "var(--text-muted)" }}>CGPA: {cgpa || "N/A"} · Board: {board || "N/A"}</div>
-                </div>
-
-                <div style={{ background: "var(--bg-alt)", padding: 12, borderRadius: 12, border: "1px solid var(--border-light)" }}>
-                  <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)" }}>CODING DNA</div>
-                  <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 800, color: "var(--text-main)", marginTop: 2 }}>Lang: {primaryLang || "TBD"}</div>
-                  <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Exp: {codingExp || "Unselected"}</div>
-                </div>
-
-                <div style={{ background: "var(--bg-alt)", padding: 12, borderRadius: 12, border: "1px solid var(--border-light)" }}>
-                  <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: "var(--text-muted)" }}>YEAR GOAL</div>
-                  <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 700, color: "#6c63ff", marginTop: 2, lineHeight: 1.3 }}>{academicGoal || "Goal TBD"}</div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      {/* UNIFIED LIVE SNAPSHOT DRAWER */}
+      <OnboardingSnapshotDrawer
+        completionPct={completionPct}
+        tags={snapshotTags}
+        expandedData={expandedData}
+      />
 
       {/* Stage Transition Celebration Loading Overlay */}
       <StageTransitionOverlay
