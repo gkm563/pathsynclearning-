@@ -12,7 +12,7 @@ export default function WhyPathEd() {
           <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(24px,3vw,42px)", fontWeight: 800, lineHeight: 1.15, marginBottom: 16, color: "var(--text-main)" }}>
             One platform.<br/><span style={{ color: "#6c63ff" }}>Infinite directions.</span>
           </h2>
-          <p style={{ color: "#777", fontSize: 17, lineHeight: 1.8, maxWidth: 440, marginBottom: 24, fontFamily: "'Inter', sans-serif" }}>
+          <p style={{ color: "var(--text-muted)", fontSize: 17, lineHeight: 1.8, maxWidth: 440, marginBottom: 24, fontFamily: "'Inter', sans-serif" }}>
             The only platform that simultaneously optimizes your CGPA and Career Readiness Index. No compromises.
           </p>
           
@@ -69,7 +69,7 @@ export default function WhyPathEd() {
               { h: "Meta open-sources new LLaMA 4 architecture", tag: "ML roadmap refreshed", c: "#9c27b0", bg: "#fdf0ff", bdr: "#e8b3ff", t: "1d ago" }
             ].map((n, i) => (
               <div key={i} style={{ padding: "14px 0", borderBottom: i < 2 ? "1px solid #f0f2ff" : "none", cursor: "pointer", transition: "transform .2s ease" }} onMouseEnter={e => e.currentTarget.style.transform = "translateX(4px)"} onMouseLeave={e => e.currentTarget.style.transform = ""}>
-                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: "#333", marginBottom: 6, fontWeight: 500 }}>{n.h}</div>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: "var(--text-muted)", marginBottom: 6, fontWeight: 500 }}>{n.h}</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <Chip bg={n.bg} border={n.bdr} color={n.c}>↳ {n.tag}</Chip>
                   <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, color: "#bbb", fontWeight: 600 }}>{n.t}</span>

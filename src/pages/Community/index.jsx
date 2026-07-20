@@ -131,7 +131,7 @@ export default function Community() {
       </section>
 
       {/* 6. Collaborative Open Source */}
-      <section style={{ padding: "100px 32px", background: "#f8f9ff" }}>
+      <section style={{ padding: "100px 32px", background: "var(--bg-alt)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", textAlign: "center" }}>
           <motion.div {...fadeInUp}>
             <Chip bg="#e6f4ff" border="var(--border-strong)" color="#1677ff">▸ OPEN ECOSYSTEM</Chip>

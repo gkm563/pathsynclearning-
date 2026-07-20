@@ -50,7 +50,7 @@ export default function FAQ() {
                 key={i} 
                 onClick={() => setOpenIdx(isOpen ? -1 : i)}
                 style={{ 
-                  background: isOpen ? "var(--bg-card)" : "#f8f9ff", 
+                  background: isOpen ? "var(--bg-card)" : "var(--bg-alt)", 
                   border: `1px solid ${isOpen ? "#6c63ff" : "var(--border-light)"}`, 
                   borderRadius: "16px", padding: "24px", cursor: "pointer",
                   transition: "all 0.3s ease",

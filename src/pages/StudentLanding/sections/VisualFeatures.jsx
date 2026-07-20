@@ -57,7 +57,7 @@ export default function VisualFeatures() {
             <HoverCard 
               key={i}
               style={{
-                background: "#f8f9ff", borderRadius: "24px", padding: "12px",
+                background: "var(--bg-alt)", borderRadius: "24px", padding: "12px",
                 border: "1px solid var(--border-light)", boxShadow: "0 10px 30px rgba(0,0,0,0.03)",
                 cursor: "pointer", display: "flex", flexDirection: "column"
               }}

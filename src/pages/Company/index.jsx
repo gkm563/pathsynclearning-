@@ -114,7 +114,7 @@ export default function Company() {
       </section>
 
       {/* 4. Our Origin Story */}
-      <section style={{ padding: "100px 32px", background: "#f8f9ff" }}>
+      <section style={{ padding: "100px 32px", background: "var(--bg-alt)" }}>
         <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap-reverse" }}>
           <motion.div {...fadeInUp} style={{ flex: "1 1 600px" }}>
             <HoverCard style={{ height: 400, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.08)", border: "1px solid var(--border-light)" }}>
@@ -226,7 +226,7 @@ export default function Company() {
       />
 
       {/* Contact Section */}
-      <section id="contact" style={{ padding: "100px 32px", background: "#f8f9fa", borderTop: "1px solid var(--border-light)" }}>
+      <section id="contact" style={{ padding: "100px 32px", background: "var(--bg-alt)", borderTop: "1px solid var(--border-light)" }}>
         <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
           <motion.div {...fadeInUp}>
             <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 800, color: "var(--text-main)", marginBottom: 24 }}>

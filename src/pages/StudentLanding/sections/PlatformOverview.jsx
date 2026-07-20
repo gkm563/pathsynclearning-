@@ -26,7 +26,7 @@ export default function PlatformOverview() {
   ];
 
   return (
-    <section style={{ padding: "80px 32px", background: "#f8f9ff", position: "relative", zIndex: 2 }}>
+    <section style={{ padding: "80px 32px", background: "var(--bg-alt)", position: "relative", zIndex: 2 }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: "60px" }}>
           <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 800, color: "var(--text-main)", marginBottom: "16px" }}>

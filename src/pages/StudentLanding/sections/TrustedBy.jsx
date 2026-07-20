@@ -16,7 +16,7 @@ export default function TrustedBy() {
   ];
 
   return (
-    <section style={{ padding: "80px 32px", background: "#f8f9fa", borderTop: "1px solid var(--border-light)", borderBottom: "1px solid var(--border-light)" }}>
+    <section style={{ padding: "80px 32px", background: "var(--bg-alt)", borderTop: "1px solid var(--border-light)", borderBottom: "1px solid var(--border-light)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", textAlign: "center" }}>
         <motion.div {...fadeInUp}>
           <Chip bg="#e8faf5" border="#b2eed9" color="#00a67e">▸ HIRING NETWORK</Chip>

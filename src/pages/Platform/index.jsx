@@ -132,7 +132,7 @@ export default function Platform() {
               ].map((param, i) => (
                 <InteractiveCard key={i} delay={i * 0.1} style={{ display: "flex", alignItems: "center", gap: 16, background: "var(--bg-card)", padding: "16px 24px", borderRadius: 12, border: "1.5px solid var(--border-light)", boxShadow: "0 4px 14px rgba(0,0,0,0.02)" }}>
                   <div style={{ fontSize: 24 }}>{param.icon}</div>
-                  <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 16, fontWeight: 500, color: "#333" }}>{param.text}</div>
+                  <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 16, fontWeight: 500, color: "var(--text-muted)" }}>{param.text}</div>
                 </InteractiveCard>
               ))}
             </div>

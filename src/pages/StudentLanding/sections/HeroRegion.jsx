@@ -26,7 +26,7 @@ export default function HeroRegion() {
           How do you want to<br /> <span className="shimmer-text">join PathEd?</span>
         </h1>
         
-        <p className="f3" style={{ color: "#777", fontSize: 18, maxWidth: 540, margin: "0 auto 48px", lineHeight: 1.7, fontFamily: "'Inter', sans-serif" }}>
+        <p className="f3" style={{ color: "var(--text-muted)", fontSize: 18, maxWidth: 540, margin: "0 auto 48px", lineHeight: 1.7, fontFamily: "'Inter', sans-serif" }}>
           One platform. Three powerful perspectives. Your journey begins with a single choice.
         </p>
 
