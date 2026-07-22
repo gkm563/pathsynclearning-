@@ -33,6 +33,8 @@ export default function DashboardHeader({ activeTab, setActiveTab, onToggleSideb
       navigate("/project-collab");
     } else if (itemId === "hacksquad" || itemId === "hack-attack") {
       navigate("/hacksquad");
+    } else if (itemId === "events") {
+      navigate("/events");
     } else if (itemId === "alumni-network") {
       navigate("/alumni-network");
     } else if (itemId === "technews") {

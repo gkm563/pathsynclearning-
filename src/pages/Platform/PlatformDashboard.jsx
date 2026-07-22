@@ -907,6 +907,7 @@ export default function PlatformDashboard() {
                     else if (item.id === "project-collab") navigate("/project-collab");
                     else if (item.id === "alumni-network") navigate("/alumni-network");
                     else if (item.id === "hack-squad") navigate("/hacksquad");
+                    else if (item.id === "events") navigate("/events");
                     else setLockedModalFeature(item);
                   } else {
                     setLockedModalFeature(item);

@@ -55,6 +55,7 @@ import PlatformLiveClass from "./pages/Platform/PlatformLiveClass";
 import PlatformProjectCollab from "./pages/Platform/PlatformProjectCollab";
 import PlatformAlumniNetwork from "./pages/Platform/PlatformAlumniNetwork";
 import PlatformHackSquad from "./pages/Platform/PlatformHackSquad";
+import PlatformEvents from "./pages/Platform/PlatformEvents";
 
 function App() {
   return (
@@ -83,8 +84,10 @@ function App() {
           <Route path="/platform/project-collab" element={<PlatformProjectCollab />} />
           <Route path="/alumni-network" element={<PlatformAlumniNetwork />} />
           <Route path="/platform/alumni-network" element={<PlatformAlumniNetwork />} />
-          <Route path="/hacksquad" element={<PlatformHackSquad />} />
+           <Route path="/hacksquad" element={<PlatformHackSquad />} />
           <Route path="/platform/hacksquad" element={<PlatformHackSquad />} />
+          <Route path="/events" element={<PlatformEvents />} />
+          <Route path="/platform/events" element={<PlatformEvents />} />
           <Route path="/store" element={<Store />} />
           
           <Route path="/onboarding/stage1" element={<OnboardingStage1 />} />

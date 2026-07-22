@@ -95,6 +95,8 @@ export default function LockedFeatureModal({ feature, isOpen, onClose }) {
                   navigate("/alumni-network");
                 } else if (feature.id === "hack-squad") {
                   navigate("/hacksquad");
+                } else if (feature.id === "events") {
+                  navigate("/events");
                 } else {
                   navigate("/mentorship");
                 }

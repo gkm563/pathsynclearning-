@@ -19,6 +19,7 @@ export default function DashboardSidebar({ isOpen, onClose, activeTab, setActive
     { id: "project-collab", label: "Project Collab", icon: <Rocket size={20} /> },
     { id: "hacksquad", label: "Hack Squad", icon: <Users size={20} /> },
     { id: "alumni-network", label: "Alumni Network", icon: <Globe size={20} /> },
+    { id: "events", label: "Events & Summits", icon: <Calendar size={20} /> },
     { id: "technews", label: "Tech News", icon: <Newspaper size={20} /> },
   ];
 
@@ -51,6 +52,8 @@ export default function DashboardSidebar({ isOpen, onClose, activeTab, setActive
       navigate("/hacksquad");
     } else if (item.id === "alumni-network") {
       navigate("/alumni-network");
+    } else if (item.id === "events") {
+      navigate("/events");
     } else if (item.id === "technews") {
       navigate("/technews");
     } else if (item.isStoreRoute) {
