@@ -803,7 +803,7 @@ export default function PlatformEvents() {
             <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 34, fontWeight: 900, color: "var(--text-main)", margin: 0, letterSpacing: "-0.5px" }}>
               Events & Summits
             </h1>
-            <p style={{ margin: "6px 0 0", fontSize: 14.5, color: "var(--text-muted)", fontWeight: 500 }}>
+            <p style={{ margin: "6px 0 0", fontSize: 16, color: "var(--text-muted)", fontWeight: 500 }}>
               A centralized hub for every hackathon, workshop, internship, and institutional summit.
             </p>
           </div>
@@ -821,7 +821,7 @@ export default function PlatformEvents() {
                 style={{
                   width: "100%", padding: "11px 16px 11px 40px", borderRadius: 14,
                   background: "var(--bg-card)", border: "1.5px solid var(--border-light)",
-                  color: "var(--text-main)", outline: "none", fontSize: 13.5,
+                  color: "var(--text-main)", outline: "none", fontSize: 15,
                   fontFamily: "'Outfit', sans-serif", transition: "all 0.2s"
                 }}
               />
@@ -835,7 +835,7 @@ export default function PlatformEvents() {
                 border: showAppliedOnly ? "1.5px solid #00c9a7" : "1.5px solid var(--border-light)",
                 background: showAppliedOnly ? "rgba(0,201,167,0.06)" : "var(--bg-card)",
                 color: showAppliedOnly ? "#00c9a7" : "var(--text-main)",
-                fontFamily: "'Outfit', sans-serif", fontSize: 13.5, fontWeight: 900,
+                fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 900,
                 cursor: "pointer", display: "flex", alignItems: "center", gap: 8, transition: "all 0.2s"
               }}
             >
@@ -862,17 +862,17 @@ export default function PlatformEvents() {
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
                 <span style={{ fontSize: 24 }}>🏆</span>
                 <div>
-                  <h3 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 18.5, fontWeight: 900, color: "var(--text-main)" }}>
+                  <h3 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 900, color: "var(--text-main)" }}>
                     Secured Hackathons & Competitions
                   </h3>
-                  <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Verified event entries locked on PathEd profiles</span>
+                  <span style={{ fontSize: 13.5, color: "var(--text-muted)" }}>Verified event entries locked on PathEd profiles</span>
                 </div>
               </div>
 
               {getFilteredOpportunities("hackathons").length === 0 ? (
                 <div style={{ padding: "30px 20px", textAlign: "center", background: "var(--bg-card)", border: "1.5px dashed var(--border-light)", borderRadius: 18 }}>
                   <span style={{ fontSize: 28 }}>🛡️</span>
-                  <p style={{ margin: "8px 0 0", fontSize: 13.5, color: "var(--text-muted)", fontStyle: "italic" }}>No active hackathon quests secured yet.</p>
+                  <p style={{ margin: "8px 0 0", fontSize: 15, color: "var(--text-muted)", fontStyle: "italic" }}>No active hackathon quests secured yet.</p>
                 </div>
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
@@ -891,17 +891,17 @@ export default function PlatformEvents() {
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
                 <span style={{ fontSize: 24 }}>💼</span>
                 <div>
-                  <h3 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 18.5, fontWeight: 900, color: "var(--text-main)" }}>
+                  <h3 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 900, color: "var(--text-main)" }}>
                     Secured Career Internships & Industry Tracks
                   </h3>
-                  <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Active hiring cohorts synced with recruiter pipelines</span>
+                  <span style={{ fontSize: 13.5, color: "var(--text-muted)" }}>Active hiring cohorts synced with recruiter pipelines</span>
                 </div>
               </div>
 
               {getFilteredOpportunities("internships").length === 0 ? (
                 <div style={{ padding: "30px 20px", textAlign: "center", background: "var(--bg-card)", border: "1.5px dashed var(--border-light)", borderRadius: 18 }}>
                   <span style={{ fontSize: 28 }}>🧬</span>
-                  <p style={{ margin: "8px 0 0", fontSize: 13.5, color: "var(--text-muted)", fontStyle: "italic" }}>No active placement quests secured yet.</p>
+                  <p style={{ margin: "8px 0 0", fontSize: 15, color: "var(--text-muted)", fontStyle: "italic" }}>No active placement quests secured yet.</p>
                 </div>
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
@@ -917,7 +917,7 @@ export default function PlatformEvents() {
               background: "rgba(139,92,246,0.01)", border: "1.5px solid var(--border-light)",
               borderRadius: 24, padding: 26
             }}>
-              <h3 style={{ margin: "0 0 18px 0", fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 900, color: "var(--text-main)" }}>
+              <h3 style={{ margin: "0 0 18px 0", fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 900, color: "var(--text-main)" }}>
                 Other Secured Cohorts & Workshops
               </h3>
 
@@ -933,7 +933,7 @@ export default function PlatformEvents() {
                   return (
                     <div style={{ padding: "30px 20px", textAlign: "center", background: "var(--bg-card)", border: "1.5px dashed var(--border-light)", borderRadius: 18 }}>
                       <span style={{ fontSize: 28 }}>🔮</span>
-                      <p style={{ margin: "8px 0 0", fontSize: 13.5, color: "var(--text-muted)", fontStyle: "italic" }}>No other webinars or bootcamp tracks enrolled.</p>
+                      <p style={{ margin: "8px 0 0", fontSize: 15, color: "var(--text-muted)", fontStyle: "italic" }}>No other webinars or bootcamp tracks enrolled.</p>
                     </div>
                   );
                 }
@@ -963,15 +963,15 @@ export default function PlatformEvents() {
                   {/* Category Title & Desc */}
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 12, paddingRight: 10 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <span style={{ fontSize: 22 }}>{cat.icon}</span>
+                      <span style={{ fontSize: 24 }}>{cat.icon}</span>
                       <div>
-                        <h3 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 19, fontWeight: 900, color: "var(--text-main)" }}>
+                        <h3 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 21, fontWeight: 900, color: "var(--text-main)" }}>
                           {cat.label}
                         </h3>
-                        <p style={{ margin: "2px 0 0", fontSize: 12.5, color: "var(--text-muted)" }}>{cat.desc}</p>
+                        <p style={{ margin: "2px 0 0", fontSize: 14.5, color: "var(--text-muted)" }}>{cat.desc}</p>
                       </div>
                     </div>
-                    <span style={{ fontSize: 12, fontFamily: "'Fira Code', monospace", fontWeight: 800, color: "var(--text-muted)" }}>
+                    <span style={{ fontSize: 13.5, fontFamily: "'Fira Code', monospace", fontWeight: 800, color: "var(--text-muted)" }}>
                       {items.length} OPTIONS AVAILABLE
                     </span>
                   </div>
@@ -1033,7 +1033,7 @@ export default function PlatformEvents() {
                             {/* Card Top Information */}
                             <div style={{ padding: 20 }}>
                               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                                <span style={{ padding: "4px 10px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 11, fontWeight: 800, color: "var(--text-muted)" }}>
+                                <span style={{ padding: "4px 10px", borderRadius: 10, background: "var(--bg-alt)", border: "1px solid var(--border-light)", fontSize: 12.5, fontWeight: 800, color: "var(--text-muted)" }}>
                                   {opp.organizer}
                                 </span>
                                 
@@ -1041,39 +1041,39 @@ export default function PlatformEvents() {
                                   <span style={{
                                     padding: "4px 8px", borderRadius: 8, background: "rgba(108,99,255,0.12)",
                                     border: "1px solid rgba(108,99,255,0.3)", color: "#6c63ff",
-                                    fontSize: 10.5, fontFamily: "'Outfit', sans-serif", fontWeight: 900,
+                                    fontSize: 12, fontFamily: "'Outfit', sans-serif", fontWeight: 900,
                                     display: "flex", alignItems: "center", gap: 3
                                   }}>
                                     <Sparkles size={10} /> PathEd OG
                                   </span>
                                 ) : (
-                                  <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>
+                                  <span style={{ fontSize: 13.5, color: "var(--text-muted)", fontWeight: 500 }}>
                                     {opp.mode}
                                   </span>
                                 )}
                               </div>
 
-                              <h4 style={{ margin: "0 0 8px 0", fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 900, color: "var(--text-main)", lineHeight: 1.4 }}>
+                              <h4 style={{ margin: "0 0 8px 0", fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 900, color: "var(--text-main)", lineHeight: 1.4 }}>
                                 {opp.title}
                               </h4>
                               
-                              <p style={{ margin: "0 0 14px 0", fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.5, height: 56, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical" }}>
+                              <p style={{ margin: "0 0 14px 0", fontSize: 14, color: "var(--text-muted)", lineHeight: 1.5, height: 60, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical" }}>
                                 {opp.desc}
                               </p>
 
                               {/* Opportunity highlights table */}
                               <div style={{ display: "flex", flexDirection: "column", gap: 6, borderTop: "1px solid var(--border-light)", paddingTop: 10 }}>
-                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5 }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
                                   <span style={{ color: "var(--text-muted)" }}>Prizes/Compensation:</span>
                                   <strong style={{ color: "var(--text-main)", fontWeight: 700 }}>{opp.prizePool}</strong>
                                 </div>
-                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5 }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
                                   <span style={{ color: "var(--text-muted)" }}>Deadline:</span>
                                   <strong style={{ color: "#ec4899", fontWeight: 700 }}>{opp.deadline}</strong>
                                 </div>
-                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5 }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
                                   <span style={{ color: "var(--text-muted)" }}>Prerequisites:</span>
-                                  <code style={{ fontSize: 10.5, color: "#6c63ff", fontWeight: 800 }}>{opp.tech.split(",")[0]}</code>
+                                  <code style={{ fontSize: 12, color: "#6c63ff", fontWeight: 800 }}>{opp.tech.split(",")[0]}</code>
                                 </div>
                               </div>
                             </div>
@@ -1085,7 +1085,7 @@ export default function PlatformEvents() {
                                 style={{
                                   flex: 1, padding: "9px", borderRadius: 10, border: "1.5px solid var(--border-light)",
                                   background: "var(--bg-alt)", color: "var(--text-main)", 
-                                  fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 800, cursor: "pointer"
+                                  fontFamily: "'Outfit', sans-serif", fontSize: 14.5, fontWeight: 800, cursor: "pointer"
                                 }}
                               >
                                 Details
@@ -1100,7 +1100,7 @@ export default function PlatformEvents() {
                                   style={{
                                     flex: 1.5, padding: "9px", borderRadius: 10, border: "none",
                                     background: "#f59e0b", color: "#fff", 
-                                    fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 900, cursor: "pointer",
+                                    fontFamily: "'Outfit', sans-serif", fontSize: 14.5, fontWeight: 900, cursor: "pointer",
                                     display: "flex", alignItems: "center", justifyContent: "center", gap: 4
                                   }}
                                 >
@@ -1121,7 +1121,7 @@ export default function PlatformEvents() {
                                       ? "#00c9a7" 
                                       : "#ffffff",
                                     border: appliedIds.includes(opp.id) ? "1.5px solid #00c9a7" : "none",
-                                    fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 900, cursor: "pointer",
+                                    fontFamily: "'Outfit', sans-serif", fontSize: 14.5, fontWeight: 900, cursor: "pointer",
                                     display: "flex", alignItems: "center", justifyContent: "center", gap: 4
                                   }}
                                 >
@@ -1394,23 +1394,23 @@ function AppliedOpportunityCard({ opp, handleApplyClick, setSelectedOpportunity 
 
       <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: 11, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)" }}>{opp.organizer}</span>
+          <span style={{ fontSize: 12.5, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)" }}>{opp.organizer}</span>
           
           <span style={{
             padding: "3px 8px", borderRadius: 6, 
             background: opp.category === "hackathons" ? "rgba(0,201,167,0.08)" : "rgba(108,99,255,0.08)",
             color: opp.category === "hackathons" ? "#00c9a7" : "#6c63ff",
-            fontSize: 10.5, fontFamily: "'Outfit', sans-serif", fontWeight: 900
+            fontSize: 12, fontFamily: "'Outfit', sans-serif", fontWeight: 900
           }}>
             Quest Enrolled
           </span>
         </div>
 
         <div>
-          <h4 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 900, color: "var(--text-main)", lineHeight: 1.4 }}>
+          <h4 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 900, color: "var(--text-main)", lineHeight: 1.4 }}>
             {opp.title}
           </h4>
-          <span style={{ display: "block", fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>Prerequisite: <code>{opp.tech.split(",")[0]}</code></span>
+          <span style={{ display: "block", fontSize: 13.5, color: "var(--text-muted)", marginTop: 2 }}>Prerequisite: <code style={{ fontSize: 12 }}>{opp.tech.split(",")[0]}</code></span>
         </div>
 
         <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
@@ -1419,7 +1419,7 @@ function AppliedOpportunityCard({ opp, handleApplyClick, setSelectedOpportunity 
             style={{
               flex: 1, padding: "7px", borderRadius: 8, border: "1.5px solid var(--border-light)",
               background: "var(--bg-alt)", color: "var(--text-main)", 
-              fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 800, cursor: "pointer"
+              fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800, cursor: "pointer"
             }}
           >
             Details
@@ -1429,7 +1429,7 @@ function AppliedOpportunityCard({ opp, handleApplyClick, setSelectedOpportunity 
             style={{
               flex: 1.2, padding: "7px", borderRadius: 8, border: "1.5px solid #00c9a7",
               background: "rgba(0,201,167,0.04)", color: "#00c9a7", 
-              fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 900, cursor: "pointer",
+              fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 900, cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 3
             }}
           >
