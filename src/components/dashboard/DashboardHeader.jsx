@@ -47,6 +47,8 @@ export default function DashboardHeader({ activeTab, setActiveTab, onToggleSideb
       navigate("/placement-insights");
     } else if (itemId === "records-certs") {
       navigate("/records-certs");
+    } else if (itemId === "community") {
+      navigate("/platform/community");
     } else {
       if (window.location.pathname !== "/dashboard" && window.location.pathname !== "/platform") {
         navigate(`/dashboard?tab=${itemId}`);

@@ -61,6 +61,8 @@ export default function DashboardSidebar({ isOpen, onClose, activeTab, setActive
       navigate("/placement-insights");
     } else if (item.id === "records-certs") {
       navigate("/records-certs");
+    } else if (item.id === "community") {
+      navigate("/platform/community");
     } else {
       if (window.location.pathname !== "/dashboard" && window.location.pathname !== "/platform") {
         navigate(`/dashboard?tab=${item.id}`);

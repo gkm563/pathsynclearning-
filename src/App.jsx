@@ -60,6 +60,7 @@ import PlatformPlacementInbox from "./pages/Platform/PlatformPlacementInbox";
 import PlatformPlacementInsights from "./pages/Platform/PlatformPlacementInsights";
 import PlatformRecordsCerts from "./pages/Platform/PlatformRecordsCerts";
 import PlatformOgOpportunities from "./pages/Platform/PlatformOgOpportunities";
+import PlatformCommunity from "./pages/Platform/PlatformCommunity";
 
 
 
@@ -102,6 +103,7 @@ function App() {
           <Route path="/platform/records-certs" element={<PlatformRecordsCerts />} />
           <Route path="/og-opportunities" element={<PlatformOgOpportunities />} />
           <Route path="/platform/og-opportunities" element={<PlatformOgOpportunities />} />
+          <Route path="/platform/community" element={<PlatformCommunity />} />
           <Route path="/store" element={<Store />} />
           
           <Route path="/onboarding/stage1" element={<OnboardingStage1 />} />
