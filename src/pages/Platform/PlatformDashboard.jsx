@@ -624,9 +624,21 @@ export default function PlatformDashboard() {
             </h2>
           </div>
 
-          <span style={{ padding: "6px 16px", borderRadius: 20, background: "rgba(247,151,30,0.12)", border: "1px solid #f7971e40", color: "#f7971e", fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800 }}>
-            7-day streak active
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ padding: "6px 16px", borderRadius: 20, background: "rgba(247,151,30,0.12)", border: "1px solid #f7971e40", color: "#f7971e", fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800 }}>
+              7-day streak active
+            </span>
+            <button
+              onClick={() => navigate("/challenges")}
+              style={{
+                display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 14,
+                background: "rgba(247,151,30,0.12)", border: "1.5px solid #f7971e40", color: "#f7971e",
+                fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800, cursor: "pointer"
+              }}
+            >
+              View All ↗
+            </button>
+          </div>
         </div>
 
         {/* 4 Daily Challenge Task Cards */}
@@ -634,11 +646,15 @@ export default function PlatformDashboard() {
           {dailyChallenges.map((task, idx) => (
             <div
               key={idx}
+              onClick={() => navigate("/challenges")}
               style={{
                 background: task.bg, border: `1.5px solid ${task.border}`, borderRadius: 22, padding: 22,
                 display: "flex", flexDirection: "column", justifyContent: "space-between",
-                boxShadow: "0 8px 24px rgba(0,0,0,0.03)", transition: "transform 0.2s"
+                boxShadow: "0 8px 24px rgba(0,0,0,0.03)", transition: "transform 0.2s, box-shadow 0.2s",
+                cursor: "pointer"
               }}
+              onMouseEnter={e => e.currentTarget.style.boxShadow = `0 12px 32px ${task.border}60`}
+              onMouseLeave={e => e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.03)"}
             >
               <div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
@@ -662,7 +678,7 @@ export default function PlatformDashboard() {
               </div>
 
               <button
-                onClick={() => alert(`Starting challenge: ${task.title}`)}
+                onClick={e => { e.stopPropagation(); navigate("/challenges"); }}
                 style={{
                   width: "100%", padding: "12px", borderRadius: 14, border: "none",
                   background: task.isStarted ? task.col : "var(--bg-card)",
