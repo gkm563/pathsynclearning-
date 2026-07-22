@@ -15,11 +15,6 @@ export default function DashboardSidebar({ isOpen, onClose, activeTab, setActive
     { id: "challenges", label: "Challenges", icon: <Zap size={20} /> },
     { id: "memory-lane", label: "Memory Lane", icon: <BookOpen size={20} /> },
     { id: "progress", label: "Progress", icon: <BarChart2 size={20} /> },
-    { id: "mentorship", label: "Mentorship", icon: <Users size={20} /> },
-    { id: "project-collab", label: "Project Collab", icon: <Rocket size={20} /> },
-    { id: "hacksquad", label: "Hack Squad", icon: <Users size={20} /> },
-    { id: "alumni-network", label: "Alumni Network", icon: <Globe size={20} /> },
-    { id: "events", label: "Events & Summits", icon: <Calendar size={20} /> },
     { id: "technews", label: "Tech News", icon: <Newspaper size={20} /> },
   ];
 
