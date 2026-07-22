@@ -49,6 +49,12 @@ import Register from "./pages/Register";
 import PlatformChallenges from "./pages/Platform/PlatformChallenges";
 import PlatformMemoryLane from "./pages/Platform/PlatformMemoryLane";
 import PlatformTechNews from "./pages/Platform/PlatformTechNews";
+import PlatformProgress from "./pages/Platform/PlatformProgress";
+import PlatformMentorship from "./pages/Platform/PlatformMentorship";
+import PlatformLiveClass from "./pages/Platform/PlatformLiveClass";
+import PlatformProjectCollab from "./pages/Platform/PlatformProjectCollab";
+import PlatformAlumniNetwork from "./pages/Platform/PlatformAlumniNetwork";
+import PlatformHackSquad from "./pages/Platform/PlatformHackSquad";
 
 function App() {
   return (
@@ -67,6 +73,18 @@ function App() {
           <Route path="/platform/memory-lane" element={<PlatformMemoryLane />} />
           <Route path="/technews" element={<PlatformTechNews />} />
           <Route path="/platform/technews" element={<PlatformTechNews />} />
+          <Route path="/progress" element={<PlatformProgress />} />
+          <Route path="/platform/progress" element={<PlatformProgress />} />
+          <Route path="/mentorship" element={<PlatformMentorship />} />
+          <Route path="/platform/mentorship" element={<PlatformMentorship />} />
+          <Route path="/live-class" element={<PlatformLiveClass />} />
+          <Route path="/platform/live-class" element={<PlatformLiveClass />} />
+          <Route path="/project-collab" element={<PlatformProjectCollab />} />
+          <Route path="/platform/project-collab" element={<PlatformProjectCollab />} />
+          <Route path="/alumni-network" element={<PlatformAlumniNetwork />} />
+          <Route path="/platform/alumni-network" element={<PlatformAlumniNetwork />} />
+          <Route path="/hacksquad" element={<PlatformHackSquad />} />
+          <Route path="/platform/hacksquad" element={<PlatformHackSquad />} />
           <Route path="/store" element={<Store />} />
           
           <Route path="/onboarding/stage1" element={<OnboardingStage1 />} />

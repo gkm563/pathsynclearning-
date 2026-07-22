@@ -27,6 +27,16 @@ export default function PlatformDashboard() {
   const [lockedModalFeature, setLockedModalFeature] = useState(null);
   const [hoveredCardId, setHoveredCardId] = useState(null);
   
+  // Developer plan toggle sync
+  const [devPlan, setDevPlan] = useState(localStorage.getItem("dev_mode_plan") || "free");
+  useEffect(() => {
+    const handleStorage = () => {
+      setDevPlan(localStorage.getItem("dev_mode_plan") || "free");
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+  
   // Expandable Career Goal Details State
   const [isGoalExpanded, setIsGoalExpanded] = useState(false);
 
@@ -886,32 +896,53 @@ export default function PlatformDashboard() {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 18 }}>
-          {communityCards.map(item => (
-            <div
-              key={item.id}
-              onClick={() => setLockedModalFeature(item)}
-              style={{
-                background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 20, padding: 22,
-                cursor: "pointer", transition: "all 0.3s ease", position: "relative"
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = item.accent; e.currentTarget.style.transform = "translateY(-4px)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border-light)"; e.currentTarget.style.transform = "none"; }}
-            >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                <span style={{ fontSize: 32 }}>{item.icon}</span>
-                <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(239,68,68,0.15)", border: "1.5px solid #ef4444", display: "flex", alignItems: "center", justifyContent: "center", color: "#ef4444" }}>
-                  <Lock size={14} />
+          {communityCards.map(item => {
+            const isUnlocked = devPlan === "premium";
+            return (
+              <div
+                key={item.id}
+                onClick={() => {
+                  if (isUnlocked) {
+                    if (item.id === "mentorship") navigate("/mentorship");
+                    else if (item.id === "project-collab") navigate("/project-collab");
+                    else if (item.id === "alumni-network") navigate("/alumni-network");
+                    else if (item.id === "hack-squad") navigate("/hacksquad");
+                    else setLockedModalFeature(item);
+                  } else {
+                    setLockedModalFeature(item);
+                  }
+                }}
+                style={{
+                  background: "var(--bg-card)",
+                  border: isUnlocked ? `1.5px solid ${item.accent}` : "1.5px solid var(--border-light)",
+                  borderRadius: 20, padding: 22,
+                  cursor: "pointer", transition: "all 0.3s ease", position: "relative"
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = item.accent; e.currentTarget.style.transform = "translateY(-4px)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = isUnlocked ? item.accent : "var(--border-light)"; e.currentTarget.style.transform = "none"; }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                  <span style={{ fontSize: 32 }}>{item.icon}</span>
+                  {isUnlocked ? (
+                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(0,201,167,0.15)", border: "1.5px solid #00c9a7", display: "flex", alignItems: "center", justifyContent: "center", color: "#00c9a7" }}>
+                      ✓
+                    </div>
+                  ) : (
+                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(239,68,68,0.15)", border: "1.5px solid #ef4444", display: "flex", alignItems: "center", justifyContent: "center", color: "#ef4444" }}>
+                      <Lock size={14} />
+                    </div>
+                  )}
+                </div>
+
+                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>{item.label}</h3>
+                <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5, margin: "0 0 16px" }}>{item.desc}</p>
+
+                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 800, color: item.accent, display: "flex", alignItems: "center", gap: 4 }}>
+                  {isUnlocked ? "UNLOCKED & ACTIVE" : "UNLOCK REQUIREMENT"} <ChevronRight size={12} />
                 </div>
               </div>
-
-              <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>{item.label}</h3>
-              <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5, margin: "0 0 16px" }}>{item.desc}</p>
-
-              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 800, color: item.accent, display: "flex", alignItems: "center", gap: 4 }}>
-                UNLOCK REQUIREMENT <ChevronRight size={12} />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

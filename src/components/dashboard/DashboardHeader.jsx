@@ -25,6 +25,16 @@ export default function DashboardHeader({ activeTab, setActiveTab, onToggleSideb
       navigate("/challenges");
     } else if (itemId === "memory-lane") {
       navigate("/memory-lane");
+    } else if (itemId === "progress") {
+      navigate("/progress");
+    } else if (itemId === "mentorship") {
+      navigate("/mentorship");
+    } else if (itemId === "project-collab") {
+      navigate("/project-collab");
+    } else if (itemId === "hacksquad" || itemId === "hack-attack") {
+      navigate("/hacksquad");
+    } else if (itemId === "alumni-network") {
+      navigate("/alumni-network");
     } else if (itemId === "technews") {
       navigate("/technews");
     } else {

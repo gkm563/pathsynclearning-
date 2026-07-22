@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Home, Map, Zap, BookOpen, BarChart2, Newspaper, 
-  Rocket, Inbox, Lightbulb, Award, ShieldAlert, Users, ShoppingBag, Settings, X 
+  Rocket, Inbox, Lightbulb, Award, ShieldAlert, Users, ShoppingBag, Settings, X, Globe 
 } from "lucide-react";
 
 export default function DashboardSidebar({ isOpen, onClose, activeTab, setActiveTab }) {
@@ -15,6 +15,10 @@ export default function DashboardSidebar({ isOpen, onClose, activeTab, setActive
     { id: "challenges", label: "Challenges", icon: <Zap size={20} /> },
     { id: "memory-lane", label: "Memory Lane", icon: <BookOpen size={20} /> },
     { id: "progress", label: "Progress", icon: <BarChart2 size={20} /> },
+    { id: "mentorship", label: "Mentorship", icon: <Users size={20} /> },
+    { id: "project-collab", label: "Project Collab", icon: <Rocket size={20} /> },
+    { id: "hacksquad", label: "Hack Squad", icon: <Users size={20} /> },
+    { id: "alumni-network", label: "Alumni Network", icon: <Globe size={20} /> },
     { id: "technews", label: "Tech News", icon: <Newspaper size={20} /> },
   ];
 
@@ -37,6 +41,16 @@ export default function DashboardSidebar({ isOpen, onClose, activeTab, setActive
       navigate("/challenges");
     } else if (item.id === "memory-lane") {
       navigate("/memory-lane");
+    } else if (item.id === "progress") {
+      navigate("/progress");
+    } else if (item.id === "mentorship") {
+      navigate("/mentorship");
+    } else if (item.id === "project-collab") {
+      navigate("/project-collab");
+    } else if (item.id === "hacksquad" || item.id === "hack-attack") {
+      navigate("/hacksquad");
+    } else if (item.id === "alumni-network") {
+      navigate("/alumni-network");
     } else if (item.id === "technews") {
       navigate("/technews");
     } else if (item.isStoreRoute) {
