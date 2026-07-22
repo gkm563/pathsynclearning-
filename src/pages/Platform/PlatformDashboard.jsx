@@ -36,6 +36,12 @@ export default function PlatformDashboard() {
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
+
+  const handleTogglePlan = (plan) => {
+    setDevPlan(plan);
+    localStorage.setItem("dev_mode_plan", plan);
+    window.dispatchEvent(new Event("storage"));
+  };
   
   // Expandable Career Goal Details State
   const [isGoalExpanded, setIsGoalExpanded] = useState(false);
@@ -277,9 +283,8 @@ export default function PlatformDashboard() {
 
   return (
     <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
-      {/* =========================================================================
-         DEVELOPER TESTING MODE BANNER
-         ========================================================================= */}
+      
+      {/* DEVELOPER TESTING MODE PLAN TOGGLE BANNER */}
       <div style={{ 
         background: devPlan === "premium" 
           ? "linear-gradient(135deg, rgba(0, 201, 167, 0.08) 0%, rgba(108, 99, 255, 0.08) 100%)" 
@@ -299,11 +304,7 @@ export default function PlatformDashboard() {
         </div>
         <div style={{ display: "flex", background: "var(--bg-alt)", border: "1px solid var(--border-light)", padding: 4, borderRadius: 12, gap: 4 }}>
           <button
-            onClick={() => {
-              setDevPlan("free");
-              localStorage.setItem("dev_mode_plan", "free");
-              window.dispatchEvent(new Event("storage"));
-            }}
+            onClick={() => handleTogglePlan("free")}
             style={{
               padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer",
               fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 800, transition: "all 0.2s",
@@ -314,11 +315,7 @@ export default function PlatformDashboard() {
             Free Plan
           </button>
           <button
-            onClick={() => {
-              setDevPlan("premium");
-              localStorage.setItem("dev_mode_plan", "premium");
-              window.dispatchEvent(new Event("storage"));
-            }}
+            onClick={() => handleTogglePlan("premium")}
             style={{
               padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer",
               fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 800, transition: "all 0.2s",
@@ -331,7 +328,7 @@ export default function PlatformDashboard() {
           </button>
         </div>
       </div>
-
+      
       {/* 1. TOP METRICS & CAREER GOAL BANNER WITH EXPANDABLE DETAILS */}
       <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: "28px 32px", marginBottom: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.04)" }}>
         
