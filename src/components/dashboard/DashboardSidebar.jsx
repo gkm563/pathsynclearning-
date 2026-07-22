@@ -27,7 +27,7 @@ export default function DashboardSidebar({ isOpen, onClose, activeTab, setActive
     { id: "placement-inbox", label: "Placement Inbox", icon: <Inbox size={20} /> },
     { id: "placement-insights", label: "Placement Insights", icon: <Lightbulb size={20} /> },
     { id: "records-certs", label: "Records & Certs", icon: <Award size={20} /> },
-    { id: "hack-attack", label: "Hack Attack", icon: <ShieldAlert size={20} /> },
+    { id: "hack-attack", label: "OG Oppurtanities", icon: <Award size={20} /> },
     { id: "community", label: "Community", icon: <Users size={20} /> },
     { id: "store", label: "Store", icon: <ShoppingBag size={20} />, isStoreRoute: true },
   ];
