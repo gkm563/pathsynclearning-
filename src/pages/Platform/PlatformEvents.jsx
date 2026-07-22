@@ -6,7 +6,7 @@ import {
   Sparkles, Search, Calendar, Video, BookOpen, User, CheckCircle2, 
   ArrowRight, ShieldCheck, HelpCircle, Star, Clock, Plus, ChevronRight, X, 
   UserCheck, ShieldAlert, ArrowLeft, ArrowUpRight, Check, Heart, ExternalLink,
-  Award, Filter, LayoutGrid, CheckCircle, Flame, Gift, Compass
+  Award, Filter, LayoutGrid, CheckCircle, Flame, Gift, Compass, Lock
 } from "lucide-react";
 
 /* ─── COLOR TOKENS ─── */
@@ -36,7 +36,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 84,
     parthed_og: true,
     desc: "Build next-generation agentic workflows using Vertex AI and the Gemini model suite. Win cash prizes and direct recruitment tracks at Google Labs.",
-    externalLink: "https://developers.google.com/ai"
+    externalLink: "https://developers.google.com/ai",
+    coverImage: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o2",
@@ -52,7 +53,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 120,
     parthed_og: false,
     desc: "The premier global student technology competition. Pitch and deploy an AI-driven startup concept using Microsoft Cloud architectures.",
-    externalLink: "https://imaginecup.microsoft.com"
+    externalLink: "https://imaginecup.microsoft.com",
+    coverImage: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o3",
@@ -68,7 +70,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 42,
     parthed_og: true,
     desc: "Train models to optimize edge processing latency on miniature drone microcontrollers. Compute sponsorships provided directly by PathEd OG.",
-    externalLink: "https://kaggle.com"
+    externalLink: "https://kaggle.com",
+    coverImage: "https://images.unsplash.com/photo-1527474305487-b87b222841cc?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o4",
@@ -84,7 +87,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 230,
     parthed_og: false,
     desc: "Use NASA's open-source climate and planetary data to construct interactive models showing global thermal updates and oceanic flows.",
-    externalLink: "https://spaceapps.nasa.org"
+    externalLink: "https://spaceapps.nasa.org",
+    coverImage: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o5",
@@ -100,7 +104,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 18,
     parthed_og: false,
     desc: "India's largest national initiative addressing real-world civic challenges in waste management, clean energy, and agricultural supplies.",
-    externalLink: "https://sih.gov.in"
+    externalLink: "https://sih.gov.in",
+    coverImage: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o6",
@@ -116,7 +121,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 95,
     parthed_og: false,
     desc: "Optimize web bundling speed and package loading using Vite's next-generation Rust-powered compilation pipeline tools.",
-    externalLink: "https://vite.build"
+    externalLink: "https://vite.build",
+    coverImage: "https://images.unsplash.com/photo-1618401471353-b98aedd07871?auto=format&fit=crop&q=80&w=400"
   },
 
   // ==================== INTERNSHIPS & PLACEMENT OPENINGS ====================
@@ -134,7 +140,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 15,
     parthed_og: true,
     desc: "Natively integrated training cohort with Meta Infrastructure. Selected students work directly on caching layers for Instagram.",
-    externalLink: "https://careers.meta.com"
+    externalLink: "https://careers.meta.com",
+    coverImage: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o8",
@@ -150,7 +157,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 40,
     parthed_og: false,
     desc: "STEP is a developmental summer internship for students who have a passion for computer science and engineering roles.",
-    externalLink: "https://careers.google.com"
+    externalLink: "https://careers.google.com",
+    coverImage: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o9",
@@ -166,7 +174,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 22,
     parthed_og: true,
     desc: "Learn GPU programming directly from NVIDIA researchers. Optimize execution grids for large AI matrix multiplications.",
-    externalLink: "https://nvidia.com/careers"
+    externalLink: "https://nvidia.com/careers",
+    coverImage: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o10",
@@ -182,7 +191,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 60,
     parthed_og: false,
     desc: "Build APIs, microservices, and client-facing interfaces deployed across Amazon retail pipelines. Mentorship by senior SDE-IIs.",
-    externalLink: "https://amazon.jobs"
+    externalLink: "https://amazon.jobs",
+    coverImage: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o11",
@@ -198,7 +208,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 8,
     parthed_og: false,
     desc: "Help design fraud prevention systems and payment routing layers targeting merchant payouts across Southeast Asia countries.",
-    externalLink: "https://stripe.com/jobs"
+    externalLink: "https://stripe.com/jobs",
+    coverImage: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o12",
@@ -214,7 +225,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 12,
     parthed_og: false,
     desc: "Deep dive into kernel exploitation, agent instrumentation, threat telemetry parsing, and endpoint protection algorithms.",
-    externalLink: "https://crowdstrike.jobs"
+    externalLink: "https://crowdstrike.jobs",
+    coverImage: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=400"
   },
 
   // ==================== SCHOLARSHIPS & RESEARCH PROGRAMS ====================
@@ -232,7 +244,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 5,
     parthed_og: true,
     desc: "Exclusive fellowship program researching qubit stability. Fully funded travel to Stanford for summer residency sessions.",
-    externalLink: "https://quantum.stanford.edu"
+    externalLink: "https://quantum.stanford.edu",
+    coverImage: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o14",
@@ -248,7 +261,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 15,
     parthed_og: false,
     desc: "Financial support for graduate students pursuing influential research in computer science and related fields worldwide.",
-    externalLink: "https://research.google/fellows"
+    externalLink: "https://research.google/fellows",
+    coverImage: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o15",
@@ -264,7 +278,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 10,
     parthed_og: true,
     desc: "PathEd hosted AI research fellowship. Research transformer optimization schemes and publish papers under PathEd Labs sponsorship.",
-    externalLink: "https://pathed.org/research"
+    externalLink: "https://pathed.org/research",
+    coverImage: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o16",
@@ -280,7 +295,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 20,
     parthed_og: false,
     desc: "Microsoft Research India grant targeting projects related to social good, system scalability, and zero-knowledge proofs.",
-    externalLink: "https://microsoft.com/research"
+    externalLink: "https://microsoft.com/research",
+    coverImage: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o17",
@@ -296,7 +312,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 30,
     parthed_og: false,
     desc: "Adobe's annual fellowship recognizing women leaders in computing. Receives full academic funding and SDE intern offer.",
-    externalLink: "https://adobe.com/careers"
+    externalLink: "https://adobe.com/careers",
+    coverImage: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o18",
@@ -312,7 +329,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 5,
     parthed_og: false,
     desc: "An intensive 2-week school examining causal machine learning and neural architectures in historic Venice.",
-    externalLink: "https://veniceai.eu"
+    externalLink: "https://veniceai.eu",
+    coverImage: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&q=80&w=400"
   },
 
   // ==================== BOOTCAMPS & COHORTS ====================
@@ -330,7 +348,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 150,
     parthed_og: true,
     desc: "Build 3 production-ready enterprise SaaS products. Fully synchronized mentoring and placement reviews included.",
-    externalLink: "https://pathed.org/bootcamp"
+    externalLink: "https://pathed.org/bootcamp",
+    coverImage: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o20",
@@ -346,7 +365,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 500,
     parthed_og: false,
     desc: "A free 6-week online course on how to start a startup, featuring talks from YC founders, developers, and investors.",
-    externalLink: "https://startupschool.org"
+    externalLink: "https://startupschool.org",
+    coverImage: "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o21",
@@ -362,7 +382,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 60,
     parthed_og: true,
     desc: "Deep-dive cohort exploring multi-region database replication, stream processing bottlenecks, and high availability systems.",
-    externalLink: "https://pathed.org/system"
+    externalLink: "https://pathed.org/system",
+    coverImage: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o22",
@@ -378,7 +399,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 25,
     parthed_og: false,
     desc: "Accelerated program designed for web3 developers building decentralized products. Mentoring by world-class web3 engineers.",
-    externalLink: "https://a16z.com"
+    externalLink: "https://a16z.com",
+    coverImage: "https://images.unsplash.com/photo-1621761191319-c6fb62004040?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o23",
@@ -394,7 +416,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 300,
     parthed_og: false,
     desc: "Master serverless database structures, real-time channels, file storage buckets, and postgres function hooks in 2 weeks.",
-    externalLink: "https://supabase.com/school"
+    externalLink: "https://supabase.com/school",
+    coverImage: "https://images.unsplash.com/photo-1542744094-3a31f103e35f?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o24",
@@ -410,7 +433,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 180,
     parthed_og: false,
     desc: "Understand cache eviction schemes, pub/sub models, geohashes, and Redis modules (Search, JSON, TimeSeries) for latency improvements.",
-    externalLink: "https://redis.com"
+    externalLink: "https://redis.com",
+    coverImage: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&q=80&w=400"
   },
 
   // ==================== WORKSHOPS & TECHNICAL SEMINARS ====================
@@ -428,7 +452,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 30,
     parthed_og: true,
     desc: "Fine-tune partition counts, message queue configurations, lag offsets, and consumer groups for high-throughput pipelines.",
-    externalLink: "https://confluent.io"
+    externalLink: "https://confluent.io",
+    coverImage: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o26",
@@ -444,7 +469,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 500,
     parthed_og: false,
     desc: "Learn to deploy scalable APIs, orchestrate containers, and log request parameters using CloudWatch metrics.",
-    externalLink: "https://aws.amazon.com"
+    externalLink: "https://aws.amazon.com",
+    coverImage: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o27",
@@ -460,7 +486,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 45,
     parthed_og: true,
     desc: "Learn LLD by building real-world software components (Parking Lot, Movie Ticket Booking, Chess Engine) in real-time code classes.",
-    externalLink: "https://pathed.org/lld"
+    externalLink: "https://pathed.org/lld",
+    coverImage: "https://images.unsplash.com/photo-1531535934200-8734a5a2c65b?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o28",
@@ -476,7 +503,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 400,
     parthed_og: false,
     desc: "Containerize multi-container web apps, build docker configurations, and manage docker networks for microservices architectures.",
-    externalLink: "https://docker.com"
+    externalLink: "https://docker.com",
+    coverImage: "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o29",
@@ -492,7 +520,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 220,
     parthed_og: false,
     desc: "Master RSCs, server actions, optimistic UI updates, hydration, and streaming UI with Suspense boundaries.",
-    externalLink: "https://vercel.com"
+    externalLink: "https://vercel.com",
+    coverImage: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o30",
@@ -508,7 +537,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 120,
     parthed_og: false,
     desc: "Write detailed API descriptions, generate client SDKs, and build mock servers directly from swagger configuration files.",
-    externalLink: "https://swagger.io"
+    externalLink: "https://swagger.io",
+    coverImage: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=400"
   },
 
   // ==================== TECH CONFERENCES & SUMMITS ====================
@@ -526,7 +556,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 15,
     parthed_og: true,
     desc: "PathEd's annual technical summit. Connect with AI engineers, tech founders, VC funding networks, and research labs.",
-    externalLink: "https://pathed.org/summit"
+    externalLink: "https://pathed.org/summit",
+    coverImage: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o32",
@@ -542,7 +573,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 150,
     parthed_og: false,
     desc: "Local community-led developer conference covering Google's latest releases in AI, mobile, web, and cloud computing frameworks.",
-    externalLink: "https://io.google"
+    externalLink: "https://io.google",
+    coverImage: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o33",
@@ -558,7 +590,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 80,
     parthed_og: true,
     desc: "Annual synergy gathering for software teams. Share developer workflows, Git automation configurations, and build architectures.",
-    externalLink: "https://pathed.org/synergy"
+    externalLink: "https://pathed.org/synergy",
+    coverImage: "https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o34",
@@ -574,7 +607,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 180,
     parthed_og: false,
     desc: "Connect with Microsoft product builders. Explore low-code development, serverless scaling, and code automation setups.",
-    externalLink: "https://build.microsoft.com"
+    externalLink: "https://build.microsoft.com",
+    coverImage: "https://images.unsplash.com/photo-1591115411646-657acc163242?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o35",
@@ -590,7 +624,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 90,
     parthed_og: false,
     desc: "WWDC wrap-up and networking meetup. Deep dive into CoreML, Swift Concurrency, and spatial app optimizations.",
-    externalLink: "https://developer.apple.com"
+    externalLink: "https://developer.apple.com",
+    coverImage: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=400"
   },
   {
     id: "o36",
@@ -606,7 +641,8 @@ const OPPORTUNITIES_DATABASE = [
     seatsLeft: 250,
     parthed_og: false,
     desc: "The cloud-native event gatherers. Connect with leading developers in Kubernetes infrastructure, observability tools, and service meshes.",
-    externalLink: "https://events.linuxfoundation.org"
+    externalLink: "https://events.linuxfoundation.org",
+    coverImage: "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&q=80&w=400"
   }
 ];
 
@@ -978,6 +1014,21 @@ export default function PlatformEvents() {
                             }}
                             className="opportunity-card-hover"
                           >
+                            {/* Cover Image */}
+                            <div style={{ width: "100%", height: 135, overflow: "hidden", position: "relative", background: "var(--bg-alt)" }}>
+                              <img 
+                                src={opp.coverImage} 
+                                alt={opp.title} 
+                                style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                              />
+                              {isLocked && (
+                                <div style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.65)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(2px)" }}>
+                                  <div style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(245,158,11,0.9)", color: "#fff", padding: "6px 12px", borderRadius: 8, fontSize: 11, fontWeight: 900 }}>
+                                    <Lock size={12} /> PREMIUM LOCKED
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                             
                             {/* Card Top Information */}
                             <div style={{ padding: 20 }}>
@@ -1327,53 +1378,65 @@ export default function PlatformEvents() {
 function AppliedOpportunityCard({ opp, handleApplyClick, setSelectedOpportunity }) {
   return (
     <div style={{
-      padding: 18, borderRadius: 16, background: "var(--bg-card)",
+      borderRadius: 16, background: "var(--bg-card)",
       border: opp.parthed_og ? "1.5px solid rgba(108,99,255,0.25)" : "1.5px solid var(--border-light)",
-      display: "flex", flexDirection: "column", gap: 12, position: "relative"
+      display: "flex", flexDirection: "column", position: "relative", overflow: "hidden",
+      boxShadow: "0 4px 15px rgba(0,0,0,0.02)"
     }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontSize: 11, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)" }}>{opp.organizer}</span>
-        
-        <span style={{
-          padding: "3px 8px", borderRadius: 6, 
-          background: opp.category === "hackathons" ? "rgba(0,201,167,0.08)" : "rgba(108,99,255,0.08)",
-          color: opp.category === "hackathons" ? "#00c9a7" : "#6c63ff",
-          fontSize: 10.5, fontFamily: "'Outfit', sans-serif", fontWeight: 900
-        }}>
-          Quest Enrolled
-        </span>
+      {/* Cover Image */}
+      <div style={{ width: "100%", height: 110, overflow: "hidden", background: "var(--bg-alt)" }}>
+        <img 
+          src={opp.coverImage} 
+          alt={opp.title} 
+          style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+        />
       </div>
 
-      <div>
-        <h4 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 900, color: "var(--text-main)" }}>
-          {opp.title}
-        </h4>
-        <span style={{ display: "block", fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>Prerequisite: <code>{opp.tech.split(",")[0]}</code></span>
-      </div>
+      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 11, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)" }}>{opp.organizer}</span>
+          
+          <span style={{
+            padding: "3px 8px", borderRadius: 6, 
+            background: opp.category === "hackathons" ? "rgba(0,201,167,0.08)" : "rgba(108,99,255,0.08)",
+            color: opp.category === "hackathons" ? "#00c9a7" : "#6c63ff",
+            fontSize: 10.5, fontFamily: "'Outfit', sans-serif", fontWeight: 900
+          }}>
+            Quest Enrolled
+          </span>
+        </div>
 
-      <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
-        <button
-          onClick={() => setSelectedOpportunity(opp)}
-          style={{
-            flex: 1, padding: "7px", borderRadius: 8, border: "1.5px solid var(--border-light)",
-            background: "var(--bg-alt)", color: "var(--text-main)", 
-            fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 800, cursor: "pointer"
-          }}
-        >
-          Details
-        </button>
-        <button
-          onClick={() => handleApplyClick(opp)}
-          style={{
-            flex: 1.2, padding: "7px", borderRadius: 8, border: "1.5px solid #00c9a7",
-            background: "rgba(0,201,167,0.04)", color: "#00c9a7", 
-            fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 900, cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 3
-          }}
-        >
-          <CheckCircle2 size={12} color="#00c9a7" />
-          <span>Active Spot</span>
-        </button>
+        <div>
+          <h4 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 900, color: "var(--text-main)", lineHeight: 1.4 }}>
+            {opp.title}
+          </h4>
+          <span style={{ display: "block", fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>Prerequisite: <code>{opp.tech.split(",")[0]}</code></span>
+        </div>
+
+        <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+          <button
+            onClick={() => setSelectedOpportunity(opp)}
+            style={{
+              flex: 1, padding: "7px", borderRadius: 8, border: "1.5px solid var(--border-light)",
+              background: "var(--bg-alt)", color: "var(--text-main)", 
+              fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 800, cursor: "pointer"
+            }}
+          >
+            Details
+          </button>
+          <button
+            onClick={() => handleApplyClick(opp)}
+            style={{
+              flex: 1.2, padding: "7px", borderRadius: 8, border: "1.5px solid #00c9a7",
+              background: "rgba(0,201,167,0.04)", color: "#00c9a7", 
+              fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 900, cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 3
+            }}
+          >
+            <CheckCircle2 size={12} color="#00c9a7" />
+            <span>Active Spot</span>
+          </button>
+        </div>
       </div>
     </div>
   );
