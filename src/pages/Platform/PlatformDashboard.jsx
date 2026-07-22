@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import QuoteBanner from "../../components/dashboard/QuoteBanner";
 import AddWidgetModal from "../../components/dashboard/AddWidgetModal";
@@ -12,7 +12,16 @@ import {
 
 export default function PlatformDashboard() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const location = useLocation();
+  const queryTab = new URLSearchParams(location.search).get("tab");
+  const [activeTab, setActiveTab] = useState(queryTab || "dashboard");
+
+  useEffect(() => {
+    if (queryTab) {
+      setActiveTab(queryTab);
+    }
+  }, [queryTab]);
+
   const [activeWidgets, setActiveWidgets] = useState([]); // Default empty workspace
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [lockedModalFeature, setLockedModalFeature] = useState(null);

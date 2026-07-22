@@ -123,7 +123,7 @@ export default function Header() {
             {isAuthenticated ? (
               <>
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                  <Link to="/platform" style={{
+                  <Link to="/dashboard" style={{
                     background: "linear-gradient(135deg, #6c63ff, #00c9a7)",
                     color: "#ffffff", fontFamily: "'Outfit', sans-serif", fontWeight: 700,
                     fontSize: "14px", padding: "10px 22px", borderRadius: "14px",

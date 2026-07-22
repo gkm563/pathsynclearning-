@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Home, Map, Zap, BarChart2, Newspaper, 
+  Home, Map, Zap, BookOpen, BarChart2, Newspaper, 
   Rocket, Inbox, Lightbulb, Award, ShieldAlert, Users, ShoppingBag, Settings, X 
 } from "lucide-react";
 
@@ -13,6 +13,7 @@ export default function DashboardSidebar({ isOpen, onClose, activeTab, setActive
     { id: "dashboard", label: "Home", icon: <Home size={20} /> },
     { id: "roadmap", label: "Roadmap", icon: <Map size={20} /> },
     { id: "challenges", label: "Challenges", icon: <Zap size={20} /> },
+    { id: "memory-lane", label: "Memory Lane", icon: <BookOpen size={20} /> },
     { id: "progress", label: "Progress", icon: <BarChart2 size={20} /> },
     { id: "technews", label: "Tech News", icon: <Newspaper size={20} /> },
   ];
@@ -28,10 +29,24 @@ export default function DashboardSidebar({ isOpen, onClose, activeTab, setActive
   ];
 
   const handleNavClick = (item) => {
-    if (item.isStoreRoute) {
+    if (item.id === "dashboard") {
+      navigate("/dashboard");
+    } else if (item.id === "roadmap") {
+      navigate("/roadmap");
+    } else if (item.id === "challenges") {
+      navigate("/challenges");
+    } else if (item.id === "memory-lane") {
+      navigate("/memory-lane");
+    } else if (item.id === "technews") {
+      navigate("/technews");
+    } else if (item.isStoreRoute) {
       navigate("/store");
     } else {
-      setActiveTab(item.id);
+      if (window.location.pathname !== "/dashboard" && window.location.pathname !== "/platform") {
+        navigate(`/dashboard?tab=${item.id}`);
+      } else {
+        if (setActiveTab) setActiveTab(item.id);
+      }
     }
     onClose();
   };

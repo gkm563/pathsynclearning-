@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Bell, Sparkles, LayoutDashboard, Map, Zap, BookOpen, Newspaper, GraduationCap, Briefcase, Menu } from "lucide-react";
+import { Bell, Sparkles, LayoutDashboard, Map, Zap, BookOpen, BarChart2, Newspaper, GraduationCap, Briefcase, Menu } from "lucide-react";
 
 export default function DashboardHeader({ activeTab, setActiveTab, onToggleSidebar }) {
+  const navigate = useNavigate();
   const [mode, setMode] = useState("career"); // "career" or "academic"
 
   const navItems = [
@@ -11,8 +12,29 @@ export default function DashboardHeader({ activeTab, setActiveTab, onToggleSideb
     { id: "roadmap", label: "Roadmap", icon: <Map size={15} /> },
     { id: "challenges", label: "Challenges", icon: <Zap size={15} /> },
     { id: "memory-lane", label: "Memory Lane", icon: <BookOpen size={15} /> },
+    { id: "progress", label: "Progress", icon: <BarChart2 size={15} /> },
     { id: "technews", label: "TechNews", icon: <Newspaper size={15} /> },
   ];
+
+  const handleNavClick = (itemId) => {
+    if (itemId === "dashboard") {
+      navigate("/dashboard");
+    } else if (itemId === "roadmap") {
+      navigate("/roadmap");
+    } else if (itemId === "challenges") {
+      navigate("/challenges");
+    } else if (itemId === "memory-lane") {
+      navigate("/memory-lane");
+    } else if (itemId === "technews") {
+      navigate("/technews");
+    } else {
+      if (window.location.pathname !== "/dashboard" && window.location.pathname !== "/platform") {
+        navigate(`/dashboard?tab=${itemId}`);
+      } else {
+        if (setActiveTab) setActiveTab(itemId);
+      }
+    }
+  };
 
   return (
     <header style={{
@@ -49,14 +71,14 @@ export default function DashboardHeader({ activeTab, setActiveTab, onToggleSideb
           <span>Path<span style={{ color: "#6c63ff" }}>Ed</span></span>
         </Link>
 
-        {/* Header Navigation Links (Adjusted Size & Spacing) */}
+        {/* Header Navigation Links */}
         <nav style={{ display: "flex", alignItems: "center", gap: 4 }}>
           {navItems.map(item => {
             const isActive = activeTab === item.id;
             return (
               <button
                 key={item.id}
-                onClick={() => setActiveTab(item.id)}
+                onClick={() => handleNavClick(item.id)}
                 style={{
                   display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 12,
                   border: isActive ? "1.5px solid #6c63ff50" : "1px solid transparent",

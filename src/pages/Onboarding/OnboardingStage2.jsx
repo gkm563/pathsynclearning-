@@ -63,6 +63,24 @@ export default function OnboardingStage2() {
   const [customCareerInput, setCustomCareerInput] = useState("");
   const [isLaunching, setIsLaunching] = useState(false);
 
+  // Know Career Path Modal State
+  const [showKnowCareerModal, setShowKnowCareerModal] = useState(false);
+  const [knownCareerInput, setKnownCareerInput] = useState("");
+
+  const handleDirectCareerSubmit = (careerName) => {
+    const finalCareer = careerName || knownCareerInput.trim() || "Full-Stack Web Developer";
+    localStorage.setItem("pathEdSelectedCareer", finalCareer);
+    localStorage.setItem("pathEdStage2", JSON.stringify({
+      domains, tags, passion, pstyle, industry, chosenCareer: finalCareer
+    }));
+    setShowKnowCareerModal(false);
+    setIsLaunching(true);
+    setTimeout(() => {
+      setIsLaunching(false);
+      navigate("/onboarding/stage3");
+    }, 1400);
+  };
+
   const stages = [
     { num: 1, title: "Academic Foundation & DNA", status: "done" },
     { num: 2, title: "Career Ambition & Target Roles", status: "active" },
@@ -117,73 +135,143 @@ export default function OnboardingStage2() {
     { label: "⚡ Make Existing 10× Better", sub: "Optimization & refactoring" }
   ];
 
-  const aiGeneratedCareers = [
-    {
-      title: "Application Security Engineer",
-      score: 94,
-      difficulty: "Advanced", diffCol: "#e040fb", diffBg: "rgba(224,64,251,0.12)",
-      demand: "High Growth ↑", demandCol: "#00c9a7", demandBg: "rgba(0,201,167,0.12)",
-      cri: 88,
-      rank: 1,
-      accent: "#00c9a7", icon: "🔐",
-      brief: "Develop secure applications by integrating security measures, testing vulnerabilities, and ensuring code compliance. You're the last line of defence before a product ships.",
-      skills: ["Security Protocols", "Penetration Testing", "Secure Coding", "OWASP", "Python"],
-      why: "Matches your Firefighter style + Cybersecurity affinity",
-      sector: "Fintech / Banking"
-    },
-    {
-      title: "ML / AI Engineer",
-      score: 91,
-      difficulty: "Advanced", diffCol: "#e040fb", diffBg: "rgba(224,64,251,0.12)",
-      demand: "Very High ↑↑", demandCol: "#00c9a7", demandBg: "rgba(0,201,167,0.12)",
-      cri: 85,
-      rank: 2,
-      accent: "#6c63ff", icon: "🤖",
-      brief: "Build intelligent systems that learn from data — from training neural network models to deploying them in production microservices.",
-      skills: ["Python", "TensorFlow", "PyTorch", "Data Pipelines", "MLOps"],
-      why: "Matches your Researcher style + AI/ML domain interest",
-      sector: "Healthtech / Fintech"
-    },
-    {
-      title: "Full-Stack Product Engineer",
-      score: 87,
-      difficulty: "Intermediate", diffCol: "#f7971e", diffBg: "rgba(247,151,30,0.12)",
-      demand: "Stable ↑", demandCol: "#f7971e", demandBg: "rgba(247,151,30,0.12)",
-      cri: 82,
-      rank: 3,
-      accent: "#f7971e", icon: "🏗️",
-      brief: "Own the full product lifecycle — from database schema to pixel-perfect UI. You're the generalist every startup needs to ship fast.",
-      skills: ["React", "Node.js", "PostgreSQL", "Docker", "REST APIs"],
-      why: "Matches your Builder passion + Startup preference",
-      sector: "EdTech / E-commerce"
-    },
-    {
-      title: "Data & BI Analyst",
-      score: 83,
-      difficulty: "Intermediate", diffCol: "#f7971e", diffBg: "rgba(247,151,30,0.12)",
-      demand: "High Growth ↑", demandCol: "#00c9a7", demandBg: "rgba(0,201,167,0.12)",
-      cri: 78,
-      rank: 4,
-      accent: "#e040fb", icon: "📊",
-      brief: "Transform raw data into strategic decisions. You'll build real-time dashboards, uncover trends, and present findings that shape product roadmaps.",
-      skills: ["SQL", "Python", "Tableau", "Power BI", "Statistics"],
-      why: "Matches your Researcher style + Data Analytics domain",
-      sector: "E-commerce / Fintech"
-    },
-    {
-      title: "DevOps / Platform Engineer",
-      score: 79,
-      difficulty: "Intermediate", diffCol: "#f7971e", diffBg: "rgba(247,151,30,0.12)",
-      demand: "High Growth ↑", demandCol: "#00c9a7", demandBg: "rgba(0,201,167,0.12)",
-      cri: 81,
-      rank: 5,
-      accent: "#00c9a7", icon: "☁️",
-      brief: "Keep the system running. Build CI/CD pipelines, manage cloud infra, and ensure zero-downtime deployments letting product teams ship fearlessly.",
-      skills: ["Kubernetes", "AWS", "Terraform", "Linux", "CI/CD"],
-      why: "Matches your Architect style + Cloud Systems interest",
-      sector: "Enterprise / SaaS"
+  // DYNAMIC CAREER CALCULATION BASED ON ACTUAL USER INPUTS
+  const getDynamicCareers = () => {
+    const isUnfilled = domains.length === 0 && !industry && !passion && !pstyle && !risk && tags.length === 0 && !company && !vision;
+
+    if (isUnfilled) {
+      return [
+        {
+          title: "Full-Stack Product Engineer",
+          score: 55,
+          difficulty: "Intermediate", diffCol: "#f7971e", diffBg: "rgba(247,151,30,0.12)",
+          demand: "High Demand ↑", demandCol: "#00c9a7", demandBg: "rgba(0,201,167,0.12)",
+          cri: 50, rank: 1, accent: "#6c63ff", icon: "🏗️",
+          brief: "Build modern web and cloud applications. Default generalist baseline path for software engineering.",
+          skills: ["React", "Node.js", "JavaScript", "SQL", "Git"],
+          why: "Uncalibrated Baseline — Select preferences in Stage 2 to personalize your match score!",
+          sector: "General Tech"
+        },
+        {
+          title: "Application Security Engineer",
+          score: 50,
+          difficulty: "Advanced", diffCol: "#e040fb", diffBg: "rgba(224,64,251,0.12)",
+          demand: "High Growth ↑", demandCol: "#00c9a7", demandBg: "rgba(0,201,167,0.12)",
+          cri: 48, rank: 2, accent: "#00c9a7", icon: "🔐",
+          brief: "Audit code bases and protect application infrastructure against security vulnerabilities.",
+          skills: ["Security Protocols", "Penetration Testing", "Secure Coding", "OWASP", "Python"],
+          why: "Uncalibrated Baseline — Select preferences in Stage 2 to personalize your match score!",
+          sector: "Fintech / Banking"
+        },
+        {
+          title: "ML / AI Engineer",
+          score: 48,
+          difficulty: "Advanced", diffCol: "#e040fb", diffBg: "rgba(224,64,251,0.12)",
+          demand: "Very High ↑↑", demandCol: "#00c9a7", demandBg: "rgba(0,201,167,0.12)",
+          cri: 45, rank: 3, accent: "#f7971e", icon: "🤖",
+          brief: "Develop machine learning algorithms and integrate intelligence models into product pipelines.",
+          skills: ["Python", "TensorFlow", "PyTorch", "Data Pipelines", "MLOps"],
+          why: "Uncalibrated Baseline — Select preferences in Stage 2 to personalize your match score!",
+          sector: "AI & Automation"
+        },
+        {
+          title: "Data & BI Analyst",
+          score: 42,
+          difficulty: "Intermediate", diffCol: "#f7971e", diffBg: "rgba(247,151,30,0.12)",
+          demand: "High Growth ↑", demandCol: "#00c9a7", demandBg: "rgba(0,201,167,0.12)",
+          cri: 40, rank: 4, accent: "#e040fb", icon: "📊",
+          brief: "Analyze data trends to guide engineering and business decision making.",
+          skills: ["SQL", "Python", "Tableau", "Power BI", "Statistics"],
+          why: "Uncalibrated Baseline — Select preferences in Stage 2 to personalize your match score!",
+          sector: "E-Commerce"
+        },
+        {
+          title: "DevOps / Platform Engineer",
+          score: 38,
+          difficulty: "Intermediate", diffCol: "#f7971e", diffBg: "rgba(247,151,30,0.12)",
+          demand: "High Growth ↑", demandCol: "#00c9a7", demandBg: "rgba(0,201,167,0.12)",
+          cri: 35, rank: 5, accent: "#00c9a7", icon: "☁️",
+          brief: "Manage cloud servers, build automation, and deploy scalable microservices.",
+          skills: ["Kubernetes", "AWS", "Docker", "Linux", "CI/CD"],
+          why: "Uncalibrated Baseline — Select preferences in Stage 2 to personalize your match score!",
+          sector: "Cloud Infrastructure"
+        }
+      ];
     }
-  ];
+
+    // Dynamic Scoring calculation when preferences ARE selected
+    const hasCyber = domains.includes("Cybersecurity") || pstyle === "The Firefighter";
+    const hasAI = domains.includes("AI / ML") || pstyle === "The Researcher";
+    const hasDev = domains.includes("Software Dev") || passion === "build";
+    const hasData = domains.includes("Data Analytics");
+    const hasCloud = domains.includes("Cloud Systems") || domains.includes("DevOps / Infra") || pstyle === "The Architect";
+
+    const baseWhy = [
+      pstyle && `Style: ${pstyle}`,
+      domains.length > 0 && `Domains: ${domains.slice(0, 2).join(", ")}`,
+      industry && `Industry: ${industry}`
+    ].filter(Boolean).join(" + ");
+
+    return [
+      {
+        title: "Application Security Engineer",
+        score: hasCyber ? 94 : 72,
+        difficulty: "Advanced", diffCol: "#e040fb", diffBg: "rgba(224,64,251,0.12)",
+        demand: "High Growth ↑", demandCol: "#00c9a7", demandBg: "rgba(0,201,167,0.12)",
+        cri: 88, rank: hasCyber ? 1 : 3, accent: "#00c9a7", icon: "🔐",
+        brief: "Develop secure applications by integrating security measures, testing vulnerabilities, and ensuring code compliance.",
+        skills: ["Security Protocols", "Penetration Testing", "Secure Coding", "OWASP", "Python"],
+        why: hasCyber ? `Matches your ${baseWhy}` : "General Engineering Security Option",
+        sector: industry || "Fintech / Banking"
+      },
+      {
+        title: "ML / AI Engineer",
+        score: hasAI ? 92 : 75,
+        difficulty: "Advanced", diffCol: "#e040fb", diffBg: "rgba(224,64,251,0.12)",
+        demand: "Very High ↑↑", demandCol: "#00c9a7", demandBg: "rgba(0,201,167,0.12)",
+        cri: 85, rank: hasAI ? 1 : 2, accent: "#6c63ff", icon: "🤖",
+        brief: "Build intelligent systems that learn from data — from training neural network models to deploying production microservices.",
+        skills: ["Python", "TensorFlow", "PyTorch", "Data Pipelines", "MLOps"],
+        why: hasAI ? `Matches your ${baseWhy}` : "AI & Intelligence Focus",
+        sector: industry || "Healthtech / Fintech"
+      },
+      {
+        title: "Full-Stack Product Engineer",
+        score: hasDev ? 90 : 78,
+        difficulty: "Intermediate", diffCol: "#f7971e", diffBg: "rgba(247,151,30,0.12)",
+        demand: "Stable ↑", demandCol: "#f7971e", demandBg: "rgba(247,151,30,0.12)",
+        cri: 82, rank: hasDev ? 1 : 2, accent: "#f7971e", icon: "🏗️",
+        brief: "Own the full product lifecycle — from database schema to pixel-perfect UI.",
+        skills: ["React", "Node.js", "PostgreSQL", "Docker", "REST APIs"],
+        why: hasDev ? `Matches your ${baseWhy}` : "Product & Full Stack Focus",
+        sector: industry || "EdTech / E-commerce"
+      },
+      {
+        title: "Data & BI Analyst",
+        score: hasData ? 88 : 68,
+        difficulty: "Intermediate", diffCol: "#f7971e", diffBg: "rgba(247,151,30,0.12)",
+        demand: "High Growth ↑", demandCol: "#00c9a7", demandBg: "rgba(0,201,167,0.12)",
+        cri: 78, rank: 4, accent: "#e040fb", icon: "📊",
+        brief: "Transform raw data into strategic decisions. Build real-time dashboards and uncover trends.",
+        skills: ["SQL", "Python", "Tableau", "Power BI", "Statistics"],
+        why: hasData ? `Matches your ${baseWhy}` : "Analytics Option",
+        sector: industry || "E-commerce / Fintech"
+      },
+      {
+        title: "DevOps / Platform Engineer",
+        score: hasCloud ? 86 : 65,
+        difficulty: "Intermediate", diffCol: "#f7971e", diffBg: "rgba(247,151,30,0.12)",
+        demand: "High Growth ↑", demandCol: "#00c9a7", demandBg: "rgba(0,201,167,0.12)",
+        cri: 81, rank: 5, accent: "#00c9a7", icon: "☁️",
+        brief: "Keep systems running smoothly. Build CI/CD pipelines and manage cloud infra.",
+        skills: ["Kubernetes", "AWS", "Terraform", "Linux", "CI/CD"],
+        why: hasCloud ? `Matches your ${baseWhy}` : "Platform Infrastructure Option",
+        sector: industry || "Enterprise / SaaS"
+      }
+    ].sort((a, b) => b.score - a.score);
+  };
+
+  const aiGeneratedCareers = getDynamicCareers();
 
   const analysisSteps = [
     "Synthesizing Professional DNA & Domain Preferences...",
@@ -194,16 +282,16 @@ export default function OnboardingStage2() {
 
   // Dynamic Color Calculation for Q4 (Work Environment)
   const getEnvColor = (val) => {
-    if (val < 30) return "#7c3aed"; // Startup Purple
-    if (val > 70) return "#00c9a7"; // Corporate Teal
-    return "#c084fc"; // Transition Lavender
+    if (val < 30) return "#7c3aed";
+    if (val > 70) return "#00c9a7";
+    return "#c084fc";
   };
 
   // Dynamic Color Calculation for Q6 (Salary vs Impact)
   const getImpactColor = (val) => {
-    if (val < 30) return "#f7971e"; // High Salary Amber
-    if (val > 70) return "#00c9a7"; // Social Impact Teal
-    return "#f43f5e"; // Mid Rose
+    if (val < 30) return "#f7971e";
+    if (val > 70) return "#00c9a7";
+    return "#f43f5e";
   };
 
   const toggleDomain = (lbl) => {
@@ -231,6 +319,14 @@ export default function OnboardingStage2() {
   const handleAnalyze = () => {
     setIsAnalyzing(true);
     setAnalysisTextIndex(0);
+
+    localStorage.setItem("pathEdStage2", JSON.stringify({
+      domains,
+      tags,
+      passion,
+      pstyle,
+      industry
+    }));
 
     const stepInterval = setInterval(() => {
       setAnalysisTextIndex(prev => {
@@ -310,24 +406,24 @@ export default function OnboardingStage2() {
       <main style={{ maxWidth: 880, margin: "36px auto 0", padding: "0 24px" }}>
         
         {/* 2. TOP 4-STAGE MINIMAP TRACKER */}
-        <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: "24px 28px", marginBottom: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.04)" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative", marginBottom: 20 }}>
-            <div style={{ position: "absolute", left: 30, right: 30, top: 18, height: 3, background: "var(--border-light)", zIndex: 0 }} />
-            <div style={{ position: "absolute", left: 30, top: 18, height: 3, background: "linear-gradient(90deg, #6c63ff, #00c9a7)", zIndex: 1, width: "50%", transition: "width 0.4s ease" }} />
+        <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: "30px 36px", marginBottom: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.04)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative", marginBottom: 26 }}>
+            <div style={{ position: "absolute", left: 42, right: 42, top: 31, height: 3, background: "var(--border-light)", zIndex: 0 }} />
+            <div style={{ position: "absolute", left: 42, top: 31, height: 3, background: "linear-gradient(90deg, #6c63ff, #00c9a7)", zIndex: 1, width: "50%", transition: "width 0.4s ease" }} />
 
             {stages.map((stg) => (
-              <div key={stg.num} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, position: "relative", zIndex: 2 }}>
+              <div key={stg.num} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 11, position: "relative", zIndex: 2 }}>
                 <div style={{
-                  width: 38, height: 38, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-                  fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
+                  width: 62, height: 62, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+                  fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 800,
                   background: stg.status === "done" ? "linear-gradient(135deg, #00c9a7, #6c63ff)" : stg.status === "active" ? "linear-gradient(135deg, #6c63ff, #f7971e)" : "var(--bg-alt)",
                   color: stg.status === "done" || stg.status === "active" ? "#ffffff" : "var(--text-muted)",
                   border: stg.status === "pending" ? "2px solid var(--border-light)" : "none",
-                  boxShadow: stg.status === "active" ? "0 0 0 4px rgba(108,99,255,0.25)" : "none"
+                  boxShadow: stg.status === "active" ? "0 0 0 6px rgba(108,99,255,0.18), 0 6px 18px rgba(108,99,255,0.35)" : "none"
                 }}>
                   {stg.status === "done" ? "✓" : stg.num}
                 </div>
-                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700, color: stg.status === "active" ? "#6c63ff" : stg.status === "done" ? "#00c9a7" : "var(--text-muted)", textAlign: "center", maxWidth: 100 }}>
+                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 13, fontWeight: 700, color: stg.status === "active" ? "#6c63ff" : stg.status === "done" ? "#00c9a7" : "var(--text-muted)", textAlign: "center", maxWidth: 130, lineHeight: 1.35 }}>
                   {stg.title}
                 </div>
               </div>
@@ -509,7 +605,7 @@ export default function OnboardingStage2() {
                     {[
                       { key: "build", emoji: "🏗️", label: "The Builder", sub: "Creates from scratch" },
                       { key: "fix", emoji: "🔥", label: "The Firefighter", sub: "Finds & fixes flaws" },
-                      { key: "analyze", emoji: "🔭", label: "The Researcher", sub: "Analyzes patterns" },
+                      { key: "analyze", emoji: "🔬", label: "The Researcher", sub: "Analyzes patterns" },
                       { key: "design", emoji: "✨", label: "The Designer", sub: "Crafts UX experience" }
                     ].map(item => {
                       const isSelected = passion === item.key;
@@ -535,7 +631,7 @@ export default function OnboardingStage2() {
                   </div>
                 </div>
 
-                {/* Q4: Work Environment Preference Slider (DYNAMIC COLOR BASED ON THRESHOLD) */}
+                {/* Q4: Work Environment Preference Slider */}
                 <div style={{ marginBottom: 32 }}>
                   <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
                     <Layers size={18} color={getEnvColor(envSlider)} /> Q4. Work Environment Preference
@@ -599,7 +695,7 @@ export default function OnboardingStage2() {
               {/* CARD 3: SALARY, RISK & FAVORITE TOOLS */}
               <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
                 
-                {/* Q6: Salary vs Social Impact Priority (DYNAMIC COLOR SLIDER) */}
+                {/* Q6: Salary vs Social Impact Priority */}
                 <div style={{ marginBottom: 32 }}>
                   <label style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)", marginBottom: 6 }}>
                     <Rocket size={18} color={getImpactColor(impactSlider)} /> Q6. Salary vs. Social Impact Priority
@@ -905,13 +1001,13 @@ export default function OnboardingStage2() {
               </div>
 
               {/* AI MATCH BUTTON ACTION */}
-              <div style={{ textAlign: "center", marginTop: 12 }}>
+              <div style={{ textAlign: "center", marginTop: 16, display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap" }}>
                 <button
                   type="button"
                   onClick={handleAnalyze}
                   disabled={isAnalyzing}
                   style={{
-                    padding: "16px 40px", borderRadius: 18, border: "none",
+                    padding: "16px 36px", borderRadius: 18, border: "none",
                     background: "linear-gradient(135deg, #6c63ff, #00c9a7)", color: "#ffffff",
                     fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800,
                     cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 10,
@@ -919,6 +1015,20 @@ export default function OnboardingStage2() {
                   }}
                 >
                   <Sparkles size={18} /> {isAnalyzing ? "Analyzing Career DNA..." : "Analyze & Match My Target Careers"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowKnowCareerModal(true)}
+                  style={{
+                    padding: "16px 32px", borderRadius: 18,
+                    border: "1.5px solid #6c63ff", background: "rgba(108,99,255,0.08)",
+                    color: "#6c63ff", fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800,
+                    cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 10,
+                    transition: "all 0.2s"
+                  }}
+                >
+                  🎯 I Already Know My Career Path
                 </button>
               </div>
 
@@ -943,7 +1053,7 @@ export default function OnboardingStage2() {
                 Your Top 5 <span style={{ background: "linear-gradient(135deg, #6c63ff, #00c9a7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AI Career Blueprints</span>
               </h1>
               <p style={{ fontSize: 16.5, color: "var(--text-muted)", margin: 0, lineHeight: 1.6, maxWidth: 620 }}>
-                Based on your professional DNA, problem-solving style, and industry interests, Gemini AI has synthesized these high-potential engineering paths.
+                {completionPct === 0 ? "Showing baseline uncalibrated matches (0 questions answered). Fill choices in Stage 2 to boost match scores!" : "Based on your professional DNA, problem-solving style, and industry interests, Gemini AI has synthesized these high-potential engineering paths."}
               </p>
             </div>
 
@@ -1090,6 +1200,115 @@ export default function OnboardingStage2() {
                   style={{ height: "100%", background: "linear-gradient(90deg, #6c63ff, #00c9a7, #f7971e)" }}
                 />
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* MINI POPUP MODAL: I ALREADY KNOW MY CAREER PATH */}
+      <AnimatePresence>
+        {showKnowCareerModal && (
+          <div
+            onClick={() => setShowKnowCareerModal(false)}
+            style={{
+              position: "fixed", inset: 0, background: "rgba(10, 10, 24, 0.75)",
+              backdropFilter: "blur(12px)", zIndex: 300,
+              display: "flex", alignItems: "center", justifyContent: "center", padding: 20
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              onClick={e => e.stopPropagation()}
+              style={{
+                background: "var(--bg-card)", borderRadius: 24, padding: 32,
+                maxWidth: 500, width: "100%", border: "1.5px solid var(--border-light)",
+                boxShadow: "0 24px 64px rgba(0,0,0,0.2)"
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 26 }}>🎯</span>
+                  <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 800, color: "var(--text-main)", margin: 0 }}>
+                    Enter Your Chosen Career Path
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setShowKnowCareerModal(false)}
+                  style={{
+                    width: 32, height: 32, borderRadius: 10, background: "var(--bg-alt)",
+                    border: "1px solid var(--border-light)", cursor: "pointer", fontSize: 14,
+                    color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center"
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <p style={{ fontSize: 13.5, color: "var(--text-muted)", marginBottom: 18, lineHeight: 1.5 }}>
+                Skip AI recommendations and directly configure your public profile & 4-year SDE roadmap for your target career role.
+              </p>
+
+              <div style={{ marginBottom: 18 }}>
+                <label style={{ display: "block", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 700, color: "var(--text-main)", marginBottom: 8 }}>
+                  Type your target career title:
+                </label>
+                <input
+                  type="text"
+                  value={knownCareerInput}
+                  onChange={e => setKnownCareerInput(e.target.value)}
+                  placeholder="e.g. Full-Stack Web Developer, AI/ML Engineer..."
+                  style={{
+                    width: "100%", padding: "14px 18px", borderRadius: 14,
+                    background: "var(--bg-alt)", border: "1.5px solid #6c63ff",
+                    fontSize: 15, color: "var(--text-main)", outline: "none"
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: 22 }}>
+                <label style={{ display: "block", fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 700, color: "var(--text-muted)", marginBottom: 10 }}>
+                  OR QUICK SELECT A POPULAR ROLE:
+                </label>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {[
+                    "Full-Stack Web Developer",
+                    "AI / ML Engineer",
+                    "Cloud & DevOps Engineer",
+                    "Data Scientist",
+                    "Cybersecurity Analyst",
+                    "Mobile App Developer"
+                  ].map(role => (
+                    <button
+                      key={role}
+                      type="button"
+                      onClick={() => handleDirectCareerSubmit(role)}
+                      style={{
+                        padding: "8px 14px", borderRadius: 12,
+                        background: "rgba(108,99,255,0.1)", border: "1px solid #6c63ff40",
+                        color: "#6c63ff", fontFamily: "'Outfit', sans-serif", fontSize: 13,
+                        fontWeight: 600, cursor: "pointer", transition: "all 0.2s"
+                      }}
+                    >
+                      + {role}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handleDirectCareerSubmit()}
+                style={{
+                  width: "100%", padding: "14px", borderRadius: 16, border: "none",
+                  background: "linear-gradient(135deg, #6c63ff, #00c9a7)", color: "#fff",
+                  fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800,
+                  cursor: "pointer", boxShadow: "0 8px 24px rgba(108,99,255,0.3)"
+                }}
+              >
+                Save & Continue to Stage 3 →
+              </button>
             </motion.div>
           </div>
         )}

@@ -165,7 +165,7 @@ export default function Login() {
         localStorage.setItem("isAuthenticated", "true");
         localStorage.setItem("userRegistered", "true");
         window.dispatchEvent(new Event("storage"));
-        setTimeout(() => navigate(role === 'student' ? '/platform' : '/'), 400);
+        setTimeout(() => navigate(role === 'student' ? '/dashboard' : '/'), 400);
       }
     }, 300);
   };

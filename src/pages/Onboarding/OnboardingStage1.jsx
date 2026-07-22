@@ -68,6 +68,14 @@ export default function OnboardingStage1() {
       return;
     }
     setValidationError("");
+    localStorage.setItem("pathEdStage1", JSON.stringify({
+      name: fullName,
+      college: university,
+      roll: rollNumber,
+      branch: branch,
+      semester: semester,
+      cgpa: cgpa
+    }));
     setIsTransitioning(true);
     setTimeout(() => {
       setIsTransitioning(false);
@@ -120,24 +128,24 @@ export default function OnboardingStage1() {
       <main style={{ maxWidth: 880, margin: "36px auto 0", padding: "0 24px" }}>
         
         {/* 2. TOP 4-STAGE MINIMAP PROGRESS TRACKER */}
-        <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: "24px 28px", marginBottom: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.04)" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative", marginBottom: 20 }}>
-            <div style={{ position: "absolute", left: 30, right: 30, top: 18, height: 3, background: "var(--border-light)", zIndex: 0 }} />
-            <div style={{ position: "absolute", left: 30, top: 18, height: 3, background: "linear-gradient(90deg, #6c63ff, #00c9a7)", zIndex: 1, width: `${(completionPct / 100) * 25}%`, transition: "width 0.4s ease" }} />
+        <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: "30px 36px", marginBottom: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.04)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative", marginBottom: 26 }}>
+            <div style={{ position: "absolute", left: 42, right: 42, top: 31, height: 3, background: "var(--border-light)", zIndex: 0 }} />
+            <div style={{ position: "absolute", left: 42, top: 31, height: 3, background: "linear-gradient(90deg, #6c63ff, #00c9a7)", zIndex: 1, width: `${(completionPct / 100) * 25}%`, transition: "width 0.4s ease" }} />
 
             {stages.map((stg) => (
-              <div key={stg.num} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, position: "relative", zIndex: 2 }}>
+              <div key={stg.num} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 11, position: "relative", zIndex: 2 }}>
                 <div style={{
-                  width: 38, height: 38, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-                  fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800,
+                  width: 62, height: 62, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+                  fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 800,
                   background: stg.status === "active" ? "linear-gradient(135deg, #6c63ff, #00c9a7)" : "var(--bg-alt)",
                   color: stg.status === "active" ? "#ffffff" : "var(--text-muted)",
                   border: stg.status === "active" ? "none" : "2px solid var(--border-light)",
-                  boxShadow: stg.status === "active" ? "0 4px 14px rgba(108,99,255,0.4)" : "none"
+                  boxShadow: stg.status === "active" ? "0 0 0 6px rgba(108,99,255,0.18), 0 6px 18px rgba(108,99,255,0.35)" : "none"
                 }}>
                   {stg.num}
                 </div>
-                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 700, color: stg.status === "active" ? "#6c63ff" : "var(--text-muted)", textAlign: "center", maxWidth: 100 }}>
+                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 13, fontWeight: 700, color: stg.status === "active" ? "#6c63ff" : "var(--text-muted)", textAlign: "center", maxWidth: 130, lineHeight: 1.35 }}>
                   {stg.title}
                 </div>
               </div>
