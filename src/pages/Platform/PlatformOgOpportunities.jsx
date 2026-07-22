@@ -251,6 +251,8 @@ export default function PlatformOgOpportunities() {
 
   // Application forms
   const [applyingOpportunity, setApplyingOpportunity] = useState(null);
+  const [applyFullName, setApplyFullName] = useState("Rahul Kushwaha");
+  const [applyEmail, setApplyEmail] = useState("rahul.kushwaha.sde@gmail.com");
   const [applyGithub, setApplyGithub] = useState("");
   const [applyPitch, setApplyPitch] = useState("");
 
