@@ -56,6 +56,12 @@ import PlatformProjectCollab from "./pages/Platform/PlatformProjectCollab";
 import PlatformAlumniNetwork from "./pages/Platform/PlatformAlumniNetwork";
 import PlatformHackSquad from "./pages/Platform/PlatformHackSquad";
 import PlatformEvents from "./pages/Platform/PlatformEvents";
+import PlatformPlacementInbox from "./pages/Platform/PlatformPlacementInbox";
+import PlatformPlacementInsights from "./pages/Platform/PlatformPlacementInsights";
+import PlatformRecordsCerts from "./pages/Platform/PlatformRecordsCerts";
+import PlatformOgOpportunities from "./pages/Platform/PlatformOgOpportunities";
+
+
 
 function App() {
   return (
@@ -88,6 +94,14 @@ function App() {
           <Route path="/platform/hacksquad" element={<PlatformHackSquad />} />
           <Route path="/events" element={<PlatformEvents />} />
           <Route path="/platform/events" element={<PlatformEvents />} />
+          <Route path="/placement-inbox" element={<PlatformPlacementInbox />} />
+          <Route path="/platform/placement-inbox" element={<PlatformPlacementInbox />} />
+          <Route path="/placement-insights" element={<PlatformPlacementInsights />} />
+          <Route path="/platform/placement-insights" element={<PlatformPlacementInsights />} />
+          <Route path="/records-certs" element={<PlatformRecordsCerts />} />
+          <Route path="/platform/records-certs" element={<PlatformRecordsCerts />} />
+          <Route path="/og-opportunities" element={<PlatformOgOpportunities />} />
+          <Route path="/platform/og-opportunities" element={<PlatformOgOpportunities />} />
           <Route path="/store" element={<Store />} />
           
           <Route path="/onboarding/stage1" element={<OnboardingStage1 />} />

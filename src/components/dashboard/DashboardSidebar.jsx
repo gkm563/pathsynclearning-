@@ -43,8 +43,10 @@ export default function DashboardSidebar({ isOpen, onClose, activeTab, setActive
       navigate("/mentorship");
     } else if (item.id === "project-collab") {
       navigate("/project-collab");
-    } else if (item.id === "hacksquad" || item.id === "hack-attack") {
+    } else if (item.id === "hacksquad") {
       navigate("/hacksquad");
+    } else if (item.id === "hack-attack") {
+      navigate("/og-opportunities");
     } else if (item.id === "alumni-network") {
       navigate("/alumni-network");
     } else if (item.id === "events") {
@@ -53,6 +55,12 @@ export default function DashboardSidebar({ isOpen, onClose, activeTab, setActive
       navigate("/technews");
     } else if (item.isStoreRoute) {
       navigate("/store");
+    } else if (item.id === "placement-inbox") {
+      navigate("/placement-inbox");
+    } else if (item.id === "placement-insights") {
+      navigate("/placement-insights");
+    } else if (item.id === "records-certs") {
+      navigate("/records-certs");
     } else {
       if (window.location.pathname !== "/dashboard" && window.location.pathname !== "/platform") {
         navigate(`/dashboard?tab=${item.id}`);

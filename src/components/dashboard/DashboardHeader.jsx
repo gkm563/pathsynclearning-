@@ -31,14 +31,22 @@ export default function DashboardHeader({ activeTab, setActiveTab, onToggleSideb
       navigate("/mentorship");
     } else if (itemId === "project-collab") {
       navigate("/project-collab");
-    } else if (itemId === "hacksquad" || itemId === "hack-attack") {
+    } else if (itemId === "hacksquad") {
       navigate("/hacksquad");
+    } else if (itemId === "hack-attack") {
+      navigate("/og-opportunities");
     } else if (itemId === "events") {
       navigate("/events");
     } else if (itemId === "alumni-network") {
       navigate("/alumni-network");
     } else if (itemId === "technews") {
       navigate("/technews");
+    } else if (itemId === "placement-inbox") {
+      navigate("/placement-inbox");
+    } else if (itemId === "placement-insights") {
+      navigate("/placement-insights");
+    } else if (itemId === "records-certs") {
+      navigate("/records-certs");
     } else {
       if (window.location.pathname !== "/dashboard" && window.location.pathname !== "/platform") {
         navigate(`/dashboard?tab=${itemId}`);

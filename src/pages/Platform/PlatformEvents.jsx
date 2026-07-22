@@ -20,7 +20,7 @@ const COLS = {
 };
 
 /* ─── OPPORTUNITIES DATASET (36 HIGH-FIDELITY CARDS across 6 CATEGORIES) ─── */
-const OPPORTUNITIES_DATABASE = [
+export const OPPORTUNITIES_DATABASE = [
   // ==================== HACKATHONS & COMPETITIONS ====================
   {
     id: "o1",
