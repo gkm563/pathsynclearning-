@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Home, Map, Zap, BookOpen, BarChart2, Newspaper, 
-  Rocket, Inbox, Lightbulb, Award, ShieldAlert, Users, ShoppingBag, Settings, X, Globe 
+  Rocket, Inbox, Lightbulb, Award, ShieldAlert, Users, ShoppingBag, Settings, X, Globe, Calendar 
 } from "lucide-react";
 
 export default function DashboardSidebar({ isOpen, onClose, activeTab, setActiveTab }) {
