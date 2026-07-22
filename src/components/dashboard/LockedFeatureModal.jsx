@@ -89,7 +89,17 @@ export default function LockedFeatureModal({ feature, isOpen, onClose }) {
             <button
               onClick={() => {
                 onClose();
-                navigate("/store");
+                if (feature.id === "project-collab") {
+                  navigate("/project-collab");
+                } else if (feature.id === "alumni-network") {
+                  navigate("/alumni-network");
+                } else if (feature.id === "hack-squad" || feature.id === "hack-attack") {
+                  navigate("/hacksquad");
+                } else if (feature.id === "events") {
+                  navigate("/events");
+                } else {
+                  navigate("/mentorship");
+                }
               }}
               style={{
                 flex: 1.5, padding: "12px", borderRadius: 12, background: "linear-gradient(135deg, #6c63ff, #00c9a7)", border: "none", color: "#ffffff",

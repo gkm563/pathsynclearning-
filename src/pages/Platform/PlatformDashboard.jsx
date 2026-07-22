@@ -36,12 +36,6 @@ export default function PlatformDashboard() {
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
-
-  const handleTogglePlan = (plan) => {
-    setDevPlan(plan);
-    localStorage.setItem("dev_mode_plan", plan);
-    window.dispatchEvent(new Event("storage"));
-  };
   
   // Expandable Career Goal Details State
   const [isGoalExpanded, setIsGoalExpanded] = useState(false);
@@ -283,51 +277,6 @@ export default function PlatformDashboard() {
 
   return (
     <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
-      
-      {/* DEVELOPER TESTING MODE PLAN TOGGLE BANNER */}
-      <div style={{ 
-        background: devPlan === "premium" 
-          ? "linear-gradient(135deg, rgba(0, 201, 167, 0.08) 0%, rgba(108, 99, 255, 0.08) 100%)" 
-          : "rgba(245, 158, 11, 0.08)",
-        border: devPlan === "premium" ? "1.5px solid #00c9a7" : "1.5px solid #f59e0b",
-        borderRadius: 24, padding: "16px 28px", display: "flex", flexWrap: "wrap",
-        justifyContent: "space-between", alignItems: "center", gap: 16, marginBottom: 28,
-        boxShadow: "0 10px 30px rgba(0,0,0,0.03)"
-      }}>
-        <div>
-          <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 900, color: devPlan === "premium" ? "#00c9a7" : "#f59e0b" }}>
-            DEVELOPER TESTING MODE
-          </div>
-          <h4 style={{ margin: "2px 0 0", fontFamily: "'Outfit', sans-serif", fontSize: 15.5, fontWeight: 800, color: "var(--text-main)" }}>
-            {devPlan === "premium" ? "✨ Premium Plan Activated: All summits and exclusive tracks unlocked." : "⚡ Free Plan Active: Locked exclusive summits are previewed."}
-          </h4>
-        </div>
-        <div style={{ display: "flex", background: "var(--bg-alt)", border: "1px solid var(--border-light)", padding: 4, borderRadius: 12, gap: 4 }}>
-          <button
-            onClick={() => handleTogglePlan("free")}
-            style={{
-              padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer",
-              fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 800, transition: "all 0.2s",
-              background: devPlan === "free" ? "#f59e0b" : "transparent",
-              color: devPlan === "free" ? "#ffffff" : "var(--text-muted)"
-            }}
-          >
-            Free Plan
-          </button>
-          <button
-            onClick={() => handleTogglePlan("premium")}
-            style={{
-              padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer",
-              fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 800, transition: "all 0.2s",
-              background: devPlan === "premium" ? "linear-gradient(135deg, #6c63ff, #00c9a7)" : "transparent",
-              color: devPlan === "premium" ? "#ffffff" : "var(--text-muted)",
-              boxShadow: devPlan === "premium" ? "0 4px 12px rgba(108,99,255,0.25)" : "none"
-            }}
-          >
-            Premium Plan
-          </button>
-        </div>
-      </div>
       
       {/* 1. TOP METRICS & CAREER GOAL BANNER WITH EXPANDABLE DETAILS */}
       <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: "28px 32px", marginBottom: 32, boxShadow: "0 10px 30px rgba(0,0,0,0.04)" }}>
@@ -953,16 +902,7 @@ export default function PlatformDashboard() {
               <div
                 key={item.id}
                 onClick={() => {
-                  if (isUnlocked) {
-                    if (item.id === "mentorship") navigate("/mentorship");
-                    else if (item.id === "project-collab") navigate("/project-collab");
-                    else if (item.id === "alumni-network") navigate("/alumni-network");
-                    else if (item.id === "hack-squad") navigate("/hacksquad");
-                    else if (item.id === "events") navigate("/events");
-                    else setLockedModalFeature(item);
-                  } else {
-                    setLockedModalFeature(item);
-                  }
+                  setLockedModalFeature(item);
                 }}
                 style={{
                   background: "var(--bg-card)",
