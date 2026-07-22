@@ -608,79 +608,79 @@ export default function PlatformOgOpportunities() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 24 }}
                 style={{
-                  background: "var(--bg-card)", borderRadius: 24, maxWidth: 600, width: "100%",
+                  background: "var(--bg-card)", borderRadius: 24, maxWidth: 750, width: "100%",
                   border: "1.5px solid var(--border-light)", boxShadow: "0 30px 80px rgba(0,0,0,0.35)",
                   overflow: "hidden", display: "flex", flexDirection: "column", position: "relative"
                 }}
               >
-                <div style={{ padding: "20px 24px", borderBottom: "1.5px solid var(--border-light)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <h4 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 900, color: "var(--text-main)" }}>
+                <div style={{ padding: "24px 28px", borderBottom: "1.5px solid var(--border-light)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <h4 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 22, fontWeight: 900, color: "var(--text-main)" }}>
                     Opportunity Profile & Prerequisites
                   </h4>
                   <button 
                     onClick={() => setSelectedOpportunity(null)}
-                    style={{ background: "var(--bg-alt)", border: "1px solid var(--border-light)", borderRadius: 50, width: 32, height: 32, cursor: "pointer", color: "var(--text-main)", display: "flex", alignItems: "center", justifyContent: "center" }}
+                    style={{ background: "var(--bg-alt)", border: "1px solid var(--border-light)", borderRadius: 50, width: 36, height: 36, cursor: "pointer", color: "var(--text-main)", display: "flex", alignItems: "center", justifyContent: "center" }}
                   >
-                    <X size={16} />
+                    <X size={18} />
                   </button>
                 </div>
 
-                <div style={{ padding: 24, overflowY: "auto", maxHeight: "70vh" }}>
-                  <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
+                <div style={{ padding: 28, overflowY: "auto", maxHeight: "70vh" }}>
+                  <div style={{ display: "flex", gap: 20, marginBottom: 24 }}>
                     <img 
                       src={selectedOpportunity.coverImage} 
                       alt={selectedOpportunity.title} 
-                      style={{ width: 120, height: 80, borderRadius: 12, objectFit: "cover", border: "1px solid var(--border-light)" }} 
+                      style={{ width: 160, height: 100, borderRadius: 12, objectFit: "cover", border: "1px solid var(--border-light)" }} 
                     />
                     <div>
-                      <span style={{ fontSize: 11, fontFamily: "'Fira Code', monospace", fontWeight: 800, background: "rgba(108,99,255,0.1)", color: "#6c63ff", padding: "3px 8px", borderRadius: 6 }}>
+                      <span style={{ fontSize: 13, fontFamily: "'Fira Code', monospace", fontWeight: 800, background: "rgba(108,99,255,0.1)", color: "#6c63ff", padding: "4px 10px", borderRadius: 6 }}>
                         {selectedOpportunity.organizer.toUpperCase()}
                       </span>
-                      <h3 style={{ margin: "6px 0 2px 0", fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 800, color: "var(--text-main)" }}>
+                      <h3 style={{ margin: "8px 0 4px 0", fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 800, color: "var(--text-main)", lineHeight: 1.3 }}>
                         {selectedOpportunity.title}
                       </h3>
-                      <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
-                        Mode: <strong>{selectedOpportunity.mode}</strong>
+                      <div style={{ fontSize: 15, color: "var(--text-muted)" }}>
+                        Mode: <strong style={{ color: "var(--text-main)" }}>{selectedOpportunity.mode}</strong>
                       </div>
                     </div>
                   </div>
 
-                  <p style={{ fontSize: 14.5, color: "var(--text-muted)", lineHeight: 1.6, marginBottom: 20 }}>
+                  <p style={{ fontSize: 16.5, color: "var(--text-muted)", lineHeight: 1.6, marginBottom: 24 }}>
                     {selectedOpportunity.desc}
                   </p>
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10, background: "var(--bg-alt)", padding: 18, borderRadius: 16, border: "1px solid var(--border-light)" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12, background: "var(--bg-alt)", padding: 24, borderRadius: 16, border: "1px solid var(--border-light)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15.5 }}>
                       <span style={{ color: "var(--text-muted)" }}>Category:</span>
                       <strong style={{ color: "var(--text-main)", textTransform: "capitalize" }}>{selectedOpportunity.category}</strong>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15.5 }}>
                       <span style={{ color: "var(--text-muted)" }}>Difficulty:</span>
                       <strong style={{ color: "var(--text-main)" }}>{selectedOpportunity.difficulty}</strong>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15.5 }}>
                       <span style={{ color: "var(--text-muted)" }}>Eligibility:</span>
                       <strong style={{ color: "var(--text-main)" }}>{selectedOpportunity.eligibility}</strong>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15.5 }}>
                       <span style={{ color: "var(--text-muted)" }}>Prizes / Perks:</span>
                       <strong style={{ color: "#00c9a7" }}>{selectedOpportunity.prizePool}</strong>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15.5 }}>
                       <span style={{ color: "var(--text-muted)" }}>Deadline:</span>
                       <strong style={{ color: "#ec4899" }}>{selectedOpportunity.deadline}</strong>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15.5 }}>
                       <span style={{ color: "var(--text-muted)" }}>Prerequisites:</span>
-                      <code style={{ color: "#6c63ff", fontWeight: 800 }}>{selectedOpportunity.tech}</code>
+                      <code style={{ color: "#6c63ff", fontWeight: 800, fontSize: 14 }}>{selectedOpportunity.tech}</code>
                     </div>
                   </div>
                 </div>
 
-                <div style={{ padding: "16px 24px", borderTop: "1.5px solid var(--border-light)", background: "var(--bg-alt)", display: "flex", gap: 12, justifyContent: "flex-end" }}>
+                <div style={{ padding: "20px 28px", borderTop: "1.5px solid var(--border-light)", background: "var(--bg-alt)", display: "flex", gap: 14, justifyContent: "flex-end" }}>
                   <button 
                     onClick={() => setSelectedOpportunity(null)}
-                    style={{ padding: "10px 18px", borderRadius: 10, border: "1.5px solid var(--border-light)", background: "var(--bg-card)", color: "var(--text-muted)", cursor: "pointer", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800 }}
+                    style={{ padding: "12px 24px", borderRadius: 10, border: "1.5px solid var(--border-light)", background: "var(--bg-card)", color: "var(--text-muted)", cursor: "pointer", fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800 }}
                   >
                     Close
                   </button>
@@ -697,7 +697,7 @@ export default function PlatformOgOpportunities() {
                         handleApplyClick(selectedOpportunity);
                       }
                     }}
-                    style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: "linear-gradient(135deg, #6c63ff, #00c9a7)", color: "#fff", cursor: "pointer", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 900 }}
+                    style={{ padding: "12px 26px", borderRadius: 10, border: "none", background: "linear-gradient(135deg, #6c63ff, #00c9a7)", color: "#fff", cursor: "pointer", fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 900 }}
                   >
                     {selectedOpportunity.id.startsWith("og_")
                       ? appliedOgIds.includes(selectedOpportunity.id) ? "Enrolled" : "Apply Spot"
@@ -728,89 +728,89 @@ export default function PlatformOgOpportunities() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 24 }}
                 style={{
-                  background: "var(--bg-card)", borderRadius: 24, maxWidth: 540, width: "100%",
+                  background: "var(--bg-card)", borderRadius: 24, maxWidth: 720, width: "100%",
                   border: "1.5px solid rgba(108,99,255,0.3)", boxShadow: "0 30px 80px rgba(108,99,255,0.15)",
                   overflow: "hidden", display: "flex", flexDirection: "column", position: "relative"
                 }}
               >
-                <div style={{ padding: "20px 24px", borderBottom: "1.5px solid var(--border-light)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <h4 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 900, color: "var(--text-main)" }}>
+                <div style={{ padding: "24px 28px", borderBottom: "1.5px solid var(--border-light)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <h4 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 22, fontWeight: 900, color: "var(--text-main)" }}>
                     🎪 PathEd OG Application Form
                   </h4>
-                  <button onClick={() => setApplyingOpportunity(null)} style={{ position: "absolute", right: 20, top: 20, width: 32, height: 32, borderRadius: 10, border: "none", background: "var(--bg-alt)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-main)", fontSize: 20 }}>
+                  <button onClick={() => setApplyingOpportunity(null)} style={{ position: "absolute", right: 24, top: 24, width: 36, height: 36, borderRadius: 10, border: "none", background: "var(--bg-alt)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-main)", fontSize: 24 }}>
                     ×
                   </button>
                 </div>
 
-                <form onSubmit={handleApplySubmit} style={{ padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
+                <form onSubmit={handleApplySubmit} style={{ padding: 28, display: "flex", flexDirection: "column", gap: 20 }}>
                   
-                  <div style={{ display: "flex", gap: 10, padding: 12, borderRadius: 12, background: "rgba(108,99,255,0.06)", border: "1px solid rgba(108,99,255,0.2)" }}>
-                    <Sparkles size={18} color="#6c63ff" style={{ flexShrink: 0, marginTop: 2 }} />
-                    <span style={{ fontSize: 12.5, color: "#6c63ff", fontWeight: 700, lineHeight: 1.4 }}>
+                  <div style={{ display: "flex", gap: 12, padding: 16, borderRadius: 12, background: "rgba(108,99,255,0.06)", border: "1px solid rgba(108,99,255,0.2)" }}>
+                    <Sparkles size={20} color="#6c63ff" style={{ flexShrink: 0, marginTop: 2 }} />
+                    <span style={{ fontSize: 15, color: "#6c63ff", fontWeight: 700, lineHeight: 1.45 }}>
                       Apply natively to <strong>{applyingOpportunity.title}</strong>. This application will be reviewed directly by the organizers.
                     </span>
                   </div>
 
                   <div>
-                    <label style={{ display: "block", fontSize: 11, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)", marginBottom: 6 }}>STUDENT FULL NAME</label>
+                    <label style={{ display: "block", fontSize: 13, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)", marginBottom: 8 }}>STUDENT FULL NAME</label>
                     <input
                       type="text"
                       required
                       value={applyFullName}
                       onChange={e => setApplyFullName(e.target.value)}
-                      style={{ width: "100%", padding: "10px", borderRadius: 10, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)", outline: "none", fontFamily: "'Outfit', sans-serif", fontSize: 13.5 }}
+                      style={{ width: "100%", padding: "14px", borderRadius: 10, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)", outline: "none", fontFamily: "'Outfit', sans-serif", fontSize: 15.5 }}
                     />
                   </div>
 
                   <div>
-                    <label style={{ display: "block", fontSize: 11, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)", marginBottom: 6 }}>EMAIL ADDRESS</label>
+                    <label style={{ display: "block", fontSize: 13, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)", marginBottom: 8 }}>EMAIL ADDRESS</label>
                     <input
                       type="email"
                       required
                       value={applyEmail}
                       onChange={e => setApplyEmail(e.target.value)}
-                      style={{ width: "100%", padding: "10px", borderRadius: 10, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)", outline: "none", fontFamily: "'Outfit', sans-serif", fontSize: 13.5 }}
+                      style={{ width: "100%", padding: "14px", borderRadius: 10, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)", outline: "none", fontFamily: "'Outfit', sans-serif", fontSize: 15.5 }}
                     />
                   </div>
 
                   <div>
-                    <label style={{ display: "block", fontSize: 11, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)", marginBottom: 6 }}>GITHUB PROFILE LINK</label>
+                    <label style={{ display: "block", fontSize: 13, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)", marginBottom: 8 }}>GITHUB PROFILE LINK</label>
                     <input
                       type="url"
                       required
                       value={applyGithub}
                       onChange={e => setApplyGithub(e.target.value)}
                       placeholder="https://github.com/your-username"
-                      style={{ width: "100%", padding: "10px", borderRadius: 10, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)", outline: "none", fontFamily: "'Outfit', sans-serif", fontSize: 13.5 }}
+                      style={{ width: "100%", padding: "14px", borderRadius: 10, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)", outline: "none", fontFamily: "'Outfit', sans-serif", fontSize: 15.5 }}
                     />
                   </div>
 
                   <div>
-                    <label style={{ display: "block", fontSize: 11, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)", marginBottom: 6 }}>STATEMENT OF PURPOSE / EXPERIENCES</label>
+                    <label style={{ display: "block", fontSize: 13, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)", marginBottom: 8 }}>STATEMENT OF PURPOSE / EXPERIENCES</label>
                     <textarea
                       required
                       value={applyPitch}
                       onChange={e => setApplyPitch(e.target.value)}
                       placeholder="Why should you be selected for this exclusive PathEd opportunity? Highlight your skills..."
                       style={{
-                        width: "100%", height: 90, borderRadius: 10, background: "var(--bg-alt)",
+                        width: "100%", height: 140, borderRadius: 10, background: "var(--bg-alt)",
                         border: "1.5px solid var(--border-light)", color: "var(--text-main)",
-                        fontFamily: "'Outfit', sans-serif", fontSize: 13.5, padding: 12, outline: "none", resize: "none"
+                        fontFamily: "'Outfit', sans-serif", fontSize: 15.5, padding: 14, outline: "none", resize: "none"
                       }}
                     />
                   </div>
 
-                  <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 14, marginTop: 10 }}>
                     <button 
                       type="button"
                       onClick={() => setApplyingOpportunity(null)}
-                      style={{ flex: 1, padding: "12px", borderRadius: 12, border: "1.5px solid var(--border-light)", background: "var(--bg-alt)", color: "var(--text-main)", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800, cursor: "pointer" }}
+                      style={{ flex: 1, padding: "14px 24px", borderRadius: 12, border: "1.5px solid var(--border-light)", background: "var(--bg-alt)", color: "var(--text-main)", fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800, cursor: "pointer" }}
                     >
                       Cancel
                     </button>
                     <button 
                       type="submit"
-                      style={{ flex: 1.5, padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #6c63ff, #00c9a7)", color: "#fff", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 900, cursor: "pointer" }}
+                      style={{ flex: 1.5, padding: "14px 24px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #6c63ff, #00c9a7)", color: "#fff", fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 900, cursor: "pointer" }}
                     >
                       Submit Quest Application
                     </button>
