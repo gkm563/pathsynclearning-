@@ -61,6 +61,7 @@ import PlatformPlacementInsights from "./pages/Platform/PlatformPlacementInsight
 import PlatformRecordsCerts from "./pages/Platform/PlatformRecordsCerts";
 import PlatformOgOpportunities from "./pages/Platform/PlatformOgOpportunities";
 import PlatformCommunity from "./pages/Platform/PlatformCommunity";
+import WalletExchange from "./pages/Store/WalletExchange";
 
 
 
@@ -105,6 +106,8 @@ function App() {
           <Route path="/platform/og-opportunities" element={<PlatformOgOpportunities />} />
           <Route path="/platform/community" element={<PlatformCommunity />} />
           <Route path="/store" element={<Store />} />
+          <Route path="/store/wallet" element={<WalletExchange />} />
+          <Route path="/platform/wallet" element={<WalletExchange />} />
           
           <Route path="/onboarding/stage1" element={<OnboardingStage1 />} />
           <Route path="/onboarding/stage2" element={<OnboardingStage2 />} />

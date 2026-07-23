@@ -689,36 +689,56 @@ export default function Store() {
             </div>
           )}
 
-          <div style={{ 
-            padding: "6px 14px", 
-            borderRadius: 20, 
-            background: "rgba(247,151,30,0.12)", 
-            border: "1px solid rgba(247,151,30,0.3)", 
-            color: "#f7971e", 
-            fontFamily: "'Fira Code', monospace", 
-            fontSize: 13, 
-            fontWeight: 700,
-            display: "flex",
-            alignItems: "center",
-            gap: 6
-          }}>
-            <Coins size={16} />
-            <span>{coins.toLocaleString()} COINS</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ 
+              padding: "6px 14px", 
+              borderRadius: 20, 
+              background: "rgba(247,151,30,0.12)", 
+              border: "1px solid rgba(247,151,30,0.3)", 
+              color: "#f7971e", 
+              fontFamily: "'Fira Code', monospace", 
+              fontSize: 13, 
+              fontWeight: 700,
+              display: "flex",
+              alignItems: "center",
+              gap: 6
+            }}>
+              <Coins size={16} />
+              <span>{coins.toLocaleString()} COINS</span>
+            </div>
+            <button
+              onClick={() => navigate("/store/wallet")}
+              style={{
+                display: "flex", alignItems: "center", justify: "center",
+                width: 28, height: 28, borderRadius: 50, border: "none",
+                background: "linear-gradient(135deg, #6c63ff, #00c9a7)", color: "#fff",
+                fontWeight: 900, fontSize: 16, cursor: "pointer",
+                boxShadow: "0 4px 10px rgba(108,99,255,0.25)"
+              }}
+              title="Add more coins"
+            >
+              +
+            </button>
           </div>
 
-          <div style={{ 
-            padding: "6px 14px", 
-            borderRadius: 20, 
-            background: "rgba(0,201,167,0.12)", 
-            border: "1px solid rgba(0,201,167,0.3)", 
-            color: "#00c9a7", 
-            fontFamily: "'Fira Code', monospace", 
-            fontSize: 13, 
-            fontWeight: 700,
-            display: "flex",
-            alignItems: "center",
-            gap: 6
-          }}>
+          <div 
+            onClick={() => navigate("/store/wallet")}
+            style={{ 
+              padding: "6px 14px", 
+              borderRadius: 20, 
+              background: "rgba(0,201,167,0.12)", 
+              border: "1px solid rgba(0,201,167,0.3)", 
+              color: "#00c9a7", 
+              fontFamily: "'Fira Code', monospace", 
+              fontSize: 13, 
+              fontWeight: 700,
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              cursor: "pointer"
+            }}
+            title="View Wallet Dashboard"
+          >
             <CreditCard size={16} />
             <span>${cashWallet.toFixed(2)} CASH</span>
           </div>
@@ -891,148 +911,6 @@ export default function Store() {
             )}
           </div>
         )}
-
-        {/* ==================== COIN EXCHANGE DASHBOARD REGION ==================== */}
-        <div style={{ 
-          marginTop: 56, 
-          background: "linear-gradient(135deg, rgba(247,151,30,0.05) 0%, rgba(0,201,167,0.05) 100%)",
-          border: "1.5px solid var(--border-light)",
-          borderRadius: 24,
-          padding: 32,
-          boxShadow: "0 10px 40px rgba(0,0,0,0.01)"
-        }}>
-          
-          <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 24 }}>
-            <div style={{ background: "rgba(247,151,30,0.15)", borderRadius: 12, width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <ArrowRightLeft size={20} color="#f7971e" />
-            </div>
-            <div>
-              <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 900, color: "var(--text-main)", margin: 0 }}>
-                Coin Exchange & Refills
-              </h2>
-              <p style={{ margin: "4px 0 0", fontSize: 13.5, color: "var(--text-muted)", fontWeight: 500 }}>
-                Replenish coin banks with Cash credits, or cash out extra coins to standard account currency values.
-              </p>
-            </div>
-          </div>
-
-          <div style={{ 
-            display: "grid", 
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", 
-            gap: 24 
-          }}>
-            
-            {/* Purchase Coins (Cash -> Coins) */}
-            <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 20, padding: 20 }}>
-              <h4 style={{ margin: "0 0 14px", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800, color: "#f7971e", letterSpacing: 0.5 }}>
-                BUY COINS PACKAGE
-              </h4>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {[
-                  { name: "SDE Starter Refill", coins: 500, cost: 4.99 },
-                  { name: "Pro Pack Refill", coins: 1500, cost: 12.99 },
-                  { name: "Elite Vault Refill", coins: 3500, cost: 24.99 }
-                ].map((pack, idx) => (
-                  <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "var(--bg-alt)", borderRadius: 12 }}>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 800, color: "var(--text-main)" }}>{pack.name}</div>
-                      <div style={{ fontSize: 12, color: "var(--text-muted)" }}>+{pack.coins.toLocaleString()} Coins</div>
-                    </div>
-                    <button
-                      onClick={() => buyCoinsPack(pack.coins, pack.cost)}
-                      style={{
-                        padding: "6px 12px", borderRadius: 8, border: "none",
-                        background: "#00c9a7", color: "#fff", cursor: "pointer",
-                        fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 800
-                      }}
-                    >
-                      ${pack.cost} Cash
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Exchange Coins (Coins -> Cash) */}
-            <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 20, padding: 20 }}>
-              <h4 style={{ margin: "0 0 14px", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800, color: "#00c9a7", letterSpacing: 0.5 }}>
-                EXCHANGE / CASH OUT COINS
-              </h4>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {[
-                  { label: "Convert 1,000 Coins", coins: 1000, value: 5.00 },
-                  { label: "Convert 2,000 Coins", coins: 2000, value: 10.00 },
-                  { label: "Convert 5,000 Coins", coins: 5000, value: 25.00 }
-                ].map((exch, idx) => (
-                  <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "var(--bg-alt)", borderRadius: 12 }}>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 800, color: "var(--text-main)" }}>{exch.label}</div>
-                      <div style={{ fontSize: 12, color: "var(--text-muted)" }}>Value: ${exch.value.toFixed(2)} Cash</div>
-                    </div>
-                    <button
-                      onClick={() => cashOutCoins(exch.coins, exch.value)}
-                      style={{
-                        padding: "6px 12px", borderRadius: 8, border: "1.5px solid var(--border-light)",
-                        background: "var(--bg-card)", color: "#f7971e", cursor: "pointer",
-                        fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 800
-                      }}
-                    >
-                      Cash Out
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Simulate Wallet Top-Up */}
-            <div style={{ 
-              background: "var(--bg-card)", border: "1.5px solid var(--border-light)", 
-              borderRadius: 20, padding: 20, display: "flex", flexDirection: "column", 
-              justifyContent: "space-between" 
-            }}>
-              <div>
-                <h4 style={{ margin: "0 0 6px", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 800, color: "#6c63ff", letterSpacing: 0.5 }}>
-                  SIMULATE USD FUNDS
-                </h4>
-                <p style={{ margin: 0, fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.4 }}>
-                  Add simulated USD funds to your simulated Cash Wallet for dummy transaction exchanges.
-                </p>
-              </div>
-
-              <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
-                <button
-                  onClick={() => {
-                    setCashWallet(prev => prev + 10);
-                    triggerToast("Simulated Cash: Added +$10.00 to Cash Wallet.");
-                  }}
-                  style={{
-                    flex: 1, padding: "8px", borderRadius: 8, border: "1px solid rgba(108,99,255,0.3)",
-                    background: "rgba(108,99,255,0.06)", color: "#6c63ff", fontFamily: "'Outfit', sans-serif",
-                    fontSize: 12, fontWeight: 800, cursor: "pointer"
-                  }}
-                >
-                  +$10 Cash
-                </button>
-                <button
-                  onClick={() => {
-                    setCashWallet(prev => prev + 50);
-                    triggerToast("Simulated Cash: Added +$50.00 to Cash Wallet.");
-                  }}
-                  style={{
-                    flex: 1, padding: "8px", borderRadius: 8, border: "1px solid rgba(108,99,255,0.3)",
-                    background: "rgba(108,99,255,0.06)", color: "#6c63ff", fontFamily: "'Outfit', sans-serif",
-                    fontSize: 12, fontWeight: 800, cursor: "pointer"
-                  }}
-                >
-                  +$50 Cash
-                </button>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-
       </main>
 
       {/* ==================== GLOBAL MODAL: CONFIRM COIN PURCHASE ==================== */}
