@@ -639,17 +639,80 @@ export default function Store() {
         )}
       </AnimatePresence>
         
-        {/* Title and Intro */}
-        <div style={{ textAlign: "center", marginBottom: 40 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(108,99,255,0.12)", border: "1px solid #6c63ff40", padding: "6px 16px", borderRadius: 20, marginBottom: 16, color: "#6c63ff", fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 700 }}>
-            <Sparkles size={14} /> PREMIUM ACADEMIC & CAREER MODULES
+        {/* 1. Header Section */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          flexWrap: "wrap", gap: 16, padding: "20px 24px",
+          background: "var(--bg-card)", borderRadius: 24,
+          border: "1.5px solid var(--border-light)",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
+          marginBottom: 32
+        }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4, flexWrap: "wrap" }}>
+              <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 28, fontWeight: 900, color: "var(--text-main)", margin: 0, display: "flex", alignItems: "center", gap: 10 }}>
+                <ShoppingBag size={26} color="#6c63ff" />
+                Resource <span style={{ color: "#6c63ff" }}>Store</span>
+              </h1>
+              <span style={{
+                padding: "4px 12px", borderRadius: 14,
+                background: "rgba(108, 99, 255, 0.12)", border: "1px solid #6c63ff50",
+                color: "#6c63ff", fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 900
+              }}>
+                ✦ RESOURCE MODULES &amp; UPGRADES
+              </span>
+            </div>
+            <p style={{ margin: 0, fontSize: 16, color: "var(--text-muted)", fontFamily: "'Outfit', sans-serif", lineHeight: 1.6 }}>
+              Redeem coins earned from challenges and roadmap milestones to unlock blueprints, planners, modules, and VIP platform upgrades.
+            </p>
           </div>
-          <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 44, fontWeight: 900, margin: "0 0 12px", letterSpacing: "-0.5px" }}>
-            The PathEd Resource Store
-          </h1>
-          <p style={{ fontSize: 16.5, color: "var(--text-muted)", maxWidth: 650, margin: "0 auto", lineHeight: 1.5 }}>
-            Redeem coins earned from challenges and roadmap milestones to unlock blueprints, planners, modules, and VIP platform upgrades.
-          </p>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div 
+              onClick={() => navigate("/store/wallet")}
+              style={{ 
+                padding: "8px 16px", 
+                borderRadius: 16, 
+                background: "rgba(247,151,30,0.08)", 
+                border: "1.5px solid rgba(247,151,30,0.2)", 
+                color: "#f7971e", 
+                fontFamily: "'Fira Code', monospace", 
+                fontSize: 13, 
+                fontWeight: 800,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                cursor: "pointer"
+              }}
+              title="Add coins"
+            >
+              <Coins size={16} />
+              <span>{coins.toLocaleString()} Coins</span>
+              <span style={{ padding: "1px 6px", borderRadius: 8, background: "#f7971e", color: "#fff", fontSize: 10, fontWeight: 900, marginLeft: 2 }}>+</span>
+            </div>
+
+            <div 
+              onClick={() => navigate("/store/wallet")}
+              style={{ 
+                padding: "8px 16px", 
+                borderRadius: 16, 
+                background: "rgba(0,201,167,0.08)", 
+                border: "1.5px solid rgba(0,201,167,0.2)", 
+                color: "#00c9a7", 
+                fontFamily: "'Fira Code', monospace", 
+                fontSize: 13, 
+                fontWeight: 800,
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                cursor: "pointer"
+              }}
+              title="View wallet"
+            >
+              <CreditCard size={16} />
+              <span>${cashWallet.toFixed(2)} Cash</span>
+            </div>
+          </div>
         </div>
 
         {/* Interface Switch Tabs */}
