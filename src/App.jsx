@@ -64,6 +64,7 @@ import PlatformCommunity from "./pages/Platform/PlatformCommunity";
 import WalletExchange from "./pages/Store/WalletExchange";
 import PlatformProfile from "./pages/Platform/PlatformProfile";
 import PlatformSettings from "./pages/Platform/PlatformSettings";
+import PlatformNotifications from "./pages/Platform/PlatformNotifications";
 
 
 
@@ -74,6 +75,7 @@ function App() {
       <div className="app-container">
         <Routes>
           <Route path="/" element={<StudentLanding />} />
+          <Route path="/home" element={<StudentLanding />} />
           <Route path="/platform" element={<PlatformOverview />} />
           <Route path="/dashboard" element={<PlatformDashboard />} />
           <Route path="/roadmap" element={<PlatformSkillRoadmap />} />
@@ -114,6 +116,8 @@ function App() {
           <Route path="/profile" element={<PlatformProfile />} />
           <Route path="/platform/settings" element={<PlatformSettings />} />
           <Route path="/settings" element={<PlatformSettings />} />
+          <Route path="/platform/notifications" element={<PlatformNotifications />} />
+          <Route path="/notifications" element={<PlatformNotifications />} />
           
           <Route path="/onboarding/stage1" element={<OnboardingStage1 />} />
           <Route path="/onboarding/stage2" element={<OnboardingStage2 />} />
