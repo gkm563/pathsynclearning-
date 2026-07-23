@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, User, Award, ShieldCheck, Mail, Phone, MapPin, 
   Sparkles, ShieldAlert, Cpu, CheckCircle, Globe, Code,
   ExternalLink, Edit, Save, X, Plus, Star, StarOff, 
-  AlertCircle, Rocket, BarChart2, Briefcase, FileText, ChevronRight, GraduationCap
+  AlertCircle, Rocket, BarChart2, Briefcase, FileText, ChevronRight, GraduationCap, Calendar, Wifi, Laptop, Clock, Users
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -56,12 +56,13 @@ const DEFAULT_PROFILE = {
 export default function PlatformProfile() {
   const navigate = useNavigate();
 
-  // Local Storage Sync
+  // Load live profile info
   const [profile, setProfile] = useState(() => {
     const saved = localStorage.getItem("pathed_profile_live");
     return saved ? JSON.parse(saved) : { ...DEFAULT_PROFILE };
   });
 
+  // Coin and Setup completion syncs
   const [coins, setCoins] = useState(() => {
     const saved = localStorage.getItem("pathed_user_coins");
     return saved ? parseInt(saved, 10) : 3480;
@@ -71,27 +72,46 @@ export default function PlatformProfile() {
     return localStorage.getItem("pathed_profile_additional_completed") === "true";
   });
 
-  // Edit Mode Draft States
+  // Load Omitted/Reserved Answers
+  const [reservedAnswers, setReservedAnswers] = useState(() => {
+    const saved = localStorage.getItem("pathed_profile_additional_data");
+    return saved ? JSON.parse(saved) : {
+      peakEnergyHours: "Morning",
+      primaryDevice: "Laptop / Desktop",
+      internetConnectivity: "High Speed (Fibre / 5G)",
+      academicLoad: 5,
+      extracurricular: ["Tech Clubs"],
+      learningLanguage: "English",
+      weeklyStudyHours: 15,
+      studyGroupPreference: "Solo Learner",
+      labConfidence: 4,
+      backlogHistory: "No Backlogs",
+      examStartDate: "2026-11-10",
+      examEndDate: "2026-11-20"
+    };
+  });
+
+  // Edit Mode states
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState({ ...profile });
   const [activeTab, setActiveTab] = useState("identity");
   const [toastMessage, setToastMessage] = useState("");
 
-  // Additional Details Form State
+  // Modal temporary state variables
   const [showAdditionalModal, setShowAdditionalModal] = useState(false);
   const [addStep, setAddStep] = useState(1);
-  const [board, setBoard] = useState("CBSE");
-  const [codingExp, setCodingExp] = useState("Familiar with syntax");
-  const [primaryLang, setPrimaryLang] = useState("Python");
-  const [academicGoal, setAcademicGoal] = useState("FAANG Placement Prep");
-  const [ratings, setRatings] = useState({ DSA: 4, DBMS: 3, OS: 3, Networks: 2, OOPs: 4 });
-  const [envSlider, setEnvSlider] = useState(50);
-  const [impactSlider, setImpactSlider] = useState(50);
-  const [risk, setRisk] = useState("⚖️ Moderate");
-  const [company, setCompany] = useState("🌐 FAANG / Big Tech");
-  const [vision, setVision] = useState("🧑‍💻 Technical Expert");
-  const [puzzle, setPuzzle] = useState("Logic Bug");
-  const [invent, setInvent] = useState("💡 Create Something New");
+  const [tempPeakHours, setTempPeakHours] = useState(reservedAnswers.peakEnergyHours);
+  const [tempDevice, setTempDevice] = useState(reservedAnswers.primaryDevice);
+  const [tempConnectivity, setTempConnectivity] = useState(reservedAnswers.internetConnectivity);
+  const [tempAcademicLoad, setTempAcademicLoad] = useState(reservedAnswers.academicLoad);
+  const [tempExtracurricular, setTempExtracurricular] = useState(reservedAnswers.extracurricular);
+  const [tempLang, setTempLang] = useState(reservedAnswers.learningLanguage);
+  const [tempWeeklyHours, setTempWeeklyHours] = useState(reservedAnswers.weeklyStudyHours);
+  const [tempGroupPref, setTempGroupPref] = useState(reservedAnswers.studyGroupPreference);
+  const [tempLabConfidence, setTempLabConfidence] = useState(reservedAnswers.labConfidence);
+  const [tempBacklog, setTempBacklog] = useState(reservedAnswers.backlogHistory);
+  const [tempExamStart, setTempExamStart] = useState(reservedAnswers.examStartDate);
+  const [tempExamEnd, setTempExamEnd] = useState(reservedAnswers.examEndDate);
 
   useEffect(() => {
     localStorage.setItem("pathed_profile_live", JSON.stringify(profile));
@@ -117,27 +137,36 @@ export default function PlatformProfile() {
     setEditing(false);
   };
 
-  // Submit Omitted/Additional Questions
+  // Submit Omitted/Additional Questions from JSON file
   const handleAdditionalSubmit = () => {
-    const additionalData = {
-      board, codingExp, primaryLang, academicGoal, ratings,
-      envSlider, impactSlider, risk, company, vision, puzzle, invent
+    const freshData = {
+      peakEnergyHours: tempPeakHours,
+      primaryDevice: tempDevice,
+      internetConnectivity: tempConnectivity,
+      academicLoad: tempAcademicLoad,
+      extracurricular: tempExtracurricular,
+      learningLanguage: tempLang,
+      weeklyStudyHours: tempWeeklyHours,
+      studyGroupPreference: tempGroupPref,
+      labConfidence: tempLabConfidence,
+      backlogHistory: tempBacklog,
+      examStartDate: tempExamStart,
+      examEndDate: tempExamEnd
     };
-    localStorage.setItem("pathed_profile_additional_data", JSON.stringify(additionalData));
+    setReservedAnswers(freshData);
+    localStorage.setItem("pathed_profile_additional_data", JSON.stringify(freshData));
     localStorage.setItem("pathed_profile_additional_completed", "true");
     setAdditionalCompleted(true);
     setCoins(prev => prev + 250);
-    triggerToast("🚀 Profile Completed! Added +250 Coins to your wallet!");
+    triggerToast("🚀 Setup complete! +250 Coins added to your wallet.");
     setShowAdditionalModal(false);
   };
 
-  const getSubjectColor = (subject) => {
-    switch(subject) {
-      case "DSA": return "#6c63ff";
-      case "DBMS": return "#00c9a7";
-      case "OS": return "#f7971e";
-      case "Networks": return "#e040fb";
-      default: return "#6c63ff";
+  const toggleExtracurricular = (item) => {
+    if (tempExtracurricular.includes(item)) {
+      setTempExtracurricular(prev => prev.filter(x => x !== item));
+    } else {
+      setTempExtracurricular(prev => [...prev, item]);
     }
   };
 
@@ -302,16 +331,31 @@ export default function PlatformProfile() {
               </div>
               <div>
                 <h4 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 16.5, fontWeight: 900, color: "var(--text-main)" }}>
-                  💡 Complete Your Professional DNA Setup
+                  💡 Fill Reserved Onboarding Details
                 </h4>
                 <p style={{ margin: "4px 0 0", fontSize: 13.5, color: "var(--text-muted)", lineHeight: 1.45 }}>
-                  You skipped several career ideology and academic performance questions during onboarding. Fill them in now to optimize your AI Placement Matcher &amp; earn a <strong style={{ color: "#f7971e" }}>+250 Coins Bonus</strong>!
+                  Provide critical schedule limits, exam calendar, and environmental preferences left out during sign-up to optimize study blocks &amp; earn a <strong style={{ color: "#f7971e" }}>+250 Coins Reward</strong>!
                 </p>
               </div>
             </div>
             
             <button
-              onClick={() => { setAddStep(1); setShowAdditionalModal(true); }}
+              onClick={() => { 
+                setTempPeakHours(reservedAnswers.peakEnergyHours);
+                setTempDevice(reservedAnswers.primaryDevice);
+                setTempConnectivity(reservedAnswers.internetConnectivity);
+                setTempAcademicLoad(reservedAnswers.academicLoad);
+                setTempExtracurricular(reservedAnswers.extracurricular);
+                setTempLang(reservedAnswers.learningLanguage);
+                setTempWeeklyHours(reservedAnswers.weeklyStudyHours);
+                setTempGroupPref(reservedAnswers.studyGroupPreference);
+                setTempLabConfidence(reservedAnswers.labConfidence);
+                setTempBacklog(reservedAnswers.backlogHistory);
+                setTempExamStart(reservedAnswers.examStartDate);
+                setTempExamEnd(reservedAnswers.examEndDate);
+                setAddStep(1); 
+                setShowAdditionalModal(true); 
+              }}
               style={{
                 padding: "12px 24px", borderRadius: 12, border: "none",
                 background: "linear-gradient(135deg, #6c63ff, #e040fb)", color: "#fff",
@@ -356,8 +400,8 @@ export default function PlatformProfile() {
         }} className="hide-scrollbar">
           {[
             { id: "identity", label: "🪪 Public Identity" },
-            { id: "performance", label: "🏆 Academic DNA" },
-            { id: "aspirations", label: "🎯 Career Ideology" },
+            { id: "performance", label: "📚 Academic DNA" },
+            { id: "aspirations", label: "🎯 Study Preferences" },
             { id: "portfolio", label: "📁 Portfolio & CV" },
             { id: "badges", label: "🎖️ Badges & Honors" }
           ].map(tab => (
@@ -438,33 +482,59 @@ export default function PlatformProfile() {
                 }
               `}} />
 
-              {/* Core Subject Ratings */}
-              <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 28 }}>
-                <h3 style={{ margin: "0 0 8px", fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 900 }}>📚 Core Subject Competence</h3>
-                <p style={{ margin: "0 0 20px", fontSize: 13, color: "var(--text-muted)" }}>Simulated self-evaluation ratings for computer science domains.</p>
+              {/* Core Academic Competence */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
                 
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  {Object.entries(ratings).map(([subject, rating]) => (
-                    <div key={subject}>
-                      <div style={{ display: "flex", justify: "space-between", alignItems: "center", marginBottom: 6 }}>
-                        <span style={{ fontSize: 13.5, fontWeight: 800, color: "var(--text-main)" }}>{subject}</span>
-                        <div style={{ display: "flex", gap: 2 }}>
-                          {[1, 2, 3, 4, 5].map(num => (
-                            <Star 
-                              key={num} 
-                              size={14} 
-                              color={num <= rating ? getSubjectColor(subject) : "var(--border-light)"} 
-                              fill={num <= rating ? getSubjectColor(subject) : "transparent"} 
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <div style={{ width: "100%", height: 6, borderRadius: 3, background: "var(--bg-alt)", overflow: "hidden" }}>
-                        <div style={{ width: `${(rating / 5) * 100}%`, height: "100%", background: getSubjectColor(subject), borderRadius: 3 }} />
+                {/* Lab & Exam stats */}
+                <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 28 }}>
+                  <h3 style={{ margin: "0 0 20px", fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 900 }}>⚡ Practical &amp; Exam Diagnostics</h3>
+                  
+                  <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                    <div>
+                      <span style={{ fontSize: 12, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)" }}>LAB &amp; PRACTICAL EXAM CONFIDENCE</span>
+                      <div style={{ display: "flex", gap: 4, marginTop: 8, alignItems: "center" }}>
+                        {[1, 2, 3, 4, 5].map(num => (
+                          <Star 
+                            key={num} 
+                            size={20} 
+                            color={num <= reservedAnswers.labConfidence ? "#6c63ff" : "var(--border-light)"} 
+                            fill={num <= reservedAnswers.labConfidence ? "#6c63ff" : "transparent"} 
+                          />
+                        ))}
+                        <span style={{ marginLeft: 10, fontSize: 14, fontWeight: 800 }}>({reservedAnswers.labConfidence} / 5)</span>
                       </div>
                     </div>
-                  ))}
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                      <div>
+                        <span style={{ fontSize: 11, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)" }}>BACKLOG TRACKING</span>
+                        <div style={{ fontSize: 14.5, fontWeight: 800, marginTop: 4, color: "#ff6b6b" }}>{reservedAnswers.backlogHistory}</div>
+                      </div>
+                      <div>
+                        <span style={{ fontSize: 11, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)" }}>UPCOMING EXAMS</span>
+                        <div style={{ fontSize: 14.5, fontWeight: 800, marginTop: 4, color: "#f7971e" }}>
+                          {reservedAnswers.examStartDate} <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>to</span> {reservedAnswers.examEndDate}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Extracurricular involvement list */}
+                <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 28 }}>
+                  <h3 style={{ margin: "0 0 16px", fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 900 }}>🏅 Extracurricular &amp; Tech Clubs</h3>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {reservedAnswers.extracurricular.map(item => (
+                      <span key={item} style={{ padding: "6px 14px", borderRadius: 10, background: "rgba(108,99,255,0.1)", border: "1px solid rgba(108,99,255,0.25)", color: "#6c63ff", fontSize: 13, fontWeight: 700 }}>
+                        🎨 {item}
+                      </span>
+                    ))}
+                    {reservedAnswers.extracurricular.length === 0 && (
+                      <span style={{ fontSize: 13.5, color: "var(--text-muted)", fontStyle: "italic" }}>No extracurricular involvements recorded.</span>
+                    )}
+                  </div>
+                </div>
+
               </div>
 
               {/* Academic Info */}
@@ -541,55 +611,71 @@ export default function PlatformProfile() {
             </motion.div>
           )}
 
-          {/* TAB 3: Career Ideology */}
+          {/* TAB 3: Study Preferences */}
           {activeTab === "aspirations" && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
               
               <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 28 }}>
-                <h3 style={{ margin: "0 0 20px", fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 900 }}>🎯 Long-Term Career Aims</h3>
+                <h3 style={{ margin: "0 0 20px", fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 900 }}>⚙️ Study Preferences &amp; Schedule Tuning</h3>
                 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}>
-                  <div style={{ padding: 16, background: "var(--bg-alt)", borderRadius: 16, border: "1px solid var(--border-light)" }}>
-                    <span style={{ fontSize: 11, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)" }}>CAREER VISION</span>
-                    <div style={{ fontSize: 14.5, fontWeight: 800, marginTop: 6, color: "#6c63ff" }}>{vision}</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20 }}>
+                  <div style={{ padding: 16, background: "var(--bg-alt)", borderRadius: 16, border: "1px solid var(--border-light)", display: "flex", gap: 12, items: "center" }}>
+                    <div style={{ fontSize: 24 }}>🌅</div>
+                    <div>
+                      <span style={{ fontSize: 11, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)" }}>PEAK ENERGY HOURS</span>
+                      <div style={{ fontSize: 14.5, fontWeight: 800, marginTop: 4, color: "#6c63ff" }}>{reservedAnswers.peakEnergyHours}</div>
+                    </div>
                   </div>
 
-                  <div style={{ padding: 16, background: "var(--bg-alt)", borderRadius: 16, border: "1px solid var(--border-light)" }}>
-                    <span style={{ fontSize: 11, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)" }}>TARGET COMPANY MODEL</span>
-                    <div style={{ fontSize: 14.5, fontWeight: 800, marginTop: 6, color: "#00c9a7" }}>{company}</div>
+                  <div style={{ padding: 16, background: "var(--bg-alt)", borderRadius: 16, border: "1px solid var(--border-light)", display: "flex", gap: 12, items: "center" }}>
+                    <div style={{ fontSize: 24 }}>💻</div>
+                    <div>
+                      <span style={{ fontSize: 11, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)" }}>PRIMARY DEVICE</span>
+                      <div style={{ fontSize: 14.5, fontWeight: 800, marginTop: 4, color: "#00c9a7" }}>{reservedAnswers.primaryDevice}</div>
+                    </div>
                   </div>
 
-                  <div style={{ padding: 16, background: "var(--bg-alt)", borderRadius: 16, border: "1px solid var(--border-light)" }}>
-                    <span style={{ fontSize: 11, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)" }}>BEHAVIORAL RISK APPETITE</span>
-                    <div style={{ fontSize: 14.5, fontWeight: 800, marginTop: 6, color: "#f7971e" }}>{risk}</div>
+                  <div style={{ padding: 16, background: "var(--bg-alt)", borderRadius: 16, border: "1px solid var(--border-light)", display: "flex", gap: 12, items: "center" }}>
+                    <div style={{ fontSize: 24 }}>🗣️</div>
+                    <div>
+                      <span style={{ fontSize: 11, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)" }}>LEARNING LANGUAGE</span>
+                      <div style={{ fontSize: 14.5, fontWeight: 800, marginTop: 4, color: "#f7971e" }}>{reservedAnswers.learningLanguage}</div>
+                    </div>
+                  </div>
+
+                  <div style={{ padding: 16, background: "var(--bg-alt)", borderRadius: 16, border: "1px solid var(--border-light)", display: "flex", gap: 12, items: "center" }}>
+                    <div style={{ fontSize: 24 }}>👥</div>
+                    <div>
+                      <span style={{ fontSize: 11, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)" }}>STUDY GROUP TYPE</span>
+                      <div style={{ fontSize: 14.5, fontWeight: 800, marginTop: 4, color: "#e040fb" }}>{reservedAnswers.studyGroupPreference}</div>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Sliders preference overview */}
               <div style={{ background: "var(--bg-card)", border: "1.5px solid var(--border-light)", borderRadius: 24, padding: 28 }}>
-                <h3 style={{ margin: "0 0 20px", fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 900 }}>⚙️ Ideological Alignment Parameters</h3>
+                <h3 style={{ margin: "0 0 20px", fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 900 }}>🔌 Learning Resource Calibration</h3>
                 
-                <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
                   <div>
-                    <div style={{ display: "flex", justify: "space-between", fontSize: 13, marginBottom: 8, fontWeight: 700 }}>
-                      <span style={{ color: "#6c63ff" }}>⚡ Fast Startup</span>
-                      <span style={{ color: "var(--text-muted)" }}>Preferences Weight: {envSlider}%</span>
-                      <span style={{ color: "#00c9a7" }}>🏛️ Stable Corporate</span>
-                    </div>
-                    <div style={{ width: "100%", height: 6, borderRadius: 3, background: "var(--bg-alt)" }}>
-                      <div style={{ width: `${envSlider}%`, height: "100%", background: "linear-gradient(90deg, #6c63ff, #00c9a7)", borderRadius: 3 }} />
-                    </div>
+                    <label style={{ fontSize: 11, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)" }}>INTERNET CONNECTIVITY</label>
+                    <div style={{ fontSize: 14.5, fontWeight: 800, marginTop: 4 }}>{reservedAnswers.internetConnectivity}</div>
+                  </div>
+                  
+                  <div>
+                    <label style={{ fontSize: 11, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)" }}>WEEKLY LEARNING BUDGET</label>
+                    <div style={{ fontSize: 14.5, fontWeight: 800, marginTop: 4 }}>{reservedAnswers.weeklyStudyHours} Hours per week</div>
                   </div>
 
-                  <div>
+                  <div style={{ gridColumn: "span 2" }}>
                     <div style={{ display: "flex", justify: "space-between", fontSize: 13, marginBottom: 8, fontWeight: 700 }}>
-                      <span style={{ color: "#f7971e" }}>💰 High Salary Focus</span>
-                      <span style={{ color: "var(--text-muted)" }}>Preferences Weight: {impactSlider}%</span>
-                      <span style={{ color: "#00c9a7" }}>🌍 Social Mission Impact</span>
+                      <span style={{ color: "#6c63ff" }}>⚡ Light Load (1)</span>
+                      <span style={{ color: "var(--text-muted)" }}>Academic Burnout Guard Load: {reservedAnswers.academicLoad} / 10</span>
+                      <span style={{ color: "#ff6b6b" }}>🔥 High Load (10)</span>
                     </div>
                     <div style={{ width: "100%", height: 6, borderRadius: 3, background: "var(--bg-alt)" }}>
-                      <div style={{ width: `${impactSlider}%`, height: "100%", background: "linear-gradient(90deg, #f7971e, #00c9a7)", borderRadius: 3 }} />
+                      <div style={{ width: `${(reservedAnswers.academicLoad / 10) * 100}%`, height: "100%", background: "linear-gradient(90deg, #6c63ff, #ff6b6b)", borderRadius: 3 }} />
                     </div>
                   </div>
                 </div>
@@ -705,7 +791,7 @@ export default function PlatformProfile() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               style={{
-                background: "var(--bg-card)", borderRadius: 24, maxWidth: 540, width: "100%",
+                background: "var(--bg-card)", borderRadius: 24, maxWidth: 580, width: "100%",
                 border: "1.5px solid var(--border-light)", boxShadow: "0 30px 80px rgba(0,0,0,0.35)",
                 overflow: "hidden"
               }}
@@ -715,7 +801,7 @@ export default function PlatformProfile() {
               <div style={{ padding: "20px 24px", borderBottom: "1.5px solid var(--border-light)", display: "flex", justify: "space-between", alignItems: "center", background: "var(--bg-alt)" }}>
                 <div>
                   <h4 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 900, color: "var(--text-main)" }}>
-                    🚀 Complete Professional Profile DNA
+                    🚀 Complete Onboarding Reserved DNA
                   </h4>
                   <span style={{ fontSize: 11.5, color: "#6c63ff", fontWeight: 700, fontFamily: "'Fira Code', monospace" }}>
                     STEP {addStep} OF 2
@@ -730,201 +816,237 @@ export default function PlatformProfile() {
               </div>
 
               {/* Modal Body */}
-              <div style={{ padding: 24 }}>
+              <div style={{ padding: 24, maxHeight: "68vh", overflowY: "auto" }}>
                 
-                {/* STEP 1: Academic & Coding DNA */}
+                {/* STEP 1: Study Schedule & Connectivity */}
                 {addStep === 1 && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                     
+                    {/* Q1: Daily Peak Energy Hours */}
                     <div>
-                      <label style={{ display: "block", fontSize: 13, fontFamily: "'Outfit', sans-serif", fontWeight: 800, marginBottom: 6 }}>1. School Board Affiliation (10th/12th)</label>
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                        {["CBSE", "ICSE", "State Board", "IB / Cambridge"].map(opt => (
-                          <button
-                            key={opt}
-                            onClick={() => setBoard(opt)}
+                      <label style={{ display: "block", fontSize: 13.5, fontFamily: "'Outfit', sans-serif", fontWeight: 850, marginBottom: 4 }}>1. Daily Peak Energy Hours</label>
+                      <span style={{ display: "block", fontSize: 11.5, color: "var(--text-muted)", marginBottom: 10 }}>PathEd will schedule hard Learn &amp; Practice tasks during your most productive window.</span>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
+                        {[
+                          { emoji: "🌅", label: "Morning", sub: "5AM–12PM" },
+                          { emoji: "☀️", label: "Afternoon", sub: "12PM–5PM" },
+                          { emoji: "🌆", label: "Evening", sub: "5PM–9PM" },
+                          { emoji: "🌙", label: "Night", sub: "9PM–3AM" }
+                        ].map(opt => (
+                          <div
+                            key={opt.label}
+                            onClick={() => setTempPeakHours(opt.label)}
                             style={{
-                              padding: "8px 14px", borderRadius: 10, cursor: "pointer",
-                              fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 700,
-                              background: board === opt ? "rgba(108,99,255,0.12)" : "var(--bg-alt)",
-                              border: board === opt ? "1.5px solid #6c63ff" : "1px solid var(--border-light)",
-                              color: board === opt ? "#6c63ff" : "var(--text-main)"
+                              padding: 14, borderRadius: 14, border: tempPeakHours === opt.label ? "2px solid #6c63ff" : "1.5px solid var(--border-light)",
+                              background: tempPeakHours === opt.label ? "rgba(108,99,255,0.06)" : "var(--bg-alt)", cursor: "pointer",
+                              display: "flex", alignItems: "center", gap: 12
                             }}
                           >
-                            {opt}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <label style={{ display: "block", fontSize: 13, fontFamily: "'Outfit', sans-serif", fontWeight: 800, marginBottom: 6 }}>2. Coding Experience Level</label>
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                        {["Absolute Beginner", "Familiar with syntax", "Built small projects", "Advanced Developer"].map(opt => (
-                          <button
-                            key={opt}
-                            onClick={() => setCodingExp(opt)}
-                            style={{
-                              padding: "8px 14px", borderRadius: 10, cursor: "pointer",
-                              fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 700,
-                              background: codingExp === opt ? "rgba(0,201,167,0.12)" : "var(--bg-alt)",
-                              border: codingExp === opt ? "1.5px solid #00c9a7" : "1px solid var(--border-light)",
-                              color: codingExp === opt ? "#00c9a7" : "var(--text-main)"
-                            }}
-                          >
-                            {opt}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div style={{ display: "flex", gap: 12 }}>
-                      <div style={{ flex: 1 }}>
-                        <label style={{ display: "block", fontSize: 13, fontFamily: "'Outfit', sans-serif", fontWeight: 800, marginBottom: 6 }}>3. Primary Language</label>
-                        <select
-                          value={primaryLang}
-                          onChange={e => setPrimaryLang(e.target.value)}
-                          style={{ width: "100%", padding: 10, borderRadius: 10, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)", outline: "none", cursor: "pointer" }}
-                        >
-                          {["Python", "C++", "Java", "JavaScript", "Go", "Rust"].map(lang => (
-                            <option key={lang} value={lang}>{lang}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div style={{ flex: 1.2 }}>
-                        <label style={{ display: "block", fontSize: 13, fontFamily: "'Outfit', sans-serif", fontWeight: 800, marginBottom: 6 }}>4. Main Academic Goal</label>
-                        <select
-                          value={academicGoal}
-                          onChange={e => setAcademicGoal(e.target.value)}
-                          style={{ width: "100%", padding: 10, borderRadius: 10, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)", outline: "none", cursor: "pointer" }}
-                        >
-                          {["Sem Topper Focus", "FAANG Placement Prep", "Research & Thesis", "Building Startup MVP"].map(goal => (
-                            <option key={goal} value={goal}>{goal}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label style={{ display: "block", fontSize: 13, fontFamily: "'Outfit', sans-serif", fontWeight: 800, marginBottom: 6 }}>5. Subject Self-Evaluation (1 to 5 Stars)</label>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: 12, background: "var(--bg-alt)", borderRadius: 14, border: "1px solid var(--border-light)" }}>
-                        {Object.entries(ratings).map(([subj, rate]) => (
-                          <div key={subj} style={{ display: "flex", justify: "space-between", alignItems: "center" }}>
-                            <span style={{ fontSize: 12.5, fontWeight: 700 }}>{subj}</span>
-                            <div style={{ display: "flex", gap: 4 }}>
-                              {[1, 2, 3, 4, 5].map(star => (
-                                <button
-                                  type="button"
-                                  key={star}
-                                  onClick={() => setRatings(prev => ({ ...prev, [subj]: star }))}
-                                  style={{ background: "transparent", border: "none", cursor: "pointer", padding: 0 }}
-                                >
-                                  <Star 
-                                    size={14} 
-                                    fill={star <= rate ? "#6c63ff" : "transparent"} 
-                                    color={star <= rate ? "#6c63ff" : "var(--text-muted)"} 
-                                  />
-                                </button>
-                              ))}
+                            <span style={{ fontSize: 22 }}>{opt.emoji}</span>
+                            <div>
+                              <div style={{ fontSize: 13, fontWeight: 800 }}>{opt.label}</div>
+                              <div style={{ fontSize: 10, color: "var(--text-muted)" }}>{opt.sub}</div>
                             </div>
                           </div>
                         ))}
                       </div>
                     </div>
 
-                  </motion.div>
-                )}
-
-                {/* STEP 2: Ideology & Cognitive Match */}
-                {addStep === 2 && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                    
+                    {/* Q2: Primary Device for Study */}
                     <div>
-                      <div style={{ display: "flex", justify: "space-between", fontSize: 12, fontWeight: 800, marginBottom: 6 }}>
-                        <span style={{ color: "#6c63ff" }}>⚡ Fast Startup</span>
-                        <span style={{ color: "#00c9a7" }}>🏛️ Corporate</span>
-                      </div>
-                      <input 
-                        type="range" min="0" max="100" value={envSlider} 
-                        onChange={e => setEnvSlider(parseInt(e.target.value))}
-                        style={{ width: "100%", height: 6, borderRadius: 3, background: "var(--bg-alt)", outline: "none", cursor: "pointer" }}
-                      />
-                    </div>
-
-                    <div>
-                      <div style={{ display: "flex", justify: "space-between", fontSize: 12, fontWeight: 800, marginBottom: 6 }}>
-                        <span style={{ color: "#f7971e" }}>💰 Salary Scale</span>
-                        <span style={{ color: "#00c9a7" }}>🌍 Mission Impact</span>
-                      </div>
-                      <input 
-                        type="range" min="0" max="100" value={impactSlider} 
-                        onChange={e => setImpactSlider(parseInt(e.target.value))}
-                        style={{ width: "100%", height: 6, borderRadius: 3, background: "var(--bg-alt)", outline: "none", cursor: "pointer" }}
-                      />
-                    </div>
-
-                    <div style={{ display: "flex", gap: 12 }}>
-                      <div style={{ flex: 1 }}>
-                        <label style={{ display: "block", fontSize: 12, fontFamily: "'Outfit', sans-serif", fontWeight: 800, marginBottom: 6 }}>Risk Appetite</label>
-                        <select 
-                          value={risk} onChange={e => setRisk(e.target.value)}
-                          style={{ width: "100%", padding: 10, borderRadius: 10, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)", outline: "none" }}
-                        >
-                          {["🛡️ Conservative", "⚖️ Moderate", "🚀 Aggressive"].map(r => (
-                            <option key={r} value={r}>{r}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div style={{ flex: 1.2 }}>
-                        <label style={{ display: "block", fontSize: 12, fontFamily: "'Outfit', sans-serif", fontWeight: 800, marginBottom: 6 }}>Long-Term Vision</label>
-                        <select 
-                          value={vision} onChange={e => setVision(e.target.value)}
-                          style={{ width: "100%", padding: 10, borderRadius: 10, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)", outline: "none" }}
-                        >
-                          {["🧑‍💻 Technical Expert", "📋 Management Track", "🚀 Entrepreneur / Founder"].map(v => (
-                            <option key={v} value={v}>{v}</option>
-                          ))}
-                        </select>
+                      <label style={{ display: "block", fontSize: 13.5, fontFamily: "'Outfit', sans-serif", fontWeight: 850, marginBottom: 4 }}>2. Primary Device for Study</label>
+                      <span style={{ display: "block", fontSize: 11.5, color: "var(--text-muted)", marginBottom: 10 }}>Optimises the UI and resource types — mobile quizzes vs. desktop labs.</span>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+                        {[
+                          { emoji: "💻", label: "Laptop / Desktop", sub: "Full features" },
+                          { emoji: "📱", label: "Mobile", sub: "On-the-go" },
+                          { emoji: "📓", label: "Tablet", sub: "Touch-optimised" }
+                        ].map(opt => (
+                          <div
+                            key={opt.label}
+                            onClick={() => setTempDevice(opt.label)}
+                            style={{
+                              padding: 12, borderRadius: 14, border: tempDevice === opt.label ? "2px solid #00c9a7" : "1.5px solid var(--border-light)",
+                              background: tempDevice === opt.label ? "rgba(0,201,167,0.06)" : "var(--bg-alt)", cursor: "pointer",
+                              textAlign: "center"
+                            }}
+                          >
+                            <span style={{ fontSize: 24, display: "block", marginBottom: 4 }}>{opt.emoji}</span>
+                            <div style={{ fontSize: 12, fontWeight: 800 }}>{opt.label}</div>
+                            <div style={{ fontSize: 9.5, color: "var(--text-muted)", marginTop: 2 }}>{opt.sub}</div>
+                          </div>
+                        ))}
                       </div>
                     </div>
 
+                    {/* Q3: Internet Connectivity Status */}
                     <div>
-                      <label style={{ display: "block", fontSize: 12.5, fontFamily: "'Outfit', sans-serif", fontWeight: 800, marginBottom: 6 }}>Dream Company Type</label>
-                      <select 
-                        value={company} onChange={e => setCompany(e.target.value)}
-                        style={{ width: "100%", padding: 10, borderRadius: 10, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)", outline: "none" }}
+                      <label style={{ display: "block", fontSize: 13.5, fontFamily: "'Outfit', sans-serif", fontWeight: 850, marginBottom: 4 }}>3. Internet Connectivity Status</label>
+                      <span style={{ display: "block", fontSize: 11.5, color: "var(--text-muted)", marginBottom: 8 }}>Helps suggest offline-downloadable study materials.</span>
+                      <select
+                        value={tempConnectivity}
+                        onChange={e => setTempConnectivity(e.target.value)}
+                        style={{ width: "100%", padding: 11, borderRadius: 10, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)", outline: "none", cursor: "pointer" }}
                       >
-                        {["🌐 FAANG / Big Tech", "🦄 Unicorn Startups", "🏛️ Government / Public", "💻 Freelance / Builder"].map(c => (
-                          <option key={c} value={c}>{c}</option>
+                        {["High Speed (Fibre / 5G)", "Stable (4G / Broadband)", "Intermittent / Limited", "Offline-First Preferred"].map(opt => (
+                          <option key={opt} value={opt}>{opt}</option>
                         ))}
                       </select>
                     </div>
 
-                    <div style={{ display: "flex", gap: 12 }}>
-                      <div style={{ flex: 1 }}>
-                        <label style={{ display: "block", fontSize: 12, fontFamily: "'Outfit', sans-serif", fontWeight: 800, marginBottom: 6 }}>Ideal Challenge</label>
-                        <select 
-                          value={puzzle} onChange={e => setPuzzle(e.target.value)}
-                          style={{ width: "100%", padding: 10, borderRadius: 10, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)", outline: "none" }}
-                        >
-                          {["Math Problem", "Design Flaw", "Logic Bug", "System Chaos"].map(pz => (
-                            <option key={pz} value={pz}>{pz}</option>
-                          ))}
-                        </select>
-                      </div>
+                    {/* Q4: Preferred Learning Language */}
+                    <div>
+                      <label style={{ display: "block", fontSize: 13.5, fontFamily: "'Outfit', sans-serif", fontWeight: 850, marginBottom: 4 }}>4. Preferred Learning Language</label>
+                      <span style={{ display: "block", fontSize: 11.5, color: "var(--text-muted)", marginBottom: 8 }}>Language for video explanations and AI hints.</span>
+                      <select
+                        value={tempLang}
+                        onChange={e => setTempLang(e.target.value)}
+                        style={{ width: "100%", padding: 11, borderRadius: 10, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)", outline: "none", cursor: "pointer" }}
+                      >
+                        {["English", "Hinglish", "Hindi", "Regional"].map(opt => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    </div>
 
-                      <div style={{ flex: 1 }}>
-                        <label style={{ display: "block", fontSize: 12, fontFamily: "'Outfit', sans-serif", fontWeight: 800, marginBottom: 6 }}>Archetype Bias</label>
-                        <select 
-                          value={invent} onChange={e => setInvent(e.target.value)}
-                          style={{ width: "100%", padding: 10, borderRadius: 10, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)", outline: "none" }}
-                        >
-                          {["💡 Create Something New", "⚖️ Both Equally", "⚡ Make Existing 10× Better"].map(iv => (
-                            <option key={iv} value={iv}>{iv}</option>
-                          ))}
-                        </select>
+                    {/* Q5: Study Group Preference */}
+                    <div>
+                      <label style={{ display: "block", fontSize: 13.5, fontFamily: "'Outfit', sans-serif", fontWeight: 850, marginBottom: 4 }}>5. Study Group Preference</label>
+                      <span style={{ display: "block", fontSize: 11.5, color: "var(--text-muted)", marginBottom: 8 }}>Do you prefer solo self-study or peer study circles?</span>
+                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                        {["Solo Learner", "Pair Programming", "Study Circle Squad"].map(opt => (
+                          <button
+                            key={opt}
+                            onClick={() => setTempGroupPref(opt)}
+                            style={{
+                              padding: "8px 14px", borderRadius: 10, cursor: "pointer",
+                              fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 700,
+                              background: tempGroupPref === opt ? "rgba(108,99,255,0.12)" : "var(--bg-alt)",
+                              border: tempGroupPref === opt ? "1.5px solid #6c63ff" : "1px solid var(--border-light)",
+                              color: tempGroupPref === opt ? "#6c63ff" : "var(--text-main)"
+                            }}
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Q6: Weekly Available Study Hours */}
+                    <div>
+                      <label style={{ display: "block", fontSize: 13.5, fontFamily: "'Outfit', sans-serif", fontWeight: 850, marginBottom: 4 }}>6. Weekly Available Study Hours</label>
+                      <span style={{ display: "block", fontSize: 11.5, color: "var(--text-muted)", marginBottom: 8 }}>Total hours dedicated to self-learning outside college lectures.</span>
+                      <input 
+                        type="number" min="1" max="80" value={tempWeeklyHours}
+                        onChange={e => setTempWeeklyHours(parseInt(e.target.value) || 15)}
+                        style={{ width: "100%", padding: 11, borderRadius: 10, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)", outline: "none" }}
+                      />
+                    </div>
+
+                  </motion.div>
+                )}
+
+                {/* STEP 2: Load, Confidence & Exams */}
+                {addStep === 2 && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                    
+                    {/* Q7: Current Academic Load */}
+                    <div>
+                      <label style={{ display: "block", fontSize: 13.5, fontFamily: "'Outfit', sans-serif", fontWeight: 850, marginBottom: 4 }}>7. Current Academic Load</label>
+                      <span style={{ display: "block", fontSize: 11.5, color: "var(--text-muted)", marginBottom: 8 }}>Auto-adjusts your Learning Pace to prevent burnout during exams.</span>
+                      <div style={{ display: "flex", justify: "space-between", fontSize: 12, fontWeight: 800, marginBottom: 6 }}>
+                        <span style={{ color: "#6c63ff" }}>⚡ Light Load (1)</span>
+                        <span style={{ color: "var(--text-muted)" }}>Current Level: {tempAcademicLoad}</span>
+                        <span style={{ color: "#ff6b6b" }}>🔥 High Load (10)</span>
+                      </div>
+                      <input 
+                        type="range" min="1" max="10" value={tempAcademicLoad} 
+                        onChange={e => setTempAcademicLoad(parseInt(e.target.value))}
+                        style={{ width: "100%", height: 6, borderRadius: 3, background: "var(--bg-alt)", outline: "none", cursor: "pointer" }}
+                      />
+                    </div>
+
+                    {/* Q8: Extracurricular Involvement */}
+                    <div>
+                      <label style={{ display: "block", fontSize: 13.5, fontFamily: "'Outfit', sans-serif", fontWeight: 850, marginBottom: 4 }}>8. Extracurricular Involvement</label>
+                      <span style={{ display: "block", fontSize: 11.5, color: "var(--text-muted)", marginBottom: 8 }}>Factors in commitments for weekly time-management planning. (Select all that apply)</span>
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        {["Sports", "Tech Clubs", "Arts / Creative", "Music / Dance", "Student Council", "None"].map(item => {
+                          const isSelected = tempExtracurricular.includes(item);
+                          return (
+                            <button
+                              key={item}
+                              onClick={() => toggleExtracurricular(item)}
+                              style={{
+                                padding: "8px 14px", borderRadius: 10, cursor: "pointer",
+                                fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 700,
+                                background: isSelected ? "rgba(0,201,167,0.12)" : "var(--bg-alt)",
+                                border: isSelected ? "1.5px solid #00c9a7" : "1px solid var(--border-light)",
+                                color: isSelected ? "#00c9a7" : "var(--text-main)"
+                              }}
+                            >
+                              {item}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Q9: Lab & Practical Exam Confidence */}
+                    <div>
+                      <label style={{ display: "block", fontSize: 13.5, fontFamily: "'Outfit', sans-serif", fontWeight: 850, marginBottom: 4 }}>9. Lab &amp; Practical Exam Confidence</label>
+                      <span style={{ display: "block", fontSize: 11.5, color: "var(--text-muted)", marginBottom: 8 }}>Confidence in performing university practical lab exams.</span>
+                      <div style={{ display: "flex", gap: 10, padding: "10px 14px", background: "var(--bg-alt)", borderRadius: 14, border: "1.5px solid var(--border-light)" }}>
+                        {[1, 2, 3, 4, 5].map(num => (
+                          <button
+                            type="button"
+                            key={num}
+                            onClick={() => setTempLabConfidence(num)}
+                            style={{ background: "transparent", border: "none", cursor: "pointer" }}
+                          >
+                            <Star 
+                              size={28} 
+                              fill={num <= tempLabConfidence ? "#6c63ff" : "transparent"} 
+                              color={num <= tempLabConfidence ? "#6c63ff" : "var(--text-muted)"} 
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Q10: Backlog History & Clearing Plan */}
+                    <div>
+                      <label style={{ display: "block", fontSize: 13.5, fontFamily: "'Outfit', sans-serif", fontWeight: 850, marginBottom: 4 }}>10. Backlog History &amp; Clearing Plan</label>
+                      <span style={{ display: "block", fontSize: 11.5, color: "var(--text-muted)", marginBottom: 8 }}>Track active or past backlogs for remedial preparation.</span>
+                      <select 
+                        value={tempBacklog} onChange={e => setTempBacklog(e.target.value)}
+                        style={{ width: "100%", padding: 11, borderRadius: 10, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)", outline: "none" }}
+                      >
+                        {["No Backlogs", "1 Active Backlog", "2+ Active Backlogs", "Cleared Past Backlogs"].map(opt => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Q11: Semester Exam Dates */}
+                    <div>
+                      <label style={{ display: "block", fontSize: 13.5, fontFamily: "'Outfit', sans-serif", fontWeight: 850, marginBottom: 4 }}>11. Upcoming Semester Exam Dates</label>
+                      <span style={{ display: "block", fontSize: 11.5, color: "var(--text-muted)", marginBottom: 8 }}>Dates for mid-term and end-term university exams.</span>
+                      <div style={{ display: "flex", gap: 12 }}>
+                        <div style={{ flex: 1 }}>
+                          <span style={{ fontSize: 10.5, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)" }}>START DATE</span>
+                          <input 
+                            type="date" value={tempExamStart} onChange={e => setTempExamStart(e.target.value)}
+                            style={{ width: "100%", padding: 10, marginTop: 4, borderRadius: 10, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)" }}
+                          />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <span style={{ fontSize: 10.5, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)" }}>END DATE</span>
+                          <input 
+                            type="date" value={tempExamEnd} onChange={e => setTempExamEnd(e.target.value)}
+                            style={{ width: "100%", padding: 10, marginTop: 4, borderRadius: 10, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", color: "var(--text-main)" }}
+                          />
+                        </div>
                       </div>
                     </div>
 
