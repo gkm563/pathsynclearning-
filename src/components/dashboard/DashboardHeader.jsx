@@ -169,7 +169,10 @@ export default function DashboardHeader({ activeTab, setActiveTab, onToggleSideb
         </motion.button>
 
         {/* User Profile Avatar */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 10px 4px 4px", background: "var(--bg-alt)", borderRadius: 24, border: "1.5px solid var(--border-light)" }}>
+        <div 
+          onClick={() => navigate("/platform/profile")}
+          style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 10px 4px 4px", background: "var(--bg-alt)", borderRadius: 24, border: "1.5px solid var(--border-light)", cursor: "pointer" }}
+        >
           <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg, #6c63ff, #00c9a7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, color: "#fff" }}>
             🎓
           </div>

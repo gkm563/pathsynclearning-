@@ -62,6 +62,7 @@ import PlatformRecordsCerts from "./pages/Platform/PlatformRecordsCerts";
 import PlatformOgOpportunities from "./pages/Platform/PlatformOgOpportunities";
 import PlatformCommunity from "./pages/Platform/PlatformCommunity";
 import WalletExchange from "./pages/Store/WalletExchange";
+import PlatformProfile from "./pages/Platform/PlatformProfile";
 
 
 
@@ -108,6 +109,8 @@ function App() {
           <Route path="/store" element={<Store />} />
           <Route path="/store/wallet" element={<WalletExchange />} />
           <Route path="/platform/wallet" element={<WalletExchange />} />
+          <Route path="/platform/profile" element={<PlatformProfile />} />
+          <Route path="/profile" element={<PlatformProfile />} />
           
           <Route path="/onboarding/stage1" element={<OnboardingStage1 />} />
           <Route path="/onboarding/stage2" element={<OnboardingStage2 />} />

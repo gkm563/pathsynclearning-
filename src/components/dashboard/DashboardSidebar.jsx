@@ -118,11 +118,14 @@ export default function DashboardSidebar({ isOpen, onClose, activeTab, setActive
               </div>
 
               {/* User Profile Card */}
-              <div style={{
-                padding: "16px", borderRadius: 18, background: "var(--bg-alt)",
-                border: "1.5px solid var(--border-light)", marginBottom: 26,
-                display: "flex", alignItems: "center", gap: 14
-              }}>
+              <div 
+                onClick={() => { navigate("/platform/profile"); onClose(); }}
+                style={{
+                  padding: "16px", borderRadius: 18, background: "var(--bg-alt)",
+                  border: "1.5px solid var(--border-light)", marginBottom: 26,
+                  display: "flex", alignItems: "center", gap: 14, cursor: "pointer"
+                }}
+              >
                 <div style={{ width: 50, height: 50, borderRadius: "50%", background: "linear-gradient(135deg, #6c63ff, #00c9a7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, color: "#fff", flexShrink: 0, boxShadow: "0 4px 14px rgba(108,99,255,0.3)" }}>
                   🎓
                 </div>
