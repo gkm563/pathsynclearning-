@@ -7,6 +7,7 @@ import {
   BookOpen, FileText, Zap, Laptop, Info, Plus, Star, X
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import DashboardLayout from "../../components/dashboard/DashboardLayout";
 
 // Categorized Store Products with proper Cover Images & Accent Colors
 const STORE_CATALOG = [
@@ -605,8 +606,7 @@ export default function PathStore() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg-main)", color: "var(--text-main)", fontFamily: "'Inter', sans-serif" }}>
-      
+    <DashboardLayout activeTab="store" setActiveTab={() => {}}>
       {/* CSS hide scrollbars support */}
       <style dangerouslySetInnerHTML={{__html: `
         .hide-scrollbar::-webkit-scrollbar {
@@ -617,133 +617,6 @@ export default function PathStore() {
           scrollbar-width: none;
         }
       `}} />
-
-      {/* ==================== STORE HEADER ==================== */}
-      <header style={{ 
-        padding: "20px 40px", 
-        borderBottom: "1.5px solid var(--border-light)", 
-        background: "var(--bg-card)", 
-        display: "flex", 
-        alignItems: "center", 
-        justifyContent: "space-between",
-        flexWrap: "wrap",
-        gap: 16
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <button 
-            onClick={() => navigate("/platform")} 
-            style={{ 
-              display: "flex", 
-              alignItems: "center", 
-              gap: 8, 
-              background: "var(--bg-alt)", 
-              border: "1px solid var(--border-light)", 
-              borderRadius: 12, 
-              padding: "8px 14px", 
-              color: "var(--text-main)", 
-              fontFamily: "'Outfit', sans-serif", 
-              fontSize: 13, 
-              fontWeight: 700, 
-              cursor: "pointer" 
-            }}
-          >
-            <ArrowLeft size={16} /> Back to Dashboard
-          </button>
-          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 900 }}>
-            Path<span style={{ color: "#6c63ff" }}>Ed Store</span>
-          </div>
-        </div>
-
-        {/* User Balances */}
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          {activePlugin !== "None" && (
-            <div style={{ 
-              display: "flex", 
-              alignItems: "center", 
-              gap: 6,
-              padding: "6px 12px", 
-              borderRadius: 20, 
-              background: "rgba(108,99,255,0.12)", 
-              border: "1px solid rgba(108,99,255,0.3)", 
-              color: "#6c63ff", 
-              fontFamily: "'Fira Code', monospace", 
-              fontSize: 12, 
-              fontWeight: 700 
-            }}>
-              <Zap size={14} /> ACTIVE MODULE: {activePlugin.replace(" Plugin", "")}
-              <button 
-                onClick={handleClearPlugin}
-                style={{ 
-                  background: "transparent", 
-                  border: "none", 
-                  color: "#ff6b6b", 
-                  cursor: "pointer", 
-                  padding: "0 2px",
-                  fontSize: 12,
-                  fontWeight: 950
-                }}
-                title="Disable active module"
-              >
-                ×
-              </button>
-            </div>
-          )}
-
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ 
-              padding: "6px 14px", 
-              borderRadius: 20, 
-              background: "rgba(247,151,30,0.12)", 
-              border: "1px solid rgba(247,151,30,0.3)", 
-              color: "#f7971e", 
-              fontFamily: "'Fira Code', monospace", 
-              fontSize: 13, 
-              fontWeight: 700,
-              display: "flex",
-              alignItems: "center",
-              gap: 6
-            }}>
-              <Coins size={16} />
-              <span>{coins.toLocaleString()} COINS</span>
-            </div>
-            <button
-              onClick={() => navigate("/store/wallet")}
-              style={{
-                display: "flex", alignItems: "center", justify: "center",
-                width: 28, height: 28, borderRadius: 50, border: "none",
-                background: "linear-gradient(135deg, #6c63ff, #00c9a7)", color: "#fff",
-                fontWeight: 900, fontSize: 16, cursor: "pointer",
-                boxShadow: "0 4px 10px rgba(108,99,255,0.25)"
-              }}
-              title="Add more coins"
-            >
-              +
-            </button>
-          </div>
-
-          <div 
-            onClick={() => navigate("/store/wallet")}
-            style={{ 
-              padding: "6px 14px", 
-              borderRadius: 20, 
-              background: "rgba(0,201,167,0.12)", 
-              border: "1px solid rgba(0,201,167,0.3)", 
-              color: "#00c9a7", 
-              fontFamily: "'Fira Code', monospace", 
-              fontSize: 13, 
-              fontWeight: 700,
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              cursor: "pointer"
-            }}
-            title="View Wallet Dashboard"
-          >
-            <CreditCard size={16} />
-            <span>${cashWallet.toFixed(2)} CASH</span>
-          </div>
-        </div>
-      </header>
 
       {/* ==================== TOAST ALERT ==================== */}
       <AnimatePresence>
@@ -765,9 +638,6 @@ export default function PathStore() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* ==================== MAIN CONTENT SECTION ==================== */}
-      <main style={{ maxWidth: 1200, margin: "40px auto", padding: "0 24px 60px" }}>
         
         {/* Title and Intro */}
         <div style={{ textAlign: "center", marginBottom: 40 }}>
@@ -911,7 +781,6 @@ export default function PathStore() {
             )}
           </div>
         )}
-      </main>
 
       {/* ==================== GLOBAL MODAL: CONFIRM COIN PURCHASE ==================== */}
       <AnimatePresence>
@@ -1167,6 +1036,6 @@ export default function PathStore() {
         )}
       </AnimatePresence>
 
-    </div>
+    </DashboardLayout>
   );
 }

@@ -5,6 +5,7 @@ import {
   DollarSign, Landmark, CheckCircle, RefreshCw, FileText, Info, Trash2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import DashboardLayout from "../../components/dashboard/DashboardLayout";
 
 const COIN_PACKS = [
   { id: "pack_starter", name: "SDE Starter Refill", coins: 500, cost: 4.99, popular: false, badge: "Starter" },
@@ -140,82 +141,8 @@ export default function WalletExchange() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg-main)", color: "var(--text-main)", fontFamily: "'Inter', sans-serif" }}>
+    <DashboardLayout activeTab="store" setActiveTab={() => {}}>
       
-      {/* ==================== WALLET HEADER ==================== */}
-      <header style={{ 
-        padding: "20px 40px", 
-        borderBottom: "1.5px solid var(--border-light)", 
-        background: "var(--bg-card)", 
-        display: "flex", 
-        alignItems: "center", 
-        justifyContent: "space-between",
-        flexWrap: "wrap",
-        gap: 16
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <button 
-            onClick={() => navigate("/store")} 
-            style={{ 
-              display: "flex", 
-              alignItems: "center", 
-              gap: 8, 
-              background: "var(--bg-alt)", 
-              border: "1px solid var(--border-light)", 
-              borderRadius: 12, 
-              padding: "8px 14px", 
-              color: "var(--text-main)", 
-              fontFamily: "'Outfit', sans-serif", 
-              fontSize: 13, 
-              fontWeight: 700, 
-              cursor: "pointer" 
-            }}
-          >
-            <ArrowLeft size={16} /> Back to Store
-          </button>
-          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 900 }}>
-            Path<span style={{ color: "#6c63ff" }}>Ed Wallet</span>
-          </div>
-        </div>
-
-        {/* Balance Status Indicators */}
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <div style={{ 
-            padding: "6px 14px", 
-            borderRadius: 20, 
-            background: "rgba(247,151,30,0.12)", 
-            border: "1px solid rgba(247,151,30,0.3)", 
-            color: "#f7971e", 
-            fontFamily: "'Fira Code', monospace", 
-            fontSize: 13, 
-            fontWeight: 700,
-            display: "flex",
-            alignItems: "center",
-            gap: 6
-          }}>
-            <Coins size={16} />
-            <span>{coins.toLocaleString()} COINS</span>
-          </div>
-
-          <div style={{ 
-            padding: "6px 14px", 
-            borderRadius: 20, 
-            background: "rgba(0,201,167,0.12)", 
-            border: "1px solid rgba(0,201,167,0.3)", 
-            color: "#00c9a7", 
-            fontFamily: "'Fira Code', monospace", 
-            fontSize: 13, 
-            fontWeight: 700,
-            display: "flex",
-            alignItems: "center",
-            gap: 6
-          }}>
-            <CreditCard size={16} />
-            <span>${cashWallet.toFixed(2)} CASH</span>
-          </div>
-        </div>
-      </header>
-
       {/* ==================== TOAST ALERT ==================== */}
       <AnimatePresence>
         {toastMessage && (
@@ -236,9 +163,6 @@ export default function WalletExchange() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* ==================== MAIN EXCHANGE DASHBOARD ==================== */}
-      <main style={{ maxWidth: 1200, margin: "40px auto", padding: "0 24px 60px" }}>
         
         {/* Wallet Overview Panel */}
         <div style={{ 
@@ -480,7 +404,6 @@ export default function WalletExchange() {
 
         </div>
 
-      </main>
 
       {/* ==================== GLOBAL MODAL: DEPOSIT FUNDS FORM ==================== */}
       <AnimatePresence>
@@ -593,6 +516,6 @@ export default function WalletExchange() {
         )}
       </AnimatePresence>
 
-    </div>
+    </DashboardLayout>
   );
 }
