@@ -4,11 +4,11 @@ import {
   ShoppingBag, ArrowLeft, Lock, Sparkles, Check, ShieldCheck, 
   Coins, ArrowRightLeft, CreditCard, BookmarkCheck, CheckCircle, 
   HelpCircle, RefreshCw, Layers, Award, Terminal, Compass, Briefcase, 
-  BookOpen, FileText, Zap, Laptop, Info, Plus
+  BookOpen, FileText, Zap, Laptop, Info, Plus, Star
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Categorized Store Products
+// Categorized Store Products with proper Cover Images & Accent Colors
 const STORE_CATALOG = [
   // 1. Roadmaps
   {
@@ -17,8 +17,10 @@ const STORE_CATALOG = [
     category: "Career & Academic Roadmaps",
     price: 1500,
     icon: "🎓",
+    image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=600",
     desc: "Complete semester-wise course layouts, syllabus breakdowns, and exam prep trackers tailored for AKTU.",
-    meta: "Academic Roadmap"
+    meta: "Academic Roadmap",
+    col: "#6c63ff"
   },
   {
     id: "rm_iitb",
@@ -26,8 +28,10 @@ const STORE_CATALOG = [
     category: "Career & Academic Roadmaps",
     price: 1800,
     icon: "🏛️",
+    image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=600",
     desc: "Curated lectures, rigorous assignments, and projects matching standard IIT Bombay CSE syllabus.",
-    meta: "Academic Roadmap"
+    meta: "Academic Roadmap",
+    col: "#00c9a7"
   },
   {
     id: "rm_fullstack",
@@ -35,8 +39,10 @@ const STORE_CATALOG = [
     category: "Career & Academic Roadmaps",
     price: 1500,
     icon: "💻",
+    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=600",
     desc: "End-to-end guide: frontend frameworks, backend microservices, DB scaling, systems and cloud deployment.",
-    meta: "Career Roadmap"
+    meta: "Career Roadmap",
+    col: "#ec4899"
   },
   {
     id: "rm_ai",
@@ -44,8 +50,10 @@ const STORE_CATALOG = [
     category: "Career & Academic Roadmaps",
     price: 2000,
     icon: "🧠",
+    image: "https://images.unsplash.com/photo-1527474305487-b87b222841cc?auto=format&fit=crop&q=80&w=600",
     desc: "Mathematics, model building, neural networks, PyTorch, LLM fine-tuning, and model hosting.",
-    meta: "Career Roadmap"
+    meta: "Career Roadmap",
+    col: "#a855f7"
   },
   {
     id: "rm_google",
@@ -53,8 +61,10 @@ const STORE_CATALOG = [
     category: "Career & Academic Roadmaps",
     price: 2000,
     icon: "🎯",
+    image: "https://images.unsplash.com/photo-1572021335469-31706a17aaef?auto=format&fit=crop&q=80&w=600",
     desc: "Targeted calendar mapping DSA topics, high-concurrency designs, and Google mock interview checkpoints.",
-    meta: "Placement Roadmap"
+    meta: "Placement Roadmap",
+    col: "#eab308"
   },
 
   // 2. Project Blueprints
@@ -64,8 +74,10 @@ const STORE_CATALOG = [
     category: "Project Blueprints",
     price: 1200,
     icon: "📊",
+    image: "https://images.unsplash.com/photo-1507146426996-ef05306b995a?auto=format&fit=crop&q=80&w=600",
     desc: "Blueprints containing complete system documentation, UI prototypes, ER diagrams, template source code, and PPT.",
-    meta: "Project Blueprint"
+    meta: "Project Blueprint",
+    col: "#06b6d4"
   },
   {
     id: "pb_blockchain",
@@ -73,8 +85,10 @@ const STORE_CATALOG = [
     category: "Project Blueprints",
     price: 1300,
     icon: "⛓️",
+    image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=600",
     desc: "Smart contracts, React frontend templates, testing scripts, and system flow architectures.",
-    meta: "Project Blueprint"
+    meta: "Project Blueprint",
+    col: "#10b981"
   },
 
   // 3. Study Planner Packs
@@ -84,8 +98,10 @@ const STORE_CATALOG = [
     category: "Study Planner Packs",
     price: 800,
     icon: "⏱️",
+    image: "https://images.unsplash.com/photo-1607799279861-4dd421887fb3?auto=format&fit=crop&q=80&w=600",
     desc: "Day-by-day practice tracker targeting top 100 interview questions on arrays, trees, graphs, and DP.",
-    meta: "Planner Pack"
+    meta: "Planner Pack",
+    col: "#f97316"
   },
   {
     id: "sp_react60",
@@ -93,8 +109,10 @@ const STORE_CATALOG = [
     category: "Study Planner Packs",
     price: 900,
     icon: "⚛️",
+    image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=600",
     desc: "Syllabus checkpoints, micro-tasks, portfolio projects timeline, and state management coverage guide.",
-    meta: "Planner Pack"
+    meta: "Planner Pack",
+    col: "#0284c7"
   },
 
   // 4. Resume Templates
@@ -104,8 +122,10 @@ const STORE_CATALOG = [
     category: "Resume Templates",
     price: 400,
     icon: "📄",
+    image: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=600",
     desc: "High-scoring layout optimized for ML terms, parameters, datasets, and GitHub project metrics.",
-    meta: "ATS Resume"
+    meta: "ATS Resume",
+    col: "#64748b"
   },
   {
     id: "rt_fs_ats",
@@ -113,8 +133,10 @@ const STORE_CATALOG = [
     category: "Resume Templates",
     price: 400,
     icon: "💼",
+    image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=600",
     desc: "Clean layout prioritizing deployment stats, tech stacks, and team scaling results.",
-    meta: "ATS Resume"
+    meta: "ATS Resume",
+    col: "#475569"
   },
 
   // 5. Interview Prep Packs
@@ -124,8 +146,10 @@ const STORE_CATALOG = [
     category: "Interview Packs",
     price: 1000,
     icon: "🔍",
+    image: "https://images.unsplash.com/photo-1521737711867-e3b904737c88?auto=format&fit=crop&q=80&w=600",
     desc: "Pre-filled DSA patterns, leadership questions, resume tips, and real mock interview experience sheets.",
-    meta: "Interview Pack"
+    meta: "Interview Pack",
+    col: "#eab308"
   },
   {
     id: "ip_msft",
@@ -133,8 +157,10 @@ const STORE_CATALOG = [
     category: "Interview Packs",
     price: 1000,
     icon: "🖥️",
+    image: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=600",
     desc: "Emphasis on object-oriented designs, SQL query sets, and system architecture fundamentals.",
-    meta: "Interview Pack"
+    meta: "Interview Pack",
+    col: "#2563eb"
   },
 
   // 6. Hackathon Kits
@@ -144,8 +170,10 @@ const STORE_CATALOG = [
     category: "Hackathon Kits",
     price: 900,
     icon: "🏆",
+    image: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=600",
     desc: "Pitch templates, interactive prototype UI kits, system layout shapes, and slides checklist.",
-    meta: "Hackathon Kit"
+    meta: "Hackathon Kit",
+    col: "#d946ef"
   },
 
   // 7. Advanced Features (Original prefilled items)
@@ -155,8 +183,10 @@ const STORE_CATALOG = [
     category: "Advanced Features",
     price: 1500,
     icon: "🤝",
+    image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=600",
     desc: "Unlock 1-on-1 monthly sessions with senior engineers from Tier-1 tech firms.",
-    meta: "Premium Unlocks"
+    meta: "Premium Unlocks",
+    col: "#6c63ff"
   },
   {
     id: "adv_hacksquad",
@@ -164,8 +194,10 @@ const STORE_CATALOG = [
     category: "Advanced Features",
     price: 2000,
     icon: "⚔️",
+    image: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&q=80&w=600",
     desc: "Form and lead your own hackathon team with priority recruitment matching.",
-    meta: "Premium Unlocks"
+    meta: "Premium Unlocks",
+    col: "#ef4444"
   },
   {
     id: "adv_alumni",
@@ -173,8 +205,10 @@ const STORE_CATALOG = [
     category: "Advanced Features",
     price: 2500,
     icon: "🌐",
+    image: "https://images.unsplash.com/photo-1511556532299-8f662fc26c06?auto=format&fit=crop&q=80&w=600",
     desc: "Direct referral channel to 500+ placed alumni across global MNCs.",
-    meta: "Premium Unlocks"
+    meta: "Premium Unlocks",
+    col: "#00c9a7"
   },
   {
     id: "adv_streak",
@@ -182,8 +216,10 @@ const STORE_CATALOG = [
     category: "Advanced Features",
     price: 500,
     icon: "🛡️",
+    image: "https://images.unsplash.com/photo-1538220856186-0be0c075778a?auto=format&fit=crop&q=80&w=600",
     desc: "Protect your daily XP streak from resetting when you miss a daily challenge.",
-    meta: "Premium Unlocks"
+    meta: "Premium Unlocks",
+    col: "#f59e0b"
   },
 
   // 8. AI Marketplace Modules (Plugins)
@@ -193,8 +229,10 @@ const STORE_CATALOG = [
     category: "AI Marketplace Modules",
     price: 2500,
     icon: "🎒",
+    image: "https://images.unsplash.com/photo-1501504905252-473c47e087f8?auto=format&fit=crop&q=80&w=600",
     desc: "Auto-calibrates dashboard: daily GATE questions, syllabus checkpoints, and mock test schedules.",
-    meta: "AI Plugin Module"
+    meta: "AI Plugin Module",
+    col: "#8b5cf6"
   },
   {
     id: "mod_google_sde",
@@ -202,8 +240,10 @@ const STORE_CATALOG = [
     category: "AI Marketplace Modules",
     price: 2500,
     icon: "🤖",
+    image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=600",
     desc: "Swaps dashboard themes, challenges, and mock interview setups to target Google expectations.",
-    meta: "AI Plugin Module"
+    meta: "AI Plugin Module",
+    col: "#10b981"
   },
   {
     id: "mod_iitb",
@@ -211,8 +251,10 @@ const STORE_CATALOG = [
     category: "AI Marketplace Modules",
     price: 2500,
     icon: "🎓",
+    image: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=600",
     desc: "Syncs IIT Bombay assignments, peer projects, grading systems, and CS semester tasks.",
-    meta: "AI Plugin Module"
+    meta: "AI Plugin Module",
+    col: "#ef4444"
   },
   {
     id: "mod_research",
@@ -220,18 +262,176 @@ const STORE_CATALOG = [
     category: "AI Marketplace Modules",
     price: 2500,
     icon: "🔬",
+    image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=600",
     desc: "Unlocks IEEE layout modules, literature review trackers, and paper publication timelines.",
-    meta: "AI Plugin Module"
+    meta: "AI Plugin Module",
+    col: "#ec4899"
   }
 ];
+
+// Slidable Row component mimicking Netflix horizontal rows in Mentorship
+function SlidableStoreRow({ title, items, purchasedIds, activePlugin, onPurchaseClick, onApplyClick }) {
+  const scrollRef = React.useRef(null);
+
+  const scrollLeft = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: -330, behavior: "smooth" });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: 330, behavior: "smooth" });
+    }
+  };
+
+  if (items.length === 0) return null;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14, position: "relative", marginBottom: 32 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 19, fontWeight: 900, color: "var(--text-main)", margin: 0 }}>
+          {title}
+        </h3>
+        
+        {/* Carousel Navigation Arrows */}
+        <div style={{ display: "flex", gap: 6 }}>
+          <button
+            onClick={scrollLeft}
+            style={{
+              width: 32, height: 32, borderRadius: 10, border: "1.5px solid var(--border-light)",
+              background: "var(--bg-card)", color: "var(--text-main)", cursor: "pointer",
+              display: "flex", alignItems: "center", justify: "center"
+            }}
+          >
+            ‹
+          </button>
+          <button
+            onClick={scrollRight}
+            style={{
+              width: 32, height: 32, borderRadius: 10, border: "1.5px solid var(--border-light)",
+              background: "var(--bg-card)", color: "var(--text-main)", cursor: "pointer",
+              display: "flex", alignItems: "center", justify: "center"
+            }}
+          >
+            ›
+          </button>
+        </div>
+      </div>
+
+      {/* Slidable Row Wrapper */}
+      <div 
+        ref={scrollRef}
+        style={{
+          display: "flex", gap: 20, overflowX: "auto", padding: "8px 0",
+          scrollbarWidth: "none", msOverflowStyle: "none"
+        }}
+        className="hide-scrollbar"
+      >
+        {items.map((item) => {
+          const isOwned = purchasedIds.includes(item.id);
+          const isActive = activePlugin === item.title;
+          return (
+            <motion.div
+              key={item.id}
+              whileHover={{ y: -6, boxShadow: `0 10px 24px ${item.col}18` }}
+              style={{
+                width: 310, flexShrink: 0, background: "var(--bg-card)",
+                border: "1.5px solid var(--border-light)", borderTop: `5px solid ${item.col}`,
+                borderRadius: 22, overflow: "hidden", display: "flex", flexDirection: "column",
+                boxShadow: "0 6px 18px rgba(0,0,0,0.02)"
+              }}
+            >
+              {/* Portrait Cover */}
+              <div style={{ position: "relative", height: 210, overflow: "hidden" }}>
+                <img src={item.image} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.85), transparent)" }} />
+                
+                {/* Logo layered properly over cover image */}
+                <div style={{
+                  position: "absolute", top: 12, left: 12, width: 36, height: 36, borderRadius: 10,
+                  background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justify: "center",
+                  fontSize: 20
+                }}>
+                  {item.icon}
+                </div>
+
+                {/* Rating / Meta Badge */}
+                <div style={{
+                  position: "absolute", top: 12, right: 12, padding: "4px 10px", borderRadius: 8,
+                  background: "rgba(0,0,0,0.7)", color: "#fff", display: "flex", alignItems: "center", gap: 4,
+                  fontSize: 11, fontFamily: "'Outfit', sans-serif", fontWeight: 800
+                }}>
+                  <Star size={11} fill="#f59e0b" color="#f59e0b" />
+                  <span>4.9</span>
+                </div>
+
+                <div style={{ position: "absolute", bottom: 12, left: 16, right: 16, color: "#fff" }}>
+                  <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 17.5, fontWeight: 900, lineHeight: 1.3 }}>
+                    {item.title}
+                  </div>
+                  <div style={{ fontSize: 12, opacity: 0.85, marginTop: 4, fontFamily: "'Fira Code', monospace" }}>
+                    {item.meta}
+                  </div>
+                </div>
+              </div>
+
+              {/* Card Details */}
+              <div style={{ padding: 18, flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 14 }}>
+                <p style={{ margin: 0, fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5, minHeight: 40 }}>
+                  {item.desc}
+                </p>
+
+                {/* Action button: Purchase or Let's Apply */}
+                {isOwned ? (
+                  <button
+                    onClick={() => onApplyClick(item)}
+                    style={{
+                      width: "100%", padding: "10px 12px", borderRadius: 12,
+                      background: isActive 
+                        ? "rgba(108,99,255,0.08)"
+                        : "linear-gradient(135deg, #6c63ff, #00c9a7)", 
+                      color: isActive ? "#6c63ff" : "#ffffff",
+                      border: isActive ? "1.5px solid #6c63ff" : "none",
+                      fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 900,
+                      cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    <Zap size={14} />
+                    <span>{isActive ? "Applied" : "Let's Apply"}</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => onPurchaseClick(item)}
+                    style={{
+                      width: "100%", padding: "10px 12px", borderRadius: 12, border: "none",
+                      background: "linear-gradient(135deg, #6c63ff, #00c9a7)", color: "#ffffff",
+                      fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 900,
+                      cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                      boxShadow: "0 6px 18px rgba(108,99,255,0.18)"
+                    }}
+                  >
+                    <ShoppingBag size={14} />
+                    <span>Unlock for {item.price.toLocaleString()} Coins</span>
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export default function PathStore() {
   const navigate = useNavigate();
 
-  // Active Main Tab: 'browse' | 'purchased'
+  // Active Tab switcher: 'browse' | 'purchased'
   const [activeTab, setActiveTab] = useState("browse");
 
-  // Selected category in browse store
+  // Selected Category filter
   const [selectedCategory, setSelectedCategory] = useState("All");
 
   // User Local Storage States
@@ -242,24 +442,25 @@ export default function PathStore() {
 
   const [purchasedIds, setPurchasedIds] = useState(() => {
     const saved = localStorage.getItem("pathed_purchased_items");
-    return saved ? JSON.parse(saved) : ["adv_streak"]; // Starts with streak shield purchased
+    return saved ? JSON.parse(saved) : ["adv_streak"]; 
   });
 
   const [activePlugin, setActivePlugin] = useState(() => {
     return localStorage.getItem("pathed_active_plugin") || "None";
   });
 
-  // Simulated cash wallet balance
+  // USD Cash Wallet State
   const [cashWallet, setCashWallet] = useState(() => {
     const saved = localStorage.getItem("pathed_cash_wallet");
     return saved ? parseFloat(saved) : 45.00;
   });
 
-  // Modal / Toast Notification States
-  const [applyModalItem, setApplyModalItem] = useState(null);
+  // Modals & Messages states
+  const [purchasingItem, setPurchasingItem] = useState(null);
+  const [applyingItem, setApplyingItem] = useState(null);
   const [toastMessage, setToastMessage] = useState("");
 
-  // Sync state values to Local Storage
+  // Sync to Local Storage
   useEffect(() => {
     localStorage.setItem("pathed_user_coins", coins.toString());
   }, [coins]);
@@ -272,7 +473,6 @@ export default function PathStore() {
     localStorage.setItem("pathed_cash_wallet", cashWallet.toFixed(2));
   }, [cashWallet]);
 
-  // Show Toast Alert helper
   const triggerToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => {
@@ -280,44 +480,53 @@ export default function PathStore() {
     }, 4000);
   };
 
-  // Buy item action handler
-  const handlePurchaseItem = (item) => {
+  // Click handler to open purchase confirmation dialog
+  const handlePurchaseClick = (item) => {
     if (purchasedIds.includes(item.id)) {
       triggerToast("You already own this item.");
       return;
     }
-    if (coins < item.price) {
-      triggerToast("❌ Insufficient coins! Buy more coins or complete daily challenges.");
+    setPurchasingItem(item);
+  };
+
+  // Confirm Purchase action
+  const handleConfirmPurchase = () => {
+    if (!purchasingItem) return;
+
+    if (coins < purchasingItem.price) {
+      triggerToast("❌ Insufficient coins! Refill coins below or complete challenges.");
+      setPurchasingItem(null);
       return;
     }
 
-    setCoins(prev => prev - item.price);
-    setPurchasedIds(prev => [...prev, item.id]);
-    triggerToast(`🎉 Purchased "${item.title}" successfully! Check Purchased tab.`);
+    setCoins(prev => prev - purchasingItem.price);
+    setPurchasedIds(prev => [...prev, purchasingItem.id]);
+    triggerToast(`🎉 Purchased "${purchasingItem.title}" successfully! Check Purchased tab.`);
+    setPurchasingItem(null);
   };
 
-  // Let's Apply action handler
+  // Click Apply pack
   const handleApplyClick = (item) => {
-    setApplyModalItem(item);
+    setApplyingItem(item);
   };
 
-  // Confirm Apply Module/Item
+  // Confirm Apply
   const handleConfirmApply = () => {
-    if (!applyModalItem) return;
+    if (!applyingItem) return;
 
-    if (applyModalItem.category === "AI Marketplace Modules") {
-      localStorage.setItem("pathed_active_plugin", applyModalItem.title);
-      setActivePlugin(applyModalItem.title);
+    if (applyingItem.category === "AI Marketplace Modules") {
+      localStorage.setItem("pathed_active_plugin", applyingItem.title);
+      setActivePlugin(applyingItem.title);
     }
     
-    triggerToast(`⚡ Applied "${applyModalItem.title}" to your student profile!`);
-    setApplyModalItem(null);
+    triggerToast(`⚡ Applied "${applyingItem.title}" to your student profile!`);
+    setApplyingItem(null);
   };
 
-  // Exchange System: Cash to Coins
+  // USD to Coins Pack buy
   const buyCoinsPack = (amount, cost) => {
     if (cashWallet < cost) {
-      triggerToast("❌ Insufficient cash balance! Please add funds first.");
+      triggerToast("❌ Insufficient cash balance! Add funds first.");
       return;
     }
     setCashWallet(prev => prev - cost);
@@ -325,7 +534,7 @@ export default function PathStore() {
     triggerToast(`🪙 Added ${amount.toLocaleString()} Coins to your account!`);
   };
 
-  // Exchange System: Coins to Cash
+  // Coins exchange cash out
   const cashOutCoins = (coinsAmount, cashValue) => {
     if (coins < coinsAmount) {
       triggerToast("❌ Insufficient coins to cash out.");
@@ -336,23 +545,22 @@ export default function PathStore() {
     triggerToast(`💸 Exchanged ${coinsAmount.toLocaleString()} Coins for $${cashValue} Cash Credits!`);
   };
 
-  // Reset module settings helper
   const handleClearPlugin = () => {
     localStorage.removeItem("pathed_active_plugin");
     setActivePlugin("None");
     triggerToast("System profile reset to default configuration.");
   };
 
-  // Categories list filter
+  // Categories list
   const categories = ["All", ...new Set(STORE_CATALOG.map(item => item.category))];
 
-  // Filter items in browse tab
-  const getFilteredItems = () => {
-    if (selectedCategory === "All") return STORE_CATALOG;
-    return STORE_CATALOG.filter(item => item.category === selectedCategory);
+  // Get filtered categories based on active selector
+  const getCategoriesToShow = () => {
+    if (selectedCategory === "All") return categories.filter(c => c !== "All");
+    return [selectedCategory];
   };
 
-  // Get purchased items objects
+  // Filter items in purchased tab
   const getPurchasedItems = () => {
     return STORE_CATALOG.filter(item => purchasedIds.includes(item.id));
   };
@@ -360,6 +568,17 @@ export default function PathStore() {
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg-main)", color: "var(--text-main)", fontFamily: "'Inter', sans-serif" }}>
       
+      {/* CSS hide scrollbars support */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}} />
+
       {/* ==================== STORE HEADER ==================== */}
       <header style={{ 
         padding: "20px 40px", 
@@ -396,7 +615,7 @@ export default function PathStore() {
           </div>
         </div>
 
-        {/* User Balance Indicators */}
+        {/* User Balances */}
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           {activePlugin !== "None" && (
             <div style={{ 
@@ -488,10 +707,10 @@ export default function PathStore() {
         )}
       </AnimatePresence>
 
-      {/* ==================== MAIN SECTION ==================== */}
+      {/* ==================== MAIN CONTENT SECTION ==================== */}
       <main style={{ maxWidth: 1200, margin: "40px auto", padding: "0 24px 60px" }}>
         
-        {/* Banner Section */}
+        {/* Title and Intro */}
         <div style={{ textAlign: "center", marginBottom: 40 }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(108,99,255,0.12)", border: "1px solid #6c63ff40", padding: "6px 16px", borderRadius: 20, marginBottom: 16, color: "#6c63ff", fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 700 }}>
             <Sparkles size={14} /> PREMIUM ACADEMIC & CAREER MODULES
@@ -504,11 +723,10 @@ export default function PathStore() {
           </p>
         </div>
 
-        {/* ==================== INTERFACE TABS SWITCHER ==================== */}
+        {/* Interface Switch Tabs */}
         <div style={{ 
           display: "flex", 
           justifyContent: "center", 
-          marginBottom: 36,
           background: "var(--bg-alt)", 
           border: "1.5px solid var(--border-light)", 
           padding: 6, 
@@ -544,17 +762,18 @@ export default function PathStore() {
           </button>
         </div>
 
-        {/* ==================== BROWSE STORE TABS ==================== */}
+        {/* ==================== BROWSE STORE INTERFACE ==================== */}
         {activeTab === "browse" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             
-            {/* Category Selector Buttons */}
+            {/* Category Selector Tabs */}
             <div style={{ 
               display: "flex", 
               gap: 8, 
               overflowX: "auto", 
               paddingBottom: 8,
-              borderBottom: "1px solid var(--border-light)"
+              borderBottom: "1px solid var(--border-light)",
+              marginBottom: 16
             }}>
               {categories.map((cat) => (
                 <button
@@ -579,81 +798,20 @@ export default function PathStore() {
               ))}
             </div>
 
-            {/* Catalog Grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 24 }}>
-              {getFilteredItems().map((item) => {
-                const isOwned = purchasedIds.includes(item.id);
+            {/* Netflix slidable horizontal rows */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+              {getCategoriesToShow().map((categoryName) => {
+                const categoryItems = STORE_CATALOG.filter(item => item.category === categoryName);
                 return (
-                  <div 
-                    key={item.id} 
-                    style={{ 
-                      background: "var(--bg-card)", 
-                      border: isOwned ? "1.5px solid rgba(0,201,167,0.3)" : "1.5px solid var(--border-light)", 
-                      borderRadius: 22, 
-                      padding: 24, 
-                      display: "flex", 
-                      flexDirection: "column", 
-                      justifyContent: "space-between", 
-                      boxShadow: "0 8px 24px rgba(0,0,0,0.02)",
-                      position: "relative",
-                      transition: "transform 0.2s"
-                    }}
-                  >
-                    {isOwned && (
-                      <span style={{ 
-                        position: "absolute", top: 18, right: 18,
-                        background: "rgba(0,201,167,0.12)", border: "1px solid rgba(0,201,167,0.3)",
-                        color: "#00c9a7", padding: "3px 8px", borderRadius: 8,
-                        fontSize: 10, fontFamily: "'Fira Code', monospace", fontWeight: 800
-                      }}>
-                        OWNED
-                      </span>
-                    )}
-
-                    <div>
-                      <div style={{ fontSize: 36, marginBottom: 14 }}>{item.icon}</div>
-                      <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 6 }}>
-                        <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 9.5, fontWeight: 800, color: "#6c63ff", letterSpacing: 0.5 }}>
-                          {item.category.toUpperCase()}
-                        </span>
-                        <span style={{ color: "var(--text-light)", fontSize: 10 }}>•</span>
-                        <span style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 700 }}>{item.meta}</span>
-                      </div>
-                      <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 850, color: "var(--text-main)", margin: "0 0 8px" }}>
-                        {item.title}
-                      </h3>
-                      <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5, margin: "0 0 20px" }}>
-                        {item.desc}
-                      </p>
-                    </div>
-
-                    <button
-                      onClick={() => handlePurchaseItem(item)}
-                      disabled={isOwned}
-                      style={{
-                        width: "100%", padding: "11px", borderRadius: 12, border: "none",
-                        background: isOwned 
-                          ? "var(--bg-alt)" 
-                          : "linear-gradient(135deg, #6c63ff, #00c9a7)", 
-                        color: isOwned ? "var(--text-muted)" : "#ffffff",
-                        fontFamily: "'Outfit', sans-serif", fontSize: 13.5, fontWeight: 800,
-                        cursor: isOwned ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                        boxShadow: isOwned ? "none" : "0 6px 18px rgba(108,99,255,0.18)"
-                      }}
-                    >
-                      {isOwned ? (
-                        <>
-                          <CheckCircle size={15} color="#00c9a7" />
-                          <span>Unlocked & Owned</span>
-                        </>
-                      ) : (
-                        <>
-                          <ShoppingBag size={15} />
-                          <span>Unlock for {item.price.toLocaleString()} Coins</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
+                  <SlidableStoreRow
+                    key={categoryName}
+                    title={`🎬 ${categoryName}`}
+                    items={categoryItems}
+                    purchasedIds={purchasedIds}
+                    activePlugin={activePlugin}
+                    onPurchaseClick={handlePurchaseClick}
+                    onApplyClick={handleApplyClick}
+                  />
                 );
               })}
             </div>
@@ -679,72 +837,15 @@ export default function PathStore() {
                 </p>
               </div>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 24 }}>
-                {getPurchasedItems().map((item) => {
-                  const isActive = activePlugin === item.title;
-                  return (
-                    <div 
-                      key={item.id} 
-                      style={{ 
-                        background: "var(--bg-card)", 
-                        border: isActive ? "1.5px solid #6c63ff" : "1.5px solid var(--border-light)", 
-                        borderRadius: 22, 
-                        padding: 24, 
-                        display: "flex", 
-                        flexDirection: "column", 
-                        justifyContent: "space-between", 
-                        boxShadow: "0 8px 24px rgba(0,0,0,0.02)",
-                        position: "relative"
-                      }}
-                    >
-                      {isActive && (
-                        <span style={{ 
-                          position: "absolute", top: 18, right: 18,
-                          background: "rgba(108,99,255,0.12)", border: "1px solid rgba(108,99,255,0.3)",
-                          color: "#6c63ff", padding: "3px 8px", borderRadius: 8,
-                          fontSize: 10, fontFamily: "'Fira Code', monospace", fontWeight: 800
-                        }}>
-                          ACTIVE
-                        </span>
-                      )}
-
-                      <div>
-                        <div style={{ fontSize: 36, marginBottom: 14 }}>{item.icon}</div>
-                        <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 6 }}>
-                          <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 9.5, fontWeight: 800, color: "#6c63ff", letterSpacing: 0.5 }}>
-                            {item.category.toUpperCase()}
-                          </span>
-                          <span style={{ color: "var(--text-light)", fontSize: 10 }}>•</span>
-                          <span style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 700 }}>{item.meta}</span>
-                        </div>
-                        <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 850, color: "var(--text-main)", margin: "0 0 8px" }}>
-                          {item.title}
-                        </h3>
-                        <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5, margin: "0 0 20px" }}>
-                          {item.desc}
-                        </p>
-                      </div>
-
-                      <button
-                        onClick={() => handleApplyClick(item)}
-                        style={{
-                          width: "100%", padding: "11px", borderRadius: 12,
-                          background: isActive 
-                            ? "rgba(108,99,255,0.08)"
-                            : "linear-gradient(135deg, #6c63ff, #00c9a7)", 
-                          color: isActive ? "#6c63ff" : "#ffffff",
-                          border: isActive ? "1.5px solid #6c63ff" : "none",
-                          fontFamily: "'Outfit', sans-serif", fontSize: 13.5, fontWeight: 900,
-                          cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                          boxShadow: isActive ? "none" : "0 6px 18px rgba(108,99,255,0.18)"
-                        }}
-                      >
-                        <Zap size={14} />
-                        <span>{isActive ? "Re-apply to profile" : "Let's Apply"}</span>
-                      </button>
-                    </div>
-                  );
-                })}
+              <div>
+                <SlidableStoreRow
+                  title="💼 My Purchased Packs"
+                  items={getPurchasedItems()}
+                  purchasedIds={purchasedIds}
+                  activePlugin={activePlugin}
+                  onPurchaseClick={handlePurchaseClick}
+                  onApplyClick={handleApplyClick}
+                />
               </div>
             )}
           </div>
@@ -893,11 +994,11 @@ export default function PathStore() {
 
       </main>
 
-      {/* ==================== GLOBAL MODAL: APPLY MODULE TO PROFILE ==================== */}
+      {/* ==================== GLOBAL MODAL: CONFIRM COIN PURCHASE ==================== */}
       <AnimatePresence>
-        {applyModalItem && (
+        {purchasingItem && (
           <div 
-            onClick={e => { if (e.target === e.currentTarget) setApplyModalItem(null); }}
+            onClick={e => { if (e.target === e.currentTarget) setPurchasingItem(null); }}
             style={{
               position: "fixed", inset: 0, zIndex: 1300,
               background: "rgba(15, 23, 42, 0.75)", backdropFilter: "blur(8px)",
@@ -914,12 +1015,96 @@ export default function PathStore() {
                 overflow: "hidden", display: "flex", flexDirection: "column", position: "relative"
               }}
             >
-              
+              <div style={{ padding: "20px 24px", borderBottom: "1.5px solid var(--border-light)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h4 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 900, color: "var(--text-main)" }}>
+                  🪙 Confirm Unlock Premium Pack
+                </h4>
+                <button onClick={() => setPurchasingItem(null)} style={{ background: "var(--bg-alt)", border: "none", cursor: "pointer", color: "var(--text-main)", fontSize: 20 }}>
+                  ×
+                </button>
+              </div>
+
+              <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 14 }}>
+                <div style={{ display: "flex", gap: 12, padding: 14, borderRadius: 12, background: "rgba(247,151,30,0.06)", border: "1px solid rgba(247,151,30,0.1)" }}>
+                  <Coins size={18} color="#f7971e" style={{ flexShrink: 0, marginTop: 2 }} />
+                  <span style={{ fontSize: 13.5, color: "#f7971e", fontWeight: 700, lineHeight: 1.45 }}>
+                    Are you sure you want to unlock <strong>{purchasingItem.title}</strong>?
+                  </span>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, background: "var(--bg-alt)", padding: 16, borderRadius: 14, border: "1px solid var(--border-light)", fontSize: 13.5 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "var(--text-muted)" }}>Current Balance:</span>
+                    <strong style={{ color: "var(--text-main)" }}>{coins.toLocaleString()} Coins</strong>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "var(--text-muted)" }}>Pack Price:</span>
+                    <strong style={{ color: "#ff6b6b" }}>-{purchasingItem.price.toLocaleString()} Coins</strong>
+                  </div>
+                  <div style={{ height: "1px", background: "var(--border-light)", margin: "4px 0" }} />
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "var(--text-muted)" }}>Remaining Balance:</span>
+                    <strong style={{ color: coins >= purchasingItem.price ? "#00c9a7" : "#ff6b6b" }}>
+                      {(coins - purchasingItem.price).toLocaleString()} Coins
+                    </strong>
+                  </div>
+                </div>
+
+                {coins < purchasingItem.price && (
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", color: "#ff6b6b", fontSize: 12.5, fontWeight: 700 }}>
+                    <Info size={14} />
+                    <span>Insufficient coins. Exchange USD to Coins below before unlocking.</span>
+                  </div>
+                )}
+
+                <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+                  <button 
+                    type="button"
+                    onClick={() => setPurchasingItem(null)}
+                    style={{ flex: 1, padding: "10px", borderRadius: 10, border: "1.5px solid var(--border-light)", background: "var(--bg-alt)", color: "var(--text-main)", fontFamily: "'Outfit', sans-serif", fontSize: 13.5, fontWeight: 800, cursor: "pointer" }}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={handleConfirmPurchase}
+                    disabled={coins < purchasingItem.price}
+                    style={{ flex: 1.5, padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg, #6c63ff, #00c9a7)", color: "#fff", fontFamily: "'Outfit', sans-serif", fontSize: 13.5, fontWeight: 900, cursor: coins < purchasingItem.price ? "default" : "pointer", opacity: coins < purchasingItem.price ? 0.5 : 1 }}
+                  >
+                    Confirm Unlock
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ==================== GLOBAL MODAL: APPLY RESOURCE TO PROFILE ==================== */}
+      <AnimatePresence>
+        {applyingItem && (
+          <div 
+            onClick={e => { if (e.target === e.currentTarget) setApplyingItem(null); }}
+            style={{
+              position: "fixed", inset: 0, zIndex: 1300,
+              background: "rgba(15, 23, 42, 0.75)", backdropFilter: "blur(8px)",
+              display: "flex", alignItems: "center", justifyContent: "center", padding: 24
+            }}
+          >
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              style={{
+                background: "var(--bg-card)", borderRadius: 24, maxWidth: 500, width: "100%",
+                border: "1.5px solid rgba(108,99,255,0.3)", boxShadow: "0 30px 80px rgba(108,99,255,0.15)",
+                overflow: "hidden", display: "flex", flexDirection: "column", position: "relative"
+              }}
+            >
               <div style={{ padding: "20px 24px", borderBottom: "1.5px solid var(--border-light)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <h4 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 900, color: "var(--text-main)" }}>
                   ⚡ Apply Resource to Profile
                 </h4>
-                <button onClick={() => setApplyModalItem(null)} style={{ background: "var(--bg-alt)", border: "none", cursor: "pointer", color: "var(--text-main)", fontSize: 20 }}>
+                <button onClick={() => setApplyingItem(null)} style={{ background: "var(--bg-alt)", border: "none", cursor: "pointer", color: "var(--text-main)", fontSize: 20 }}>
                   ×
                 </button>
               </div>
@@ -928,18 +1113,18 @@ export default function PathStore() {
                 <div style={{ display: "flex", gap: 12, padding: 14, borderRadius: 12, background: "rgba(108,99,255,0.06)", border: "1px solid rgba(108,99,255,0.1)" }}>
                   <Sparkles size={18} color="#6c63ff" style={{ flexShrink: 0, marginTop: 2 }} />
                   <span style={{ fontSize: 13.5, color: "#6c63ff", fontWeight: 700, lineHeight: 1.45 }}>
-                    You are applying <strong>{applyModalItem.title}</strong> to your account path context.
+                    You are applying <strong>{applyingItem.title}</strong> to your account path context.
                   </span>
                 </div>
 
                 <p style={{ margin: 0, fontSize: 14, color: "var(--text-muted)", lineHeight: 1.5 }}>
-                  This will calibrate your active profile roadmap recommendations, daily challenge constraints, and dashboard widgets to target the {applyModalItem.meta} features natively.
+                  This will calibrate your active profile roadmap recommendations, daily challenge constraints, and dashboard widgets to target the {applyingItem.meta} features natively.
                 </p>
 
                 <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
                   <button 
                     type="button"
-                    onClick={() => setApplyModalItem(null)}
+                    onClick={() => setApplyingItem(null)}
                     style={{ flex: 1, padding: "10px", borderRadius: 10, border: "1.5px solid var(--border-light)", background: "var(--bg-alt)", color: "var(--text-main)", fontFamily: "'Outfit', sans-serif", fontSize: 13.5, fontWeight: 800, cursor: "pointer" }}
                   >
                     Cancel
@@ -952,7 +1137,6 @@ export default function PathStore() {
                   </button>
                 </div>
               </div>
-
             </motion.div>
           </div>
         )}
