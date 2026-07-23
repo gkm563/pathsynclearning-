@@ -208,7 +208,7 @@ export default function DashboardSidebar({ isOpen, onClose, activeTab, setActive
             {/* Fixed Settings Button at Sidebar Bottom */}
             <div style={{ paddingTop: 20, borderTop: "1.5px solid var(--border-light)" }}>
               <button
-                onClick={() => { onClose(); alert("Settings Modal: Theme, Profile, and Password preferences will open here."); }}
+                onClick={() => { navigate("/platform/settings"); onClose(); }}
                 style={{
                   width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "16px 18px",
                   borderRadius: 16, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)",
