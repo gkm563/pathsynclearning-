@@ -6,7 +6,7 @@ Career readiness platform that bridges academic learning and industry skills for
 
 ## Features
 
-- Custom Clerk sign-in / sign-up flows (`/login`, `/register`)
+- Custom Clerk sign-in / sign-up flows (`/sign-in`, `/sign-up`)
 - Multi-stage student onboarding
 - Student dashboard with CRI, XP, coins, streaks, and AI guidance
 - Challenges, Memory Lane, roadmap, store & wallet

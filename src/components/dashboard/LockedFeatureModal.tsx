@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, ShoppingBag, X, ArrowRight, ShieldAlert, CheckCircle2 } from "lucide-react";
 import type { ReactNode } from "react";
+import { routes } from "@/lib/routes";
 
 export interface LockedFeature {
   id?: string;
@@ -23,15 +24,6 @@ interface LockedFeatureModalProps {
 export default function LockedFeatureModal({ feature, isOpen, onClose }: LockedFeatureModalProps) {
   const router = useRouter();
   if (!isOpen || !feature) return null;
-
-  const goToFeature = () => {
-    onClose();
-    if (feature.id === "project-collab") router.push("/project-collab");
-    else if (feature.id === "alumni-network") router.push("/alumni-network");
-    else if (feature.id === "hack-squad" || feature.id === "hack-attack") router.push("/hacksquad");
-    else if (feature.id === "events") router.push("/events");
-    else router.push("/mentorship");
-  };
 
   return (
     <AnimatePresence>
@@ -95,7 +87,10 @@ export default function LockedFeatureModal({ feature, isOpen, onClose }: LockedF
             </button>
             <button
               type="button"
-              onClick={goToFeature}
+              onClick={() => {
+                onClose();
+                router.push(routes.app.store);
+              }}
               className="flex flex-[1.5] items-center justify-center gap-2 rounded-xl bg-linear-to-br from-[#6c63ff] to-[#00c9a7] py-3 font-display text-sm font-extrabold text-white shadow-[0_8px_20px_rgba(108,99,255,0.3)]"
             >
               <ShoppingBag size={16} /> Go to Store <ArrowRight size={16} />

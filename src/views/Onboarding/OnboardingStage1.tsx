@@ -82,7 +82,6 @@ export default function OnboardingStage1() {
       primaryLang,
       academicGoal,
     };
-    localStorage.setItem("pathEdStage1", JSON.stringify(stage1));
     try {
       await apiSend("/api/me/onboarding", "PUT", {
         stage1,

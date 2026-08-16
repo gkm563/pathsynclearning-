@@ -3,46 +3,48 @@
 import Link from "next/link";
 import { Globe, Users, Code, Mail } from "lucide-react";
 import type { FooterSection } from "@/types";
+import { routes } from "@/lib/routes";
 
 export default function Footer() {
+  const m = routes.marketing;
   const sections: FooterSection[] = [
     {
       title: "Platform",
       links: [
-        { label: "Features", to: "/platform#features" },
-        { label: "Roadmaps", to: "/platform" },
-        { label: "Challenges", to: "/platform#challenges" },
-        { label: "Skill Trees", to: "/platform#skill-trees" },
-        { label: "Pricing", to: "/pricing" },
+        { label: "Features", to: `${m.platform}#features` },
+        { label: "Roadmaps", to: m.platform },
+        { label: "Challenges", to: `${m.platform}#challenges` },
+        { label: "Skill Trees", to: `${m.platform}#skill-trees` },
+        { label: "Pricing", to: m.pricing },
       ],
     },
     {
       title: "Resources",
       links: [
-        { label: "Blog", to: "/blog" },
-        { label: "Guides", to: "/guides" },
-        { label: "Documentation", to: "/documentation" },
-        { label: "API Reference", to: "/api-reference" },
-        { label: "Community", to: "/community" },
+        { label: "Blog", to: m.blog },
+        { label: "Guides", to: m.guides },
+        { label: "Documentation", to: m.documentation },
+        { label: "API Reference", to: m.apiReference },
+        { label: "Community", to: m.community },
       ],
     },
     {
       title: "Company",
       links: [
-        { label: "About Us", to: "/company" },
-        { label: "Careers", to: "/company" },
-        { label: "Mission", to: "/mission" },
-        { label: "Contact", to: "/company#contact" },
-        { label: "Partners", to: "/company" },
+        { label: "About Us", to: m.company },
+        { label: "Careers", to: m.company },
+        { label: "Mission", to: m.mission },
+        { label: "Contact", to: `${m.company}#contact` },
+        { label: "Partners", to: m.company },
       ],
     },
     {
       title: "Legal",
       links: [
-        { label: "Privacy Policy", to: "/privacy-policy" },
-        { label: "Terms of Service", to: "/terms-of-service" },
-        { label: "Cookie Policy", to: "/cookie-policy" },
-        { label: "Accessibility", to: "/accessibility" },
+        { label: "Privacy Policy", to: m.privacy },
+        { label: "Terms of Service", to: m.terms },
+        { label: "Cookie Policy", to: m.cookies },
+        { label: "Accessibility", to: m.accessibility },
       ],
     },
   ];

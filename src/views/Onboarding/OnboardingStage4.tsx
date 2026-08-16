@@ -7,6 +7,8 @@ import {
   Sun, Moon, Sparkles, Rocket, Compass, Zap, Target, BookOpen, 
   CheckCircle2, Plus, Search, Info, ShieldAlert, ArrowLeft, ArrowRight
 } from "lucide-react";
+import { useSelectedCareer } from "@/hooks/useStudentData";
+import { markOnboardingComplete } from "@/lib/auth-routing";
 
 /* ─── DYNAMIC AI CAREER SKILLS & SCHEDULE GENERATOR ─── */
 function getCareerSkillsAndSchedule(targetCareer) {
@@ -519,19 +521,7 @@ function LaunchOverlay({ targetCareer, onFinish }) {
 export default function OnboardingStage4() {
   const router = useRouter();
 
-  // Selected Career Path (from Stage 2 localStorage)
-  const selectedCareer = (() => {
-    try {
-      const direct = localStorage.getItem("pathEdSelectedCareer");
-      if (direct) return direct;
-      const stg2 = JSON.parse(localStorage.getItem("pathEdStage2") || "{}");
-      if (stg2.chosenCareer) return stg2.chosenCareer;
-      if (stg2.domains && stg2.domains.length > 0) return `${stg2.domains[0]} Specialist`;
-      return "Full-Stack Web Developer";
-    } catch {
-      return "Full-Stack Web Developer";
-    }
-  })();
+  const selectedCareer = useSelectedCareer();
 
   // Dynamically generated skills & schedules tailored to selected career path
   const careerData = getCareerSkillsAndSchedule(selectedCareer);
@@ -613,7 +603,18 @@ export default function OnboardingStage4() {
       {isLaunching && (
         <LaunchOverlay 
           targetCareer={selectedCareer} 
-          onFinish={() => router.push("/dashboard")} 
+          onFinish={async () => {
+            try {
+              await markOnboardingComplete({
+                mode: selectedMode,
+                career: selectedCareer,
+                finishedAt: new Date().toISOString(),
+              });
+            } catch {
+              // still enter dashboard
+            }
+            router.push("/dashboard");
+          }} 
         />
       )}
 

@@ -1,5 +1,9 @@
+import { and, desc, eq } from "drizzle-orm";
+import { parseJson, errorResponse, jsonResponse } from "@/lib/api/http";
 import { getDb } from "@/lib/db/client";
-import { requireDbUser, jsonResponse, errorResponse } from "@/lib/db/users";
+import { notifications } from "@/lib/db/schema";
+import { requireDbUser } from "@/lib/db/users";
+import { notificationPatchSchema } from "@/lib/validation/schemas";
 
 const DEFAULT_NOTIFICATIONS = [
   {
@@ -20,7 +24,7 @@ const DEFAULT_NOTIFICATIONS = [
     bg: "rgba(224,64,251,0.08)",
     bdr: "rgba(224,64,251,0.25)",
     actionable: true,
-    meta: { teamName: "CodeBlox" },
+    meta: { teamName: "CodeBlox" } as Record<string, unknown>,
   },
   {
     type: "mentor",
@@ -42,53 +46,58 @@ const DEFAULT_NOTIFICATIONS = [
   },
 ];
 
+function serialize(rows: (typeof notifications.$inferSelect)[]) {
+  return rows.map((n) => ({
+    id: n.id,
+    type: n.type,
+    title: n.title,
+    desc: n.body,
+    icon: n.icon,
+    color: n.color,
+    bg: n.bg,
+    bdr: n.bdr,
+    actionable: n.actionable,
+    read: n.read,
+    time: n.createdAt,
+    ...(typeof n.meta === "object" && n.meta ? n.meta : {}),
+  }));
+}
+
 export async function GET() {
   try {
     const user = await requireDbUser();
     const db = getDb();
-    let rows = await db`
-      SELECT * FROM notifications
-      WHERE user_id = ${user.id}::uuid
-      ORDER BY created_at DESC
-      LIMIT 50
-    `;
+    let rows = await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, user.id))
+      .orderBy(desc(notifications.createdAt))
+      .limit(50);
 
     if (rows.length === 0) {
-      for (const n of DEFAULT_NOTIFICATIONS) {
-        await db`
-          INSERT INTO notifications (
-            user_id, type, title, body, icon, color, bg, bdr, actionable, meta
-          ) VALUES (
-            ${user.id}::uuid, ${n.type}, ${n.title}, ${n.body}, ${n.icon},
-            ${n.color}, ${n.bg}, ${n.bdr}, ${Boolean(n.actionable)},
-            ${JSON.stringify(n.meta || {})}::jsonb
-          )
-        `;
-      }
-      rows = await db`
-        SELECT * FROM notifications
-        WHERE user_id = ${user.id}::uuid
-        ORDER BY created_at DESC
-        LIMIT 50
-      `;
+      await db.insert(notifications).values(
+        DEFAULT_NOTIFICATIONS.map((n) => ({
+          userId: user.id,
+          type: n.type,
+          title: n.title,
+          body: n.body,
+          icon: n.icon,
+          color: n.color,
+          bg: n.bg,
+          bdr: n.bdr,
+          actionable: Boolean(n.actionable),
+          meta: ("meta" in n && n.meta ? n.meta : {}) as Record<string, unknown>,
+        })),
+      );
+      rows = await db
+        .select()
+        .from(notifications)
+        .where(eq(notifications.userId, user.id))
+        .orderBy(desc(notifications.createdAt))
+        .limit(50);
     }
 
-    return jsonResponse({
-      notifications: rows.map((n) => ({
-        id: n.id,
-        type: n.type,
-        title: n.title,
-        desc: n.body,
-        icon: n.icon,
-        color: n.color,
-        bg: n.bg,
-        bdr: n.bdr,
-        actionable: n.actionable,
-        read: n.read,
-        time: n.created_at,
-        ...(typeof n.meta === "object" && n.meta ? n.meta : {}),
-      })),
-    });
+    return jsonResponse({ notifications: serialize(rows) });
   } catch (e) {
     return errorResponse(e);
   }
@@ -97,43 +106,31 @@ export async function GET() {
 export async function PATCH(request: Request) {
   try {
     const user = await requireDbUser();
-    const body = await request.json();
+    const body = await parseJson(request, notificationPatchSchema);
     const db = getDb();
 
     if (body.markAllRead) {
-      await db`
-        UPDATE notifications SET read = TRUE
-        WHERE user_id = ${user.id}::uuid
-      `;
+      await db
+        .update(notifications)
+        .set({ read: true })
+        .where(eq(notifications.userId, user.id));
     } else if (body.id) {
-      await db`
-        UPDATE notifications SET read = COALESCE(${body.read ?? true}, TRUE)
-        WHERE id = ${body.id}::uuid AND user_id = ${user.id}::uuid
-      `;
+      await db
+        .update(notifications)
+        .set({ read: body.read ?? true })
+        .where(
+          and(eq(notifications.id, body.id), eq(notifications.userId, user.id)),
+        );
     }
 
-    const rows = await db`
-      SELECT * FROM notifications
-      WHERE user_id = ${user.id}::uuid
-      ORDER BY created_at DESC
-      LIMIT 50
-    `;
-    return jsonResponse({
-      notifications: rows.map((n) => ({
-        id: n.id,
-        type: n.type,
-        title: n.title,
-        desc: n.body,
-        icon: n.icon,
-        color: n.color,
-        bg: n.bg,
-        bdr: n.bdr,
-        actionable: n.actionable,
-        read: n.read,
-        time: n.created_at,
-        ...(typeof n.meta === "object" && n.meta ? n.meta : {}),
-      })),
-    });
+    const rows = await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, user.id))
+      .orderBy(desc(notifications.createdAt))
+      .limit(50);
+
+    return jsonResponse({ notifications: serialize(rows) });
   } catch (e) {
     return errorResponse(e);
   }

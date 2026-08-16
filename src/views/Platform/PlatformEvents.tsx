@@ -1,5 +1,6 @@
 "use client";
 
+import { routes } from "@/lib/routes";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,8 +11,7 @@ import {
   UserCheck, ShieldAlert, ArrowLeft, ArrowUpRight, Check, Heart, ExternalLink,
   Award, Filter, LayoutGrid, CheckCircle, Flame, Gift, Compass, Lock
 } from "lucide-react";
-
-/* ─── COLOR TOKENS ─── */
+import { usePlan } from "@/hooks/useStudentData";
 const COLS = {
   primary: "#6c63ff",
   success: "#00c9a7",
@@ -652,7 +652,7 @@ export default function PlatformEvents() {
   const router = useRouter();
 
   // Active Developer Mode Toggle State
-  const [devPlan, setDevPlan] = useState("free");
+  const { plan: devPlan, setPlan } = usePlan();
 
   // Filter / Applied Toggle state
   const [showAppliedOnly, setShowAppliedOnly] = useState(false);
@@ -681,24 +681,13 @@ export default function PlatformEvents() {
         const data = await apiGet<{ eventIds: string[] }>("/api/me/applications");
         if (!cancelled) setAppliedIds(data.eventIds || []);
       } catch {
-        const saved = localStorage.getItem("pathed_applied_events");
-        if (!cancelled) setAppliedIds(saved ? JSON.parse(saved) : []);
+        if (!cancelled) setAppliedIds([]);
       }
     })();
     return () => {
       cancelled = true;
     };
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem("pathed_applied_events", JSON.stringify(appliedIds));
-  }, [appliedIds]);
-
-  useEffect(() => {
-    localStorage.setItem("dev_mode_plan", devPlan);
-    // Dispatch storage event to alert sidebar/header immediately
-    window.dispatchEvent(new Event("storage"));
-  }, [devPlan]);
 
   // Handle standard application submission for PathEd OG
   const handleOGApplySubmit = async (e) => {
@@ -796,7 +785,7 @@ export default function PlatformEvents() {
           </div>
           <div style={{ display: "flex", background: "var(--bg-alt)", border: "1px solid var(--border-light)", padding: 4, borderRadius: 12, gap: 4 }}>
             <button
-              onClick={() => setDevPlan("free")}
+              onClick={() => setPlan("free")}
               style={{
                 padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer",
                 fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 800, transition: "all 0.2s",
@@ -807,7 +796,7 @@ export default function PlatformEvents() {
               Free Plan
             </button>
             <button
-              onClick={() => setDevPlan("premium")}
+              onClick={() => setPlan("premium")}
               style={{
                 padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer",
                 fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 800, transition: "all 0.2s",
@@ -1121,7 +1110,7 @@ export default function PlatformEvents() {
                                 <button
                                   onClick={() => {
                                     alert("This advanced institutional summit/internship is locked. Upgrade to PathEd Premium to unlock premium opportunities.");
-                                    router.push("/store");
+                                    router.push(routes.app.store);
                                   }}
                                   style={{
                                     flex: 1.5, padding: "9px", borderRadius: 10, border: "none",

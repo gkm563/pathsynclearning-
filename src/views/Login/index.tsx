@@ -6,6 +6,12 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSignIn, useAuth } from "@clerk/nextjs";
 import { GraduationCap, Briefcase, BookOpen, Eye, EyeOff, AlertCircle, ArrowRight, Sparkles, ShieldCheck } from "lucide-react";
+import AuthRedirect from "@/components/auth/AuthRedirect";
+import { authContinueWithRole, routes } from "@/lib/routes";
+import {
+  authContinueAbsoluteUrl,
+  ssoCallbackAbsoluteUrl,
+} from "@/lib/auth-urls";
 
 const GoogleIcon = ({ size = 20 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -90,8 +96,8 @@ const getEyeIconColor = (pwd) => {
 
 export default function Login() {
   const router = useRouter();
-  const { signIn, errors } = useSignIn();
-  const { isLoaded } = useAuth();
+  const { signIn, errors, fetchStatus } = useSignIn();
+  const { isLoaded, isSignedIn } = useAuth();
   const [role, setRole] = useState("student");
   const [form, setForm] = useState({ identifier: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
@@ -99,6 +105,9 @@ export default function Login() {
   const [progress, setProgress] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [pendingClientTrust, setPendingClientTrust] = useState(false);
+  const [verifyCode, setVerifyCode] = useState("");
+  const isBusy = loading || fetchStatus === "fetching";
 
   // Looping CRI Score 0 -> 78 -> 0 Animation
   const [criScore, setCriScore] = useState(0);
@@ -152,36 +161,63 @@ export default function Login() {
   };
 
   const markLocalSession = async () => {
-    localStorage.setItem("isAuthenticated", "true");
-    localStorage.setItem("userRegistered", "true");
-    localStorage.setItem("pathEdRole", role);
-    window.dispatchEvent(new Event("storage"));
     try {
-      await fetch("/api/me", {
+      await fetch(routes.api.me, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role }),
       });
     } catch {
-      // DB sync is best-effort; auth still succeeds
+      // DB sync is best-effort; Clerk session is source of truth
     }
   };
 
-  const navigateAfterAuth = async (decorateUrl: (path: string) => string, destination: string) => {
-    await markLocalSession();
-    const url = decorateUrl(destination);
-    if (url.startsWith("http")) {
-      window.location.href = url;
-    } else {
-      router.push(url);
+  const finishSignIn = async () => {
+    setLoading(true);
+    setProgress(100);
+    await signIn.finalize({
+      navigate: async () => {
+        await markLocalSession();
+        // Always stay on PathEd — never follow Account Portal (accounts.dev) URLs.
+        window.location.replace(authContinueWithRole(role));
+      },
+    });
+  };
+
+  const startClientTrust = async () => {
+    const factors = signIn.supportedSecondFactors || [];
+    const emailCodeFactor = factors.find((f: any) => f.strategy === "email_code");
+    if (emailCodeFactor) {
+      const { error } = await signIn.mfa.sendEmailCode();
+      if (error) {
+        setErrorMessage(error.message || "Could not send verification code.");
+        return false;
+      }
+      setPendingClientTrust(true);
+      setErrorMessage("");
+      return true;
     }
+    const phoneCodeFactor = factors.find((f: any) => f.strategy === "phone_code");
+    if (phoneCodeFactor) {
+      const { error } = await signIn.mfa.sendPhoneCode();
+      if (error) {
+        setErrorMessage(error.message || "Could not send SMS verification code.");
+        return false;
+      }
+      setPendingClientTrust(true);
+      setErrorMessage("");
+      return true;
+    }
+    setErrorMessage("Additional device verification is required, but no email/SMS factor is available.");
+    return false;
   };
 
   const clerkErrorMessage = (fallback = "Sign in failed. Please try again.") => {
     return (
       errors?.fields?.identifier?.message ||
       errors?.fields?.password?.message ||
+      errors?.fields?.code?.message ||
       errors?.global?.[0]?.message ||
       fallback
     );
@@ -200,42 +236,79 @@ export default function Login() {
     }
 
     setErrorMessage("");
-    setLoading(true);
+    // Keep captcha visible — no full-screen overlay until after password()
+    setLoading(false);
     setProgress(25);
 
     try {
-      const { error } = await signIn.password({
-        identifier: form.identifier.trim(),
-        password: form.password,
-      });
+      const identifier = form.identifier.trim();
+      const looksLikeEmail = identifier.includes("@");
+      const { error } = await signIn.password(
+        looksLikeEmail
+          ? { emailAddress: identifier, password: form.password }
+          : { identifier, password: form.password },
+      );
       setProgress(70);
 
       if (error) {
         setErrorMessage(error.message || clerkErrorMessage());
-        setLoading(false);
         setProgress(0);
         return;
       }
 
       if (signIn.status === "complete") {
-        setProgress(100);
-        await signIn.finalize({
-          navigate: async ({ decorateUrl }) => {
-            await navigateAfterAuth(decorateUrl, role === "student" ? "/dashboard" : "/");
-          },
-        });
+        await finishSignIn();
         return;
       }
 
-      setErrorMessage(
-        signIn.status === "needs_second_factor" || signIn.status === "needs_client_trust"
-          ? "Additional verification is required for this account."
-          : clerkErrorMessage("Unable to complete sign in."),
-      );
-      setLoading(false);
+      if (signIn.status === "needs_client_trust" || signIn.status === "needs_second_factor") {
+        await startClientTrust();
+        setProgress(0);
+        return;
+      }
+
+      setErrorMessage(clerkErrorMessage(`Unable to complete sign in (${signIn.status || "unknown"}).`));
       setProgress(0);
     } catch (err: any) {
       setErrorMessage(err?.errors?.[0]?.message || err?.message || clerkErrorMessage());
+      setProgress(0);
+    }
+  };
+
+  const handleVerifyClientTrust = async (e) => {
+    e.preventDefault();
+    if (!verifyCode.trim()) {
+      setErrorMessage("Enter the verification code from your email.");
+      return;
+    }
+    if (!isLoaded || !signIn) return;
+
+    setErrorMessage("");
+    setLoading(true);
+    setProgress(40);
+    try {
+      const factors = signIn.supportedSecondFactors || [];
+      const usesPhone = factors.some((f: any) => f.strategy === "phone_code") &&
+        !factors.some((f: any) => f.strategy === "email_code");
+      const { error } = usesPhone
+        ? await signIn.mfa.verifyPhoneCode({ code: verifyCode.trim() })
+        : await signIn.mfa.verifyEmailCode({ code: verifyCode.trim() });
+      setProgress(80);
+      if (error) {
+        setErrorMessage(error.message || clerkErrorMessage("Invalid verification code."));
+        setLoading(false);
+        setProgress(0);
+        return;
+      }
+      if (signIn.status === "complete") {
+        await finishSignIn();
+        return;
+      }
+      setErrorMessage(clerkErrorMessage("Verification incomplete. Please try again."));
+      setLoading(false);
+      setProgress(0);
+    } catch (err: any) {
+      setErrorMessage(err?.errors?.[0]?.message || err?.message || "Verification failed.");
       setLoading(false);
       setProgress(0);
     }
@@ -246,24 +319,38 @@ export default function Login() {
       setErrorMessage("Authentication is still loading. Please try again.");
       return;
     }
+    if (isSignedIn) {
+      window.location.replace(authContinueWithRole(role));
+      return;
+    }
     setErrorMessage("");
     setLoading(true);
     setProgress(40);
-    sessionStorage.setItem("pathEdRole", role);
-    sessionStorage.setItem("pathEdAuthIntent", "login");
     try {
       const { error } = await signIn.sso({
         strategy,
-        redirectUrl: role === "student" ? "/dashboard" : "/",
-        redirectCallbackUrl: "/sso-callback",
+        // Final destination when session is ready (no extra steps)
+        redirectUrl: authContinueAbsoluteUrl(role),
+        // Intermediate callback when transfer / extra steps are required
+        redirectCallbackUrl: ssoCallbackAbsoluteUrl(role, "login"),
       });
       if (error) {
-        setErrorMessage(error.message || `Could not start ${strategy.replace("oauth_", "")} sign-in.`);
+        const msg = error.message || "";
+        if (/already signed in|session already exists|already authenticated/i.test(msg)) {
+          window.location.replace(authContinueWithRole(role));
+          return;
+        }
+        setErrorMessage(msg || `Could not start ${strategy.replace("oauth_", "")} sign-in.`);
         setLoading(false);
         setProgress(0);
       }
     } catch (err: any) {
-      setErrorMessage(err?.errors?.[0]?.message || err?.message || "Social sign-in failed.");
+      const msg = err?.errors?.[0]?.message || err?.message || "";
+      if (/already signed in|session already exists|already authenticated/i.test(msg)) {
+        window.location.replace(authContinueWithRole(role));
+        return;
+      }
+      setErrorMessage(msg || "Social sign-in failed.");
       setLoading(false);
       setProgress(0);
     }
@@ -279,6 +366,7 @@ export default function Login() {
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg-main)", display: "flex", fontFamily: "'Inter', sans-serif", color: "var(--text-main)", position: "relative", overflow: "hidden" }}>
+      <AuthRedirect whenSignedIn role={role} />
       
       {/* Full-screen Loading Background Animation Overlay */}
       <AnimatePresence>
@@ -499,6 +587,57 @@ export default function Login() {
             )}
           </AnimatePresence>
 
+          {pendingClientTrust ? (
+            <form onSubmit={handleVerifyClientTrust}>
+              <p style={{ color: "var(--text-muted)", fontSize: 14, marginBottom: 20, lineHeight: 1.5 }}>
+                We sent a verification code to your email to confirm this device. Enter it below to finish signing in.
+              </p>
+              <div style={{ marginBottom: 20 }}>
+                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--text-muted)", marginBottom: 8, fontFamily: "'Fira Code', monospace", letterSpacing: 1 }}>VERIFICATION CODE</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  value={verifyCode}
+                  onChange={(e) => setVerifyCode(e.target.value)}
+                  placeholder="123456"
+                  style={{ width: "100%", padding: "14px 18px", background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", borderRadius: 12, color: "var(--text-main)", fontSize: 15, outline: "none", letterSpacing: 4 }}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isBusy}
+                style={{ width: "100%", padding: "16px", background: activeRole.accent, border: "none", borderRadius: 12, color: "#ffffff", fontSize: 16, fontWeight: 700, cursor: isBusy ? "not-allowed" : "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 8, boxShadow: `0 8px 24px ${activeRole.accent}40`, opacity: isBusy ? 0.7 : 1 }}
+              >
+                {isBusy ? "Verifying..." : <>Verify & Continue <ArrowRight size={18} /></>}
+              </button>
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 14, gap: 12 }}>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setErrorMessage("");
+                    await startClientTrust();
+                  }}
+                  style={{ background: "none", border: "none", color: activeRole.accent, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+                >
+                  Resend code
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    signIn?.reset?.();
+                    setPendingClientTrust(false);
+                    setVerifyCode("");
+                    setErrorMessage("");
+                  }}
+                  style={{ background: "none", border: "none", color: "var(--text-muted)", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+                >
+                  Start over
+                </button>
+              </div>
+              <div id="clerk-captcha" style={{ marginTop: 12 }} />
+            </form>
+          ) : (
           <form onSubmit={handleLogin}>
             <div style={{ marginBottom: 20 }}>
               <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--text-muted)", marginBottom: 8, fontFamily: "'Fira Code', monospace", letterSpacing: 1 }}>EMAIL OR USERNAME</label>
@@ -539,14 +678,17 @@ export default function Login() {
               </div>
             </div>
 
+            <div id="clerk-captcha" style={{ marginBottom: 16 }} />
+
             <button 
               type="submit"
-              disabled={loading}
-              style={{ width: "100%", padding: "16px", background: activeRole.accent, border: "none", borderRadius: 12, color: "#ffffff", fontSize: 16, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: "transform 0.2s, boxShadow 0.2s", boxShadow: `0 8px 24px ${activeRole.accent}40` }}
+              disabled={isBusy}
+              style={{ width: "100%", padding: "16px", background: activeRole.accent, border: "none", borderRadius: 12, color: "#ffffff", fontSize: 16, fontWeight: 700, cursor: isBusy ? "not-allowed" : "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: "transform 0.2s, boxShadow 0.2s", boxShadow: `0 8px 24px ${activeRole.accent}40`, opacity: isBusy ? 0.7 : 1 }}
             >
-              {loading ? "Authenticating..." : <>Sign In to {activeRole.name} <ArrowRight size={18} /></>}
+              {isBusy ? "Authenticating..." : <>Sign In to {activeRole.name} <ArrowRight size={18} /></>}
             </button>
           </form>
+          )}
 
           {/* Social Logins Divider */}
           <div style={{ display: "flex", alignItems: "center", margin: "28px 0", gap: 16 }}>
@@ -589,7 +731,7 @@ export default function Login() {
           </div>
 
           <div style={{ textAlign: "center", marginTop: 28, fontSize: 14, color: "var(--text-muted)" }}>
-            Don't have an account? <Link href="/register" style={{ color: activeRole.accent, textDecoration: "none", fontWeight: 700 }}>Create one</Link>
+            Don't have an account? <Link href={routes.auth.signUp} style={{ color: activeRole.accent, textDecoration: "none", fontWeight: 700 }}>Create one</Link>
           </div>
         </motion.div>
       </div>

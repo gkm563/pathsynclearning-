@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
+import { apiGet, apiSend } from "@/lib/api";
 
 const DEFAULT_NOTIFICATIONS = [
   {
@@ -77,26 +78,40 @@ const DEFAULT_NOTIFICATIONS = [
 export default function PlatformNotifications() {
   const router = useRouter();
 
-  // Synced state with localStorage
-  const [notifications, setNotifications] = useState(() => {
-    const saved = localStorage.getItem("pathed_notifications");
-    return saved ? JSON.parse(saved) : [...DEFAULT_NOTIFICATIONS];
-  });
-
+  const [notifications, setNotifications] = useState<any[]>(DEFAULT_NOTIFICATIONS);
   const [filter, setFilter] = useState("all");
   const [toastMessage, setToastMessage] = useState("");
 
   useEffect(() => {
-    localStorage.setItem("pathed_notifications", JSON.stringify(notifications));
-  }, [notifications]);
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const data = await apiGet<{ notifications: any[] }>("/api/me/notifications");
+        if (!cancelled && data.notifications?.length) {
+          setNotifications(data.notifications);
+        }
+      } catch {
+        if (!cancelled) setNotifications(DEFAULT_NOTIFICATIONS);
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const triggerToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(""), 4000);
   };
 
-  const handleMarkAllRead = () => {
+  const handleMarkAllRead = async () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    try {
+      await apiSend("/api/me/notifications", "PATCH", { markAllRead: true });
+    } catch {
+      // keep UI state
+    }
     triggerToast("✅ Marked all notifications as read!");
   };
 
@@ -276,7 +291,7 @@ export default function PlatformNotifications() {
                   {/* Icon Frame */}
                   <div style={{
                     width: 44, height: 44, borderRadius: 12, background: n.bg, border: `1px solid ${n.bdr}`,
-                    display: "flex", alignItems: "center", justify: "center", fontSize: 20, flexShrink: 0
+                    display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0
                   }}>
                     {n.icon}
                   </div>

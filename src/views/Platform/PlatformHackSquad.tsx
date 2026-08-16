@@ -1,5 +1,6 @@
 "use client";
 
+import { routes } from "@/lib/routes";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,8 +12,7 @@ import {
   Mic, MicOff, VideoOff, MessageSquare, Send, FolderOpen, Award,
   Users, Trash, Edit2, Play, SlidersHorizontal, Lock, CheckCircle, Radio, PhoneOff
 } from "lucide-react";
-
-// Inline SVG Github Icon to avoid dependency exports mismatch
+import { usePlan } from "@/hooks/useStudentData";
 const Github = ({ size = 16, color = "currentColor" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
@@ -116,25 +116,10 @@ export default function PlatformHackSquad() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("hack-attack");
 
-  const [devPlan, setDevPlan] = useState("free");
-
-  useEffect(() => {
-    try {
-      setDevPlan(localStorage.getItem("dev_mode_plan") || "free");
-    } catch {}
-  }, []);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("dev_mode_plan", devPlan);
-    } catch (e) {}
-    try {
-      window.dispatchEvent(new Event("storage"));
-    } catch (e) {}
-  }, [devPlan]);
+  const { plan: devPlan, setPlan } = usePlan();
 
   const handleTogglePlan = (plan) => {
-    setDevPlan(plan);
+    setPlan(plan);
   };
 
   // State definitions
@@ -461,18 +446,7 @@ export default function PlatformHackSquad() {
   });
 
   return (
-    <DashboardLayout activeTab={activeTab} setActiveTab={(tab) => {
-      setActiveTab(tab);
-      if (tab === "dashboard") router.push("/dashboard");
-      if (tab === "roadmap") router.push("/roadmap");
-      if (tab === "challenges") router.push("/challenges");
-      if (tab === "memory-lane") router.push("/memory-lane");
-      if (tab === "progress") router.push("/progress");
-      if (tab === "mentorship") router.push("/mentorship");
-      if (tab === "project-collab") router.push("/project-collab");
-      if (tab === "alumni-network") router.push("/alumni-network");
-      if (tab === "technews") router.push("/technews");
-    }}>
+    <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
       <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60 }}>
         
         {/* DEV MODE PLAN BANNER */}
@@ -687,7 +661,7 @@ export default function PlatformHackSquad() {
                 </p>
               </div>
               <button
-                onClick={() => router.push("/store")}
+                onClick={() => router.push(routes.app.store)}
                 style={{ padding: "10px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg, #6c63ff, #00c9a7)", color: "#ffffff", fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 900, cursor: "pointer" }}
               >
                 Go Premium Store

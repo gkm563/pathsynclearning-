@@ -5,64 +5,53 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Search, Globe, Sun, Moon } from "lucide-react";
 import { useAuth, useClerk } from "@clerk/nextjs";
-import { storage } from "@/lib/storage";
+import { apiGet, apiSend } from "@/lib/api";
 import type { NavLink } from "@/types";
+import { routes } from "@/lib/routes";
 
 export default function Header() {
   const links: NavLink[] = [
-    { label: "Home", path: "/" },
-    { label: "Platform", path: "/platform" },
-    { label: "Methodology", path: "/methodology" },
-    { label: "Mission", path: "/mission" },
-    { label: "Company", path: "/company" },
-    { label: "Blog", path: "/blog" },
-    { label: "Community", path: "/community" },
+    { label: "Home", path: routes.home },
+    { label: "Platform", path: routes.marketing.platform },
+    { label: "Methodology", path: routes.marketing.methodology },
+    { label: "Mission", path: routes.marketing.mission },
+    { label: "Company", path: routes.marketing.company },
+    { label: "Blog", path: routes.marketing.blog },
+    { label: "Community", path: routes.marketing.community },
   ];
 
   const { isSignedIn } = useAuth();
   const { signOut } = useClerk();
   const [isDark, setIsDark] = useState(false);
-  const [localAuthed, setLocalAuthed] = useState(false);
 
   useEffect(() => {
-    setIsDark(storage.getItem("theme") === "dark");
-    setLocalAuthed(
-      storage.getItem("isAuthenticated") === "true" || storage.getItem("userRegistered") === "true",
-    );
-  }, []);
-
-  useEffect(() => {
-    if (isSignedIn) {
-      storage.setItem("isAuthenticated", "true");
-      storage.setItem("userRegistered", "true");
-      const role = sessionStorage.getItem("pathEdRole");
-      if (role) storage.setItem("pathEdRole", role);
-      setLocalAuthed(true);
-    }
-  }, [isSignedIn]);
-
-  useEffect(() => {
-    const checkAuth = () => {
-      setLocalAuthed(
-        storage.getItem("isAuthenticated") === "true" || storage.getItem("userRegistered") === "true",
-      );
-    };
-    window.addEventListener("storage", checkAuth);
-    const interval = setInterval(checkAuth, 800);
+    let cancelled = false;
+    (async () => {
+      if (!isSignedIn) return;
+      try {
+        const data = await apiGet<{ settings?: { theme?: string } }>("/api/me/settings");
+        if (cancelled) return;
+        const theme = data.settings?.theme === "dark";
+        setIsDark(theme);
+      } catch {
+        // keep light default
+      }
+    })();
     return () => {
-      window.removeEventListener("storage", checkAuth);
-      clearInterval(interval);
+      cancelled = true;
     };
-  }, []);
+  }, [isSignedIn]);
 
   useEffect(() => {
     const themeVal = isDark ? "dark" : "light";
     document.documentElement.setAttribute("data-theme", themeVal);
     document.body.setAttribute("data-theme", themeVal);
-    storage.setItem("theme", themeVal);
-  }, [isDark]);
+    if (isSignedIn) {
+      apiSend("/api/me/settings", "PUT", { theme: themeVal }).catch(() => {});
+    }
+  }, [isDark, isSignedIn]);
 
-  const isAuthenticated = Boolean(isSignedIn) || localAuthed;
+  const isAuthenticated = Boolean(isSignedIn);
 
   return (
     <div className="pointer-events-none fixed top-6 right-0 left-0 z-[100] flex justify-center">
@@ -80,12 +69,12 @@ export default function Header() {
             </div>
           </Link>
 
-          <nav className="flex items-center gap-0.5">
+          <nav className="hidden items-center gap-1 lg:flex">
             {links.map((link) => (
               <Link
-                key={link.label}
+                key={link.path}
                 href={link.path}
-                className="rounded-[10px] px-3 py-2 font-sans text-sm font-medium text-[var(--text-main)] transition-all hover:bg-[var(--bg-alt)]"
+                className="rounded-xl px-3.5 py-2 font-sans text-[13.5px] font-semibold text-[var(--text-main)] no-underline transition-colors hover:bg-[var(--bg-alt)]"
               >
                 {link.label}
               </Link>
@@ -93,38 +82,36 @@ export default function Header() {
           </nav>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-4 text-[var(--text-muted)]">
-            <button
-              type="button"
-              className="flex items-center rounded-lg p-1.5 text-[var(--text-muted)] transition-all hover:bg-[var(--bg-alt)]"
-            >
-              <Search size={18} strokeWidth={2.5} />
-            </button>
-            <button
-              type="button"
-              className="flex items-center rounded-lg p-1.5 text-[var(--text-muted)] transition-all hover:bg-[var(--bg-alt)]"
-            >
-              <Globe size={18} strokeWidth={2.5} />
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsDark(!isDark)}
-              className="flex cursor-pointer items-center rounded-lg border-none bg-transparent p-1.5 transition-all hover:bg-[var(--bg-alt)]"
-              style={{ color: isDark ? "#6c63ff" : "#f7971e" }}
-            >
-              {isDark ? <Moon size={18} strokeWidth={2.5} /> : <Sun size={18} strokeWidth={2.5} />}
-            </button>
-          </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border-none bg-transparent text-[var(--text-muted)] hover:bg-[var(--bg-alt)]"
+            aria-label="Search"
+          >
+            <Search size={18} />
+          </button>
+          <button
+            type="button"
+            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border-none bg-transparent text-[var(--text-muted)] hover:bg-[var(--bg-alt)]"
+            aria-label="Language"
+          >
+            <Globe size={18} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsDark((v) => !v)}
+            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border-none bg-transparent text-[var(--text-muted)] hover:bg-[var(--bg-alt)]"
+            aria-label="Toggle theme"
+          >
+            {isDark ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
 
-          <div className="h-6 w-px bg-[#e0e4f5]" />
-
-          <div className="flex items-center gap-2">
+          <div className="ml-2 flex items-center gap-2">
             {isAuthenticated ? (
               <>
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                   <Link
-                    href="/dashboard"
+                    href={routes.auth.continue}
                     className="inline-block rounded-[14px] bg-linear-to-br from-[#6c63ff] to-[#00c9a7] px-[22px] py-2.5 font-display text-sm font-bold text-white no-underline shadow-[0_6px_20px_rgba(108,99,255,0.25)]"
                   >
                     Dashboard →
@@ -133,10 +120,6 @@ export default function Header() {
                 <button
                   type="button"
                   onClick={async () => {
-                    storage.removeItem("isAuthenticated");
-                    storage.removeItem("userRegistered");
-                    setLocalAuthed(false);
-                    window.dispatchEvent(new Event("storage"));
                     await signOut({ redirectUrl: "/" });
                   }}
                   className="cursor-pointer rounded-[10px] border-none bg-transparent px-3 py-2 font-sans text-[13px] font-semibold text-[var(--text-muted)] hover:bg-[var(--bg-alt)]"
@@ -147,14 +130,14 @@ export default function Header() {
             ) : (
               <>
                 <Link
-                  href="/login"
+                  href={routes.auth.signIn}
                   className="inline-block rounded-xl px-4 py-2.5 font-display text-sm font-bold text-[#6c63ff] no-underline transition-all hover:bg-[var(--bg-alt)]"
                 >
                   Sign In
                 </Link>
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                   <Link
-                    href="/register"
+                    href={routes.auth.signUp}
                     className="inline-block rounded-[14px] bg-[var(--bg-inverse)] px-6 py-3 font-display text-sm font-bold text-[var(--text-inverse)] no-underline shadow-[0_6px_16px_rgba(26,26,46,0.15)]"
                   >
                     Get Started

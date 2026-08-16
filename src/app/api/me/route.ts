@@ -1,4 +1,7 @@
-import { requireDbUser, jsonResponse, errorResponse } from "@/lib/db/users";
+import { errorResponse, jsonResponse } from "@/lib/api/http";
+import { AppError } from "@/lib/api/errors";
+import { requireDbUser } from "@/lib/db/users";
+import { meUpsertSchema } from "@/lib/validation/schemas";
 
 export async function GET() {
   try {
@@ -12,11 +15,16 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     let role: "student" | "teacher" | "recruiter" | undefined;
-    try {
-      const body = await request.json();
-      if (body?.role) role = body.role;
-    } catch {
-      // empty body ok
+    const text = await request.text();
+    if (text.trim()) {
+      let raw: unknown;
+      try {
+        raw = JSON.parse(text);
+      } catch {
+        throw AppError.badRequest("Invalid JSON body");
+      }
+      const parsed = meUpsertSchema.parse(raw);
+      role = parsed.role;
     }
     const user = await requireDbUser(role);
     return jsonResponse({ user });

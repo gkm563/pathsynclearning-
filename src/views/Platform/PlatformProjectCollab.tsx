@@ -1,5 +1,6 @@
 "use client";
 
+import { routes } from "@/lib/routes";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,6 +9,7 @@ import {
   Plus, Search, MessageSquare, FileText, CheckCircle2, 
   Send, Users, Code, KanbanSquare, SlidersHorizontal, Lock
 } from "lucide-react";
+import { usePlan } from "@/hooks/useStudentData";
 
 // Inline SVG Github Icon to avoid dependency exports mismatch
 const Github = ({ size = 16, color = "currentColor" }) => (
@@ -37,25 +39,10 @@ export default function PlatformProjectCollab() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("project-collab");
   
-  const [devPlan, setDevPlan] = useState("free");
-
-  useEffect(() => {
-    try {
-      setDevPlan(localStorage.getItem("dev_mode_plan") || "free");
-    } catch {}
-  }, []);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("dev_mode_plan", devPlan);
-    } catch (e) {}
-    try {
-      window.dispatchEvent(new Event("storage"));
-    } catch (e) {}
-  }, [devPlan]);
+  const { plan: devPlan, setPlan } = usePlan();
 
   const handleTogglePlan = (plan) => {
-    setDevPlan(plan);
+    setPlan(plan);
   };
 
   // Sub Tab: "my-space" | "marketplace"
@@ -328,16 +315,7 @@ export default function PlatformProjectCollab() {
   };
 
   return (
-    <DashboardLayout activeTab={activeTab} setActiveTab={(tab) => {
-      setActiveTab(tab);
-      if (tab === "dashboard") router.push("/dashboard");
-      if (tab === "roadmap") router.push("/roadmap");
-      if (tab === "challenges") router.push("/challenges");
-      if (tab === "memory-lane") router.push("/memory-lane");
-      if (tab === "progress") router.push("/progress");
-      if (tab === "mentorship") router.push("/mentorship");
-      if (tab === "technews") router.push("/technews");
-    }}>
+    <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
       <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60, position: "relative" }}>
         
         {/* ── DEVELOPER TESTING MODE TOGGLE BANNER ── */}
@@ -467,7 +445,7 @@ export default function PlatformProjectCollab() {
                 </button>
               ) : (
                 <button
-                  onClick={() => router.push("/store")}
+                  onClick={() => router.push(routes.app.store)}
                   style={{
                     padding: "12px 20px", borderRadius: 14, border: "1.5px dashed #6c63ff",
                     background: "rgba(108, 99, 255, 0.08)", color: "#6c63ff",
@@ -629,7 +607,7 @@ export default function PlatformProjectCollab() {
                               </p>
                             </div>
                             <button
-                              onClick={() => router.push("/store")}
+                              onClick={() => router.push(routes.app.store)}
                               style={{
                                 padding: "10px 20px", borderRadius: 12, border: "none",
                                 background: "linear-gradient(135deg, #6c63ff, #00c9a7)", color: "#ffffff",

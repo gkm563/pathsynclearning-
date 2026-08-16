@@ -32,8 +32,11 @@ cp .env.example .env.local
 |----------|----------|--------|
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Yes | Clerk Frontend API key |
 | `CLERK_SECRET_KEY` | Yes | Clerk Backend API key |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Recommended | `/login` |
-| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Recommended | `/register` |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Recommended | `/sign-in` (relative — do not hardcode host) |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Recommended | `/sign-up` |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL` | Recommended | `/auth/continue` |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL` | Recommended | `/auth/continue` |
+| `NEXT_PUBLIC_SITE_URL` | Optional | Absolute site URL for sitemap/OG only |
 | `DATABASE_URL` | Yes | Neon connection string (`sslmode=require`) |
 | `GEMINI_API_KEY` | Optional | Used by `/api/ai/*` routes |
 
@@ -51,13 +54,21 @@ Apply the production schema and seed store products + quotes:
 npm run db:setup
 ```
 
-Schema-only:
+Schema-only (SQL bootstrap + triggers):
 
 ```bash
 npm run db:migrate
 ```
 
-SQL source of truth: `src/lib/db/schema.sql`.
+Drizzle ORM schema (app source of truth): `src/lib/db/schema.ts`
+
+```bash
+npm run db:push       # push TypeScript schema to Neon
+npm run db:generate   # generate migrations into ./drizzle
+npm run db:studio     # browse tables
+```
+
+SQL bootstrap file (extensions / triggers): `src/lib/db/schema.sql`.
 
 ## Run
 
@@ -78,9 +89,10 @@ npm start
 
 | Path | Purpose |
 |------|---------|
-| `/login` | Custom student/teacher/recruiter sign-in (Clerk behind the UI) |
-| `/register` | Custom sign-up + email verification |
+| `/sign-in` | Custom student/teacher/recruiter sign-in (Clerk behind the UI) |
+| `/sign-up` | Custom sign-up + email verification |
 | `/sso-callback` | OAuth redirect completion |
+| `/auth/continue` | Post-auth router → onboarding or dashboard |
 | `/dashboard` | Student home (requires signed-in session for DB sync) |
 
 ## Verify

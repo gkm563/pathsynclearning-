@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { hrefForNavId } from "@/lib/routes";
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
@@ -12,6 +13,7 @@ import {
   AlertTriangle, CheckSquare, BarChart2
 } from "lucide-react";
 import { apiGet, apiSend } from "@/lib/api";
+import { useSelectedCareer } from "@/hooks/useStudentData";
 
 /* ─── XP MATH (2^n scaling) ─── */
 function xpForLevel(n) { return Math.pow(2, n) * 20; }  // 20, 40, 80, 160, 320...
@@ -387,17 +389,7 @@ export default function PlatformChallenges() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("challenges");
 
-  // Read User Career from localStorage
-  const targetCareer = (() => {
-    try {
-      const direct = localStorage.getItem("pathEdSelectedCareer");
-      if (direct) return direct;
-      const stg2 = JSON.parse(localStorage.getItem("pathEdStage2") || "{}");
-      return stg2.chosenCareer || "Full-Stack Web Developer";
-    } catch {
-      return "Full-Stack Web Developer";
-    }
-  })();
+  const targetCareer = useSelectedCareer();
 
   // Gamification Stats
   const [userXp, setUserXp] = useState(1340);
@@ -432,15 +424,7 @@ export default function PlatformChallenges() {
           setChallenges(data.state as any[]);
         }
       } catch {
-        try {
-          const saved = localStorage.getItem("pathEdChallengesState");
-          if (saved) {
-            const parsed = JSON.parse(saved);
-            if (Array.isArray(parsed) && parsed.length > 0) setChallenges(parsed);
-          }
-        } catch {
-          // keep base
-        }
+        // keep base challenges
       } finally {
         if (!cancelled) setChallengesReady(true);
       }
@@ -462,10 +446,8 @@ export default function PlatformChallenges() {
     return () => clearInterval(timer);
   }, []);
 
-  // Persist challenge progress
   useEffect(() => {
     if (!challengesReady) return;
-    localStorage.setItem("pathEdChallengesState", JSON.stringify(challenges));
     const t = setTimeout(() => {
       apiSend("/api/me/challenges", "PUT", { state: challenges }).catch(() => {});
     }, 400);
@@ -479,8 +461,6 @@ export default function PlatformChallenges() {
 
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
-    if (tabId === "dashboard") router.push("/dashboard");
-    if (tabId === "roadmap") router.push("/roadmap");
   };
 
   // Mark Challenge Done
@@ -501,9 +481,6 @@ export default function PlatformChallenges() {
         date: new Date().toLocaleDateString(),
         snippet: c.code ? c.code.substring(0, 120) + "..." : "Theory Assessment Suite Completed"
       };
-      const existingMemories = JSON.parse(localStorage.getItem("pathEdMemoryLaneLog") || "[]");
-      existingMemories.unshift(memoryPayload);
-      localStorage.setItem("pathEdMemoryLaneLog", JSON.stringify(existingMemories));
       apiSend("/api/me/memory-lane", "POST", { payload: memoryPayload }).catch(() => {});
 
       return { ...c, done: true, pct: 100 };
@@ -877,7 +854,7 @@ export default function PlatformChallenges() {
           </div>
 
           <button
-            onClick={() => router.push("/dashboard?tab=memory-lane")}
+            onClick={() => router.push(hrefForNavId("memory-lane"))}
             style={{
               padding: "10px 20px", borderRadius: 14,
               border: "1.5px solid #6c63ff", background: "rgba(108,99,255,0.1)",

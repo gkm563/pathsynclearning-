@@ -1,20 +1,34 @@
+import { desc, eq } from "drizzle-orm";
+import { parseJson, errorResponse, jsonResponse } from "@/lib/api/http";
 import { getDb } from "@/lib/db/client";
-import { requireDbUser, jsonResponse, errorResponse } from "@/lib/db/users";
+import { eventApplications } from "@/lib/db/schema";
+import { requireDbUser } from "@/lib/db/users";
+import { applicationCreateSchema } from "@/lib/validation/schemas";
 
 export async function GET() {
   try {
     const user = await requireDbUser();
     const db = getDb();
-    const rows = await db`
-      SELECT event_id, kind, created_at
-      FROM event_applications
-      WHERE user_id = ${user.id}::uuid
-      ORDER BY created_at DESC
-    `;
+    const rows = await db
+      .select({
+        eventId: eventApplications.eventId,
+        kind: eventApplications.kind,
+        createdAt: eventApplications.createdAt,
+      })
+      .from(eventApplications)
+      .where(eq(eventApplications.userId, user.id))
+      .orderBy(desc(eventApplications.createdAt));
+
+    const applications = rows.map((r) => ({
+      event_id: r.eventId,
+      kind: r.kind,
+      created_at: r.createdAt,
+    }));
+
     return jsonResponse({
-      applications: rows,
-      eventIds: rows.filter((r) => r.kind === "event").map((r) => r.event_id),
-      ogIds: rows.filter((r) => r.kind === "og").map((r) => r.event_id),
+      applications,
+      eventIds: applications.filter((r) => r.kind === "event").map((r) => r.event_id),
+      ogIds: applications.filter((r) => r.kind === "og").map((r) => r.event_id),
     });
   } catch (e) {
     return errorResponse(e);
@@ -24,25 +38,25 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const user = await requireDbUser();
-    const body = await request.json();
-    const eventId = body.eventId as string;
-    const kind = (body.kind === "og" ? "og" : "event") as "event" | "og";
-    if (!eventId) {
-      return jsonResponse({ error: "eventId required" }, 400);
-    }
+    const { eventId, kind } = await parseJson(request, applicationCreateSchema);
     const db = getDb();
-    await db`
-      INSERT INTO event_applications (user_id, event_id, kind)
-      VALUES (${user.id}::uuid, ${eventId}, ${kind})
-      ON CONFLICT (user_id, event_id, kind) DO NOTHING
-    `;
-    const rows = await db`
-      SELECT event_id, kind FROM event_applications WHERE user_id = ${user.id}::uuid
-    `;
+    await db
+      .insert(eventApplications)
+      .values({ userId: user.id, eventId, kind })
+      .onConflictDoNothing();
+
+    const rows = await db
+      .select({
+        eventId: eventApplications.eventId,
+        kind: eventApplications.kind,
+      })
+      .from(eventApplications)
+      .where(eq(eventApplications.userId, user.id));
+
     return jsonResponse({
       ok: true,
-      eventIds: rows.filter((r) => r.kind === "event").map((r) => r.event_id),
-      ogIds: rows.filter((r) => r.kind === "og").map((r) => r.event_id),
+      eventIds: rows.filter((r) => r.kind === "event").map((r) => r.eventId),
+      ogIds: rows.filter((r) => r.kind === "og").map((r) => r.eventId),
     });
   } catch (e) {
     return errorResponse(e);

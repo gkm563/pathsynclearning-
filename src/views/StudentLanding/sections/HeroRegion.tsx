@@ -115,7 +115,7 @@ export default function HeroRegion() {
                 {(isC ? [["#f0f0ff","#d8d4ff","#6c63ff","✦ AI-fication"],["#e8faf5","#b2eed9","#00a67e","✦ CRI Tracker"],["#fff8ee","#ffe0a0","#c67c00","✦ XP + Coins"],["#fdf0ff","#e8b3ff","#9c27b0","✦ Memory Lane"]] : [["#fff8ee","#ffe0a0","#c67c00","✦ Session Classes"],["#fdf0ff","#e8b3ff","#9c27b0","✦ Ranker Board"],["#e8faf5","#b2eed9","#00a67e","✦ PYQ Banks"],["#f0f0ff","#d8d4ff","#6c63ff","✦ Teacher Live"]]).map(([bg,bdr,c,lbl]) => <Chip key={lbl} bg={bg} border={bdr} color={c}>{lbl}</Chip>)}
               </div>
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                <button onClick={() => router.push("/register")} style={{ 
+                <button onClick={() => router.push("/sign-up")} style={{ 
                   background: isC ? "linear-gradient(135deg,#6c63ff,#00c9a7)" : "linear-gradient(135deg,#f7971e,#e040fb)", 
                   border: "none", color: "var(--text-inverse)", fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 14, 
                   padding: "14px 36px", borderRadius: 12, cursor: "pointer", 

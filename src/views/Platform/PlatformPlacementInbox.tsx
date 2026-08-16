@@ -1,5 +1,6 @@
 "use client";
 
+import { routes } from "@/lib/routes";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -194,7 +195,7 @@ export default function PlatformPlacementInbox() {
             {/* Grab Placement Opportunities Educational Card */}
             <motion.div
               whileHover={{ y: -6, boxShadow: "0 15px 30px rgba(108,99,255,0.2)" }}
-              onClick={() => router.push("/guides")}
+              onClick={() => router.push(routes.marketing.guides)}
               style={{
                 background: "linear-gradient(135deg, #6c63ff, #00c9a7)",
                 borderRadius: 22,

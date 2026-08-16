@@ -278,7 +278,7 @@ export default function Store() {
       setPurchasedIds((prev) =>
         prev.includes(purchasingItem.id) ? prev : [...prev, purchasingItem.id],
       );
-      triggerToast(`🎉 Purchased "${purchasingItem.title}" successfully! Check Purchased tab.`);
+    triggerToast(`🎉 Purchased "${purchasingItem.title}" successfully! Check Purchased tab.`);
     } catch (err) {
       triggerToast(err instanceof Error ? err.message : "Purchase failed.");
     }
@@ -301,65 +301,12 @@ export default function Store() {
         });
         setActivePlugin(applyingItem.title);
       } catch {
-        setActivePlugin(applyingItem.title);
+      setActivePlugin(applyingItem.title);
       }
     }
     
     triggerToast(`⚡ Applied "${applyingItem.title}" to your student profile!`);
     setApplyingItem(null);
-  };
-
-  // USD to Coins Pack buy
-  const buyCoinsPack = async (amount, cost) => {
-    if (cashWallet < cost) {
-      triggerToast("❌ Insufficient cash balance! Add funds first.");
-      return;
-    }
-    const nextCash = cashWallet - cost;
-    const nextCoins = coins + amount;
-    try {
-      await apiSend("/api/me/wallet", "PUT", {
-        coins: nextCoins,
-        cashBalance: nextCash,
-        transaction: {
-          kind: "coin_pack",
-          amountCoins: amount,
-          amountCash: -cost,
-          meta: { pack: amount },
-        },
-      });
-      setCashWallet(nextCash);
-      setCoins(nextCoins);
-      triggerToast(`🪙 Added ${amount.toLocaleString()} Coins to your account!`);
-    } catch (err) {
-      triggerToast(err instanceof Error ? err.message : "Could not buy coins.");
-    }
-  };
-
-  // Coins exchange cash out
-  const cashOutCoins = async (coinsAmount, cashValue) => {
-    if (coins < coinsAmount) {
-      triggerToast("❌ Insufficient coins to cash out.");
-      return;
-    }
-    const nextCoins = coins - coinsAmount;
-    const nextCash = cashWallet + cashValue;
-    try {
-      await apiSend("/api/me/wallet", "PUT", {
-        coins: nextCoins,
-        cashBalance: nextCash,
-        transaction: {
-          kind: "cash_out",
-          amountCoins: -coinsAmount,
-          amountCash: cashValue,
-        },
-      });
-      setCoins(nextCoins);
-      setCashWallet(nextCash);
-      triggerToast(`💸 Exchanged ${coinsAmount.toLocaleString()} Coins for $${cashValue} Cash Credits!`);
-    } catch (err) {
-      triggerToast(err instanceof Error ? err.message : "Cash out failed.");
-    }
   };
 
   const handleClearPlugin = async () => {

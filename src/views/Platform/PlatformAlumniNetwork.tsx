@@ -1,5 +1,6 @@
 "use client";
 
+import { routes } from "@/lib/routes";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,6 +9,7 @@ import {
   Search, MessageSquare, Briefcase, FileText, CheckCircle2, 
   Send, Lock, Sparkles, SlidersHorizontal
 } from "lucide-react";
+import { usePlan } from "@/hooks/useStudentData";
 
 /* ─── COLOR TOKENS ─── */
 const COLS = {
@@ -196,25 +198,10 @@ export default function PlatformAlumniNetwork() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("alumni-network");
 
-  const [devPlan, setDevPlan] = useState("free");
-
-  useEffect(() => {
-    try {
-      setDevPlan(localStorage.getItem("dev_mode_plan") || "free");
-    } catch {}
-  }, []);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("dev_mode_plan", devPlan);
-    } catch (e) {}
-    try {
-      window.dispatchEvent(new Event("storage"));
-    } catch (e) {}
-  }, [devPlan]);
+  const { plan: devPlan, setPlan } = usePlan();
 
   const handleTogglePlan = (plan) => {
-    setDevPlan(plan);
+    setPlan(plan);
   };
 
   // State: Alumni Pool (for searching/filtering)
@@ -350,17 +337,7 @@ export default function PlatformAlumniNetwork() {
   };
 
   return (
-    <DashboardLayout activeTab={activeTab} setActiveTab={(tab) => {
-      setActiveTab(tab);
-      if (tab === "dashboard") router.push("/dashboard");
-      if (tab === "roadmap") router.push("/roadmap");
-      if (tab === "challenges") router.push("/challenges");
-      if (tab === "memory-lane") router.push("/memory-lane");
-      if (tab === "progress") router.push("/progress");
-      if (tab === "mentorship") router.push("/mentorship");
-      if (tab === "project-collab") router.push("/project-collab");
-      if (tab === "technews") router.push("/technews");
-    }}>
+    <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
       <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60, position: "relative" }}>
         
         {/* Toggle Plan Banner */}
@@ -822,7 +799,7 @@ export default function PlatformAlumniNetwork() {
                       </p>
                     </div>
                     <button
-                      onClick={() => router.push("/store")}
+                      onClick={() => router.push(routes.app.store)}
                       style={{ padding: "10px 20px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #6c63ff, #00c9a7)", color: "#ffffff", fontFamily: "'Outfit', sans-serif", fontSize: 13.5, fontWeight: 900, cursor: "pointer" }}
                     >
                       Unlock Premium
@@ -968,7 +945,7 @@ export default function PlatformAlumniNetwork() {
                       </p>
                     </div>
                     <button 
-                      onClick={() => { setReferralAlumnus(null); router.push("/store"); }}
+                      onClick={() => { setReferralAlumnus(null); router.push(routes.app.store); }}
                       style={{ padding: "10px 20px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #6c63ff, #00c9a7)", color: "#ffffff", fontFamily: "'Outfit', sans-serif", fontSize: 13.5, fontWeight: 800, cursor: "pointer" }}
                     >
                       Unlock Placement VIP Store

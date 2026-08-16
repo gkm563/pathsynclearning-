@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Bell, Sparkles, LayoutDashboard, Map, Zap, BookOpen, BarChart2, Newspaper, GraduationCap, Briefcase, Menu, Check } from "lucide-react";
 import { apiGet, apiSend } from "@/lib/api";
 import { useStudent } from "./StudentContext";
+import { dashboardTabPath, pathForNavId, routes } from "@/lib/routes";
 
 export default function DashboardHeader({ activeTab, setActiveTab, onToggleSidebar }) {
   const router = useRouter();
@@ -67,44 +68,15 @@ export default function DashboardHeader({ activeTab, setActiveTab, onToggleSideb
   ];
 
   const handleNavClick = (itemId) => {
-    if (itemId === "dashboard") {
-      router.push("/dashboard");
-    } else if (itemId === "roadmap") {
-      router.push("/roadmap");
-    } else if (itemId === "challenges") {
-      router.push("/challenges");
-    } else if (itemId === "memory-lane") {
-      router.push("/memory-lane");
-    } else if (itemId === "progress") {
-      router.push("/progress");
-    } else if (itemId === "mentorship") {
-      router.push("/mentorship");
-    } else if (itemId === "project-collab") {
-      router.push("/project-collab");
-    } else if (itemId === "hacksquad") {
-      router.push("/hacksquad");
-    } else if (itemId === "hack-attack") {
-      router.push("/og-opportunities");
-    } else if (itemId === "events") {
-      router.push("/events");
-    } else if (itemId === "alumni-network") {
-      router.push("/alumni-network");
-    } else if (itemId === "technews") {
-      router.push("/technews");
-    } else if (itemId === "placement-inbox") {
-      router.push("/placement-inbox");
-    } else if (itemId === "placement-insights") {
-      router.push("/placement-insights");
-    } else if (itemId === "records-certs") {
-      router.push("/records-certs");
-    } else if (itemId === "community") {
-      router.push("/platform/community");
-    } else {
-      if (window.location.pathname !== "/dashboard" && window.location.pathname !== "/platform") {
-        router.push(`/dashboard?tab=${itemId}`);
-      } else {
-        if (setActiveTab) setActiveTab(itemId);
-      }
+    const path = pathForNavId(itemId);
+    if (path) {
+      router.push(path);
+      return;
+    }
+    if (window.location.pathname !== routes.app.dashboard) {
+      router.push(dashboardTabPath(itemId));
+    } else if (setActiveTab) {
+      setActiveTab(itemId);
     }
   };
 
@@ -314,7 +286,7 @@ export default function DashboardHeader({ activeTab, setActiveTab, onToggleSideb
                   {/* Dropdown Footer */}
                   <div style={{ padding: 10, borderTop: "1.5px solid var(--border-light)", textAlign: "center", position: "relative", zIndex: 2 }}>
                     <button
-                      onClick={() => { setShowNotifications(false); router.push("/platform/notifications"); }}
+                      onClick={() => { setShowNotifications(false); router.push(routes.app.notifications); }}
                       style={{
                         width: "100%", padding: "8px", borderRadius: 10, border: "none",
                         background: "var(--bg-alt)", color: "#6c63ff", cursor: "pointer",
@@ -334,7 +306,7 @@ export default function DashboardHeader({ activeTab, setActiveTab, onToggleSideb
 
         {/* User Profile Avatar */}
         <div 
-          onClick={() => router.push("/platform/profile")}
+          onClick={() => router.push(routes.app.profile)}
           style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 10px 4px 4px", background: "var(--bg-alt)", borderRadius: 24, border: "1.5px solid var(--border-light)", cursor: "pointer" }}
         >
           <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg, #6c63ff, #00c9a7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, color: "#fff" }}>

@@ -11,8 +11,7 @@ import {
   FileText, Play, Award, Brain, Lock, RefreshCw, Layers, Star, Maximize2, Minimize2,
   ThumbsUp, Share2, MessageSquare, Download, Upload, Check, EyeOff
 } from "lucide-react";
-
-/* ─── TOP-DOWN 2D SPORTS CAR VECTOR GRAPHIC ─── */
+import { useSelectedCareer } from "@/hooks/useStudentData";
 function TopDownCarGraphic({ carColor = "#ef4444" }) {
   return (
     <svg width="34" height="62" viewBox="0 0 34 62" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: "drop-shadow(0 10px 22px rgba(0,0,0,0.5))" }}>
@@ -1133,24 +1132,21 @@ export default function PlatformSkillRoadmap() {
 
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
-    if (tabId === "dashboard") router.push("/dashboard");
   };
 
-  const targetCareer = (() => {
-    try {
-      const direct = localStorage.getItem("pathEdSelectedCareer");
-      if (direct) return direct;
-      const stg2 = JSON.parse(localStorage.getItem("pathEdStage2") || "{}");
-      return stg2.chosenCareer || "Full-Stack Web Developer";
-    } catch {
-      return "Full-Stack Web Developer";
-    }
-  })();
+  const targetCareer = useSelectedCareer();
 
   const [nodes, setNodes] = useState(() => getRoadmapMajorNodes(targetCareer));
   const [expandedMajorId, setExpandedMajorId] = useState(nodes[2]?.id || null);
   const [selectedMinor, setSelectedMinor] = useState<any>(null);
   const [selectedMajor, setSelectedMajor] = useState(nodes[2] || null);
+
+  useEffect(() => {
+    const nextNodes = getRoadmapMajorNodes(targetCareer);
+    setNodes(nextNodes);
+    setExpandedMajorId(nextNodes[2]?.id || null);
+    setSelectedMajor(nextNodes[2] || null);
+  }, [targetCareer]);
 
   // AI-fication Modal & Toast State
   const [isAiFicationOpen, setIsAiFicationOpen] = useState(false);

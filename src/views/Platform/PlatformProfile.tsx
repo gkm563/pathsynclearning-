@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiGet, apiSend } from "@/lib/api";
+import { routes } from "@/lib/routes";
+
 
 const SKILL_PALETTE = [
   { bg: "rgba(108,99,255,0.12)", bdr: "rgba(108,99,255,0.3)", col: "#6c63ff" },
@@ -168,11 +170,8 @@ export default function PlatformProfile() {
         branch: draft.branch,
         cgpa: draft.cgpa,
         gradYear: draft.gradYear,
-        cri: draft.cri,
         rankGlobal: draft.rankGlobal,
         rankUniv: draft.rankUniv,
-        xp: Number(String(draft.xp).replace(/,/g, "")) || 0,
-        streak: draft.streak,
         skills: draft.skills,
         passion: draft.passion,
         objective: draft.objective,
@@ -279,7 +278,7 @@ export default function PlatformProfile() {
 
         {/* Back Button */}
         <button 
-          onClick={() => router.push("/dashboard")} 
+          onClick={() => router.push(routes.app.dashboard)} 
           style={{
             position: "absolute", top: 24, left: 40, zIndex: 10,
             display: "flex", alignItems: "center", gap: 8, 

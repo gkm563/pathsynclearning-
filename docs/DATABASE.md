@@ -1,17 +1,22 @@
 # Database
 
-PathEd uses **Neon PostgreSQL** via `@neondatabase/serverless`.
+PathEd uses **Neon PostgreSQL** with **Drizzle ORM** (`drizzle-orm` + `@neondatabase/serverless` HTTP driver).
 
 - Connection: `DATABASE_URL` in `.env.local`
-- Schema: `src/lib/db/schema.sql` (idempotent)
-- Client: `src/lib/db/client.ts`
+- Drizzle schema (source of truth): `src/lib/db/schema.ts`
+- SQL bootstrap (extensions / triggers / initial create): `src/lib/db/schema.sql`
+- Client: `src/lib/db/client.ts` → `getDb()`
 - Auth bridge: `src/lib/db/users.ts` → `requireDbUser()`
+- API mappers: `src/lib/db/mappers.ts` (camelCase rows → snake_case JSON)
 
 ## Setup commands
 
 ```bash
-npm run db:setup     # migrate + seed store products & quotes
-npm run db:migrate   # migrate schema only
+npm run db:setup      # apply schema.sql + seed store products & quotes
+npm run db:migrate    # schema.sql only
+npm run db:generate   # drizzle-kit generate SQL migrations from schema.ts
+npm run db:push       # drizzle-kit push schema.ts to Neon
+npm run db:studio     # open Drizzle Studio
 ```
 
 ## Tables

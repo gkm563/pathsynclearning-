@@ -46,7 +46,7 @@ export default function PreFooterCTA() {
             </p>
             
             <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
-              <Link href="/register" style={{
+              <Link href="/sign-up" style={{
                 background: "var(--bg-card)", color: "#6c63ff", 
                 fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: "16px", 
                 padding: "18px 48px", borderRadius: "14px", 

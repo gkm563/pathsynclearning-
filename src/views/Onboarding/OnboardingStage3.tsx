@@ -8,6 +8,7 @@ import {
   Sun, Moon, Sparkles, Rocket, User, Globe,
   FileText, Trophy, MessageSquare, Info
 } from "lucide-react";
+import { apiGet } from "@/lib/api";
 
 export default function OnboardingStage3() {
   const router = useRouter();
@@ -17,10 +18,21 @@ export default function OnboardingStage3() {
   const [stored2, setStored2] = useState<Record<string, any>>({});
 
   useEffect(() => {
-    try { setStored1(JSON.parse(localStorage.getItem("pathEdStage1") || "{}")); }
-    catch { setStored1({}); }
-    try { setStored2(JSON.parse(localStorage.getItem("pathEdStage2") || "{}")); }
-    catch { setStored2({}); }
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await apiGet<{ onboarding?: { stage1?: Record<string, unknown>; stage2?: Record<string, unknown> } }>("/api/me/onboarding");
+        if (cancelled) return;
+        const o = data.onboarding || {};
+        setStored1((o.stage1 as Record<string, unknown>) || {});
+        setStored2((o.stage2 as Record<string, unknown>) || {});
+      } catch {
+        // keep defaults
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const toggleTheme = () => {

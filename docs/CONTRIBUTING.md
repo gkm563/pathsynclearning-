@@ -3,7 +3,10 @@
 ## Scope
 
 - Prefer editing existing screens in `src/views/` and shared pieces in `src/components/`.
-- Add new App Router routes under `src/app/` as thin wrappers.
+- Add new App Router routes under the correct group: `(marketing)`, `(auth)`, or `(app)/(portal)`.
+- Register the path in `src/lib/routes.ts` (matchers + `APP_NAV_BY_ID` if it is a portal screen).
+- Mount portal views with `createClientPage(() => import("@/views/..."))`.
+- Never hardcode URLs — use `routes.*` or `hrefForNavId()`.
 - Persist user data through `/api/me/*` and Neon — avoid new hardcoded demo identities.
 
 ## Code style
@@ -21,7 +24,7 @@
 
 ## Auth UI
 
-Login / register branding and layout should stay custom. Wire Clerk hooks behind the existing screens; do not replace them with default Clerk modals unless explicitly requested.
+Sign-in / sign-up branding and layout should stay custom (`/sign-in`, `/sign-up`). Wire Clerk hooks behind the existing screens; do not replace them with default Clerk modals unless explicitly requested.
 
 ## Checks before PR
 

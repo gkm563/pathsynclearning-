@@ -27,7 +27,10 @@ Client helper: `src/lib/api.ts` (`apiGet`, `apiSend`).
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/api/me/wallet` | Balance + recent transactions |
-| `PUT` | `/api/me/wallet` | Set coins/cash; optional transaction log |
+| `POST` | `/api/me/wallet` | Server-authored action: `deposit` \| `buy_coins` \| `cash_out` \| `buy_coins_amount` \| `cash_out_amount` |
+| `PUT` | `/api/me/wallet` | **Removed (410)** — absolute balance writes are not allowed |
+
+Coin packs and cash-out tiers are defined server-side in `src/lib/wallet/catalog.ts`. Clients cannot set arbitrary balances.
 
 ## Onboarding
 
@@ -75,10 +78,17 @@ Client helper: `src/lib/api.ts` (`apiGet`, `apiSend`).
 
 ## Errors
 
+- `400` — bad request / business rule (insufficient coins, invalid pack)
 - `401` — missing / invalid Clerk session (`UNAUTHORIZED`)
-- `400` — validation (missing ids, insufficient coins)
+- `403` — forbidden
 - `404` — resource not found
-- `500` — unexpected server / database error
+- `409` — conflict (e.g. already purchased)
+- `410` — endpoint removed (legacy wallet PUT)
+- `422` — validation failed (Zod)
+- `429` — rate limited (reserved)
+- `500` — unexpected server / database error (message is generic; details logged server-side)
+
+Validated with Zod schemas in `src/lib/validation/schemas.ts`.
 
 ## Example
 

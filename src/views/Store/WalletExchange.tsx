@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
+import { apiGet, apiSend } from "@/lib/api";
 
 const COIN_PACKS = [
   { id: "pack_starter", name: "SDE Starter Refill", coins: 500, cost: 4.99, popular: false, badge: "Starter" },
@@ -22,27 +23,78 @@ const CASH_OUT_OPTIONS = [
   { coins: 5000, value: 25.00, desc: "Executive Cashout" }
 ];
 
+const DEFAULT_TRANSACTIONS = [
+  { id: "t_init", type: "system", title: "Welcome Bonus", value: "+500 Coins", date: "Jul 21, 2026", details: "Initial platform bonus" },
+  { id: "t_init_cash", type: "deposit", title: "Account Pre-load", value: "+$45.00", date: "Jul 22, 2026", details: "Dummy balance seed" }
+];
+
+function mapWalletTx(tx: {
+  id?: string;
+  kind?: string;
+  amount_coins?: number;
+  amount_cash?: number | string;
+  meta?: Record<string, unknown>;
+  created_at?: string;
+}) {
+  const coins = Number(tx.amount_coins) || 0;
+  const cash = Number(tx.amount_cash) || 0;
+  let value = "—";
+  if (coins !== 0) value = coins > 0 ? `+${coins} Coins` : `${coins} Coins`;
+  else if (cash !== 0) value = cash > 0 ? `+$${cash.toFixed(2)}` : `-$${Math.abs(cash).toFixed(2)}`;
+
+  const date = tx.created_at
+    ? new Date(tx.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    : "";
+
+  const title =
+    (typeof tx.meta?.title === "string" && tx.meta.title) ||
+    (tx.kind ? tx.kind.replace(/_/g, " ") : "Transaction");
+
+  const details =
+    (typeof tx.meta?.details === "string" && tx.meta.details) ||
+    (tx.meta && Object.keys(tx.meta).length ? JSON.stringify(tx.meta) : "");
+
+  return {
+    id: tx.id || `tx_${Date.now()}`,
+    type: tx.kind || "system",
+    title,
+    value,
+    date,
+    details,
+  };
+}
+
 export default function WalletExchange() {
   const router = useRouter();
 
-  // Local Storage Wallet States
-  const [coins, setCoins] = useState(() => {
-    const saved = localStorage.getItem("pathed_user_coins");
-    return saved ? parseInt(saved, 10) : 3480;
-  });
+  const [coins, setCoins] = useState(3480);
+  const [cashWallet, setCashWallet] = useState(45.00);
+  const [transactions, setTransactions] = useState(DEFAULT_TRANSACTIONS);
 
-  const [cashWallet, setCashWallet] = useState(() => {
-    const saved = localStorage.getItem("pathed_cash_wallet");
-    return saved ? parseFloat(saved) : 45.00;
-  });
-
-  const [transactions, setTransactions] = useState(() => {
-    const saved = localStorage.getItem("pathed_wallet_transactions");
-    return saved ? JSON.parse(saved) : [
-      { id: "t_init", type: "system", title: "Welcome Bonus", value: "+500 Coins", date: "Jul 21, 2026", details: "Initial platform bonus" },
-      { id: "t_init_cash", type: "deposit", title: "Account Pre-load", value: "+$45.00", date: "Jul 22, 2026", details: "Dummy balance seed" }
-    ];
-  });
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await apiGet<{
+          wallet?: { coins?: number; cash_balance?: number | string };
+          transactions?: unknown[];
+        }>("/api/me/wallet");
+        if (cancelled) return;
+        if (data.wallet) {
+          setCoins(Number(data.wallet.coins) || 0);
+          setCashWallet(Number(data.wallet.cash_balance) || 0);
+        }
+        if (Array.isArray(data.transactions) && data.transactions.length > 0) {
+          setTransactions(data.transactions.map((tx) => mapWalletTx(tx as Parameters<typeof mapWalletTx>[0])));
+        }
+      } catch {
+        // keep defaults
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Modal / Input States
   const [showDepositModal, setShowDepositModal] = useState(false);
@@ -51,19 +103,6 @@ export default function WalletExchange() {
   const [cardExpiry, setCardExpiry] = useState("12/28");
   const [cardCvv, setCardCvv] = useState("123");
   const [toastMessage, setToastMessage] = useState("");
-
-  // Sync to Local Storage
-  useEffect(() => {
-    localStorage.setItem("pathed_user_coins", coins.toString());
-  }, [coins]);
-
-  useEffect(() => {
-    localStorage.setItem("pathed_cash_wallet", cashWallet.toFixed(2));
-  }, [cashWallet]);
-
-  useEffect(() => {
-    localStorage.setItem("pathed_wallet_transactions", JSON.stringify(transactions));
-  }, [transactions]);
 
   const triggerToast = (msg) => {
     setToastMessage(msg);
@@ -87,7 +126,7 @@ export default function WalletExchange() {
   };
 
   // Add Money (Deposit) Action
-  const handleDepositSubmit = (e) => {
+  const handleDepositSubmit = async (e) => {
     e.preventDefault();
     const val = parseFloat(depositAmount);
     if (isNaN(val) || val <= 0) {
@@ -95,46 +134,78 @@ export default function WalletExchange() {
       return;
     }
 
-    setCashWallet(prev => prev + val);
-    addTransaction("deposit", "Deposited Funds", `+$${val.toFixed(2)}`, "Simulated Card Transaction");
-    triggerToast(`💳 Deposited $${val.toFixed(2)} to Cash Wallet successfully!`);
-    setShowDepositModal(false);
+    try {
+      const result = await apiSend<{
+        wallet: { coins: number; cash_balance: string | number };
+      }>("/api/me/wallet", "POST", {
+        action: "deposit",
+        amountCash: val,
+      });
+      setCashWallet(Number(result.wallet.cash_balance));
+      addTransaction("deposit", "Deposited Funds", `+$${val.toFixed(2)}`, "Simulated Card Transaction");
+      triggerToast(`💳 Deposited $${val.toFixed(2)} to Cash Wallet successfully!`);
+      setShowDepositModal(false);
+    } catch {
+      triggerToast("Could not complete deposit.");
+    }
   };
 
   // Buy Coins Action
-  const handleBuyCoins = (pack) => {
+  const handleBuyCoins = async (pack) => {
     if (cashWallet < pack.cost) {
       triggerToast("❌ Insufficient Cash Balance! Please deposit simulated funds first.");
       return;
     }
 
-    setCashWallet(prev => prev - pack.cost);
-    setCoins(prev => prev + pack.coins);
-    addTransaction(
-      "coin_buy",
-      `Purchased ${pack.coins} Coins`,
-      `-${pack.cost} Cash`,
-      `Exchanged Cash to Coins (${pack.name})`
-    );
-    triggerToast(`🪙 Successfully purchased ${pack.coins.toLocaleString()} Coins!`);
+    try {
+      const result = await apiSend<{
+        wallet: { coins: number; cash_balance: string | number };
+      }>("/api/me/wallet", "POST", {
+        action: "buy_coins",
+        packId: pack.id,
+      });
+      setCashWallet(Number(result.wallet.cash_balance));
+      setCoins(Number(result.wallet.coins));
+      addTransaction(
+        "coin_buy",
+        `Purchased ${pack.coins} Coins`,
+        `-${pack.cost} Cash`,
+        `Exchanged Cash to Coins (${pack.name})`
+      );
+      triggerToast(`🪙 Successfully purchased ${pack.coins.toLocaleString()} Coins!`);
+    } catch {
+      triggerToast("Could not purchase coin pack.");
+    }
   };
 
   // Cash Out Coins Action
-  const handleCashOut = (exch) => {
+  const handleCashOut = async (exch) => {
     if (coins < exch.coins) {
       triggerToast("❌ Insufficient Coins to convert.");
       return;
     }
 
-    setCoins(prev => prev - exch.coins);
-    setCashWallet(prev => prev + exch.value);
-    addTransaction(
-      "cashout",
-      "Exchanged Coins to Cash",
-      `+$${exch.value.toFixed(2)}`,
-      `Converted ${exch.coins.toLocaleString()} Coins`
-    );
-    triggerToast(`💸 Successfully cashed out ${exch.coins.toLocaleString()} Coins for $${exch.value.toFixed(2)}!`);
+    try {
+      const exchangeId =
+        exch.coins === 1000 ? "out_1000" : exch.coins === 2000 ? "out_2000" : "out_5000";
+      const result = await apiSend<{
+        wallet: { coins: number; cash_balance: string | number };
+      }>("/api/me/wallet", "POST", {
+        action: "cash_out",
+        exchangeId,
+      });
+      setCoins(Number(result.wallet.coins));
+      setCashWallet(Number(result.wallet.cash_balance));
+      addTransaction(
+        "cashout",
+        "Exchanged Coins to Cash",
+        `+$${exch.value.toFixed(2)}`,
+        `Converted ${exch.coins.toLocaleString()} Coins`
+      );
+      triggerToast(`💸 Successfully cashed out ${exch.coins.toLocaleString()} Coins for $${exch.value.toFixed(2)}!`);
+    } catch {
+      triggerToast("Could not cash out coins.");
+    }
   };
 
   const clearHistory = () => {

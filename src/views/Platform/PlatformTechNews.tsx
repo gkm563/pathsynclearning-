@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
@@ -349,10 +350,6 @@ export default function PlatformTechNews() {
 
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
-    if (tabId === "dashboard") router.push("/dashboard");
-    if (tabId === "roadmap") router.push("/roadmap");
-    if (tabId === "challenges") router.push("/challenges");
-    if (tabId === "memory-lane") router.push("/memory-lane");
   };
 
   const toggleLike = (id) => {

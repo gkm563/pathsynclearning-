@@ -6,6 +6,12 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSignUp, useAuth } from "@clerk/nextjs";
 import { GraduationCap, Briefcase, BookOpen, Eye, EyeOff, AlertCircle, ArrowRight, Sparkles, Check, ShieldCheck } from "lucide-react";
+import AuthRedirect from "@/components/auth/AuthRedirect";
+import { authContinueWithRole, routes } from "@/lib/routes";
+import {
+  authContinueAbsoluteUrl,
+  ssoCallbackAbsoluteUrl,
+} from "@/lib/auth-urls";
 
 const GoogleIcon = ({ size = 20 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -78,8 +84,8 @@ const getEyeIconColor = (pwd) => {
 
 export default function Register() {
   const router = useRouter();
-  const { signUp, errors } = useSignUp();
-  const { isLoaded } = useAuth();
+  const { signUp, errors, fetchStatus } = useSignUp();
+  const { isLoaded, isSignedIn } = useAuth();
   const [role, setRole] = useState("student");
   const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
   const [showPassword, setShowPassword] = useState(false);
@@ -90,6 +96,7 @@ export default function Register() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [pendingVerification, setPendingVerification] = useState(false);
   const [verifyCode, setVerifyCode] = useState("");
+  const isBusy = loading || fetchStatus === "fetching";
 
   // Looping CRI Score 0 -> 78 -> 0 Animation
   const [criScore, setCriScore] = useState(0);
@@ -165,19 +172,15 @@ export default function Register() {
   };
 
   const markLocalSession = async () => {
-    localStorage.setItem("isAuthenticated", "true");
-    localStorage.setItem("userRegistered", "true");
-    localStorage.setItem("pathEdRole", role);
-    window.dispatchEvent(new Event("storage"));
     try {
-      await fetch("/api/me", {
+      await fetch(routes.api.me, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role }),
       });
     } catch {
-      // DB sync is best-effort; auth still succeeds
+      // DB sync is best-effort; Clerk session is source of truth
     }
   };
 
@@ -192,20 +195,29 @@ export default function Register() {
     );
   };
 
+  /** Activate session then hand off to /auth/continue (single post-auth router). */
   const completeSignUp = async () => {
+    setLoading(true);
     setProgress(100);
-    await signUp.finalize({
-      navigate: async ({ decorateUrl }) => {
-        await markLocalSession();
-        const destination = role === "student" ? "/onboarding/stage1" : "/";
-        const url = decorateUrl(destination);
-        if (url.startsWith("http")) {
-          window.location.href = url;
-        } else {
-          router.push(url);
-        }
-      },
-    });
+    try {
+      await signUp.finalize({
+        navigate: async () => {
+          await markLocalSession();
+          // Always stay on PathEd — never follow Account Portal (accounts.dev) URLs.
+          window.location.replace(authContinueWithRole(role));
+        },
+      });
+    } catch (err: any) {
+      setErrorMessage(
+        err?.errors?.[0]?.message ||
+          err?.message ||
+          "Account created, but session setup failed. Please sign in.",
+      );
+      setLoading(false);
+      setProgress(0);
+      setPendingVerification(false);
+      router.push(routes.auth.signIn);
+    }
   };
 
   const handleRegister = async (e) => {
@@ -221,8 +233,10 @@ export default function Register() {
     }
 
     setErrorMessage("");
-    setLoading(true);
-    setProgress(20);
+    // Do NOT cover the form with a full-screen overlay here — Clerk bot
+    // protection needs a visible #clerk-captcha widget during password().
+    setLoading(false);
+    setProgress(15);
 
     try {
       const nameParts = form.name.trim().split(/\s+/);
@@ -235,40 +249,47 @@ export default function Register() {
         firstName,
         lastName,
       });
-      setProgress(50);
+      setProgress(45);
 
       if (error) {
         setErrorMessage(error.message || clerkErrorMessage());
-        setLoading(false);
         setProgress(0);
         return;
       }
 
-      await signUp.update({
+      if ((signUp as any).isTransferable) {
+        setErrorMessage("An account with this email already exists. Please sign in instead.");
+        setProgress(0);
+        return;
+      }
+
+      const { error: updateErr } = await signUp.update({
         unsafeMetadata: { role },
         legalAccepted: true,
       });
+      if (updateErr) {
+        // Legal acceptance may be optional depending on Clerk instance config
+        console.warn("signUp.update:", updateErr.message);
+      }
 
       if (signUp.status === "complete") {
         await completeSignUp();
         return;
       }
 
+      setProgress(70);
       const { error: sendErr } = await signUp.verifications.sendEmailCode();
-      setProgress(80);
+      setProgress(90);
       if (sendErr) {
         setErrorMessage(sendErr.message || "Could not send verification email.");
-        setLoading(false);
         setProgress(0);
         return;
       }
 
       setPendingVerification(true);
-      setLoading(false);
       setProgress(0);
     } catch (err: any) {
       setErrorMessage(err?.errors?.[0]?.message || err?.message || clerkErrorMessage());
-      setLoading(false);
       setProgress(0);
     }
   };
@@ -285,7 +306,9 @@ export default function Register() {
     setLoading(true);
     setProgress(40);
     try {
-      const { error } = await signUp.verifications.verifyEmailCode({ code: verifyCode.trim() });
+      const { error } = await signUp.verifications.verifyEmailCode({
+        code: verifyCode.trim(),
+      });
       setProgress(80);
       if (error) {
         setErrorMessage(error.message || clerkErrorMessage("Invalid verification code."));
@@ -297,7 +320,11 @@ export default function Register() {
         await completeSignUp();
         return;
       }
-      setErrorMessage(clerkErrorMessage("Verification incomplete. Please try again."));
+      setErrorMessage(
+        clerkErrorMessage(
+          `Verification incomplete (${signUp.status || "unknown"}). Please try again.`,
+        ),
+      );
       setLoading(false);
       setProgress(0);
     } catch (err: any) {
@@ -312,6 +339,10 @@ export default function Register() {
       setErrorMessage("Authentication is still loading. Please try again.");
       return;
     }
+    if (isSignedIn) {
+      window.location.replace(authContinueWithRole(role));
+      return;
+    }
     if (!terms) {
       setErrorMessage("You must agree to the Terms of Service & Privacy Policy.");
       return;
@@ -319,21 +350,29 @@ export default function Register() {
     setErrorMessage("");
     setLoading(true);
     setProgress(40);
-    sessionStorage.setItem("pathEdRole", role);
-    sessionStorage.setItem("pathEdAuthIntent", "register");
     try {
       const { error } = await signUp.sso({
         strategy,
-        redirectUrl: role === "student" ? "/onboarding/stage1" : "/",
-        redirectCallbackUrl: "/sso-callback",
+        redirectUrl: authContinueAbsoluteUrl(role),
+        redirectCallbackUrl: ssoCallbackAbsoluteUrl(role, "register"),
       });
       if (error) {
-        setErrorMessage(error.message || `Could not start ${strategy.replace("oauth_", "")} sign-up.`);
+        const msg = error.message || "";
+        if (/already signed in|session already exists|already authenticated/i.test(msg)) {
+          window.location.replace(authContinueWithRole(role));
+          return;
+        }
+        setErrorMessage(msg || `Could not start ${strategy.replace("oauth_", "")} sign-up.`);
         setLoading(false);
         setProgress(0);
       }
     } catch (err: any) {
-      setErrorMessage(err?.errors?.[0]?.message || err?.message || "Social sign-up failed.");
+      const msg = err?.errors?.[0]?.message || err?.message || "";
+      if (/already signed in|session already exists|already authenticated/i.test(msg)) {
+        window.location.replace(authContinueWithRole(role));
+        return;
+      }
+      setErrorMessage(msg || "Social sign-up failed.");
       setLoading(false);
       setProgress(0);
     }
@@ -356,6 +395,7 @@ export default function Register() {
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg-main)", display: "flex", fontFamily: "'Inter', sans-serif", color: "var(--text-main)", position: "relative", overflow: "hidden" }}>
+      <AuthRedirect whenSignedIn role={role} />
       
       {/* Full-screen Loading Background Animation Overlay */}
       <AnimatePresence>
@@ -585,10 +625,10 @@ export default function Register() {
               </div>
               <button
                 type="submit"
-                disabled={loading}
-                style={{ width: "100%", padding: "15px", background: activeRole.accent, border: "none", borderRadius: 12, color: "#ffffff", fontSize: 16, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1, display: "flex", justifyContent: "center", alignItems: "center", gap: 8, boxShadow: `0 8px 24px ${activeRole.accent}40` }}
+                disabled={isBusy}
+                style={{ width: "100%", padding: "15px", background: activeRole.accent, border: "none", borderRadius: 12, color: "#ffffff", fontSize: 16, fontWeight: 700, cursor: isBusy ? "not-allowed" : "pointer", opacity: isBusy ? 0.6 : 1, display: "flex", justifyContent: "center", alignItems: "center", gap: 8, boxShadow: `0 8px 24px ${activeRole.accent}40` }}
               >
-                {loading ? "Verifying..." : <>Verify & Continue <ArrowRight size={18} /></>}
+                {isBusy ? "Verifying..." : <>Verify & Continue <ArrowRight size={18} /></>}
               </button>
               <button
                 type="button"
@@ -668,21 +708,23 @@ export default function Register() {
               </div>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
               <input type="checkbox" id="terms" checked={terms} onChange={e => handleTermsChange(e.target.checked)} style={{ width: 16, height: 16, accentColor: activeRole.accent, cursor: "pointer" }} />
               <label htmlFor="terms" style={{ color: "var(--text-muted)", fontSize: 13, lineHeight: 1.4, cursor: "pointer" }}>
-                I agree to the <Link href="/terms-of-service" style={{ color: activeRole.accent, fontWeight: 600 }}>Terms of Service</Link> and <Link href="/privacy-policy" style={{ color: activeRole.accent, fontWeight: 600 }}>Privacy Policy</Link>.
+                I agree to the <Link href={routes.marketing.terms} style={{ color: activeRole.accent, fontWeight: 600 }}>Terms of Service</Link> and <Link href={routes.marketing.privacy} style={{ color: activeRole.accent, fontWeight: 600 }}>Privacy Policy</Link>.
               </label>
             </div>
 
+            {/* Required for Clerk bot sign-up protection — must stay visible (not under overlay) */}
+            <div id="clerk-captcha" style={{ marginBottom: 16, minHeight: 4 }} />
+
             <button 
               type="submit"
-              disabled={loading}
-              style={{ width: "100%", padding: "15px", background: activeRole.accent, border: "none", borderRadius: 12, color: "#ffffff", fontSize: 16, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1, display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: "all 0.2s", boxShadow: `0 8px 24px ${activeRole.accent}40` }}
+              disabled={isBusy}
+              style={{ width: "100%", padding: "15px", background: activeRole.accent, border: "none", borderRadius: 12, color: "#ffffff", fontSize: 16, fontWeight: 700, cursor: isBusy ? "not-allowed" : "pointer", opacity: isBusy ? 0.6 : 1, display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: "all 0.2s", boxShadow: `0 8px 24px ${activeRole.accent}40` }}
             >
-              {loading ? "Creating Account..." : <>Create {activeRole.name} Account <ArrowRight size={18} /></>}
+              {isBusy ? (progress > 0 && progress < 100 ? "Working…" : "Creating Account...") : <>Create {activeRole.name} Account <ArrowRight size={18} /></>}
             </button>
-            <div id="clerk-captcha" style={{ marginTop: 12 }} />
           </form>
           )}
 
@@ -731,7 +773,7 @@ export default function Register() {
           )}
 
           <div style={{ textAlign: "center", marginTop: 24, fontSize: 14, color: "var(--text-muted)" }}>
-            Already have an account? <Link href="/login" style={{ color: activeRole.accent, textDecoration: "none", fontWeight: 700 }}>Sign in</Link>
+            Already have an account? <Link href={routes.auth.signIn} style={{ color: activeRole.accent, textDecoration: "none", fontWeight: 700 }}>Sign in</Link>
           </div>
         </motion.div>
       </div>

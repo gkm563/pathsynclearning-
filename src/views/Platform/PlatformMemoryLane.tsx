@@ -12,6 +12,7 @@ import {
   Eye, File, Play, Upload, Star, Heart, Trophy
 } from "lucide-react";
 import { apiGet } from "@/lib/api";
+import { useSelectedCareer } from "@/hooks/useStudentData";
 
 /* ─── TOP-DOWN 2D SPORTS CAR VECTOR GRAPHIC FOR ROADWAY ─── */
 function TopDownCarGraphic({ carColor = "#ef4444" }) {
@@ -220,21 +221,14 @@ export default function PlatformMemoryLane() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategoryFilter, setActiveCategoryFilter] = useState("ALL");
 
-  // Read Target Career
-  const targetCareer = (() => {
-    try {
-      const direct = localStorage.getItem("pathEdSelectedCareer");
-      if (direct) return direct;
-      const stg2 = JSON.parse(localStorage.getItem("pathEdStage2") || "{}");
-      return stg2.chosenCareer || "Full-Stack Web Developer";
-    } catch {
-      return "Full-Stack Web Developer";
-    }
-  })();
+  const targetCareer = useSelectedCareer();
+  const [roadmapNodes, setRoadmapNodes] = useState(() => getRoadmapMajorNodes(targetCareer));
 
-  const [roadmapNodes] = useState(() => getRoadmapMajorNodes(targetCareer));
+  useEffect(() => {
+    setRoadmapNodes(getRoadmapMajorNodes(targetCareer));
+  }, [targetCareer]);
 
-  // Read LocalStorage Memory Log (seed), then hydrate from DB
+  // Hydrate memory log from API
   const [challengeMemories, setChallengeMemories] = useState<any[]>(DEFAULT_CHAL_MEMORIES);
 
   useEffect(() => {
@@ -245,37 +239,6 @@ export default function PlatformMemoryLane() {
         if (cancelled) return;
         const logs = data.entries || [];
         if (logs.length > 0) {
-          const mappedLogs = logs.map((item, idx) => ({
-            id: item.id || `log_${idx}`,
-            icon: item.category === "DSA" ? "🌳" : item.category === "SYSTEM DESIGN" ? "⚙️" : item.category === "WEB DEV" ? "⚛️" : "📚",
-            label: item.title || "Solved Problem",
-            cat: item.category || "DSA",
-            diff: "Medium",
-            xp: item.xpEarned || 150,
-            date: item.date || "Recently",
-            score: 100,
-            desc: item.snippet || "Completed challenge verified and logged to permanent memory portfolio.",
-            files: [
-              { icon: "💻", name: "solution_code.py", type: "Code", detail: "Verified Code" },
-              { icon: "📝", name: "Active_Recall_Notes.txt", type: "Note", detail: "User Recall" }
-            ],
-            slots: [
-              { text: item.snippet || "Solution verified cleanly.", col: "#00c9a7", bg: "rgba(0, 201, 167, 0.1)" },
-              null, null
-            ],
-            media: [
-              { type: "image", name: "Execution_Proof.png", url: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&q=80" }
-            ]
-          }));
-          setChallengeMemories([...mappedLogs, ...DEFAULT_CHAL_MEMORIES]);
-          return;
-        }
-      } catch {
-        // fall through to local
-      }
-      try {
-        const logs = JSON.parse(localStorage.getItem("pathEdMemoryLaneLog") || "[]");
-        if (!cancelled && logs && logs.length > 0) {
           const mappedLogs = logs.map((item, idx) => ({
             id: item.id || `log_${idx}`,
             icon: item.category === "DSA" ? "🌳" : item.category === "SYSTEM DESIGN" ? "⚙️" : item.category === "WEB DEV" ? "⚛️" : "📚",
@@ -316,9 +279,6 @@ export default function PlatformMemoryLane() {
 
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
-    if (tabId === "dashboard") router.push("/dashboard");
-    if (tabId === "roadmap") router.push("/roadmap");
-    if (tabId === "challenges") router.push("/challenges");
   };
 
   // Filtered Challenge Memories

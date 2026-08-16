@@ -1,6 +1,8 @@
 "use client";
 
+import { routes } from "@/lib/routes";
 import { useRouter } from "next/navigation";
+
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
@@ -9,8 +11,7 @@ import {
   ArrowRight, ShieldCheck, HelpCircle, Star, Clock, Plus, ChevronRight, X, 
   UserCheck, ShieldAlert, ArrowLeft, ArrowUpRight, Check, Heart, ExternalLink
 } from "lucide-react";
-
-/* ─── COLOR TOKENS ─── */
+import { usePlan } from "@/hooks/useStudentData";
 const COLS = {
   primary: "#6c63ff",
   success: "#00c9a7",
@@ -371,8 +372,7 @@ export default function PlatformMentorship() {
   const [activeTab, setActiveTab] = useState("mentorship");
   const [mentTab, setMentTab] = useState("marketplace");
 
-  // Global Developer Plan Toggle via state + localStorage sync
-  const [devPlan, setDevPlan] = useState("free");
+  const { plan: devPlan, setPlan } = usePlan();
 
   // Interactive booking/mentor list states
   const [activeMentors, setActiveMentors] = useState(["m7"]); // Priya Sharma preselected by default
@@ -385,23 +385,12 @@ export default function PlatformMentorship() {
   const [followedMentors, setFollowedMentors] = useState<Record<string, any>>({});
   const [showSessions, setShowSessions] = useState<Record<string, any>>({});
 
-  useEffect(() => {
-    localStorage.setItem("dev_mode_plan", devPlan);
-    window.dispatchEvent(new Event("storage"));
-  }, [devPlan]);
+  const handleTogglePlan = (plan) => {
+    setPlan(plan);
+  };
 
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
-    if (tabId === "dashboard") router.push("/dashboard");
-    if (tabId === "roadmap") router.push("/roadmap");
-    if (tabId === "challenges") router.push("/challenges");
-    if (tabId === "memory-lane") router.push("/memory-lane");
-    if (tabId === "progress") router.push("/progress");
-    if (tabId === "technews") router.push("/technews");
-  };
-
-  const handleTogglePlan = (plan) => {
-    setDevPlan(plan);
   };
 
   const toggleFollow = (mentorId) => {
@@ -791,7 +780,7 @@ export default function PlatformMentorship() {
                                   </button>
                                 ) : (
                                   <button
-                                    onClick={() => router.push("/store")}
+                                    onClick={() => router.push(routes.app.store)}
                                     style={{
                                       padding: "12px 24px", borderRadius: 14,
                                       background: "rgba(108, 99, 255, 0.08)", border: "1.5px dashed #6c63ff",

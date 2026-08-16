@@ -1,5 +1,6 @@
 "use client";
 
+import { routes } from "@/lib/routes";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -152,7 +153,7 @@ export default function PlatformLiveClass() {
   };
 
   return (
-    <DashboardLayout activeTab="mentorship" setActiveTab={() => router.push("/mentorship")}>
+    <DashboardLayout activeTab="mentorship" setActiveTab={() => router.push(routes.app.mentorship)}>
       <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 60 }}>
         
         {/* Top bar header */}
@@ -162,7 +163,7 @@ export default function PlatformLiveClass() {
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <button
-              onClick={() => router.push("/mentorship")}
+              onClick={() => router.push(routes.app.mentorship)}
               style={{
                 display: "flex", alignItems: "center", gap: 8, background: "var(--bg-alt)",
                 border: "1px solid var(--border-light)", borderRadius: 12, padding: "8px 14px",

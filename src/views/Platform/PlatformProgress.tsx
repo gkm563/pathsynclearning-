@@ -1,6 +1,8 @@
 "use client";
 
+import { routes } from "@/lib/routes";
 import { useRouter } from "next/navigation";
+
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
@@ -325,11 +327,6 @@ export default function PlatformProgress() {
 
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
-    if (tabId === "dashboard") router.push("/dashboard");
-    if (tabId === "roadmap") router.push("/roadmap");
-    if (tabId === "challenges") router.push("/challenges");
-    if (tabId === "memory-lane") router.push("/memory-lane");
-    if (tabId === "technews") router.push("/technews");
   };
 
   // Synced 8 Roadmap nodes data model from Dashboard timeline
@@ -598,7 +595,7 @@ export default function PlatformProgress() {
                 </div>
                 
                 <button
-                  onClick={() => router.push("/roadmap")}
+                  onClick={() => router.push(routes.app.roadmap)}
                   style={{
                     display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 14,
                     background: "rgba(108,99,255,0.12)", border: "1.5px solid #6c63ff40", color: "#6c63ff",
@@ -1287,7 +1284,7 @@ export default function PlatformProgress() {
                   <button
                     onClick={() => {
                       setSelectedCompany(null);
-                      router.push("/roadmap");
+                      router.push(routes.app.roadmap);
                     }}
                     style={{
                       width: "100%", padding: "14px", borderRadius: 16, border: "none",

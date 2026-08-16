@@ -1,5 +1,6 @@
 "use client";
 
+import { routes } from "@/lib/routes";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -40,20 +41,8 @@ function DashboardHome() {
   const [isGoalExpanded, setIsGoalExpanded] = useState(false);
 
   const student = useStudent();
+  const devPlan = student.plan || "free";
   const [criScore, setCriScore] = useState(0);
-  const [devPlan, setDevPlan] = useState("free");
-
-  useEffect(() => {
-    setDevPlan(student.plan || localStorage.getItem("dev_mode_plan") || "free");
-  }, [student.plan]);
-
-  useEffect(() => {
-    const handleStorage = () => {
-      setDevPlan(localStorage.getItem("dev_mode_plan") || student.plan || "free");
-    };
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
-  }, [student.plan]);
 
   useEffect(() => {
     let current = 0;
@@ -563,7 +552,7 @@ function DashboardHome() {
               7-day streak active
             </span>
             <button
-              onClick={() => router.push("/challenges")}
+              onClick={() => router.push(routes.app.challenges)}
               style={{
                 display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 14,
                 background: "rgba(247,151,30,0.12)", border: "1.5px solid #f7971e40", color: "#f7971e",
@@ -580,7 +569,7 @@ function DashboardHome() {
           {dailyChallenges.map((task, idx) => (
             <div
               key={idx}
-              onClick={() => router.push("/challenges")}
+              onClick={() => router.push(routes.app.challenges)}
               style={{
                 background: task.bg, border: `1.5px solid ${task.border}`, borderRadius: 22, padding: 22,
                 display: "flex", flexDirection: "column", justifyContent: "space-between",
@@ -612,7 +601,7 @@ function DashboardHome() {
               </div>
 
               <button
-                onClick={e => { e.stopPropagation(); router.push("/challenges"); }}
+                onClick={e => { e.stopPropagation(); router.push(routes.app.challenges); }}
                 style={{
                   width: "100%", padding: "12px", borderRadius: 14,
                   background: task.isStarted ? task.col : "var(--bg-card)",
@@ -639,7 +628,7 @@ function DashboardHome() {
           
           {/* Full View Button (Links to /roadmap) */}
           <button
-            onClick={() => router.push("/roadmap")}
+            onClick={() => router.push(routes.app.roadmap)}
             style={{
               display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 14,
               background: "rgba(108,99,255,0.12)", border: "1.5px solid #6c63ff40", color: "#6c63ff",

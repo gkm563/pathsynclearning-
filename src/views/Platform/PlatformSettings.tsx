@@ -28,8 +28,7 @@ export default function PlatformSettings() {
         if (data.settings?.theme) setTheme(data.settings.theme);
         if (data.settings?.accent_color) setAccentColor(data.settings.accent_color);
       } catch {
-        setTheme(localStorage.getItem("theme") || "light");
-        setAccentColor(localStorage.getItem("pathed_accent_color") || "Purple");
+        // unauthenticated — keep defaults
       }
     })();
     return () => {
@@ -54,13 +53,7 @@ export default function PlatformSettings() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     document.body.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
   }, [theme]);
-
-  // Sync Accent color to localStorage
-  useEffect(() => {
-    localStorage.setItem("pathed_accent_color", accentColor);
-  }, [accentColor]);
 
   const triggerToast = (msg) => {
     setToastMessage(msg);

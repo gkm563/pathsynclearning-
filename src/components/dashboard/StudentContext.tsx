@@ -218,19 +218,12 @@ export function StudentProvider({ children }: { children: ReactNode }) {
         const name =
           (p?.full_name as string) ||
           clerkName ||
-          (typeof window !== "undefined"
-            ? localStorage.getItem("pathEdStage1")
-              ? JSON.parse(localStorage.getItem("pathEdStage1") || "{}").name
-              : ""
-            : "") ||
+          (o?.stage1?.name as string) ||
           "Student";
 
         const career =
           (o?.selected_career as string) ||
           (o?.stage2?.chosenCareer as string) ||
-          (typeof window !== "undefined"
-            ? localStorage.getItem("pathEdSelectedCareer")
-            : null) ||
           "Software Engineer";
 
         const skillsFromProfile = Array.isArray(p?.skills) ? p.skills : null;

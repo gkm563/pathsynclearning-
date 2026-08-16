@@ -10,6 +10,7 @@ import {
   ArrowUpRight, Check, Heart, ExternalLink, Award, Lock, ShieldAlert
 } from "lucide-react";
 import { OPPORTUNITIES_DATABASE } from "./PlatformEvents";
+import { usePlan } from "@/hooks/useStudentData";
 
 // Mock OG Search Opportunities Data
 const OG_SEARCH_DATABASE = [
@@ -243,7 +244,7 @@ export default function PlatformOgOpportunities() {
   const [activeSubTab, setActiveSubTab] = useState("my-opportunities");
 
   // Plan level: 'free' or 'premium'
-  const [devPlan, setDevPlan] = useState("free");
+  const { plan: devPlan, setPlan } = usePlan();
 
   // Search Filter State
   const [searchQuery, setSearchQuery] = useState("");
@@ -274,38 +275,15 @@ export default function PlatformOgOpportunities() {
         setAppliedEventIds(data.eventIds || []);
         setAppliedOgIds(data.ogIds || []);
       } catch {
-        const savedOg = localStorage.getItem("pathed_applied_og_opportunities");
-        const savedEvents = localStorage.getItem("pathed_applied_events");
         if (!cancelled) {
-          setAppliedOgIds(savedOg ? JSON.parse(savedOg) : []);
-          setAppliedEventIds(savedEvents ? JSON.parse(savedEvents) : []);
+          setAppliedOgIds([]);
+          setAppliedEventIds([]);
         }
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("pathed_applied_og_opportunities", JSON.stringify(appliedOgIds));
-  }, [appliedOgIds]);
-
-  useEffect(() => {
-    localStorage.setItem("dev_mode_plan", devPlan);
-    // Alert sidebar/header immediately
-    window.dispatchEvent(new Event("storage"));
-  }, [devPlan]);
-
-  // Synchronize applied states periodically
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setDevPlan(localStorage.getItem("dev_mode_plan") || "free");
-      const savedEvents = localStorage.getItem("pathed_applied_events");
-      setAppliedEventIds(savedEvents ? JSON.parse(savedEvents) : []);
-    };
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   const handleApplyClick = (item) => {
@@ -336,8 +314,6 @@ export default function PlatformOgOpportunities() {
       if (!appliedEventIds.includes(applyingOpportunity.id)) {
         const nextIds = [...appliedEventIds, applyingOpportunity.id];
         setAppliedEventIds(nextIds);
-        localStorage.setItem("pathed_applied_events", JSON.stringify(nextIds));
-        window.dispatchEvent(new Event("storage"));
         try {
           await apiSend("/api/me/applications", "POST", {
             eventId: applyingOpportunity.id,
@@ -423,7 +399,7 @@ export default function PlatformOgOpportunities() {
           </div>
           <div style={{ display: "flex", background: "var(--bg-alt)", border: "1px solid var(--border-light)", padding: 4, borderRadius: 12, gap: 4 }}>
             <button
-              onClick={() => setDevPlan("free")}
+              onClick={() => setPlan("free")}
               style={{
                 padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer",
                 fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 800, transition: "all 0.2s",
@@ -434,7 +410,7 @@ export default function PlatformOgOpportunities() {
               Free Plan
             </button>
             <button
-              onClick={() => setDevPlan("premium")}
+              onClick={() => setPlan("premium")}
               style={{
                 padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer",
                 fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 800, transition: "all 0.2s",

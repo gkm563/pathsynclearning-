@@ -9,6 +9,7 @@ import {
   Rocket, Inbox, Lightbulb, Award, ShieldAlert, Users, ShoppingBag, Settings, X, Globe, Calendar 
 } from "lucide-react";
 import { useStudent } from "./StudentContext";
+import { dashboardTabPath, pathForNavId, routes } from "@/lib/routes";
 
 export default function DashboardSidebar({ isOpen, onClose, activeTab, setActiveTab }) {
   const router = useRouter();
@@ -34,46 +35,13 @@ export default function DashboardSidebar({ isOpen, onClose, activeTab, setActive
   ];
 
   const handleNavClick = (item) => {
-    if (item.id === "dashboard") {
-      router.push("/dashboard");
-    } else if (item.id === "roadmap") {
-      router.push("/roadmap");
-    } else if (item.id === "challenges") {
-      router.push("/challenges");
-    } else if (item.id === "memory-lane") {
-      router.push("/memory-lane");
-    } else if (item.id === "progress") {
-      router.push("/progress");
-    } else if (item.id === "mentorship") {
-      router.push("/mentorship");
-    } else if (item.id === "project-collab") {
-      router.push("/project-collab");
-    } else if (item.id === "hacksquad") {
-      router.push("/hacksquad");
-    } else if (item.id === "hack-attack") {
-      router.push("/og-opportunities");
-    } else if (item.id === "alumni-network") {
-      router.push("/alumni-network");
-    } else if (item.id === "events") {
-      router.push("/events");
-    } else if (item.id === "technews") {
-      router.push("/technews");
-    } else if (item.isStoreRoute) {
-      router.push("/store");
-    } else if (item.id === "placement-inbox") {
-      router.push("/placement-inbox");
-    } else if (item.id === "placement-insights") {
-      router.push("/placement-insights");
-    } else if (item.id === "records-certs") {
-      router.push("/records-certs");
-    } else if (item.id === "community") {
-      router.push("/platform/community");
-    } else {
-      if (window.location.pathname !== "/dashboard" && window.location.pathname !== "/platform") {
-        router.push(`/dashboard?tab=${item.id}`);
-      } else {
-        if (setActiveTab) setActiveTab(item.id);
-      }
+    const path = pathForNavId(item.isStoreRoute ? "store" : item.id);
+    if (path) {
+      router.push(path);
+    } else if (window.location.pathname !== routes.app.dashboard) {
+      router.push(dashboardTabPath(item.id));
+    } else if (setActiveTab) {
+      setActiveTab(item.id);
     }
     onClose();
   };
@@ -124,7 +92,7 @@ export default function DashboardSidebar({ isOpen, onClose, activeTab, setActive
 
               {/* User Profile Card */}
               <div 
-                onClick={() => { router.push("/platform/profile"); onClose(); }}
+                onClick={() => { router.push(routes.app.profile); onClose(); }}
                 style={{
                   padding: "16px", borderRadius: 18, background: "var(--bg-alt)",
                   border: "1.5px solid var(--border-light)", marginBottom: 26,
@@ -215,7 +183,7 @@ export default function DashboardSidebar({ isOpen, onClose, activeTab, setActive
             {/* Fixed Settings Button at Sidebar Bottom */}
             <div style={{ paddingTop: 20, borderTop: "1.5px solid var(--border-light)" }}>
               <button
-                onClick={() => { router.push("/platform/settings"); onClose(); }}
+                onClick={() => { router.push(routes.app.settings); onClose(); }}
                 style={{
                   width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "16px 18px",
                   borderRadius: 16, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)",

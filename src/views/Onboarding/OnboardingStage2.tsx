@@ -73,8 +73,6 @@ export default function OnboardingStage2() {
     const stage2 = {
       domains, tags, passion, pstyle, industry, chosenCareer: finalCareer
     };
-    localStorage.setItem("pathEdSelectedCareer", finalCareer);
-    localStorage.setItem("pathEdStage2", JSON.stringify(stage2));
     try {
       await apiSend("/api/me/onboarding", "PUT", {
         stage2,
@@ -338,7 +336,6 @@ export default function OnboardingStage2() {
       pstyle,
       industry
     };
-    localStorage.setItem("pathEdStage2", JSON.stringify(stage2));
     try {
       await apiSend("/api/me/onboarding", "PUT", {
         stage2,
@@ -371,8 +368,6 @@ export default function OnboardingStage2() {
     const stage2 = {
       domains, tags, passion, pstyle, industry, chosenCareer: finalTitle
     };
-    localStorage.setItem("pathEdSelectedCareer", finalTitle);
-    localStorage.setItem("pathEdStage2", JSON.stringify(stage2));
     try {
       await apiSend("/api/me/onboarding", "PUT", {
         stage2,
