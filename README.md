@@ -65,6 +65,4 @@ docs/            # Project documentation
 - Rotate any credentials that were shared in chat or screenshots.
 - `GEMINI_API_KEY` and `DATABASE_URL` are server-only (no `NEXT_PUBLIC_` prefix).
 
-## License
 
-Private project — all rights reserved.
