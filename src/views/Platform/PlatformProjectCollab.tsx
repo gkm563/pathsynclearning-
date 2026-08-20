@@ -4,7 +4,6 @@ import { routes } from "@/lib/routes";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import { 
   Plus, Search, MessageSquare, FileText, CheckCircle2, 
   Send, Users, Code, KanbanSquare, SlidersHorizontal, Lock
@@ -315,8 +314,7 @@ export default function PlatformProjectCollab() {
   };
 
   return (
-    <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60, position: "relative" }}>
+    <><div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60, position: "relative" }}>
         
         {/* ── DEVELOPER TESTING MODE TOGGLE BANNER ── */}
         <div style={{
@@ -1163,8 +1161,7 @@ export default function PlatformProjectCollab() {
           )}
         </AnimatePresence>
 
-      </div>
-    </DashboardLayout>
+      </div></>
   );
 }
 

@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import { 
   Newspaper, Sparkles, Search, Filter, Bookmark, Heart, ThumbsDown, Eye, 
   ExternalLink, Share2, ArrowRight, X, Clock, Flame, Tag, RefreshCw, 
@@ -382,8 +381,7 @@ export default function PlatformTechNews() {
   });
 
   return (
-    <DashboardLayout activeTab={activeTab} setActiveTab={handleTabChange}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60 }}>
+    <><div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60 }}>
         
         {/* ── LIVE BREAKING NEWS TICKER BAR ── */}
         <div style={{
@@ -582,9 +580,7 @@ export default function PlatformTechNews() {
             <span>{toastMessage}</span>
           </motion.div>
         )}
-      </AnimatePresence>
-
-    </DashboardLayout>
+      </AnimatePresence></>
   );
 }
 

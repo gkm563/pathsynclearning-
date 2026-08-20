@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,41 +9,35 @@ import {
   Rocket, Inbox, Lightbulb, Award, ShieldAlert, Users, ShoppingBag, Settings, X, Globe, Calendar 
 } from "lucide-react";
 import { useStudent } from "./StudentContext";
-import { dashboardTabPath, pathForNavId, routes } from "@/lib/routes";
+import { routes } from "@/lib/routes";
 
-export default function DashboardSidebar({ isOpen, onClose, activeTab, setActiveTab }) {
+export default function DashboardSidebar({ isOpen, onClose }) {
   const router = useRouter();
+  const pathname = usePathname();
   const student = useStudent();
 
   const mainPortal = [
-    { id: "dashboard", label: "Home", icon: <Home size={20} /> },
-    { id: "roadmap", label: "Roadmap", icon: <Map size={20} /> },
-    { id: "challenges", label: "Challenges", icon: <Zap size={20} /> },
-    { id: "memory-lane", label: "Memory Lane", icon: <BookOpen size={20} /> },
-    { id: "progress", label: "Progress", icon: <BarChart2 size={20} /> },
-    { id: "technews", label: "Tech News", icon: <Newspaper size={20} /> },
+    { id: "dashboard", path: routes.app.dashboard, label: "Home", icon: <Home size={20} /> },
+    { id: "roadmap", path: routes.app.roadmap, label: "Roadmap", icon: <Map size={20} /> },
+    { id: "challenges", path: routes.app.challenges, label: "Challenges", icon: <Zap size={20} /> },
+    { id: "memory-lane", path: routes.app.memoryLane, label: "Memory Lane", icon: <BookOpen size={20} /> },
+    { id: "progress", path: routes.app.progress, label: "Progress", icon: <BarChart2 size={20} /> },
+    { id: "technews", path: routes.app.techNews, label: "Tech News", icon: <Newspaper size={20} /> },
   ];
 
   const expandedFeatures = [
-    { id: "advanced-career", label: "Advanced Career", icon: <Rocket size={20} /> },
-    { id: "placement-inbox", label: "Placement Inbox", icon: <Inbox size={20} /> },
-    { id: "placement-insights", label: "Placement Insights", icon: <Lightbulb size={20} /> },
-    { id: "records-certs", label: "Records & Certs", icon: <Award size={20} /> },
-    { id: "hack-attack", label: "OG Oppurtanities", icon: <Award size={20} /> },
-    { id: "community", label: "Community", icon: <Users size={20} /> },
-    { id: "store", label: "Store", icon: <ShoppingBag size={20} />, isStoreRoute: true },
+    { id: "advanced-career", path: routes.app.advancedCareer, label: "Advanced Career", icon: <Rocket size={20} /> },
+    { id: "placement-inbox", path: routes.app.placementInbox, label: "Placement Inbox", icon: <Inbox size={20} /> },
+    { id: "placement-insights", path: routes.app.placementInsights, label: "Placement Insights", icon: <Lightbulb size={20} /> },
+    { id: "records-certs", path: routes.app.recordsCerts, label: "Records & Certs", icon: <Award size={20} /> },
+    { id: "hack-attack", path: routes.app.ogOpportunities, label: "OG Oppurtanities", icon: <Award size={20} /> },
+    { id: "community", path: routes.app.community, label: "Community", icon: <Users size={20} /> },
+    { id: "store", path: routes.app.store, label: "Store", icon: <ShoppingBag size={20} /> },
   ];
 
-  const handleNavClick = (item) => {
-    const path = pathForNavId(item.isStoreRoute ? "store" : item.id);
-    if (path) {
-      router.push(path);
-    } else if (window.location.pathname !== routes.app.dashboard) {
-      router.push(dashboardTabPath(item.id));
-    } else if (setActiveTab) {
-      setActiveTab(item.id);
-    }
-    onClose();
+  const handleNavClick = (path) => {
+    router.push(path);
+    if (onClose) onClose();
   };
 
   return (
@@ -92,7 +86,7 @@ export default function DashboardSidebar({ isOpen, onClose, activeTab, setActive
 
               {/* User Profile Card */}
               <div 
-                onClick={() => { router.push(routes.app.profile); onClose(); }}
+                onClick={() => handleNavClick(routes.app.profile)}
                 style={{
                   padding: "16px", borderRadius: 18, background: "var(--bg-alt)",
                   border: "1.5px solid var(--border-light)", marginBottom: 26,
@@ -116,11 +110,11 @@ export default function DashboardSidebar({ isOpen, onClose, activeTab, setActive
                   MAIN PORTAL
                 </div>
                 {mainPortal.map(item => {
-                  const isActive = activeTab === item.id;
+                  const isActive = pathname === item.path || (item.path !== routes.app.dashboard && pathname?.startsWith(item.path));
                   return (
                     <button
                       key={item.id}
-                      onClick={() => handleNavClick(item)}
+                      onClick={() => handleNavClick(item.path)}
                       style={{
                         width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "14px 16px",
                         borderRadius: 14, border: "none", marginBottom: 6, cursor: "pointer",
@@ -143,11 +137,11 @@ export default function DashboardSidebar({ isOpen, onClose, activeTab, setActive
                   EXPANDED FEATURES
                 </div>
                 {expandedFeatures.map(item => {
-                  const isActive = activeTab === item.id;
+                  const isActive = pathname === item.path || pathname?.startsWith(item.path);
                   return (
                     <button
                       key={item.id}
-                      onClick={() => handleNavClick(item)}
+                      onClick={() => handleNavClick(item.path)}
                       style={{
                         width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
                         padding: "14px 16px", borderRadius: 14, border: "none", marginBottom: 6, cursor: "pointer",
@@ -183,7 +177,7 @@ export default function DashboardSidebar({ isOpen, onClose, activeTab, setActive
             {/* Fixed Settings Button at Sidebar Bottom */}
             <div style={{ paddingTop: 20, borderTop: "1.5px solid var(--border-light)" }}>
               <button
-                onClick={() => { router.push(routes.app.settings); onClose(); }}
+                onClick={() => handleNavClick(routes.app.settings)}
                 style={{
                   width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "16px 18px",
                   borderRadius: 16, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)",

@@ -47,27 +47,28 @@ export const routes = {
   /** Authenticated student product (portal). */
   app: {
     dashboard: "/dashboard",
-    challenges: "/challenges",
-    roadmap: "/roadmap",
-    memoryLane: "/memory-lane",
-    progress: "/progress",
-    techNews: "/tech-news",
-    store: "/store",
-    wallet: "/store/wallet",
-    mentorship: "/mentorship",
-    events: "/events",
-    hackSquad: "/hack-squad",
-    alumniNetwork: "/alumni-network",
-    projectCollab: "/project-collab",
-    ogOpportunities: "/og-opportunities",
-    notifications: "/notifications",
-    settings: "/settings",
+    challenges: "/dashboard/challenges",
+    roadmap: "/dashboard/roadmap",
+    memoryLane: "/dashboard/memory-lane",
+    progress: "/dashboard/progress",
+    techNews: "/dashboard/tech-news",
+    store: "/dashboard/store",
+    wallet: "/dashboard/store/wallet",
+    mentorship: "/dashboard/mentorship",
+    events: "/dashboard/events",
+    hackSquad: "/dashboard/hack-squad",
+    alumniNetwork: "/dashboard/alumni-network",
+    projectCollab: "/dashboard/project-collab",
+    ogOpportunities: "/dashboard/og-opportunities",
+    notifications: "/dashboard/notifications",
+    settings: "/dashboard/settings",
     profile: "/profile",
-    placementInbox: "/placement-inbox",
-    placementInsights: "/placement-insights",
-    recordsCerts: "/records-certs",
-    liveClass: "/live-class",
-    community: "/student-community",
+    placementInbox: "/dashboard/placement-inbox",
+    placementInsights: "/dashboard/placement-insights",
+    recordsCerts: "/dashboard/records-certs",
+    liveClass: "/dashboard/live-class",
+    community: "/dashboard/student-community",
+    advancedCareer: "/dashboard/advanced-career",
   },
 
   api: {
@@ -166,6 +167,28 @@ export const LEGACY_REDIRECTS: ReadonlyArray<{
   { source: "/login", destination: routes.auth.signIn, permanent: true },
   { source: "/register", destination: routes.auth.signUp, permanent: true },
 
+  // Old root-level portal paths
+  { source: "/challenges", destination: routes.app.challenges, permanent: true },
+  { source: "/roadmap", destination: routes.app.roadmap, permanent: true },
+  { source: "/memory-lane", destination: routes.app.memoryLane, permanent: true },
+  { source: "/progress", destination: routes.app.progress, permanent: true },
+  { source: "/tech-news", destination: routes.app.techNews, permanent: true },
+  { source: "/store", destination: routes.app.store, permanent: true },
+  { source: "/store/wallet", destination: routes.app.wallet, permanent: true },
+  { source: "/mentorship", destination: routes.app.mentorship, permanent: true },
+  { source: "/events", destination: routes.app.events, permanent: true },
+  { source: "/hack-squad", destination: routes.app.hackSquad, permanent: true },
+  { source: "/alumni-network", destination: routes.app.alumniNetwork, permanent: true },
+  { source: "/project-collab", destination: routes.app.projectCollab, permanent: true },
+  { source: "/og-opportunities", destination: routes.app.ogOpportunities, permanent: true },
+  { source: "/notifications", destination: routes.app.notifications, permanent: true },
+  { source: "/settings", destination: routes.app.settings, permanent: true },
+  { source: "/placement-inbox", destination: routes.app.placementInbox, permanent: true },
+  { source: "/placement-insights", destination: routes.app.placementInsights, permanent: true },
+  { source: "/records-certs", destination: routes.app.recordsCerts, permanent: true },
+  { source: "/live-class", destination: routes.app.liveClass, permanent: true },
+  { source: "/student-community", destination: routes.app.community, permanent: true },
+
   // Old non-kebab / renamed portal paths
   { source: "/technews", destination: routes.app.techNews, permanent: true },
   { source: "/hacksquad", destination: routes.app.hackSquad, permanent: true },
@@ -218,3 +241,5 @@ export function authContinueWithRole(role?: string | null): string {
   const q = new URLSearchParams({ role });
   return `${routes.auth.continue}?${q.toString()}`;
 }
+
+

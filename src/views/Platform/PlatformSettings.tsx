@@ -8,7 +8,6 @@ import {
   Globe, Laptop, Mail, RefreshCw, Zap
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import { apiGet, apiSend } from "@/lib/api";
 
 export default function PlatformSettings() {
@@ -70,9 +69,7 @@ export default function PlatformSettings() {
   };
 
   return (
-    <DashboardLayout activeTab="settings">
-      
-      {/* ==================== TOAST ALERT ==================== */}
+    <>{/* ==================== TOAST ALERT ==================== */}
       <AnimatePresence>
         {toastMessage && (
           <motion.div 
@@ -488,8 +485,6 @@ export default function PlatformSettings() {
 
         </div>
 
-      </div>
-
-    </DashboardLayout>
+      </div></>
   );
 }

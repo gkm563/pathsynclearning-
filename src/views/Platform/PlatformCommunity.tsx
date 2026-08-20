@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import { 
   Users, MessageSquare, Heart, Bookmark, Share2, Search, PlusCircle, 
   Send, Sparkles, Award, Calendar, Bell, ChevronRight, X, ArrowUpRight, 
@@ -280,8 +279,7 @@ export default function PlatformCommunity() {
   const activeChannelObj = CHANNELS_POOL.find(c => c.id === selectedChannel);
 
   return (
-    <DashboardLayout activeTab="community">
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "10px 10px 40px" }}>
+    <><div style={{ maxWidth: 1200, margin: "0 auto", padding: "10px 10px 40px" }}>
         
         {/* ==================== PAGE HEADER ==================== */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20, marginBottom: 28 }}>
@@ -920,7 +918,6 @@ export default function PlatformCommunity() {
           )}
         </AnimatePresence>
 
-      </div>
-    </DashboardLayout>
+      </div></>
   );
 }

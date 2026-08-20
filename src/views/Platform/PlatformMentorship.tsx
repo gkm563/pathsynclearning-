@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import { 
   Sparkles, Search, Calendar, Video, BookOpen, User, CheckCircle2, 
   ArrowRight, ShieldCheck, HelpCircle, Star, Clock, Plus, ChevronRight, X, 
@@ -416,8 +415,7 @@ export default function PlatformMentorship() {
   const cloudMentors = MENTORS_POOL.filter(m => m.category === "Cloud");
 
   return (
-    <DashboardLayout activeTab={activeTab} setActiveTab={handleTabChange}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60, position: "relative" }}>
+    <><div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60, position: "relative" }}>
         
         {/* ── DEVELOPER TESTING MODE TOGGLE BANNER (MNC ENTERPRISE GRADED) ── */}
         <div style={{
@@ -1244,8 +1242,7 @@ export default function PlatformMentorship() {
           )}
         </AnimatePresence>
 
-      </div>
-    </DashboardLayout>
+      </div></>
   );
 }
 

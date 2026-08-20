@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import { 
   BarChart2, Trophy, Award, Sparkles, Target, Zap, Clock, Calendar, CheckSquare, 
   MapPin, ShieldAlert, Cpu, Layers, Bookmark, Search, Filter, RefreshCw, 
@@ -342,8 +341,7 @@ export default function PlatformProgress() {
   ];
 
   return (
-    <DashboardLayout activeTab={activeTab} setActiveTab={handleTabChange}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60, position: "relative" }}>
+    <><div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60, position: "relative" }}>
         
         {/* ── TOP HERO HEADER & CONTROLS (UNTOUCHED TEXT SIZES) ── */}
         <div style={{
@@ -671,7 +669,7 @@ export default function PlatformProgress() {
                             }}
                           >
                             <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800, color: "var(--text-main)", marginBottom: 4 }}>
-                              {node.label.replace("\n", " ")}
+                              {node.label.replace("\\n", " ")}
                             </div>
                             <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, color: "#6c63ff", fontWeight: 800, marginBottom: 8 }}>
                               MASTERY: <AnimatedValue value={node.mastery} suffix="%" /> • {node.topics}
@@ -1302,8 +1300,7 @@ export default function PlatformProgress() {
           )}
         </AnimatePresence>
 
-      </div>
-    </DashboardLayout>
+      </div></>
   );
 }
 

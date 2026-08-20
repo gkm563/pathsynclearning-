@@ -6,7 +6,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSignIn, useAuth } from "@clerk/nextjs";
 import { GraduationCap, Briefcase, BookOpen, Eye, EyeOff, AlertCircle, ArrowRight, Sparkles, ShieldCheck } from "lucide-react";
-import AuthRedirect from "@/components/auth/AuthRedirect";
+
 import { authContinueWithRole, routes } from "@/lib/routes";
 import {
   authContinueAbsoluteUrl,
@@ -366,7 +366,7 @@ export default function Login() {
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg-main)", display: "flex", fontFamily: "'Inter', sans-serif", color: "var(--text-main)", position: "relative", overflow: "hidden" }}>
-      <AuthRedirect whenSignedIn role={role} />
+      
       
       {/* Full-screen Loading Background Animation Overlay */}
       <AnimatePresence>
@@ -738,3 +738,4 @@ export default function Login() {
     </div>
   );
 }
+

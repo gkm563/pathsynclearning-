@@ -7,7 +7,6 @@ import {
   MessageSquare, UserPlus, Trophy, Calendar, RefreshCw, Zap
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import { apiGet, apiSend } from "@/lib/api";
 
 const DEFAULT_NOTIFICATIONS = [
@@ -162,9 +161,7 @@ export default function PlatformNotifications() {
   });
 
   return (
-    <DashboardLayout activeTab="notifications">
-      
-      {/* ==================== TOAST ALERT ==================== */}
+    <>{/* ==================== TOAST ALERT ==================== */}
       <AnimatePresence>
         {toastMessage && (
           <motion.div 
@@ -359,8 +356,6 @@ export default function PlatformNotifications() {
 
         </div>
 
-      </div>
-
-    </DashboardLayout>
+      </div></>
   );
 }

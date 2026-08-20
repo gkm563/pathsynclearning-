@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { STORE_CATALOG, type StoreProductSeed } from "@/data/store-catalog";
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import { apiGet, apiSend } from "@/lib/api";
 
 type StoreProduct = StoreProductSeed;
@@ -334,7 +333,7 @@ export default function Store() {
   };
 
   return (
-    <DashboardLayout activeTab="store" setActiveTab={() => {}}>
+    <>
       {/* CSS hide scrollbars support */}
       <style dangerouslySetInnerHTML={{__html: `
         .hide-scrollbar::-webkit-scrollbar {
@@ -825,8 +824,6 @@ export default function Store() {
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
-
-    </DashboardLayout>
+      </AnimatePresence></>
   );
 }

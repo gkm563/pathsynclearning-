@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import { 
   BookOpen, Map, Zap, Sparkles, Lock, Unlock, FileText, CheckCircle2, Plus, X, 
   Search, Share2, ExternalLink, Folder, Calendar, Award, Coins, Flame, Rocket, 
@@ -327,8 +326,7 @@ export default function PlatformMemoryLane() {
   };
 
   return (
-    <DashboardLayout activeTab={activeTab} setActiveTab={handleTabChange}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60 }}>
+    <><div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60 }}>
         
         {/* ── TOP HERO BANNER & REFLECTION SWITCH ── */}
         <div style={{
@@ -539,9 +537,7 @@ export default function PlatformMemoryLane() {
             <span>{toastMessage}</span>
           </motion.div>
         )}
-      </AnimatePresence>
-
-    </DashboardLayout>
+      </AnimatePresence></>
   );
 }
 

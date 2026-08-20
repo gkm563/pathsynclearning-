@@ -4,7 +4,6 @@ import { routes } from "@/lib/routes";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import { 
   ArrowLeft, Send, Users, MessageSquare, Video, ShieldCheck, 
   Sparkles, FileText, Download, Play, Volume2, Settings, Maximize2 
@@ -153,7 +152,7 @@ export default function PlatformLiveClass() {
   };
 
   return (
-    <DashboardLayout activeTab="mentorship" setActiveTab={() => router.push(routes.app.mentorship)}>
+    <>
       <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 60 }}>
         
         {/* Top bar header */}
@@ -540,7 +539,7 @@ export default function PlatformLiveClass() {
 
         </div>
 
-      </div>
-    </DashboardLayout>
+      </div></>
   );
 }
+

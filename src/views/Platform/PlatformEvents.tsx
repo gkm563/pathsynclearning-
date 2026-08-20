@@ -4,7 +4,6 @@ import { routes } from "@/lib/routes";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import { 
   Sparkles, Search, Calendar, Video, BookOpen, User, CheckCircle2, 
   ArrowRight, ShieldCheck, HelpCircle, Star, Clock, Plus, ChevronRight, X, 
@@ -760,8 +759,7 @@ export default function PlatformEvents() {
   ];
 
   return (
-    <DashboardLayout activeTab="opportunities">
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "10px 10px 40px" }}>
+    <><div style={{ maxWidth: 1200, margin: "0 auto", padding: "10px 10px 40px" }}>
         
         {/* =========================================================================
            DEVELOPER TESTING MODE BANNER
@@ -1382,8 +1380,7 @@ export default function PlatformEvents() {
           )}
         </AnimatePresence>
 
-      </div>
-    </DashboardLayout>
+      </div></>
   );
 }
 

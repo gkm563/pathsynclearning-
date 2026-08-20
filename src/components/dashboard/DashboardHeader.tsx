@@ -1,16 +1,18 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { UserButton } from "@clerk/nextjs";
 import { Bell, Sparkles, LayoutDashboard, Map, Zap, BookOpen, BarChart2, Newspaper, GraduationCap, Briefcase, Menu, Check } from "lucide-react";
 import { apiGet, apiSend } from "@/lib/api";
 import { useStudent } from "./StudentContext";
-import { dashboardTabPath, pathForNavId, routes } from "@/lib/routes";
+import { routes } from "@/lib/routes";
 
-export default function DashboardHeader({ activeTab, setActiveTab, onToggleSidebar }) {
+export default function DashboardHeader({ onToggleSidebar }) {
   const router = useRouter();
+  const pathname = usePathname();
   const student = useStudent();
   const [mode, setMode] = useState("career"); // "career" or "academic"
   const [showNotifications, setShowNotifications] = useState(false);
@@ -59,26 +61,13 @@ export default function DashboardHeader({ activeTab, setActiveTab, onToggleSideb
   };
 
   const navItems = [
-    { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={15} /> },
-    { id: "roadmap", label: "Roadmap", icon: <Map size={15} /> },
-    { id: "challenges", label: "Challenges", icon: <Zap size={15} /> },
-    { id: "memory-lane", label: "Memory Lane", icon: <BookOpen size={15} /> },
-    { id: "progress", label: "Progress", icon: <BarChart2 size={15} /> },
-    { id: "technews", label: "TechNews", icon: <Newspaper size={15} /> },
+    { id: "dashboard", path: routes.app.dashboard, label: "Dashboard", icon: <LayoutDashboard size={15} /> },
+    { id: "roadmap", path: routes.app.roadmap, label: "Roadmap", icon: <Map size={15} /> },
+    { id: "challenges", path: routes.app.challenges, label: "Challenges", icon: <Zap size={15} /> },
+    { id: "memory-lane", path: routes.app.memoryLane, label: "Memory Lane", icon: <BookOpen size={15} /> },
+    { id: "progress", path: routes.app.progress, label: "Progress", icon: <BarChart2 size={15} /> },
+    { id: "technews", path: routes.app.techNews, label: "TechNews", icon: <Newspaper size={15} /> },
   ];
-
-  const handleNavClick = (itemId) => {
-    const path = pathForNavId(itemId);
-    if (path) {
-      router.push(path);
-      return;
-    }
-    if (window.location.pathname !== routes.app.dashboard) {
-      router.push(dashboardTabPath(itemId));
-    } else if (setActiveTab) {
-      setActiveTab(itemId);
-    }
-  };
 
   return (
     <header style={{
@@ -98,38 +87,39 @@ export default function DashboardHeader({ activeTab, setActiveTab, onToggleSideb
           onClick={onToggleSidebar}
           style={{
             background: "var(--bg-alt)", border: "1.5px solid var(--border-light)", borderRadius: 12,
-            padding: "7px 12px", display: "flex", alignItems: "center", gap: 7, cursor: "pointer",
-            color: "var(--text-main)", fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 700
+            width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer", color: "var(--text-main)", boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
           }}
-          title="Open Side Menu"
         >
-          <Menu size={18} color="#6c63ff" />
-          <span>Menu</span>
+          <Menu size={20} />
         </motion.button>
 
-        {/* Brand Logo */}
-        <Link href="/" style={{ fontFamily: "'Syne', sans-serif", fontSize: 26, fontWeight: 800, color: "var(--text-main)", textDecoration: "none", display: "flex", alignItems: "center", gap: 8, marginRight: 10 }}>
-          <div style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg, #6c63ff, #00c9a7)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 900, fontSize: 16, boxShadow: "0 4px 12px rgba(108,99,255,0.3)" }}>
+        {/* Brand Logo - Visible only on Desktop Header */}
+        <Link href="/" style={{ fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, color: "var(--text-main)", textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 34, height: 34, borderRadius: 8, background: "linear-gradient(135deg, #6c63ff, #00c9a7)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 900, fontSize: 16 }}>
             P
           </div>
-          <span>Path<span style={{ color: "#6c63ff" }}>Ed</span></span>
+          <span style={{ display: "none" }} className="sm:block">Path<span style={{ color: "#6c63ff" }}>Ed</span></span>
         </Link>
 
-        {/* Header Navigation Links */}
-        <nav style={{ display: "flex", alignItems: "center", gap: 4 }}>
+        {/* Dynamic Header Tab Navigation */}
+        <div style={{
+          display: "flex", alignItems: "center", background: "var(--bg-alt)",
+          padding: 6, borderRadius: 14, border: "1.5px solid var(--border-light)", gap: 4
+        }} className="hidden md:flex">
           {navItems.map(item => {
-            const isActive = activeTab === item.id;
+            const isActive = pathname === item.path || (item.path !== routes.app.dashboard && pathname?.startsWith(item.path));
             return (
               <button
                 key={item.id}
-                onClick={() => handleNavClick(item.id)}
+                onClick={() => router.push(item.path)}
                 style={{
-                  display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 12,
-                  border: isActive ? "1.5px solid #6c63ff50" : "1px solid transparent",
-                  background: isActive ? "rgba(108,99,255,0.12)" : "transparent",
-                  color: isActive ? "#6c63ff" : "var(--text-main)",
+                  display: "flex", alignItems: "center", gap: 8, padding: "8px 16px",
+                  borderRadius: 10, border: "none", cursor: "pointer",
+                  background: isActive ? "linear-gradient(135deg, rgba(108,99,255,0.1), rgba(0,201,167,0.1))" : "transparent",
+                  color: isActive ? "#6c63ff" : "var(--text-muted)",
                   fontFamily: "'Outfit', sans-serif", fontSize: 13.5, fontWeight: isActive ? 800 : 600,
-                  cursor: "pointer", transition: "all 0.2s ease"
+                  transition: "all 0.2s ease"
                 }}
               >
                 {item.icon}
@@ -137,187 +127,151 @@ export default function DashboardHeader({ activeTab, setActiveTab, onToggleSideb
               </button>
             );
           })}
-        </nav>
+        </div>
       </div>
 
-      {/* Right: Mode Toggle (with ample margin-left gap), Notifications, Avatar */}
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+      {/* Right: Toggle + Coins + Notifications */}
+      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
         
-        {/* CAREER ⟷ ACADEMIC MODE TOGGLE SWITCH (Clear gap from TechNews) */}
+        {/* Career / Academic Mode Toggle */}
         <div style={{
           display: "flex", alignItems: "center", background: "var(--bg-alt)",
-          border: "1.5px solid var(--border-light)", borderRadius: 22, padding: 3, marginLeft: 16
+          padding: 4, borderRadius: 12, border: "1.5px solid var(--border-light)", gap: 4
         }}>
           <button
             onClick={() => setMode("career")}
             style={{
-              display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 18, border: "none",
-              background: mode === "career" ? "linear-gradient(135deg, #6c63ff, #00c9a7)" : "transparent",
-              color: mode === "career" ? "#ffffff" : "var(--text-muted)",
-              fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 700, cursor: "pointer",
-              transition: "all 0.2s ease", boxShadow: mode === "career" ? "0 4px 12px rgba(108,99,255,0.25)" : "none"
+              padding: "6px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 6,
+              background: mode === "career" ? "var(--bg-card)" : "transparent",
+              color: mode === "career" ? "var(--text-main)" : "var(--text-muted)",
+              boxShadow: mode === "career" ? "0 2px 8px rgba(0,0,0,0.05)" : "none",
+              fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 700, transition: "all 0.2s"
             }}
           >
-            <Briefcase size={13} /> Career
+            <Briefcase size={14} /> Career
           </button>
           <button
             onClick={() => setMode("academic")}
             style={{
-              display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 18, border: "none",
-              background: mode === "academic" ? "linear-gradient(135deg, #f7971e, #00c9a7)" : "transparent",
-              color: mode === "academic" ? "#ffffff" : "var(--text-muted)",
-              fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 700, cursor: "pointer",
-              transition: "all 0.2s ease", boxShadow: mode === "academic" ? "0 4px 12px rgba(247,151,30,0.25)" : "none"
+              padding: "6px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 6,
+              background: mode === "academic" ? "var(--bg-card)" : "transparent",
+              color: mode === "academic" ? "var(--text-main)" : "var(--text-muted)",
+              boxShadow: mode === "academic" ? "0 2px 8px rgba(0,0,0,0.05)" : "none",
+              fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 700, transition: "all 0.2s"
             }}
           >
-            <GraduationCap size={13} /> Academic
+            <GraduationCap size={14} /> Academics
           </button>
         </div>
 
-        {/* Notification Bell */}
+        {/* Global Wallet Coins */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 8, padding: "8px 16px",
+          borderRadius: 12, background: "rgba(247, 151, 30, 0.1)",
+          border: "1.5px solid rgba(247, 151, 30, 0.3)", cursor: "pointer"
+        }} onClick={() => router.push(routes.app.wallet)}>
+          <span style={{ fontSize: 16 }}>💰</span>
+          <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 15, fontWeight: 800, color: "#f7971e" }}>
+            {student.coins.toLocaleString()}
+          </span>
+        </div>
+
+        {/* Notification Bell Dropdown */}
         <div style={{ position: "relative" }}>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setShowNotifications(!showNotifications)}
             style={{
-              width: 38, height: 38, borderRadius: 12,
-              background: "var(--bg-alt)", border: "1.5px solid var(--border-light)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: "var(--text-main)", cursor: "pointer", position: "relative"
+              width: 42, height: 42, borderRadius: 12, border: "1.5px solid var(--border-light)",
+              background: "var(--bg-alt)", display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", color: "var(--text-main)", position: "relative"
             }}
           >
-            <Bell size={17} />
+            <Bell size={18} />
             {unreadCount > 0 && (
-              <span style={{ position: "absolute", top: 7, right: 7, width: 8, height: 8, borderRadius: "50%", background: "#ef4444" }} />
+              <span style={{
+                position: "absolute", top: -4, right: -4, background: "#ef4444", color: "#fff",
+                fontSize: 10, fontWeight: 800, width: 18, height: 18, borderRadius: "50%",
+                display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid var(--bg-card)"
+              }}>
+                {unreadCount}
+              </span>
             )}
           </motion.button>
 
-          {/* Notifications Dropdown Popover */}
           <AnimatePresence>
             {showNotifications && (
-              <>
-                {/* Click outside overlay */}
-                <div 
-                  onClick={() => setShowNotifications(false)}
-                  style={{ position: "fixed", inset: 0, zIndex: 999 }}
-                />
-                
-                <motion.div
-                  initial={{ opacity: 0, y: 15, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 15, scale: 0.95 }}
-                  transition={{ duration: 0.15 }}
-                  style={{
-                    position: "absolute", top: 50, right: 0, width: 340,
-                    background: "var(--bg-card)", border: "1.5px solid var(--border-light)",
-                    borderRadius: 20, boxShadow: "0 15px 50px rgba(0,0,0,0.25)",
-                    zIndex: 1000, overflow: "visible"
-                  }}
-                >
-                  {/* Pointing Popover Arrow */}
-                  <div style={{
-                    position: "absolute", top: -7, right: 13, width: 12, height: 12,
-                    transform: "rotate(45deg)", background: "var(--bg-card)",
-                    borderLeft: "1.5px solid var(--border-light)", borderTop: "1.5px solid var(--border-light)",
-                    zIndex: 1
-                  }} />
-
-                  {/* Dropdown Header */}
-                  <div style={{
-                    display: "flex", justify: "space-between", alignItems: "center",
-                    padding: "14px 18px", borderBottom: "1.5px solid var(--border-light)",
-                    background: "var(--bg-alt)", borderTopLeftRadius: 18, borderTopRightRadius: 18,
-                    position: "relative", zIndex: 2
-                  }}>
-                    <strong style={{ fontSize: 14.5, fontFamily: "'Outfit', sans-serif" }}>Notifications</strong>
-                    {unreadCount > 0 && (
-                      <button 
-                        onClick={markAllRead}
-                        style={{ background: "transparent", border: "none", color: "#6c63ff", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
-                      >
-                        Mark all read
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Dropdown Items List */}
-                  <div style={{ maxHeight: 280, overflowY: "auto", position: "relative", zIndex: 2 }} className="hide-scrollbar">
-                    {notifications.slice(0, 3).map((item) => (
-                      <div 
-                        key={item.id}
-                        onClick={() => handleNotifClick(item.id)}
-                        style={{
-                          padding: "14px 18px", borderBottom: "1px solid var(--border-light)",
-                          background: item.read ? "transparent" : "rgba(108,99,255,0.03)",
-                          cursor: "pointer", display: "flex", gap: 12, transition: "background 0.2s"
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.background = "var(--bg-alt)"}
-                        onMouseLeave={e => e.currentTarget.style.background = item.read ? "transparent" : "rgba(108,99,255,0.03)"}
-                      >
-                        <div style={{
-                          width: 32, height: 32, borderRadius: 8, background: item.bg || "rgba(108,99,255,0.08)",
-                          border: `1px solid ${item.bdr || "rgba(108,99,255,0.15)"}`, display: "flex",
-                          alignItems: "center", justify: "center", fontSize: 16, flexShrink: 0
-                        }}>
-                          {item.icon}
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: "flex", justify: "space-between", gap: 8 }}>
-                            <strong style={{ fontSize: 13, color: "var(--text-main)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                              {item.title}
-                            </strong>
-                            <span style={{ fontSize: 9.5, color: "var(--text-light)", whiteSpace: "nowrap" }}>{item.time}</span>
-                          </div>
-                          <p style={{ margin: "2px 0 0", fontSize: 11.5, color: "var(--text-muted)", lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                            {item.desc}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-
-                    {notifications.length === 0 && (
-                      <div style={{ padding: "30px 20px", textAlign: "center", color: "var(--text-light)", fontSize: 13 }}>
-                        No new updates.
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Dropdown Footer */}
-                  <div style={{ padding: 10, borderTop: "1.5px solid var(--border-light)", textAlign: "center", position: "relative", zIndex: 2 }}>
-                    <button
-                      onClick={() => { setShowNotifications(false); router.push(routes.app.notifications); }}
-                      style={{
-                        width: "100%", padding: "8px", borderRadius: 10, border: "none",
-                        background: "var(--bg-alt)", color: "#6c63ff", cursor: "pointer",
-                        fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 900
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.background = "rgba(108,99,255,0.08)"}
-                      onMouseLeave={e => e.currentTarget.style.background = "var(--bg-alt)"}
-                    >
-                      View All Notifications
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                style={{
+                  position: "absolute", top: 56, right: 0, width: 340,
+                  background: "var(--bg-card)", border: "1.5px solid var(--border-light)",
+                  borderRadius: 16, padding: "16px 0", boxShadow: "0 10px 40px rgba(0,0,0,0.15)", zIndex: 200
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px 12px", borderBottom: "1px solid var(--border-light)", marginBottom: 8 }}>
+                  <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800, color: "var(--text-main)" }}>Notifications</span>
+                  {unreadCount > 0 && (
+                    <button onClick={markAllRead} style={{ display: "flex", alignItems: "center", gap: 4, background: "transparent", border: "none", color: "#6c63ff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                      <Check size={14} /> Mark all read
                     </button>
-                  </div>
-                </motion.div>
-              </>
+                  )}
+                </div>
+                
+                <div style={{ maxHeight: 320, overflowY: "auto" }}>
+                  {notifications.length === 0 ? (
+                    <div style={{ padding: 24, textAlign: "center", color: "var(--text-muted)", fontSize: 13, fontFamily: "'Outfit', sans-serif" }}>
+                      You're all caught up! ✨
+                    </div>
+                  ) : (
+                    notifications.map(n => (
+                      <div 
+                        key={n.id} 
+                        onClick={() => handleNotifClick(n.id)}
+                        style={{ 
+                          padding: "12px 20px", display: "flex", gap: 14, cursor: "pointer",
+                          background: n.read ? "transparent" : "rgba(108,99,255,0.04)",
+                          borderLeft: n.read ? "3px solid transparent" : "3px solid #6c63ff",
+                          transition: "background 0.2s"
+                        }}
+                      >
+                        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--bg-alt)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>
+                          {n.type === "system" ? "🔔" : n.type === "reward" ? "🏆" : "✨"}
+                        </div>
+                        <div>
+                          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: n.read ? 600 : 800, color: "var(--text-main)", marginBottom: 2 }}>{n.title}</div>
+                          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>{n.message}</div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div style={{ padding: "12px 20px 0", borderTop: "1px solid var(--border-light)", marginTop: 8 }}>
+                  <button
+                    onClick={() => { setShowNotifications(false); router.push(routes.app.notifications); }}
+                    style={{ width: "100%", padding: "8px 0", borderRadius: 8, background: "transparent", border: "1px solid var(--border-light)", color: "var(--text-main)", fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "all 0.2s" }}
+                  >
+                    View All Notifications
+                  </button>
+                </div>
+              </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* User Profile Avatar */}
-        <div 
-          onClick={() => router.push(routes.app.profile)}
-          style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 10px 4px 4px", background: "var(--bg-alt)", borderRadius: 24, border: "1.5px solid var(--border-light)", cursor: "pointer" }}
-        >
-          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg, #6c63ff, #00c9a7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, color: "#fff" }}>
-            🎓
-          </div>
-          <div style={{ textAlign: "left", paddingRight: 4 }}>
-            <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 800, color: "var(--text-main)", lineHeight: 1 }}>{student.shortName}</div>
-            <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 9.5, color: "#6c63ff", fontWeight: 700 }}>{student.title}</div>
-          </div>
+        {/* User Profile / Sign Out */}
+        <div style={{ marginLeft: 8, display: "flex", alignItems: "center" }}>
+          <UserButton />
         </div>
+
       </div>
     </header>
   );
 }
+

@@ -7,7 +7,6 @@ import {
   DollarSign, Landmark, CheckCircle, RefreshCw, FileText, Info, Trash2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import { apiGet, apiSend } from "@/lib/api";
 
 const COIN_PACKS = [
@@ -214,7 +213,7 @@ export default function WalletExchange() {
   };
 
   return (
-    <DashboardLayout activeTab="store" setActiveTab={() => {}}>
+    <>
       
       {/* ==================== TOAST ALERT ==================== */}
       <AnimatePresence>
@@ -587,8 +586,6 @@ export default function WalletExchange() {
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
-
-    </DashboardLayout>
+      </AnimatePresence></>
   );
 }

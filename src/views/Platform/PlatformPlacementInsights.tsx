@@ -1,9 +1,9 @@
 "use client";
+import { routes } from "@/lib/routes";
 
 import { useRouter } from "next/navigation";
 import React from "react";
 import { motion } from "framer-motion";
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import { 
   Lightbulb, Brain, Bot, Users, Award, TrendingUp, Sparkles, 
   CheckCircle2, AlertTriangle, ArrowUpRight, BarChart2, Star, ShieldAlert,
@@ -22,7 +22,7 @@ const AI_INSIGHTS = [
     desc: "Your current Graph & Dynamic Programming node mastery stands at 62%. Upgrading this node to 75% will satisfy recruitment thresholds for top-tier companies like Stripe and Uber.",
     actionText: "Practice Graph Problems",
     icon: "🎯",
-    link: "/challenges"
+    link: routes.app.challenges
   },
   {
     id: "ai2",
@@ -44,7 +44,7 @@ const AI_INSIGHTS = [
     desc: "Your DBMS Indexing and B-Trees skill node has a recency decay warning. Spend 20 minutes refreshing transactions to maintain your top 12% national percentile ranking.",
     actionText: "Take 10m Refresh Quiz",
     icon: "⚡",
-    link: "/challenges"
+    link: routes.app.challenges
   },
   {
     id: "ai4",
@@ -55,7 +55,7 @@ const AI_INSIGHTS = [
     desc: "Recruiter requests for Go/Rust concurrency fundamentals have increased by 35% this quarter. Unlocking the basic Go channel node will make your profile eligible for 12 new automated recruiter views.",
     actionText: "Unlock Go Roadmap",
     icon: "📈",
-    link: "/roadmap"
+    link: routes.app.roadmap
   }
 ];
 
@@ -98,8 +98,7 @@ export default function PlatformPlacementInsights() {
   const fadeInUp = { initial: { opacity: 0, y: 25 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.5 } };
 
   return (
-    <DashboardLayout activeTab="placement-insights">
-      <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60 }}>
+    <><div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60 }}>
         
         {/* 1. Header Section */}
         <div style={{
@@ -441,7 +440,7 @@ export default function PlatformPlacementInsights() {
           </div>
         </div>
 
-      </div>
-    </DashboardLayout>
+      </div></>
   );
 }
+

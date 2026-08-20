@@ -4,7 +4,6 @@ import { routes } from "@/lib/routes";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import QuoteBanner from "../../components/dashboard/QuoteBanner";
 import AddWidgetModal from "../../components/dashboard/AddWidgetModal";
 import LockedFeatureModal from "../../components/dashboard/LockedFeatureModal";
@@ -14,25 +13,9 @@ import {
   Flame, Award, Coins, Zap, Shield, HelpCircle, Eye, ArrowUpRight, ChevronDown, ChevronUp, Play, Bot, RefreshCw
 } from "lucide-react";
 
+
+
 export default function PlatformDashboard() {
-  const searchParams = useSearchParams();
-  const queryTab = searchParams.get("tab");
-  const [activeTab, setActiveTab] = useState(queryTab || "dashboard");
-
-  useEffect(() => {
-    if (queryTab) {
-      setActiveTab(queryTab);
-    }
-  }, [queryTab]);
-
-  return (
-    <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
-      <DashboardHome />
-    </DashboardLayout>
-  );
-}
-
-function DashboardHome() {
   const router = useRouter();
   const [activeWidgets, setActiveWidgets] = useState<any[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -941,3 +924,4 @@ function DashboardHome() {
     </>
   );
 }
+

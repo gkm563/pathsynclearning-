@@ -4,7 +4,6 @@ import { routes } from "@/lib/routes";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import { 
   Inbox, Search, Filter, Briefcase, MapPin, Coins, Award, 
   ArrowUpRight, ChevronRight, Calendar, User, Send, CheckCircle2,
@@ -130,8 +129,7 @@ export default function PlatformPlacementInbox() {
   });
 
   return (
-    <DashboardLayout activeTab="placement-inbox">
-      <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60 }}>
+    <><div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60 }}>
         
         {/* 1. Header Section */}
         <div style={{
@@ -560,7 +558,6 @@ export default function PlatformPlacementInbox() {
 
         </div>
 
-      </div>
-    </DashboardLayout>
+      </div></>
   );
 }

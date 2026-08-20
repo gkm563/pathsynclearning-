@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import { 
   Award, ShieldCheck, CheckCircle2, FileCheck, Share2, Download, 
   ExternalLink, Copy, Maximize2, Eye, Sparkles, Link2, X, ChevronRight, Check
@@ -79,8 +78,7 @@ export default function PlatformRecordsCerts() {
   };
 
   return (
-    <DashboardLayout activeTab="records-certs">
-      <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60 }}>
+    <><div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60 }}>
         
         {/* 1. Header Section */}
         <div style={{
@@ -428,7 +426,8 @@ export default function PlatformRecordsCerts() {
                   flexDirection: "column",
                   alignItems: "center"
                 }}
-                onClick={() => alert(`Badge: ${badge.name}\nRequirement: ${badge.desc}`)}
+                onClick={() => alert(`Badge: ${badge.name}
+Requirement: ${badge.desc}`)}
               >
                 <div style={{
                   width: 46, height: 46, borderRadius: "50%",
@@ -599,7 +598,6 @@ export default function PlatformRecordsCerts() {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
-    </DashboardLayout>
+      </AnimatePresence></>
   );
 }

@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { hrefForNavId } from "@/lib/routes";
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import { 
   Sparkles, Zap, Award, Flame, Coins, Clock, CheckCircle2, Play, RefreshCw, 
   Code2, BookOpen, Layers, Terminal, Check, X, ShieldAlert, Cpu, Trophy, 
@@ -532,8 +531,7 @@ export default function PlatformChallenges() {
   const xpMax = xpForLevel(userLevel);
 
   return (
-    <DashboardLayout activeTab={activeTab} setActiveTab={handleTabChange}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60 }}>
+    <><div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60 }}>
         
         {/* ── TOP HEADER & GAMIFICATION STATS BAR ── */}
         <div style={{
@@ -909,9 +907,7 @@ export default function PlatformChallenges() {
             <span>{toastMessage}</span>
           </motion.div>
         )}
-      </AnimatePresence>
-
-    </DashboardLayout>
+      </AnimatePresence></>
   );
 }
 

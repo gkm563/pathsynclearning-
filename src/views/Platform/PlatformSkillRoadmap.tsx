@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import AiFicationModal from "../../components/dashboard/AiFicationModal";
 import { 
   Sun, Moon, Sparkles, Rocket, Compass, Zap, Target, BookOpen, 
@@ -1487,8 +1486,7 @@ function generateCarMotionKeyframes(prevIdx, currIdx, nodes) {
   const canvasHeight = Math.max(11500, 400 + nodes.length * 850);
 
   return (
-    <DashboardLayout activeTab={activeTab} setActiveTab={handleTabChange}>
-      <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 120px)", position: "relative", overflow: "hidden" }}>
+    <><div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 120px)", position: "relative", overflow: "hidden" }}>
 
         {/* TOP STATUS BAR */}
         <div style={{
@@ -1952,7 +1950,6 @@ function generateCarMotionKeyframes(prevIdx, currIdx, nodes) {
             <span>{aiToastMessage}</span>
           </motion.div>
         )}
-      </AnimatePresence>
-    </DashboardLayout>
+      </AnimatePresence></>
   );
 }

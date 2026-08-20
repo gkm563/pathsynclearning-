@@ -4,7 +4,6 @@ import { routes } from "@/lib/routes";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import { 
   Search, MessageSquare, Briefcase, FileText, CheckCircle2, 
   Send, Lock, Sparkles, SlidersHorizontal
@@ -337,8 +336,7 @@ export default function PlatformAlumniNetwork() {
   };
 
   return (
-    <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60, position: "relative" }}>
+    <><div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60, position: "relative" }}>
         
         {/* Toggle Plan Banner */}
         <div style={{
@@ -1103,7 +1101,6 @@ export default function PlatformAlumniNetwork() {
 
 
 
-      </div>
-    </DashboardLayout>
+      </div></>
   );
 }

@@ -4,7 +4,6 @@ import { routes } from "@/lib/routes";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import { 
   Sparkles, Search, Calendar, Video, BookOpen, User, CheckCircle2, 
   ArrowRight, ShieldCheck, HelpCircle, Star, Clock, Plus, ChevronRight, X, 
@@ -446,8 +445,7 @@ export default function PlatformHackSquad() {
   });
 
   return (
-    <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60 }}>
+    <><div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60 }}>
         
         {/* DEV MODE PLAN BANNER */}
         <div style={{
@@ -1596,7 +1594,6 @@ export default function PlatformHackSquad() {
           )}
         </AnimatePresence>
 
-      </div>
-    </DashboardLayout>
+      </div></>
   );
 }
