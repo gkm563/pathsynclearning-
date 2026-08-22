@@ -211,7 +211,112 @@ export const quotes = pgTable(
   (t) => [index("idx_quotes_phase").on(t.phase)],
 );
 
+// ─── Roadmap Profiles (extended student data for AI generation) ─────
+export const roadmapProfiles = pgTable("roadmap_profiles", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  knownSkills: jsonb("known_skills")
+    .$type<{ skill: string; confidence: string }[]>()
+    .notNull()
+    .default([]),
+  hasProjects: boolean("has_projects").notNull().default(false),
+  projects: jsonb("projects")
+    .$type<Record<string, unknown>[]>()
+    .notNull()
+    .default([]),
+  experienceLevel: text("experience_level"),
+  careerGoal: text("career_goal"),
+  targetRole: text("target_role"),
+  wantToLearn: jsonb("want_to_learn").$type<string[]>().notNull().default([]),
+  learningMotivation: text("learning_motivation"),
+  weeklyHours: text("weekly_hours"),
+  projectVsLearning: text("project_vs_learning"),
+  learningStyles: jsonb("learning_styles")
+    .$type<string[]>()
+    .notNull()
+    .default([]),
+  targetTimeline: text("target_timeline"),
+  topPriority: text("top_priority"),
+  aiFollowUpAnswers: jsonb("ai_follow_up_answers")
+    .$type<Record<string, unknown>>()
+    .notNull()
+    .default({}),
+  currentStudy: text("current_study"),
+  yearSemester: text("year_semester"),
+  academicBackground: text("academic_background"),
+  enjoyedSubjects: jsonb("enjoyed_subjects")
+    .$type<string[]>()
+    .notNull()
+    .default([]),
+  struggledSubjects: jsonb("struggled_subjects")
+    .$type<string[]>()
+    .notNull()
+    .default([]),
+  completed: boolean("completed").notNull().default(false),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// ─── Generated Roadmaps (versioned) ─────────────────────────────────
+export const roadmaps = pgTable(
+  "roadmaps",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    version: integer("version").notNull().default(1),
+    title: text("title").notNull(),
+    targetRole: text("target_role").notNull(),
+    estimatedWeeks: integer("estimated_weeks"),
+    nodes: jsonb("nodes").$type<unknown[]>().notNull(),
+    edges: jsonb("edges").$type<unknown[]>().notNull(),
+    generatedFromProfile: jsonb("generated_from_profile")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("idx_roadmaps_user").on(t.userId, t.createdAt)],
+);
+
+// ─── Per-Node Progress ──────────────────────────────────────────────
+export const roadmapProgress = pgTable(
+  "roadmap_progress",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    roadmapId: uuid("roadmap_id")
+      .notNull()
+      .references(() => roadmaps.id, { onDelete: "cascade" }),
+    nodeId: text("node_id").notNull(),
+    status: text("status").notNull().default("locked"),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique("roadmap_progress_user_roadmap_node").on(
+      t.userId,
+      t.roadmapId,
+      t.nodeId,
+    ),
+    index("idx_roadmap_progress_user").on(t.userId, t.roadmapId),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Profile = typeof profiles.$inferSelect;
 export type Onboarding = typeof onboarding.$inferSelect;
+export type RoadmapProfileRow = typeof roadmapProfiles.$inferSelect;
+export type RoadmapRow = typeof roadmaps.$inferSelect;
+export type RoadmapProgressRow = typeof roadmapProgress.$inferSelect;

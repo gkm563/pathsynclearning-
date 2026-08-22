@@ -69,12 +69,14 @@ export const routes = {
     liveClass: "/dashboard/live-class",
     community: "/dashboard/student-community",
     advancedCareer: "/dashboard/advanced-career",
+    roadmapPersonalize: "/dashboard/roadmap/personalize",
   },
 
   api: {
     me: "/api/me",
     store: "/api/store",
     ai: "/api/ai",
+    roadmap: "/api/roadmap",
   },
 } as const;
 
@@ -120,6 +122,7 @@ export const PROTECTED_ROUTE_MATCHERS = [
   withChildren(routes.api.me),
   withChildren(routes.api.store),
   withChildren(routes.api.ai),
+  withChildren(routes.api.roadmap),
 ] as const;
 
 /** Portal paths that require completed onboarding (excludes onboarding itself). */
