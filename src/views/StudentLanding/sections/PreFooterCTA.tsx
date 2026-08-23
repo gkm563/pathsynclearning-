@@ -42,7 +42,7 @@ export default function PreFooterCTA() {
             </h2>
             
             <p style={{ color: "rgba(255,255,255,0.9)", fontSize: "18px", maxWidth: "500px", margin: "0 auto 40px", lineHeight: 1.6 }}>
-              Join 40,000+ students building careers they're proud of. Real skills. Real progress. Real offers.
+              Join 40,000+ students building careers they’re proud of. Real skills. Real progress. Real offers.
             </p>
             
             <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>

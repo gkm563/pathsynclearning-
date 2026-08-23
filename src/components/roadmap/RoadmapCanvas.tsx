@@ -111,7 +111,7 @@ export default function RoadmapCanvas({
   const [selectedNode, setSelectedNode] = useState<RTNode | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
-  const rfRef = useRef<ReactFlowInstance | null>(null);
+  const rfRef = useRef<any>(null);
   const didFitRef = useRef(false);
 
   const progressMap = useMemo(() => {

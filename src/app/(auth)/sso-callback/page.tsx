@@ -163,7 +163,6 @@ function SSOCallbackContent() {
       cancelled = true;
     };
     // Intentionally run once when Clerk + signIn/signUp are ready
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clerk.loaded]);
 
   return (

@@ -10,6 +10,7 @@ import {
   findNodesToUnlock,
   isProgressSatisfied,
 } from '@/lib/roadmap/progress';
+import type { RoadmapEdge } from '@/types/roadmap';
 import crypto from 'crypto';
 
 export async function GET() {
@@ -59,12 +60,7 @@ export async function PUT(request: Request) {
     }
 
     const nodes = Array.isArray(activeRoadmap.nodes) ? activeRoadmap.nodes : [];
-    const edges = (Array.isArray(activeRoadmap.edges) ? activeRoadmap.edges : []) as Array<{
-      id?: string;
-      source: string;
-      target: string;
-      label?: string;
-    }>;
+    const edges = (Array.isArray(activeRoadmap.edges) ? activeRoadmap.edges : []) as RoadmapEdge[];
 
     const nodeExists = nodes.some((n: any) => n.id === nodeId);
     if (!nodeExists) {

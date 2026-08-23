@@ -16,7 +16,7 @@ type StoreProduct = StoreProductSeed;
 
 // Slidable Row component mimicking Netflix horizontal rows in Mentorship
 function SlidableStoreRow({ title, items, purchasedIds, activePlugin, onPurchaseClick, onApplyClick, onDetailsClick }) {
-  const scrollRef = React.useRef<any>(null);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
 
   const scrollLeft = () => {
     if (scrollRef.current) {
@@ -203,9 +203,9 @@ export default function Store() {
   const [cashWallet, setCashWallet] = useState(0);
 
   // Modals & Messages states
-  const [purchasingItem, setPurchasingItem] = useState<any>(null);
-  const [applyingItem, setApplyingItem] = useState<any>(null);
-  const [viewingDetailItem, setViewingDetailItem] = useState<any>(null);
+  const [purchasingItem, setPurchasingItem] = useState<StoreProduct | null>(null);
+  const [applyingItem, setApplyingItem] = useState<StoreProduct | null>(null);
+  const [viewingDetailItem, setViewingDetailItem] = useState<StoreProduct | null>(null);
   const [toastMessage, setToastMessage] = useState("");
 
   useEffect(() => {
@@ -777,7 +777,7 @@ export default function Store() {
                 </div>
 
                 <div>
-                  <h5 style={{ margin: "0 0 10px", fontSize: 12, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)", letterSpacing: 0.5 }}>WHAT'S INCLUDED</h5>
+                  <h5 style={{ margin: "0 0 10px", fontSize: 12, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)", letterSpacing: 0.5 }}>WHAT’S INCLUDED</h5>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {viewingDetailItem.included && viewingDetailItem.included.map((inc, index) => (
                       <div key={index} style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 13.5, color: "var(--text-muted)" }}>

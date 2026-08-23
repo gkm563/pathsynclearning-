@@ -25,10 +25,10 @@ const SECTIONS = [
 
 export default function RoadmapOnboarding({ onComplete }: { onComplete: (roadmap: any) => void }) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
 
   const [aiQuestions, setAiQuestions] = useState<FollowUpQuestion[]>([]);
-  const [aiAnswers, setAiAnswers] = useState<Record<string, any>>({});
+  const [aiAnswers, setAiAnswers] = useState<Record<string, unknown>>({});
   const [isAiStep, setIsAiStep] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

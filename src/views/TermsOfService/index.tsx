@@ -24,18 +24,18 @@ export default function TermsOfService() {
           </div>
           <div>
             <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "var(--text-main)", marginBottom: 16 }}>2. User License</h3>
-            <p style={{ marginBottom: 16 }}>Permission is granted to temporarily download one copy of the materials (information or software) on PathEd's website for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:</p>
+            <p style={{ marginBottom: 16 }}>Permission is granted to temporarily download one copy of the materials (information or software) on PathEd’s website for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:</p>
             <ul style={{ paddingLeft: 24, display: "flex", flexDirection: "column", gap: 8 }}>
               <li>Modify or copy the materials;</li>
               <li>Use the materials for any commercial purpose, or for any public display (commercial or non-commercial);</li>
-              <li>Attempt to decompile or reverse engineer any software contained on PathEd's website;</li>
+              <li>Attempt to decompile or reverse engineer any software contained on PathEd’s website;</li>
               <li>Remove any copyright or other proprietary notations from the materials; or</li>
-              <li>Transfer the materials to another person or "mirror" the materials on any other server.</li>
+              <li>Transfer the materials to another person or “mirror” the materials on any other server.</li>
             </ul>
           </div>
           <div>
             <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700, color: "var(--text-main)", marginBottom: 16 }}>3. Academic Integrity and Anti-Cheating</h3>
-            <p style={{ marginBottom: 16 }}>PathEd's Career Readiness Index (CRI) relies on the authentic performance of its users. By using the platform, you agree to adhere to strict standards of academic integrity:</p>
+            <p style={{ marginBottom: 16 }}>PathEd’s Career Readiness Index (CRI) relies on the authentic performance of its users. By using the platform, you agree to adhere to strict standards of academic integrity:</p>
             <ul style={{ paddingLeft: 24, display: "flex", flexDirection: "column", gap: 8 }}>
               <li>All code submissions must be your own original work unless explicitly stated in collaborative environments.</li>
               <li>You may not use automated bots, scripts, or unauthorized AI agents to solve challenges on your behalf.</li>

@@ -6,6 +6,8 @@ import { errorResponse, jsonResponse } from '@/lib/api/http';
 import { isProgressSatisfied } from '@/lib/roadmap/progress';
 import crypto from 'crypto';
 
+type RoadmapProgress = typeof roadmapProgress.$inferSelect;
+
 /** Ensure locked nodes with no incomplete deps become available (repairs bad seed data). */
 async function reconcileProgress(
   db: Awaited<ReturnType<typeof getDb>>,
@@ -13,8 +15,8 @@ async function reconcileProgress(
   roadmapId: string,
   nodes: any[],
   edges: Array<{ source: string; target: string }>,
-  progress: Array<{ id: string; nodeId: string; status: string }>,
-) {
+  progress: RoadmapProgress[],
+): Promise<RoadmapProgress[]> {
   const progressMap = new Map(progress.map((p) => [p.nodeId, p]));
   const nodeIds = nodes.map((n) => n.id as string);
 
@@ -80,7 +82,7 @@ export async function GET() {
       target: string;
     }>;
 
-    progress = await reconcileProgress(db, user.id, activeRoadmap.id, nodes, edges, progress);
+    progress = (await reconcileProgress(db, user.id, activeRoadmap.id, nodes, edges, progress)) as any;
 
     const progressMap = new Map(progress.map((p) => [p.nodeId, p]));
 

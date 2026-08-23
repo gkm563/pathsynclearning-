@@ -3,6 +3,13 @@
 import React from "react";
 import { Chip, SkillBar, InteractiveCard } from "../../../components/ui/Shared";
 
+const pseudoRandom = (seed: number) => {
+  let t = seed + 0x6d2b79f5;
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+};
+
 export default function WhyPathEd() {
   return (
     <section style={{ padding: "100px 32px 80px", position: "relative", zIndex: 2, maxWidth: 1360, margin: "0 auto" }}>
@@ -22,17 +29,17 @@ export default function WhyPathEd() {
             <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 600, color: "#6c63ff", letterSpacing: 2, marginBottom: 16 }}>CONSISTENCY HEATMAP — 12 WEEKS</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(14,1fr)", gap: 3 }}>
               {Array.from({ length: 98 }, (_, i) => {
-                const v = Math.random();
+                const v = pseudoRandom(i);
                 const cols = ["#f0f2ff", "#c5c0ff", "#9d97ff", "#6c63ff"];
                 const col = v < .3 ? cols[0] : v < .55 ? cols[1] : v < .8 ? cols[2] : cols[3];
-                return <div key={i} style={{ aspectRatio: 1, borderRadius: 2, background: col, animation: `heatPulse ${2 + Math.random() * 2}s ease-in-out infinite`, animationDelay: `${Math.random() * 2}s` }} />;
+                return <div key={i} style={{ aspectRatio: 1, borderRadius: 2, background: col, animation: `heatPulse ${2 + pseudoRandom(i + 100) * 2}s ease-in-out infinite`, animationDelay: `${pseudoRandom(i + 200) * 2}s` }} />;
               })}
             </div>
           </div>
           
           <div style={{ marginTop: 20, background: "linear-gradient(135deg,#fff9ee,#fff3cd)", border: "1.5px solid #ffe0a0", borderRadius: 16, padding: "20px 24px" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 600, color: "#c68a00", letterSpacing: 2 }}>⚡ TODAY'S CHALLENGE</div>
+              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 600, color: "#c68a00", letterSpacing: 2 }}>⚡ TODAY’S CHALLENGE</div>
               <Chip bg="#fff9e6" border="#ffe08a" color="#c68a00">+150 XP</Chip>
             </div>
             <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text-main)", marginBottom: 4 }}>Implement Binary Search Tree</div>

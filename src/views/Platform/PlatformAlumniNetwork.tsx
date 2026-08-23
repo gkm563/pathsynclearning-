@@ -456,7 +456,7 @@ export default function PlatformAlumniNetwork() {
                   display: "flex", gap: 12, alignItems: "center" 
                 }}
               >
-                <img src={al.image} style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover" }} />
+                <img src={al.image} alt={al.name} style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover" }} />
                 <div>
                   <div style={{ fontSize: 13.5, fontWeight: 800, color: "var(--text-main)" }}>{al.name}</div>
                   <div style={{ fontSize: 11.5, color: "var(--text-muted)", fontWeight: 700 }}>{al.role} @ {al.company}</div>
@@ -675,7 +675,7 @@ export default function PlatformAlumniNetwork() {
                 borderRadius: 24, overflow: "hidden", display: "flex", flexDirection: "column"
               }}>
                 <div style={{ position: "relative", height: 260, overflow: "hidden" }}>
-                  <img src={activeChatAlumnus.image} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <img src={activeChatAlumnus.image} alt={activeChatAlumnus.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.85), transparent)" }} />
                   
                   <div style={{ position: "absolute", bottom: 16, left: 20, right: 20, color: "#ffffff" }}>
@@ -882,7 +882,7 @@ export default function PlatformAlumniNetwork() {
                       cursor: "pointer", display: "flex", gap: 12, alignItems: "center", transition: "all 0.2s"
                     }}
                   >
-                    <img src={al.image} style={{ width: 38, height: 38, borderRadius: "50%", objectFit: "cover" }} />
+                    <img src={al.image} alt={al.name} style={{ width: 38, height: 38, borderRadius: "50%", objectFit: "cover" }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 800, color: "var(--text-main)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {al.name}

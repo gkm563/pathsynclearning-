@@ -1038,7 +1038,7 @@ export default function PlatformMentorship() {
                 }}
               >
                 <div style={{ position: "relative", height: 260, overflow: "hidden" }}>
-                  <img src={selectedMentor.image} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <img src={selectedMentor.image} alt={selectedMentor.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.9), transparent)" }} />
                   <button onClick={() => setSelectedMentor(null)} style={{ position: "absolute", right: 16, top: 16, width: 36, height: 36, borderRadius: 12, background: "rgba(0,0,0,0.5)", border: "none", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justify: "center" }}>
                     <X size={18} />
@@ -1110,7 +1110,7 @@ export default function PlatformMentorship() {
                 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <div style={{ width: 44, height: 44, borderRadius: 12, overflow: "hidden" }}>
-                      <img src={bookingMentor.image} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <img src={bookingMentor.image} alt={bookingMentor.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     </div>
                     <div>
                       <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18.5, fontWeight: 900, color: "var(--text-main)", margin: 0 }}>

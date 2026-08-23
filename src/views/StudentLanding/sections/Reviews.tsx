@@ -65,7 +65,7 @@ export default function Reviews() {
                       {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="#f7971e" color="#f7971e" />)}
                     </div>
                     <p style={{ color: "var(--text-muted)", fontSize: "15px", lineHeight: 1.7, fontStyle: "italic", fontFamily: "'Inter', sans-serif", marginBottom: "24px" }}>
-                      "{review.text}"
+                      “{review.text}”
                     </p>
                   </div>
                   

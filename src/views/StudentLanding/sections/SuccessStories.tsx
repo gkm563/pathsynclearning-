@@ -106,10 +106,10 @@ export default function SuccessStories() {
 
               <div style={{ flex: "1 1 500px" }}>
                 <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 32, fontWeight: 800, color: "var(--text-main)", marginBottom: 24 }}>
-                  "{story.quote}"
+                  “{story.quote}”
                 </h3>
                 <p style={{ fontSize: 18, color: "var(--text-muted)", lineHeight: 1.8, marginBottom: 32 }}>
-                  "{story.text}"
+                  “{story.text}”
                 </p>
                 <div style={{ display: "inline-flex", gap: 16 }}>
                   <div style={{ background: "rgba(108,99,255,0.15)", padding: "12px 24px", borderRadius: 12 }}>

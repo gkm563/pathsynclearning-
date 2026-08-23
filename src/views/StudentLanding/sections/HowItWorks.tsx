@@ -25,7 +25,7 @@ export default function HowItWorks() {
               How PathEd Works
             </h2>
             <p style={{ fontSize: 20, color: "var(--text-muted)", maxWidth: 700, margin: "0 auto", lineHeight: 1.7 }}>
-              We've engineered a seamless pipeline from raw potential to hired professional.
+              We’ve engineered a seamless pipeline from raw potential to hired professional.
             </p>
           </motion.div>
         </div>

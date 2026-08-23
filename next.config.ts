@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {
+    workerThreads: false,
+    cpus: 1,
+  },
   async redirects() {
     const nested = LEGACY_REDIRECTS.filter((r) =>
       r.source.startsWith("/platform/"),
