@@ -31,6 +31,11 @@ export const env = {
     if (!key || key === "YOUR_GEMINI_API_KEY") return undefined;
     return key;
   },
+  get groqApiKey() {
+    const key = optional("GROQ_API_KEY") || optional("gpt-oss-120b");
+    if (!key || key === "YOUR_GROQ_API_KEY") return undefined;
+    return key;
+  },
   get isProd() {
     return process.env.NODE_ENV === "production";
   },
@@ -45,5 +50,6 @@ export function getEnvStatus() {
     ),
     CLERK_SECRET_KEY: Boolean(process.env.CLERK_SECRET_KEY),
     GEMINI_API_KEY: Boolean(env.geminiApiKey),
+    GROQ_API_KEY: Boolean(env.groqApiKey),
   };
 }

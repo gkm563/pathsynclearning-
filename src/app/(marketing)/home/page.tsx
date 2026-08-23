@@ -1,7 +1,15 @@
-import { redirect } from "next/navigation";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { routes } from "@/lib/routes";
 
-/** Legacy /home → canonical marketing home */
 export default function HomeRedirect() {
-  redirect(routes.home);
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace(routes.home);
+  }, [router]);
+
+  return null;
 }

@@ -1,5 +1,5 @@
 import { RoadmapProfile, FollowUpQuestionsResponse } from '@/types/roadmap';
-import { callGemini } from './gemini';
+import { callAIWithFallback } from './llm';
 import { followUpQuestionsResponseSchema } from '@/lib/validation/roadmap-schemas';
 import { AppError } from '@/lib/api/errors';
 
@@ -29,10 +29,13 @@ You MUST return valid JSON exactly matching this structure:
   const prompt = `Please analyze the following student profile and generate follow-up questions if needed:\n\n${JSON.stringify(profile, null, 2)}`;
 
   try {
-    const result = await callGemini<any>({
+    const result = await callAIWithFallback<any>({
       prompt,
       systemInstruction,
       userId,
+      maxTokens: 4096,
+      temperature: 1,
+      reasoningEffort: 'medium',
     });
 
     const validatedResult = followUpQuestionsResponseSchema.parse(result);

@@ -1,5 +1,5 @@
 import { RoadmapNode, RoadmapEdge, RoadmapProfile } from '@/types/roadmap';
-import { callGemini } from './gemini';
+import { callAIWithFallback } from './llm';
 import { roadmapSchema } from '@/lib/validation/roadmap-schemas';
 import { AppError } from '@/lib/api/errors';
 
@@ -72,13 +72,14 @@ Return ONLY valid JSON matching:
   const prompt = `Generate a personalized roadmap for this student profile:\n${JSON.stringify(compactProfile(profile))}`;
 
   try {
-    const result = await callGemini<any>({
+    const result = await callAIWithFallback<any>({
       prompt,
       systemInstruction,
       userId,
       timeoutMs: 90000,
-      // Roadmap JSON is large; free-tier keys still allow high output caps on 2.5 Flash.
-      maxOutputTokens: 65536,
+      maxTokens: 8192,
+      temperature: 1,
+      reasoningEffort: 'medium',
     });
 
     const validatedResult = roadmapSchema.parse(result);
