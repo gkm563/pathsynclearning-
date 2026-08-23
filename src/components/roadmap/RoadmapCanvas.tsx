@@ -11,7 +11,6 @@ import {
   Node as ReactFlowNode,
   Position,
   MarkerType,
-  type ReactFlowInstance,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import dagre from '@dagrejs/dagre';
@@ -113,6 +112,43 @@ export default function RoadmapCanvas({
   const [activeFilter, setActiveFilter] = useState('All');
   const rfRef = useRef<any>(null);
   const didFitRef = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showMinimap, setShowMinimap] = useState(true);
+
+  const toggleFullscreen = useCallback(() => {
+    if (!containerRef.current) return;
+
+    if (!document.fullscreenElement) {
+      if (containerRef.current.requestFullscreen) {
+        containerRef.current.requestFullscreen().catch(() => {
+          setIsFullscreen((prev) => !prev);
+        });
+      } else {
+        setIsFullscreen((prev) => !prev);
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      }
+      setIsFullscreen(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isFs = Boolean(document.fullscreenElement);
+      setIsFullscreen(isFs);
+      setTimeout(() => {
+        rfRef.current?.fitView({ padding: 0.15, duration: 400 });
+      }, 150);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
 
   const progressMap = useMemo(() => {
     const m = new Map<string, string>();
@@ -233,7 +269,20 @@ export default function RoadmapCanvas({
   }, [searchQuery, activeFilter, setNodes]);
 
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div
+      ref={containerRef}
+      style={{
+        width: '100%',
+        height: '100%',
+        position: isFullscreen && !document.fullscreenElement ? 'fixed' : 'relative',
+        top: isFullscreen && !document.fullscreenElement ? 0 : undefined,
+        left: isFullscreen && !document.fullscreenElement ? 0 : undefined,
+        right: isFullscreen && !document.fullscreenElement ? 0 : undefined,
+        bottom: isFullscreen && !document.fullscreenElement ? 0 : undefined,
+        zIndex: isFullscreen && !document.fullscreenElement ? 9999 : 'auto',
+        background: 'var(--bg-main, #ffffff)',
+      }}
+    >
       <RoadmapOverview nodes={roadmap.nodes} progress={progressMap} />
 
       <ReactFlow
@@ -255,20 +304,51 @@ export default function RoadmapCanvas({
         maxZoom={1.5}
       >
         <Background color="var(--border-strong)" gap={24} size={2} />
-        <MiniMap
-          nodeColor={(n) => {
-            if (n.data.status === 'completed') return '#00c9a7';
-            if (n.data.status === 'in_progress') return '#6c63ff';
-            if (n.data.status === 'available') return '#6c63ff';
-            return 'var(--border-strong)';
-          }}
-          maskColor="var(--bg-main)"
-          style={{
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-light)',
-            borderRadius: 12,
-          }}
-        />
+        {showMinimap && (
+          <MiniMap
+            position="bottom-right"
+            pannable
+            zoomable
+            nodeBorderRadius={4}
+            nodeStrokeWidth={1.5}
+            nodeStrokeColor={(n: any) => {
+              const status = n.data?.status;
+              if (status === 'completed') return '#00a386';
+              if (status === 'in_progress') return '#584ee4';
+              if (n.type === 'goal' || n.type === 'career') return '#d97706';
+              if (n.type === 'milestone' || n.type === 'checkpoint') return '#9333ea';
+              if (n.type === 'project') return '#db2777';
+              return 'rgba(148, 163, 184, 0.4)';
+            }}
+            nodeColor={(n: any) => {
+              const status = n.data?.status;
+              if (status === 'completed') return '#00c9a7';
+              if (status === 'in_progress') return '#6c63ff';
+              if (status === 'available') return '#3b82f6';
+              if (n.type === 'goal' || n.type === 'career') return '#f7971e';
+              if (n.type === 'milestone' || n.type === 'checkpoint') return '#a855f7';
+              if (n.type === 'project') return '#ec4899';
+              return '#94a3b8';
+            }}
+            maskColor="rgba(108, 99, 255, 0.12)"
+            maskStrokeColor="#6c63ff"
+            maskStrokeWidth={1.5}
+            style={{
+              background: 'rgba(var(--bg-card-rgb, 255, 255, 255), 0.9)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              border: '1.5px solid var(--border-light)',
+              borderRadius: 16,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+              marginBottom: 24,
+              marginRight: selectedNode ? 424 : 24,
+              transition: 'margin-right 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+              overflow: 'hidden',
+              width: 190,
+              height: 130,
+            }}
+          />
+        )}
       </ReactFlow>
 
       <RoadmapToolbar
@@ -276,6 +356,10 @@ export default function RoadmapCanvas({
         onFilter={setActiveFilter}
         onRegenerate={onRegenerate}
         activeFilter={activeFilter}
+        isFullscreen={isFullscreen}
+        onToggleFullscreen={toggleFullscreen}
+        showMinimap={showMinimap}
+        onToggleMinimap={() => setShowMinimap((prev) => !prev)}
       />
 
       {statusError && (

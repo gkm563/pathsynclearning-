@@ -14,6 +14,12 @@ const nextConfig: NextConfig = {
     workerThreads: false,
     cpus: 1,
   },
+  webpack: (config, { dev }) => {
+    if (!dev) {
+      config.cache = false;
+    }
+    return config;
+  },
   async redirects() {
     const nested = LEGACY_REDIRECTS.filter((r) =>
       r.source.startsWith("/platform/"),

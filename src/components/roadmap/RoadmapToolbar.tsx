@@ -2,18 +2,26 @@
 
 import React, { useState } from 'react';
 import { useReactFlow } from '@xyflow/react';
-import { ZoomIn, ZoomOut, Maximize, Search, Filter, RefreshCw, Target } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize2, Minimize2, Focus, Search, Filter, RefreshCw, Target, Map } from 'lucide-react';
 
 export default function RoadmapToolbar({ 
   onSearch, 
   onFilter, 
   onRegenerate,
-  activeFilter
+  activeFilter,
+  isFullscreen,
+  onToggleFullscreen,
+  showMinimap,
+  onToggleMinimap,
 }: { 
   onSearch: (q: string) => void;
   onFilter: (f: string) => void;
   onRegenerate: () => void;
   activeFilter: string;
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
+  showMinimap?: boolean;
+  onToggleMinimap?: () => void;
 }) {
   const { zoomIn, zoomOut, fitView } = useReactFlow();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -28,7 +36,7 @@ export default function RoadmapToolbar({
       left: '50%',
       transform: 'translateX(-50%)',
       zIndex: 10,
-      background: 'rgba(var(--bg-card-rgb, 255, 255, 255), 0.8)',
+      background: 'rgba(var(--bg-card-rgb, 255, 255, 255), 0.85)',
       backdropFilter: 'blur(12px)',
       border: '1px solid var(--border-light)',
       borderRadius: 100,
@@ -38,9 +46,30 @@ export default function RoadmapToolbar({
       gap: 12,
       boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
     }}>
-      <button onClick={() => zoomOut()} style={btnStyle}><ZoomOut size={18} /></button>
-      <button onClick={() => zoomIn()} style={btnStyle}><ZoomIn size={18} /></button>
-      <button onClick={() => fitView({ duration: 800 })} style={btnStyle}><Maximize size={18} /></button>
+      <button onClick={() => zoomOut()} title="Zoom out" style={btnStyle}><ZoomOut size={18} /></button>
+      <button onClick={() => zoomIn()} title="Zoom in" style={btnStyle}><ZoomIn size={18} /></button>
+      <button onClick={() => fitView({ duration: 600 })} title="Fit view" style={btnStyle}><Focus size={18} /></button>
+      {onToggleFullscreen && (
+        <button 
+          onClick={onToggleFullscreen} 
+          title={isFullscreen ? "Exit full screen" : "Full screen"} 
+          style={btnStyle}
+        >
+          {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+        </button>
+      )}
+      {onToggleMinimap && (
+        <button 
+          onClick={onToggleMinimap} 
+          title={showMinimap ? "Hide minimap" : "Show minimap"} 
+          style={{
+            ...btnStyle,
+            color: showMinimap ? '#6c63ff' : 'var(--text-muted)'
+          }}
+        >
+          <Map size={18} />
+        </button>
+      )}
       
       <div style={{ width: 1, height: 24, background: 'var(--border-strong)' }} />
       
