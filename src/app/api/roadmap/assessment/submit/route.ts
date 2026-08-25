@@ -113,16 +113,30 @@ export async function POST(request: Request) {
         };
       }
     } else {
-      const graded = gradeCoding(node.assessment, body.code || "");
+      const language = (body.language || "javascript") as
+        | "javascript"
+        | "python"
+        | "java"
+        | "c"
+        | "cpp";
+      const graded = await gradeCoding(
+        node.assessment,
+        body.code || "",
+        language,
+      );
       score = graded.score;
       passed = graded.passed;
       details = {
+        language,
         passedCount: graded.passedCount,
         total: graded.total,
         results: graded.results.map((r) => ({
           index: r.index,
           ok: r.ok,
           error: r.error,
+          args: r.args,
+          expected: r.expected,
+          actual: r.actual,
         })),
       };
       if (passed && node.assessment.coding) {

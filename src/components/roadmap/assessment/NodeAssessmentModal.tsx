@@ -80,6 +80,7 @@ export default function NodeAssessmentModal({
     async (payload: {
       answers?: Record<string, number>;
       code?: string;
+      language?: string;
       violations?: ProctorViolation[];
     }) => {
       if (!data) return;
@@ -98,6 +99,7 @@ export default function NodeAssessmentModal({
           type: data.assessment.type,
           answers: payload.answers,
           code: payload.code,
+          language: payload.language,
           violations: payload.violations || [],
         });
         setResultScore(res.score ?? 0);
@@ -406,8 +408,11 @@ export default function NodeAssessmentModal({
         ) : (
           <CodingAssessment
             assessment={data.assessment}
+            nodeId={nodeId}
             submitting={submitting}
-            onSubmit={(code) => submit({ code, violations })}
+            onSubmit={({ code, language }) =>
+              submit({ code, language, violations })
+            }
           />
         )
       }

@@ -1,11 +1,20 @@
 import type { CodingAssessment, CodingTestCase, NodeAssessment } from "@/types/roadmap";
 
+export type CodingTestResult = {
+  index: number;
+  ok: boolean;
+  error?: string;
+  args?: unknown[];
+  expected?: unknown;
+  actual?: unknown;
+};
+
 export type CodingGradeResult = {
   score: number;
   passed: boolean;
   passedCount: number;
   total: number;
-  results: Array<{ index: number; ok: boolean; error?: string }>;
+  results: CodingTestResult[];
 };
 
 function deepEqual(a: unknown, b: unknown): boolean {
@@ -16,13 +25,28 @@ function deepEqual(a: unknown, b: unknown): boolean {
   }
 }
 
+function formatValue(v: unknown): string {
+  try {
+    return JSON.stringify(v, null, 2) ?? String(v);
+  } catch {
+    return String(v);
+  }
+}
+
+export function formatDiff(expected: unknown, actual: unknown): string {
+  const e = formatValue(expected);
+  const a = formatValue(actual);
+  if (e === a) return "No difference";
+  return `Expected:\n${e}\n\nGot:\n${a}`;
+}
+
 /** Client-side public test runner (no hidden tests). */
 export function runPublicTestsInBrowser(
   code: string,
   functionName: string,
   publicTests: CodingTestCase[],
 ): CodingGradeResult {
-  const results: CodingGradeResult["results"] = [];
+  const results: CodingTestResult[] = [];
   let passedCount = 0;
 
   let fn: (...args: unknown[]) => unknown;
@@ -54,11 +78,20 @@ export function runPublicTestsInBrowser(
       const got = fn(...t.args);
       const ok = deepEqual(got, t.expected);
       if (ok) passedCount += 1;
-      results.push({ index: i, ok });
+      results.push({
+        index: i,
+        ok,
+        args: t.args,
+        expected: t.expected,
+        actual: got,
+      });
     } catch (err) {
       results.push({
         index: i,
         ok: false,
+        args: t.args,
+        expected: t.expected,
+        actual: undefined,
         error: err instanceof Error ? err.message : "Runtime error",
       });
     }

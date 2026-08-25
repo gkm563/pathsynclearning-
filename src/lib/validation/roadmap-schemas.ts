@@ -130,6 +130,7 @@ export const assessmentSubmitSchema = z.object({
   type: z.enum(['mcq', 'coding']),
   answers: z.record(z.string(), z.number().int()).optional(),
   code: z.string().max(50000).optional(),
+  language: z.enum(['javascript', 'python', 'java', 'c', 'cpp']).optional(),
   violations: z.array(z.object({
     kind: z.string(),
     at: z.string().optional(),
