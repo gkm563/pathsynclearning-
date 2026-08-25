@@ -13,6 +13,7 @@ export default function RoadmapToolbar({
   onToggleFullscreen,
   showMinimap,
   onToggleMinimap,
+  onFocusGoal,
 }: { 
   onSearch: (q: string) => void;
   onFilter: (f: string) => void;
@@ -22,6 +23,7 @@ export default function RoadmapToolbar({
   onToggleFullscreen?: () => void;
   showMinimap?: boolean;
   onToggleMinimap?: () => void;
+  onFocusGoal?: () => void;
 }) {
   const { zoomIn, zoomOut, fitView } = useReactFlow();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -140,7 +142,11 @@ export default function RoadmapToolbar({
 
       <div style={{ width: 1, height: 24, background: 'var(--border-strong)' }} />
 
-      <button onClick={() => fitView({ nodes: [{ id: 'goal' }], duration: 800 })} style={{...btnStyle, color: '#00c9a7', display: 'flex', gap: 6, padding: '0 8px'}}>
+      <button
+        onClick={() => onFocusGoal?.()}
+        title="Center on my goal"
+        style={{...btnStyle, color: '#00c9a7', display: 'flex', gap: 6, padding: '0 8px'}}
+      >
         <Target size={18} />
         <span style={{ fontFamily: 'Outfit', fontWeight: 600, fontSize: 14 }}>My Goal</span>
       </button>

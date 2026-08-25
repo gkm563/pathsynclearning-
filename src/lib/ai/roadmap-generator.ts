@@ -2,6 +2,7 @@ import { RoadmapNode, RoadmapEdge, RoadmapProfile } from '@/types/roadmap';
 import { callAIWithFallback } from './llm';
 import { roadmapSchema } from '@/lib/validation/roadmap-schemas';
 import { AppError } from '@/lib/api/errors';
+import { ensureNodeAssessments } from '@/lib/roadmap/assessment-bank';
 
 /** Keep the profile payload small — DB rows include ids/timestamps the model does not need. */
 function compactProfile(profile: RoadmapProfile) {
@@ -37,7 +38,7 @@ Hard limits (must obey — oversized JSON will be truncated):
 - 1 goal, 2-3 milestones, 2-3 phases; remaining nodes are skills/projects/checkpoints.
 - description: max 1 short sentence (~120 chars).
 - whyLearn: max 1 short sentence (~100 chars).
-- resources: 0-2 per node; prefer real URLs.
+- resources: 1-2 per learnable node; MUST include at least one free YouTube video (type "video", real youtube.com or youtu.be URL) for skill/topic/project/checkpoint nodes.
 - skills/topics: 1-3 short strings each.
 - project field: null unless type is project (then one short sentence).
 - Node IDs: unique kebab-case.
@@ -45,6 +46,10 @@ Hard limits (must obey — oversized JSON will be truncated):
 - Edges: one edge per dependency; source = prerequisite, target = dependent.
 - Skip topics the student already knows at advanced/very_confident.
 - Scale estimatedHours to weeklyHours and targetTimeline.
+- For skill/topic/project/checkpoint nodes, include an "assessment" object:
+  - Conceptual nodes (topic/checkpoint): type "mcq" with 3-5 questions (options + correctIndex 0-based).
+  - Coding-heavy skill/project: type "coding" with JS-only starterCode, functionName, examples, publicTests [{args, expected}], hiddenTests [{args, expected}].
+  - passScore: 70 for mcq, 100 for coding; timeLimitMinutes 15-45.
 
 Return ONLY valid JSON matching:
 {
@@ -64,7 +69,14 @@ Return ONLY valid JSON matching:
     "topics": ["string"],
     "resources": [{"title":"string","url":"string","type":"documentation|video|course|practice|article|project"}],
     "project": "string|null",
-    "whyLearn": "string"
+    "whyLearn": "string",
+    "assessment": {
+      "type": "mcq|coding",
+      "passScore": number,
+      "timeLimitMinutes": number,
+      "mcq": {"questions":[{"id":"string","prompt":"string","options":["string"],"correctIndex":0}]},
+      "coding": {"prompt":"string","starterCode":"string","functionName":"string","examples":[{"input":"string","output":"string"}],"publicTests":[{"args":[],"expected":null}],"hiddenTests":[{"args":[],"expected":null}]}
+    }
   }],
   "edges": [{"id":"string","source":"string","target":"string","label":"string"}]
 }`;
@@ -82,8 +94,27 @@ Return ONLY valid JSON matching:
       reasoningEffort: 'medium',
     });
 
-    const validatedResult = roadmapSchema.parse(result);
-    return validatedResult as { title: string; targetRole: string; estimatedWeeks: number; nodes: RoadmapNode[]; edges: RoadmapEdge[] };
+    const loose = roadmapSchema.safeParse(result);
+    const base = loose.success
+      ? loose.data
+      : (() => {
+          const nodes = Array.isArray(result?.nodes)
+            ? result.nodes.map((n: any) => {
+                const { assessment: _a, ...rest } = n || {};
+                return rest;
+              })
+            : [];
+          return roadmapSchema.parse({ ...result, nodes });
+        })();
+
+    const nodes = ensureNodeAssessments(base.nodes as RoadmapNode[]);
+    return {
+      title: base.title,
+      targetRole: base.targetRole,
+      estimatedWeeks: base.estimatedWeeks,
+      nodes,
+      edges: base.edges as RoadmapEdge[],
+    };
   } catch (error) {
     if (error && typeof error === 'object' && 'name' in error && error.name === 'ZodError') {
       console.error("Zod Validation Failed:", JSON.stringify((error as any).errors, null, 2));

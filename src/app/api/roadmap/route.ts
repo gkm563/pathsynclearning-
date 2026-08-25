@@ -4,6 +4,8 @@ import { roadmaps, roadmapProgress } from '@/lib/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { errorResponse, jsonResponse } from '@/lib/api/http';
 import { isProgressSatisfied } from '@/lib/roadmap/progress';
+import { ensureNodeAssessments } from '@/lib/roadmap/assessment-bank';
+import type { RoadmapNode } from '@/types/roadmap';
 import crypto from 'crypto';
 
 type RoadmapProgress = typeof roadmapProgress.$inferSelect;
@@ -76,17 +78,33 @@ export async function GET() {
       .from(roadmapProgress)
       .where(eq(roadmapProgress.roadmapId, activeRoadmap.id));
 
-    const nodes = Array.isArray(activeRoadmap.nodes) ? activeRoadmap.nodes : [];
+    const rawNodes = Array.isArray(activeRoadmap.nodes) ? activeRoadmap.nodes : [];
     const edges = (Array.isArray(activeRoadmap.edges) ? activeRoadmap.edges : []) as Array<{
       source: string;
       target: string;
     }>;
 
-    progress = (await reconcileProgress(db, user.id, activeRoadmap.id, nodes, edges, progress)) as any;
+    const enrichedNodes = ensureNodeAssessments(rawNodes as RoadmapNode[]);
+    const needsPersist = JSON.stringify(rawNodes) !== JSON.stringify(enrichedNodes);
+    if (needsPersist) {
+      await db
+        .update(roadmaps)
+        .set({ nodes: enrichedNodes })
+        .where(eq(roadmaps.id, activeRoadmap.id));
+    }
+
+    progress = (await reconcileProgress(
+      db,
+      user.id,
+      activeRoadmap.id,
+      enrichedNodes,
+      edges,
+      progress,
+    )) as any;
 
     const progressMap = new Map(progress.map((p) => [p.nodeId, p]));
 
-    const nodesWithProgress = nodes.map((node: any) => ({
+    const nodesWithProgress = enrichedNodes.map((node) => ({
       ...node,
       status: progressMap.get(node.id)?.status || 'locked',
     }));

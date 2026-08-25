@@ -31,6 +31,37 @@ export interface RoadmapNodeResource {
   type: "documentation" | "video" | "course" | "practice" | "article" | "project";
 }
 
+export interface McqQuestion {
+  id: string;
+  prompt: string;
+  options: string[];
+  /** Server-only — stripped from public GET */
+  correctIndex: number;
+}
+
+export interface CodingTestCase {
+  args: unknown[];
+  expected: unknown;
+}
+
+export interface CodingAssessment {
+  prompt: string;
+  starterCode: string;
+  functionName: string;
+  examples: { input: string; output: string }[];
+  publicTests: CodingTestCase[];
+  /** Server-only — stripped from public GET */
+  hiddenTests?: CodingTestCase[];
+}
+
+export interface NodeAssessment {
+  type: "mcq" | "coding";
+  passScore: number;
+  timeLimitMinutes: number;
+  mcq?: { questions: McqQuestion[] };
+  coding?: CodingAssessment;
+}
+
 export interface RoadmapNode {
   id: string;
   type: RoadmapNodeType;
@@ -45,6 +76,7 @@ export interface RoadmapNode {
   resources: RoadmapNodeResource[];
   project: string | null;
   whyLearn: string;
+  assessment?: NodeAssessment;
   /** Position — set by auto-layout, not by AI */
   position?: { x: number; y: number };
 }

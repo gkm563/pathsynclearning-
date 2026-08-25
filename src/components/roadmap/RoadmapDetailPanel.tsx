@@ -2,18 +2,39 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Clock, ExternalLink, Book, Video, Code, CheckCircle, SkipForward, Play, Lock } from 'lucide-react';
+import {
+  X, Clock, ExternalLink, Book, Video, Code, CheckCircle, SkipForward, Play, Lock, ClipboardCheck,
+} from 'lucide-react';
 import type { RoadmapNode } from '@/types/roadmap';
+import { isAssessableNode, nodeRequiresAssessment } from '@/lib/roadmap/assessment';
+
+function youtubeEmbedUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes('youtu.be')) {
+      return `https://www.youtube.com/embed/${u.pathname.slice(1)}`;
+    }
+    if (u.hostname.includes('youtube.com')) {
+      const id = u.searchParams.get('v');
+      if (id) return `https://www.youtube.com/embed/${id}`;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
 
 export default function RoadmapDetailPanel({
   node,
   allNodes,
   onStatusChange,
+  onTakeAssessment,
   onClose,
 }: {
   node: RoadmapNode | null;
   allNodes: RoadmapNode[];
   onStatusChange: (id: string, status: string) => void | Promise<void>;
+  onTakeAssessment?: (id: string) => void;
   onClose: () => void;
 }) {
   const status = node?.status ?? 'locked';
@@ -22,12 +43,21 @@ export default function RoadmapDetailPanel({
   const isInProgress = status === 'in_progress';
   const isSkipped = status === 'skipped';
   const depCount = node?.dependencies?.length ?? 0;
+  const needsExam = node ? nodeRequiresAssessment(node) : false;
+  const hasExam = node ? isAssessableNode(node) : false;
 
   const lockedHint = isLocked
     ? depCount > 0
       ? `Complete ${depCount} prerequisite${depCount === 1 ? '' : 's'} first.`
       : 'Complete prerequisite nodes first.'
     : null;
+
+  const ytResources = (node?.resources || []).filter(
+    (r) => r.type === 'video' && /youtube\.com|youtu\.be/i.test(r.url),
+  );
+  const otherResources = (node?.resources || []).filter(
+    (r) => !(r.type === 'video' && /youtube\.com|youtu\.be/i.test(r.url)),
+  );
 
   return (
     <AnimatePresence>
@@ -74,6 +104,7 @@ export default function RoadmapDetailPanel({
                 }}
               >
                 {node.type} · {status.replace('_', ' ')}
+                {hasExam ? ` · ${node.assessment?.type}` : ''}
               </span>
               <h2
                 style={{
@@ -174,7 +205,71 @@ export default function RoadmapDetailPanel({
               </div>
             )}
 
-            {node.resources && node.resources.length > 0 && (
+            {ytResources.length > 0 && (
+              <div style={{ marginBottom: 24 }}>
+                <h3
+                  style={{
+                    fontFamily: 'Outfit',
+                    fontSize: 16,
+                    color: 'var(--text-main)',
+                    marginBottom: 8,
+                  }}
+                >
+                  Free YouTube lessons
+                </h3>
+                {ytResources.map((res, i) => {
+                  const embed = youtubeEmbedUrl(res.url);
+                  return (
+                    <div key={i} style={{ marginBottom: 12 }}>
+                      {embed ? (
+                        <div
+                          style={{
+                            position: 'relative',
+                            paddingBottom: '56.25%',
+                            height: 0,
+                            borderRadius: 10,
+                            overflow: 'hidden',
+                            marginBottom: 8,
+                          }}
+                        >
+                          <iframe
+                            src={embed}
+                            title={res.title}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            style={{
+                              position: 'absolute',
+                              inset: 0,
+                              width: '100%',
+                              height: '100%',
+                              border: 0,
+                            }}
+                          />
+                        </div>
+                      ) : null}
+                      <a
+                        href={res.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          color: '#f7971e',
+                          fontFamily: 'Inter',
+                          fontSize: 13,
+                          textDecoration: 'none',
+                        }}
+                      >
+                        <Video size={14} /> {res.title} <ExternalLink size={12} />
+                      </a>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {otherResources.length > 0 && (
               <div style={{ marginBottom: 24 }}>
                 <h3
                   style={{
@@ -187,7 +282,7 @@ export default function RoadmapDetailPanel({
                   Resources
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {node.resources.map((res: any, i: number) => (
+                  {otherResources.map((res: any, i: number) => (
                     <a
                       key={i}
                       href={res.url}
@@ -220,6 +315,25 @@ export default function RoadmapDetailPanel({
                     </a>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {needsExam && (
+              <div
+                style={{
+                  padding: 12,
+                  borderRadius: 10,
+                  background: 'rgba(108,99,255,0.08)',
+                  border: '1px solid rgba(108,99,255,0.25)',
+                  fontSize: 13,
+                  color: 'var(--text-muted)',
+                  fontFamily: 'Inter',
+                  marginBottom: 8,
+                }}
+              >
+                Pass a proctored {node.assessment?.type === 'coding' ? 'coding' : 'MCQ'}{' '}
+                assessment to unlock the next nodes. Fullscreen · no tab switching · no
+                copy/paste.
               </div>
             )}
           </div>
@@ -260,7 +374,29 @@ export default function RoadmapDetailPanel({
             )}
 
             <div style={{ display: 'flex', gap: 12 }}>
-              {!isCompleted && !isLocked && (
+              {!isCompleted && !isLocked && hasExam && onTakeAssessment && (
+                <button
+                  onClick={() => onTakeAssessment(node.id)}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    background: '#00c9a7',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 8,
+                    fontFamily: 'Outfit',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                  }}
+                >
+                  <ClipboardCheck size={18} /> Take Assessment
+                </button>
+              )}
+              {!isCompleted && !isLocked && !needsExam && (
                 <button
                   onClick={() => onStatusChange(node.id, 'completed')}
                   style={{
@@ -304,7 +440,7 @@ export default function RoadmapDetailPanel({
                   <Play size={18} /> Start Learning
                 </button>
               )}
-              {!isSkipped && !isCompleted && !isLocked && (
+              {!isSkipped && !isCompleted && !isLocked && !needsExam && (
                 <button
                   onClick={() => onStatusChange(node.id, 'skipped')}
                   title="Skip"

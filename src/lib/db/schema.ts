@@ -299,9 +299,41 @@ export const roadmapProgress = pgTable(
   ],
 );
 
+export const roadmapAssessmentAttempts = pgTable(
+  "roadmap_assessment_attempts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    roadmapId: uuid("roadmap_id")
+      .notNull()
+      .references(() => roadmaps.id, { onDelete: "cascade" }),
+    nodeId: text("node_id").notNull(),
+    type: text("type").notNull(),
+    passed: boolean("passed").notNull().default(false),
+    score: integer("score").notNull().default(0),
+    violations: jsonb("violations").$type<unknown[]>().notNull().default([]),
+    answers: jsonb("answers").$type<Record<string, unknown>>().notNull().default({}),
+    code: text("code"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("idx_assessment_attempts_user_node").on(
+      t.userId,
+      t.roadmapId,
+      t.nodeId,
+    ),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Profile = typeof profiles.$inferSelect;
 export type RoadmapProfileRow = typeof roadmapProfiles.$inferSelect;
 export type RoadmapRow = typeof roadmaps.$inferSelect;
 export type RoadmapProgressRow = typeof roadmapProgress.$inferSelect;
+export type RoadmapAssessmentAttempt =
+  typeof roadmapAssessmentAttempts.$inferSelect;

@@ -143,20 +143,41 @@ export default function RoadmapPage() {
             marginRight: -36,
             marginTop: -28,
             marginBottom: -60,
-            height: "calc(100vh - 72px)",
+            height: "calc(100dvh - 72px)",
+            maxHeight: "calc(100dvh - 72px)",
             position: "relative",
             background: "var(--bg-main)",
+            overflow: "hidden",
           }}
         >
+          <RoadmapNoPageScroll />
           <RoadmapCanvas
             roadmap={roadmap}
             progress={progress}
             onStatusChange={handleStatusChange}
             onRegenerate={handleRegenerate}
+            onRefresh={fetchRoadmap}
             statusError={statusError}
           />
         </div>
       </ReactFlowProvider>
     </React.Suspense>
   );
+}
+
+/** Locks document scroll while the roadmap canvas is mounted. */
+function RoadmapNoPageScroll() {
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtml = html.style.overflow;
+    const prevBody = body.style.overflow;
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    return () => {
+      html.style.overflow = prevHtml;
+      body.style.overflow = prevBody;
+    };
+  }, []);
+  return null;
 }

@@ -26,6 +26,8 @@ import DependencyEdge from './edges/DependencyEdge';
 import RoadmapToolbar from './RoadmapToolbar';
 import RoadmapDetailPanel from './RoadmapDetailPanel';
 import RoadmapOverview from './RoadmapOverview';
+import NodeAssessmentModal from './assessment/NodeAssessmentModal';
+import { isAssessableNode } from '@/lib/roadmap/assessment';
 
 const nodeTypes = {
   goal: GoalNode,
@@ -97,24 +99,58 @@ export default function RoadmapCanvas({
   progress,
   onStatusChange,
   onRegenerate,
+  onRefresh,
   statusError,
 }: {
   roadmap: Roadmap;
   progress: RoadmapNodeProgress[];
   onStatusChange: (nodeId: string, status: string) => void | Promise<void>;
   onRegenerate: () => void;
+  onRefresh?: () => void | Promise<void>;
   statusError?: string | null;
 }) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState<RTNode | null>(null);
+  const [assessmentNodeId, setAssessmentNodeId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
   const rfRef = useRef<any>(null);
   const didFitRef = useRef(false);
+  const lastFocusedLearningIdRef = useRef<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showMinimap, setShowMinimap] = useState(true);
+
+  const focusNode = useCallback((nodeId: string, opts?: { zoom?: number; duration?: number }) => {
+    const instance = rfRef.current;
+    if (!instance || !nodeId) return;
+
+    const zoom = opts?.zoom ?? 1.05;
+    const duration = opts?.duration ?? 500;
+
+    // Prefer fitView on the single node so size/padding stay correct
+    requestAnimationFrame(() => {
+      try {
+        instance.fitView({
+          nodes: [{ id: nodeId }],
+          padding: 0.45,
+          duration,
+          maxZoom: zoom,
+          minZoom: zoom,
+        });
+      } catch {
+        const n = instance.getNode?.(nodeId);
+        if (!n) return;
+        const w = n.measured?.width ?? n.width ?? 200;
+        const h = n.measured?.height ?? n.height ?? 80;
+        instance.setCenter(n.position.x + w / 2, n.position.y + h / 2, {
+          zoom,
+          duration,
+        });
+      }
+    });
+  }, []);
 
   const toggleFullscreen = useCallback(() => {
     if (!containerRef.current) return;
@@ -160,15 +196,109 @@ export default function RoadmapCanvas({
     return m;
   }, [progress, roadmap.nodes]);
 
+  /** Current learning target: last unlocked node in learning phase (in_progress, else available). */
+  const currentLearningNodeId = useMemo(() => {
+    const learningTypes = new Set([
+      'skill',
+      'topic',
+      'project',
+      'checkpoint',
+      'milestone',
+      'resource',
+    ]);
+
+    const withStatus = roadmap.nodes
+      .filter((n) => learningTypes.has(n.type))
+      .map((n) => ({
+        node: n,
+        status: progressMap.get(n.id) || n.status || 'locked',
+      }))
+      .filter((x) => x.status === 'in_progress' || x.status === 'available');
+
+    if (!withStatus.length) return null;
+
+    // Prefer actively in-progress
+    const inProgress = withStatus.filter((x) => x.status === 'in_progress');
+    const pool = inProgress.length ? inProgress : withStatus;
+
+    // "Last" = deepest unlocked in the graph (furthest along the path)
+    const depth = new Map<string, number>();
+    const visit = (id: string, d: number) => {
+      const prev = depth.get(id) ?? -1;
+      if (d <= prev) return;
+      depth.set(id, d);
+      for (const e of roadmap.edges) {
+        if (e.source === id) visit(e.target, d + 1);
+      }
+    };
+    for (const n of roadmap.nodes) {
+      const hasIncoming = roadmap.edges.some((e) => e.target === n.id);
+      if (!hasIncoming) visit(n.id, 0);
+    }
+
+    pool.sort((a, b) => {
+      const da = depth.get(a.node.id) ?? 0;
+      const db = depth.get(b.node.id) ?? 0;
+      if (db !== da) return db - da;
+      const ya = a.node.position?.y ?? 0;
+      const yb = b.node.position?.y ?? 0;
+      return yb - ya;
+    });
+
+    return pool[0]?.node.id ?? null;
+  }, [roadmap.nodes, roadmap.edges, progressMap]);
+
   const handleNodeClick = useCallback(
     (node: RTNode) => {
+      const status = (progressMap.get(node.id) || node.status || 'locked') as RTNode['status'];
       setSelectedNode({
         ...node,
-        status: (progressMap.get(node.id) || node.status || 'locked') as RTNode['status'],
+        status,
+      });
+      // Always center — including goal / locked nodes
+      focusNode(node.id, {
+        zoom: node.type === 'goal' || node.type === 'career' ? 1.1 : 1.05,
+        duration: 600,
       });
     },
-    [progressMap],
+    [progressMap, focusNode],
   );
+
+  // Zoom to active / selected learning node
+  useEffect(() => {
+    const activeId = assessmentNodeId || selectedNode?.id;
+    if (!activeId) return;
+    const t = setTimeout(() => focusNode(activeId), 80);
+    return () => clearTimeout(t);
+  }, [assessmentNodeId, selectedNode?.id, focusNode]);
+
+  // Auto-zoom to the last unlocked node currently in learning phase
+  useEffect(() => {
+    if (!currentLearningNodeId || !rfRef.current) return;
+    if (assessmentNodeId) return; // assessment modal owns focus while open
+    if (lastFocusedLearningIdRef.current === currentLearningNodeId) return;
+    lastFocusedLearningIdRef.current = currentLearningNodeId;
+
+    const node = roadmap.nodes.find((n) => n.id === currentLearningNodeId);
+    if (node) {
+      setSelectedNode({
+        ...node,
+        status: (progressMap.get(node.id) || node.status || 'available') as RTNode['status'],
+      });
+    }
+
+    const t = setTimeout(
+      () => focusNode(currentLearningNodeId, { zoom: 1.05, duration: 650 }),
+      didFitRef.current ? 120 : 350,
+    );
+    return () => clearTimeout(t);
+  }, [
+    currentLearningNodeId,
+    assessmentNodeId,
+    focusNode,
+    roadmap.nodes,
+    progressMap,
+  ]);
 
   // Keep detail panel status in sync after progress refetch
   useEffect(() => {
@@ -281,6 +411,7 @@ export default function RoadmapCanvas({
         bottom: isFullscreen && !document.fullscreenElement ? 0 : undefined,
         zIndex: isFullscreen && !document.fullscreenElement ? 9999 : 'auto',
         background: 'var(--bg-main, #ffffff)',
+        overflow: 'hidden',
       }}
     >
       <RoadmapOverview nodes={roadmap.nodes} progress={progressMap} />
@@ -302,6 +433,10 @@ export default function RoadmapCanvas({
         proOptions={{ hideAttribution: true }}
         minZoom={0.2}
         maxZoom={1.5}
+        preventScrolling
+        zoomOnScroll
+        panOnScroll={false}
+        style={{ width: '100%', height: '100%', overflow: 'hidden' }}
       >
         <Background color="var(--border-strong)" gap={24} size={2} />
         {showMinimap && (
@@ -360,6 +495,17 @@ export default function RoadmapCanvas({
         onToggleFullscreen={toggleFullscreen}
         showMinimap={showMinimap}
         onToggleMinimap={() => setShowMinimap((prev) => !prev)}
+        onFocusGoal={() => {
+          const goal =
+            roadmap.nodes.find((n) => n.type === 'goal') ||
+            roadmap.nodes.find((n) => n.type === 'career');
+          if (!goal) return;
+          setSelectedNode({
+            ...goal,
+            status: (progressMap.get(goal.id) || goal.status || 'available') as RTNode['status'],
+          });
+          focusNode(goal.id, { zoom: 1.1, duration: 700 });
+        }}
       />
 
       {statusError && (
@@ -392,8 +538,48 @@ export default function RoadmapCanvas({
         onStatusChange={async (id, status) => {
           await onStatusChange(id, status);
         }}
+        onTakeAssessment={(id) => setAssessmentNodeId(id)}
         onClose={() => setSelectedNode(null)}
       />
+
+      {assessmentNodeId && (
+        <NodeAssessmentModal
+          key={assessmentNodeId}
+          nodeId={assessmentNodeId}
+          onClose={() => setAssessmentNodeId(null)}
+          onCompleted={async ({ unlockedNodeIds }) => {
+            await onRefresh?.();
+            const nextId = (unlockedNodeIds || []).find((id) => {
+              const n = roadmap.nodes.find((x) => x.id === id);
+              return n ? isAssessableNode(n) : false;
+            });
+            const nextAny =
+              nextId ||
+              (unlockedNodeIds || []).find((id) =>
+                roadmap.nodes.some((x) => x.id === id),
+              );
+
+            if (nextId) {
+              const n = roadmap.nodes.find((x) => x.id === nextId)!;
+              lastFocusedLearningIdRef.current = nextId;
+              setSelectedNode({ ...n, status: 'available' });
+              setAssessmentNodeId(nextId);
+              focusNode(nextId);
+              return;
+            }
+
+            setAssessmentNodeId(null);
+            if (nextAny) {
+              const n = roadmap.nodes.find((x) => x.id === nextAny)!;
+              lastFocusedLearningIdRef.current = nextAny;
+              setSelectedNode({ ...n, status: 'available' });
+              focusNode(nextAny);
+            } else {
+              setSelectedNode(null);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

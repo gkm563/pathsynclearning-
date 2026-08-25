@@ -1,6 +1,6 @@
 import { requireDbUser } from '@/lib/db/users';
 import { getDb } from '@/lib/db/client';
-import { roadmaps, roadmapProgress } from '@/lib/db/schema';
+import { roadmaps, roadmapProgress, roadmapAssessmentAttempts } from '@/lib/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { errorResponse, jsonResponse, parseJson } from '@/lib/api/http';
 import { roadmapProgressUpdateSchema } from '@/lib/validation/roadmap-schemas';
@@ -10,7 +10,8 @@ import {
   findNodesToUnlock,
   isProgressSatisfied,
 } from '@/lib/roadmap/progress';
-import type { RoadmapEdge } from '@/types/roadmap';
+import { isAssessableNode, nodeRequiresAssessment } from '@/lib/roadmap/assessment';
+import type { RoadmapEdge, RoadmapNode } from '@/types/roadmap';
 import crypto from 'crypto';
 
 export async function GET() {
@@ -59,12 +60,39 @@ export async function PUT(request: Request) {
       throw new AppError('NOT_FOUND', 'Active roadmap not found');
     }
 
-    const nodes = Array.isArray(activeRoadmap.nodes) ? activeRoadmap.nodes : [];
+    const nodes = (Array.isArray(activeRoadmap.nodes) ? activeRoadmap.nodes : []) as RoadmapNode[];
     const edges = (Array.isArray(activeRoadmap.edges) ? activeRoadmap.edges : []) as RoadmapEdge[];
 
-    const nodeExists = nodes.some((n: any) => n.id === nodeId);
-    if (!nodeExists) {
+    const node = nodes.find((n) => n.id === nodeId);
+    if (!node) {
       throw new AppError('NOT_FOUND', 'Node not found in active roadmap');
+    }
+
+    if (status === 'completed' && nodeRequiresAssessment(node)) {
+      if (!isAssessableNode(node)) {
+        throw new AppError(
+          'BAD_REQUEST',
+          'This node requires an assessment. Open Take Assessment to complete it.',
+        );
+      }
+      const [passed] = await db
+        .select({ id: roadmapAssessmentAttempts.id })
+        .from(roadmapAssessmentAttempts)
+        .where(
+          and(
+            eq(roadmapAssessmentAttempts.userId, user.id),
+            eq(roadmapAssessmentAttempts.roadmapId, activeRoadmap.id),
+            eq(roadmapAssessmentAttempts.nodeId, nodeId),
+            eq(roadmapAssessmentAttempts.passed, true),
+          ),
+        )
+        .limit(1);
+      if (!passed) {
+        throw new AppError(
+          'BAD_REQUEST',
+          'Pass the node assessment before marking complete.',
+        );
+      }
     }
 
     const allProgress = await db
@@ -127,7 +155,6 @@ export async function PUT(request: Request) {
 
     progressMap.set(nodeId, updatedProgress);
 
-    // Unlock dependents when a node is completed or skipped
     if (isProgressSatisfied(status)) {
       const toUnlock = findNodesToUnlock(nodeId, edges, progressMap);
 
@@ -157,7 +184,6 @@ export async function PUT(request: Request) {
       }
     }
 
-    // Return full progress so the client can refresh unlocks in one round-trip
     const progress = Array.from(progressMap.values());
     return jsonResponse({ progress: updatedProgress, allProgress: progress });
   } catch (e) {

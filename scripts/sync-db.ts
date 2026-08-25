@@ -22,10 +22,31 @@ async function main() {
     schema: { storeProducts, users },
   });
 
-  console.log("1/2 Dropping legacy onboarding table (if present)...");
+  console.log("1/3 Ensuring roadmap_assessment_attempts table...");
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS roadmap_assessment_attempts (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+      user_id uuid NOT NULL REFERENCES users(id) ON DELETE cascade,
+      roadmap_id uuid NOT NULL REFERENCES roadmaps(id) ON DELETE cascade,
+      node_id text NOT NULL,
+      type text NOT NULL,
+      passed boolean DEFAULT false NOT NULL,
+      score integer DEFAULT 0 NOT NULL,
+      violations jsonb DEFAULT '[]'::jsonb NOT NULL,
+      answers jsonb DEFAULT '{}'::jsonb NOT NULL,
+      code text,
+      created_at timestamptz DEFAULT now() NOT NULL
+    )
+  `);
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS idx_assessment_attempts_user_node
+    ON roadmap_assessment_attempts (user_id, roadmap_id, node_id)
+  `);
+
+  console.log("2/3 Dropping legacy onboarding table (if present)...");
   await db.execute(sql`DROP TABLE IF EXISTS onboarding CASCADE`);
 
-  console.log("2/2 Seeding store products...");
+  console.log("3/3 Seeding store products...");
   for (let i = 0; i < STORE_CATALOG.length; i++) {
     const p = STORE_CATALOG[i];
     await db
@@ -77,9 +98,9 @@ async function main() {
   console.log(`Tables: ${names.join(", ")}`);
   console.log(`Counts — users: ${userCount.value}, products: ${productCount.value}`);
   console.log(
-    names.includes("onboarding")
-      ? "WARNING: onboarding table still present"
-      : "onboarding table removed",
+    names.includes("roadmap_assessment_attempts")
+      ? "roadmap_assessment_attempts ready"
+      : "WARNING: assessment table missing",
   );
 }
 
