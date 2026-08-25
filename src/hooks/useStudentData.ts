@@ -39,7 +39,7 @@ export function usePlan(defaultPlan = "free") {
   return { plan, setPlan, ready };
 }
 
-/** Selected career from onboarding API. */
+/** Selected career from student profile. */
 export function useSelectedCareer(fallback = "Full-Stack Web Developer") {
   const [career, setCareer] = useState(fallback);
 
@@ -48,12 +48,12 @@ export function useSelectedCareer(fallback = "Full-Stack Web Developer") {
     (async () => {
       try {
         const data = await apiGet<{
-          onboarding?: { selected_career?: string; stage2?: { chosenCareer?: string } };
-        }>("/api/me/onboarding");
+          profile?: { objective?: string; passion?: string };
+        }>("/api/me/profile");
         if (cancelled) return;
         const next =
-          data.onboarding?.selected_career ||
-          data.onboarding?.stage2?.chosenCareer ||
+          data.profile?.objective ||
+          data.profile?.passion ||
           fallback;
         setCareer(next);
       } catch {

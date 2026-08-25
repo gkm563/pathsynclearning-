@@ -30,30 +30,6 @@ export function mapUser(row: {
   };
 }
 
-export function mapOnboarding(row: {
-  userId: string;
-  stage1: unknown;
-  stage2: unknown;
-  stage3: unknown;
-  stage4: unknown;
-  selectedCareer: string | null;
-  currentStage: number;
-  completed: boolean;
-  updatedAt?: Date | null;
-}) {
-  return {
-    user_id: row.userId,
-    stage1: row.stage1,
-    stage2: row.stage2,
-    stage3: row.stage3,
-    stage4: row.stage4,
-    selected_career: row.selectedCareer,
-    current_stage: row.currentStage,
-    completed: row.completed,
-    updated_at: row.updatedAt,
-  };
-}
-
 export function mapSettings(row: {
   userId: string;
   theme: string;

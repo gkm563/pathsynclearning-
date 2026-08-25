@@ -4,7 +4,6 @@ import { getDb } from "@/lib/db/client";
 import { mapUser } from "@/lib/db/mappers";
 import {
   challengeProgress,
-  onboarding,
   profiles,
   userSettings,
   users,
@@ -25,7 +24,6 @@ export interface DbUser {
 async function ensureRelatedRows(userId: string) {
   const db = getDb();
   await db.insert(profiles).values({ userId }).onConflictDoNothing();
-  await db.insert(onboarding).values({ userId }).onConflictDoNothing();
   await db.insert(userSettings).values({ userId }).onConflictDoNothing();
   await db.insert(wallets).values({ userId }).onConflictDoNothing();
   await db.insert(challengeProgress).values({ userId }).onConflictDoNothing();

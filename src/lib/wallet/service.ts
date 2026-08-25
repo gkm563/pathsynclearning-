@@ -53,7 +53,7 @@ export async function applyWalletAction(userId: string, action: WalletAction) {
       .update(wallets)
       .set({
         cashBalance: String(nextCash),
-        updatedAt: sql`NOW()`,
+        updatedAt: new Date(),
       })
       .where(eq(wallets.userId, userId));
 
@@ -77,7 +77,7 @@ export async function applyWalletAction(userId: string, action: WalletAction) {
       .set({
         coins: sql`${wallets.coins} + ${pack.coins}`,
         cashBalance: sql`${wallets.cashBalance} - ${pack.cost}`,
-        updatedAt: sql`NOW()`,
+        updatedAt: new Date(),
       })
       .where(
         and(eq(wallets.userId, userId), gte(wallets.cashBalance, String(pack.cost))),
@@ -111,7 +111,7 @@ export async function applyWalletAction(userId: string, action: WalletAction) {
       .set({
         coins: sql`${wallets.coins} - ${tier.coins}`,
         cashBalance: sql`${wallets.cashBalance} + ${tier.value}`,
-        updatedAt: sql`NOW()`,
+        updatedAt: new Date(),
       })
       .where(and(eq(wallets.userId, userId), gte(wallets.coins, tier.coins)))
       .returning();
@@ -142,7 +142,7 @@ export async function applyWalletAction(userId: string, action: WalletAction) {
       .set({
         coins: sql`${wallets.coins} + ${pack.coins}`,
         cashBalance: sql`${wallets.cashBalance} - ${pack.cost}`,
-        updatedAt: sql`NOW()`,
+        updatedAt: new Date(),
       })
       .where(
         and(eq(wallets.userId, userId), gte(wallets.cashBalance, String(pack.cost))),
@@ -172,7 +172,7 @@ export async function applyWalletAction(userId: string, action: WalletAction) {
     .set({
       coins: sql`${wallets.coins} - ${tier.coins}`,
       cashBalance: sql`${wallets.cashBalance} + ${tier.value}`,
-      updatedAt: sql`NOW()`,
+      updatedAt: new Date(),
     })
     .where(and(eq(wallets.userId, userId), gte(wallets.coins, tier.coins)))
     .returning();

@@ -31,7 +31,7 @@ export async function purchaseProduct(userId: string, productId: string) {
     .update(wallets)
     .set({
       coins: sql`${wallets.coins} - ${product.price}`,
-      updatedAt: sql`NOW()`,
+      updatedAt: new Date(),
     })
     .where(and(eq(wallets.userId, userId), gte(wallets.coins, product.price)))
     .returning({ coins: wallets.coins });
@@ -50,7 +50,7 @@ export async function purchaseProduct(userId: string, productId: string) {
       .update(wallets)
       .set({
         coins: sql`${wallets.coins} + ${product.price}`,
-        updatedAt: sql`NOW()`,
+        updatedAt: new Date(),
       })
       .where(eq(wallets.userId, userId));
     throw AppError.conflict("Already purchased");
@@ -69,7 +69,7 @@ export async function purchaseProduct(userId: string, productId: string) {
   ) {
     await db
       .update(userSettings)
-      .set({ activePlugin: product.title, updatedAt: sql`NOW()` })
+      .set({ activePlugin: product.title, updatedAt: new Date() })
       .where(eq(userSettings.userId, userId));
   }
 

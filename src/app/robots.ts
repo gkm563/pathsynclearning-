@@ -16,7 +16,6 @@ export default function robots(): MetadataRoute.Robots {
           `${routes.api.me}/`,
           `${routes.api.store}/`,
           `${routes.api.ai}/`,
-          routes.onboarding.root,
           ...Object.values(routes.app),
         ],
       },

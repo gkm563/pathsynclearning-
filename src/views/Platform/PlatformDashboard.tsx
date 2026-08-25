@@ -365,7 +365,7 @@ export default function PlatformDashboard() {
           <div style={{ fontSize: 14, color: "var(--text-main)", fontWeight: 600 }}>
             {student.cri > 0
               ? `Career readiness at ${student.cri}% — keep shipping challenges to climb higher.`
-              : "Complete onboarding and challenges to build your Career Readiness Index."}
+              : "Complete challenges to build your Career Readiness Index."}
           </div>
         </div>
 

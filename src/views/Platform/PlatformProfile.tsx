@@ -398,7 +398,7 @@ export default function PlatformProfile() {
               </div>
               <div>
                 <h4 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 16.5, fontWeight: 900, color: "var(--text-main)" }}>
-                  💡 Fill Reserved Onboarding Details
+                  💡 Complete Your Profile Details
                 </h4>
                 <p style={{ margin: "4px 0 0", fontSize: 13.5, color: "var(--text-muted)", lineHeight: 1.45 }}>
                   Provide critical schedule limits, exam calendar, and environmental preferences left out during sign-up to optimize study blocks &amp; earn a <strong style={{ color: "#f7971e" }}>+250 Coins Reward</strong>!
@@ -868,7 +868,7 @@ export default function PlatformProfile() {
               <div style={{ padding: "20px 24px", borderBottom: "1.5px solid var(--border-light)", display: "flex", justify: "space-between", alignItems: "center", background: "var(--bg-alt)" }}>
                 <div>
                   <h4 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 900, color: "var(--text-main)" }}>
-                    🚀 Complete Onboarding Reserved DNA
+                    🚀 Save Profile DNA Details
                   </h4>
                   <span style={{ fontSize: 11.5, color: "#6c63ff", fontWeight: 700, fontFamily: "'Fira Code', monospace" }}>
                     STEP {addStep} OF 2

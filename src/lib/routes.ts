@@ -36,14 +36,6 @@ export const routes = {
     continue: "/auth/continue",
   },
 
-  onboarding: {
-    root: "/onboarding",
-    stage1: "/onboarding/stage1",
-    stage2: "/onboarding/stage2",
-    stage3: "/onboarding/stage3",
-    stage4: "/onboarding/stage4",
-  },
-
   /** Authenticated student product (portal). */
   app: {
     dashboard: "/dashboard",
@@ -117,7 +109,6 @@ export const AUTH_PAGE_MATCHERS = [
 
 /** Student product + authenticated APIs. */
 export const PROTECTED_ROUTE_MATCHERS = [
-  withChildren(routes.onboarding.root),
   ...Object.values(routes.app).map(withChildren),
   withChildren(routes.api.me),
   withChildren(routes.api.store),
@@ -125,7 +116,7 @@ export const PROTECTED_ROUTE_MATCHERS = [
   withChildren(routes.api.roadmap),
 ] as const;
 
-/** Portal paths that require completed onboarding (excludes onboarding itself). */
+/** Portal paths for authenticated students. */
 export const STUDENT_PORTAL_PREFIXES = Object.values(routes.app);
 
 /**

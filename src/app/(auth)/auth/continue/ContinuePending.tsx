@@ -50,7 +50,7 @@ export default function ContinuePending({ role }: { role: string }) {
           return;
         } catch {
           await go(
-            role === "student" ? routes.onboarding.stage1 : routes.home,
+            role === "student" ? routes.app.dashboard : routes.home,
           );
           return;
         }
@@ -91,7 +91,7 @@ export default function ContinuePending({ role }: { role: string }) {
               await go(path);
             } catch {
               await go(
-                role === "student" ? routes.onboarding.stage1 : routes.home,
+                role === "student" ? routes.app.dashboard : routes.home,
               );
             }
             return;

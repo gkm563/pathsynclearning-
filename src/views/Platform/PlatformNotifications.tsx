@@ -63,7 +63,7 @@ const DEFAULT_NOTIFICATIONS = [
   {
     id: "n5",
     type: "system",
-    title: "Onboarding Milestone Achieved",
+    title: "Profile Milestone Achieved",
     desc: "You completed your Professional DNA Profile calibration and unlocked 250 platform Coins!",
     time: "3d ago",
     read: true,

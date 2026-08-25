@@ -36,7 +36,7 @@ export default async function AuthContinuePage({ searchParams }: Props) {
   const params = await searchParams;
   const role = params.role || "student";
   const fallback =
-    role === "student" ? routes.onboarding.stage1 : routes.home;
+    role === "student" ? routes.app.dashboard : routes.home;
 
   const { userId } = await auth();
 

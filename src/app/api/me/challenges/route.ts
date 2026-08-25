@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { parseJson, errorResponse, jsonResponse } from "@/lib/api/http";
 import { getDb } from "@/lib/db/client";
 import { challengeProgress } from "@/lib/db/schema";
@@ -29,7 +29,7 @@ export async function PUT(request: Request) {
       .update(challengeProgress)
       .set({
         state: body.state,
-        updatedAt: sql`NOW()`,
+        updatedAt: new Date(),
       })
       .where(eq(challengeProgress.userId, user.id));
     return jsonResponse({ ok: true });

@@ -3,11 +3,9 @@ import { StudentProvider } from "@/components/dashboard/StudentContext";
 import { requireStudentPortal } from "@/lib/server-auth";
 
 /**
- * Student portal shell: session + completed-onboarding gate, shared student data.
- * Onboarding lives outside this group so incomplete users can finish stages.
+ * Student portal shell: session + student role, shared student data.
  */
 export default async function PortalLayout({ children }: { children: ReactNode }) {
-  // Enforce server-side authorization boundary
   await requireStudentPortal();
 
   return (

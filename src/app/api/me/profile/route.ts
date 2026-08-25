@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { parseJson, errorResponse, jsonResponse } from "@/lib/api/http";
 import { getDb } from "@/lib/db/client";
 import { mapProfile } from "@/lib/db/mappers";
@@ -51,17 +51,19 @@ export async function PUT(request: Request) {
     const db = getDb();
 
     // role / cri / xp / streak are server-owned — never accepted from clients
+    const now = new Date();
+
     if (body.fullName) {
       await db
         .update(users)
         .set({
           fullName: body.fullName,
-          updatedAt: sql`NOW()`,
+          updatedAt: now,
         })
         .where(eq(users.id, user.id));
     }
 
-    const patch: Record<string, unknown> = { updatedAt: sql`NOW()` };
+    const patch: Record<string, unknown> = { updatedAt: now };
     const assign = <K extends keyof typeof body>(key: K, column: string) => {
       const value = body[key];
       if (value !== undefined) patch[column] = value;

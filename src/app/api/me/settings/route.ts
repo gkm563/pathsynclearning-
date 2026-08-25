@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { ZodError } from "zod";
 import { errorResponse, jsonResponse } from "@/lib/api/http";
 import { AppError } from "@/lib/api/errors";
@@ -48,7 +48,7 @@ export async function PUT(request: Request) {
     const db = getDb();
     const clearPlugin = Object.prototype.hasOwnProperty.call(body, "activePlugin");
 
-    const patch: Record<string, unknown> = { updatedAt: sql`NOW()` };
+    const patch: Record<string, unknown> = { updatedAt: new Date() };
     if (body.theme != null) patch.theme = body.theme;
     if (body.accentColor != null) patch.accentColor = body.accentColor;
     if (clearPlugin) patch.activePlugin = body.activePlugin ?? null;

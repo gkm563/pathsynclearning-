@@ -43,18 +43,6 @@ export const settingsUpdateSchema = z
   })
   .strict();
 
-export const onboardingUpdateSchema = z
-  .object({
-    stage1: z.record(z.string(), z.unknown()).optional(),
-    stage2: z.record(z.string(), z.unknown()).optional(),
-    stage3: z.record(z.string(), z.unknown()).optional(),
-    stage4: z.record(z.string(), z.unknown()).optional(),
-    selectedCareer: z.string().trim().max(200).nullable().optional(),
-    currentStage: z.number().int().min(1).max(4).optional(),
-    completed: z.boolean().optional(),
-  })
-  .strict();
-
 export const challengesUpdateSchema = z
   .object({
     state: z.array(z.unknown()),

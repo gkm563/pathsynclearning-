@@ -57,20 +57,6 @@ export const profiles = pgTable("profiles", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const onboarding = pgTable("onboarding", {
-  userId: uuid("user_id")
-    .primaryKey()
-    .references(() => users.id, { onDelete: "cascade" }),
-  stage1: jsonb("stage1").$type<Record<string, unknown>>().notNull().default({}),
-  stage2: jsonb("stage2").$type<Record<string, unknown>>().notNull().default({}),
-  stage3: jsonb("stage3").$type<Record<string, unknown>>().notNull().default({}),
-  stage4: jsonb("stage4").$type<Record<string, unknown>>().notNull().default({}),
-  selectedCareer: text("selected_career"),
-  currentStage: integer("current_stage").notNull().default(1),
-  completed: boolean("completed").notNull().default(false),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
-
 export const userSettings = pgTable("user_settings", {
   userId: uuid("user_id")
     .primaryKey()
@@ -316,7 +302,6 @@ export const roadmapProgress = pgTable(
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Profile = typeof profiles.$inferSelect;
-export type Onboarding = typeof onboarding.$inferSelect;
 export type RoadmapProfileRow = typeof roadmapProfiles.$inferSelect;
 export type RoadmapRow = typeof roadmaps.$inferSelect;
 export type RoadmapProgressRow = typeof roadmapProgress.$inferSelect;

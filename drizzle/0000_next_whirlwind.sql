@@ -36,18 +36,6 @@ CREATE TABLE "notifications" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "onboarding" (
-	"user_id" uuid PRIMARY KEY NOT NULL,
-	"stage1" jsonb DEFAULT '{}'::jsonb NOT NULL,
-	"stage2" jsonb DEFAULT '{}'::jsonb NOT NULL,
-	"stage3" jsonb DEFAULT '{}'::jsonb NOT NULL,
-	"stage4" jsonb DEFAULT '{}'::jsonb NOT NULL,
-	"selected_career" text,
-	"current_stage" integer DEFAULT 1 NOT NULL,
-	"completed" boolean DEFAULT false NOT NULL,
-	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
-);
---> statement-breakpoint
 CREATE TABLE "profiles" (
 	"user_id" uuid PRIMARY KEY NOT NULL,
 	"tagline" text,
@@ -202,7 +190,6 @@ ALTER TABLE "challenge_progress" ADD CONSTRAINT "challenge_progress_user_id_user
 ALTER TABLE "event_applications" ADD CONSTRAINT "event_applications_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "memory_lane_entries" ADD CONSTRAINT "memory_lane_entries_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "onboarding" ADD CONSTRAINT "onboarding_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "profiles" ADD CONSTRAINT "profiles_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "purchases" ADD CONSTRAINT "purchases_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "purchases" ADD CONSTRAINT "purchases_product_id_store_products_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."store_products"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint

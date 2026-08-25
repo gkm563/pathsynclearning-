@@ -198,10 +198,9 @@ export function StudentProvider({ children }: { children: ReactNode }) {
           body: JSON.stringify({}),
         }).catch(() => null);
 
-        const [profileRes, onboardingRes, settingsRes, challengesRes] =
+        const [profileRes, settingsRes, challengesRes] =
           await Promise.all([
             apiGet<{ profile: any }>("/api/me/profile").catch(() => null),
-            apiGet<{ onboarding: any }>("/api/me/onboarding").catch(() => null),
             apiGet<{ settings: any }>("/api/me/settings").catch(() => null),
             apiGet<{ state: any }>("/api/me/challenges").catch(() => null),
           ]);
@@ -209,7 +208,6 @@ export function StudentProvider({ children }: { children: ReactNode }) {
         if (cancelled) return;
 
         const p = profileRes?.profile;
-        const o = onboardingRes?.onboarding;
         const clerkName =
           [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(" ") ||
           clerkUser?.fullName ||
@@ -218,22 +216,16 @@ export function StudentProvider({ children }: { children: ReactNode }) {
         const name =
           (p?.full_name as string) ||
           clerkName ||
-          (o?.stage1?.name as string) ||
           "Student";
 
         const career =
-          (o?.selected_career as string) ||
-          (o?.stage2?.chosenCareer as string) ||
+          (p?.objective as string) ||
+          (p?.passion as string) ||
           "Software Engineer";
 
         const skillsFromProfile = Array.isArray(p?.skills) ? p.skills : null;
-        const skillsFromStage =
-          Array.isArray(o?.stage2?.tags) && o.stage2.tags.length
-            ? o.stage2.tags
-            : null;
         const skills =
           skillsFromProfile ||
-          skillsFromStage ||
           ["DSA", "Programming", "DBMS", "OS", "Web Development"];
 
         const xp = Number(p?.xp) || 0;
@@ -268,7 +260,7 @@ export function StudentProvider({ children }: { children: ReactNode }) {
             role: career,
             tag: "Career Path · PathEd",
             why:
-              (o?.stage2?.passion as string) ||
+              (p?.passion as string) ||
               "Interest in problem-solving, scalable systems & real-world impact",
             skills,
             timeline: "4 Years · Full UG",
