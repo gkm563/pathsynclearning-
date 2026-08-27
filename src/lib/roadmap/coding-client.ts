@@ -51,7 +51,6 @@ export function runPublicTestsInBrowser(
 
   let fn: (...args: unknown[]) => unknown;
   try {
-    // eslint-disable-next-line no-new-func
     const factory = new Function(
       `${code}\n; if (typeof ${functionName} !== "function") throw new Error("Function not found"); return ${functionName};`,
     );
