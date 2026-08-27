@@ -13,6 +13,13 @@ import AnswerReview, { type AnswerReviewPayload } from "./AnswerReview";
 const MAX_VIOLATIONS = 3;
 const GRACE_MS = 2500;
 
+/**
+ * Proctoring (clipboard block, tab/blur violations, fullscreen required).
+ * Disabled for local testing. Set NEXT_PUBLIC_ASSESSMENT_PROCTORING=true to re-enable.
+ */
+const PROCTORING_ENABLED =
+  process.env.NEXT_PUBLIC_ASSESSMENT_PROCTORING === "true";
+
 export type ProctorViolation = { kind: string; at: string };
 
 export type PreviousAttempt = {
@@ -65,6 +72,7 @@ export default function AssessmentShell({
 
   const pushViolation = useCallback(
     (kind: string) => {
+      if (!PROCTORING_ENABLED) return;
       if (failedRef.current || !armedRef.current) return;
       if (Date.now() < graceUntilRef.current) return;
 
@@ -115,9 +123,22 @@ export default function AssessmentShell({
     return () => document.removeEventListener("fullscreenchange", onFs);
   }, []);
 
-  // Proctoring only while active
+  // Proctoring only while active (skipped in testing mode)
   useEffect(() => {
     if (phase !== "active") return;
+    if (!PROCTORING_ENABLED) {
+      armedRef.current = false;
+      const timer = window.setInterval(() => {
+        setSecondsLeft((s) => {
+          if (s <= 1) {
+            window.clearInterval(timer);
+            return 0;
+          }
+          return s - 1;
+        });
+      }, 1000);
+      return () => window.clearInterval(timer);
+    }
 
     armedRef.current = true;
     graceUntilRef.current = Date.now() + GRACE_MS;
@@ -202,7 +223,7 @@ export default function AssessmentShell({
     onClose();
   };
 
-  const canStart = ack && fsReady;
+  const canStart = PROCTORING_ENABLED ? ack && fsReady : ack;
 
   const mm = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
   const ss = String(secondsLeft % 60).padStart(2, "0");
@@ -210,25 +231,42 @@ export default function AssessmentShell({
   return (
     <div
       ref={shellRef}
+      className="nokey"
       style={{
         position: "fixed",
         inset: 0,
         zIndex: 9999,
-        background: "var(--bg-main)",
-        color: "var(--text-main)",
+        background:
+          assessmentType === "coding" && phase === "active"
+            ? "#1a1a1a"
+            : "var(--bg-main)",
+        color:
+          assessmentType === "coding" && phase === "active"
+            ? "#eff1f6"
+            : "var(--text-main)",
         display: "flex",
         flexDirection: "column",
-        userSelect: phase === "active" ? "none" : "auto",
+        userSelect:
+          phase === "active" && PROCTORING_ENABLED ? "none" : "auto",
       }}
     >
+      {/* Darker chrome for coding workspace */}
       <header
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "12px 20px",
+          padding: "10px 16px",
           borderBottom: "1px solid var(--border-light)",
-          background: "var(--bg-card)",
+          background:
+            assessmentType === "coding" && phase === "active"
+              ? "#1a1a1a"
+              : "var(--bg-card)",
+          color:
+            assessmentType === "coding" && phase === "active"
+              ? "#eff1f6"
+              : undefined,
+          flexShrink: 0,
         }}
       >
         <div>
@@ -236,12 +274,20 @@ export default function AssessmentShell({
             style={{
               fontFamily: "Fira Code",
               fontSize: 11,
-              color: phase === "active" ? "#ef4444" : "#6c63ff",
+              color: phase === "active"
+                ? PROCTORING_ENABLED
+                  ? "#ef4444"
+                  : "#2cbb5d"
+                : "#6c63ff",
               fontWeight: 700,
               letterSpacing: 1,
             }}
           >
-            {phase === "active" ? "PROCTORED ASSESSMENT" : "ASSESSMENT SETUP"}
+            {phase === "active"
+              ? PROCTORING_ENABLED
+                ? "PROCTORED ASSESSMENT"
+                : "PRACTICE MODE"
+              : "ASSESSMENT SETUP"}
           </div>
           <h1 style={{ margin: 0, fontFamily: "Outfit", fontSize: 18 }}>{title}</h1>
         </div>
@@ -257,19 +303,33 @@ export default function AssessmentShell({
               >
                 {mm}:{ss}
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  color: violations.length ? "#ef4444" : "var(--text-muted)",
-                  fontSize: 13,
-                  fontFamily: "Outfit",
-                }}
-              >
-                <ShieldAlert size={16} />
-                Violations {violations.length}/{MAX_VIOLATIONS}
-              </div>
+              {PROCTORING_ENABLED && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    color: violations.length ? "#ef4444" : "var(--text-muted)",
+                    fontSize: 13,
+                    fontFamily: "Outfit",
+                  }}
+                >
+                  <ShieldAlert size={16} />
+                  Violations {violations.length}/{MAX_VIOLATIONS}
+                </div>
+              )}
+              {!PROCTORING_ENABLED && (
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontFamily: "Outfit",
+                    color: "#2cbb5d",
+                    fontWeight: 600,
+                  }}
+                >
+                  Copy/paste enabled · no violations
+                </div>
+              )}
             </>
           )}
           <button
@@ -439,38 +499,53 @@ export default function AssessmentShell({
                 lineHeight: 1.7,
               }}
             >
-              <li>Stay in fullscreen for the whole attempt</li>
-              <li>Do not switch tabs or leave this window</li>
-              <li>Copy, paste, and right-click are disabled during the exam</li>
-              <li>{MAX_VIOLATIONS} proctoring violations = automatic fail</li>
-              <li>Close extra apps/notifications that may steal focus</li>
+              {PROCTORING_ENABLED ? (
+                <>
+                  <li>Stay in fullscreen for the whole attempt</li>
+                  <li>Do not switch tabs or leave this window</li>
+                  <li>Copy, paste, and right-click are disabled during the exam</li>
+                  <li>{MAX_VIOLATIONS} proctoring violations = automatic fail</li>
+                  <li>Close extra apps/notifications that may steal focus</li>
+                </>
+              ) : (
+                <>
+                  <li>
+                    <strong>Practice mode</strong> — copy, paste, and right-click are allowed
+                  </li>
+                  <li>No proctoring violations are recorded</li>
+                  <li>Fullscreen is optional</li>
+                  <li>Timer still runs for pacing practice</li>
+                </>
+              )}
             </ul>
 
-            <button
-              type="button"
-              onClick={enterFullscreen}
-              style={{
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-                padding: 14,
-                borderRadius: 10,
-                border: fsReady ? "1.5px solid #10b981" : "1.5px solid #6c63ff",
-                background: fsReady ? "rgba(16,185,129,0.12)" : "rgba(108,99,255,0.1)",
-                color: fsReady ? "#059669" : "#6c63ff",
-                fontFamily: "Outfit",
-                fontWeight: 700,
-                cursor: "pointer",
-                marginBottom: 12,
-              }}
-            >
-              {fsReady ? <CheckCircle2 size={18} /> : <Maximize size={18} />}
-              {fsReady ? "Fullscreen ready" : "Enter fullscreen"}
-            </button>
+            {PROCTORING_ENABLED && (
+              <button
+                type="button"
+                onClick={enterFullscreen}
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  padding: 14,
+                  borderRadius: 10,
+                  border: fsReady ? "1.5px solid #10b981" : "1.5px solid #6c63ff",
+                  background: fsReady ? "rgba(16,185,129,0.12)" : "rgba(108,99,255,0.1)",
+                  color: fsReady ? "#059669" : "#6c63ff",
+                  fontFamily: "Outfit",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  marginBottom: 12,
+                }}
+              >
+                {fsReady ? <CheckCircle2 size={18} /> : <Maximize size={18} />}
+                {fsReady ? "Fullscreen ready" : "Enter fullscreen"}
+              </button>
+            )}
 
-            {fsError && (
+            {PROCTORING_ENABLED && fsError && (
               <p style={{ color: "#ef4444", fontSize: 13, marginTop: 0 }}>{fsError}</p>
             )}
 
@@ -493,8 +568,10 @@ export default function AssessmentShell({
                 style={{ marginTop: 3 }}
               />
               <span>
-                I have read the guidelines and my environment is ready (fullscreen on,
-                no other tabs needed).
+                I have read the guidelines and my environment is ready
+                {PROCTORING_ENABLED
+                  ? " (fullscreen on, no other tabs needed)."
+                  : " (practice mode — copy/paste allowed)."}
               </span>
             </label>
 
@@ -502,7 +579,7 @@ export default function AssessmentShell({
               type="button"
               disabled={!canStart}
               onClick={() => {
-                if (!document.fullscreenElement) {
+                if (PROCTORING_ENABLED && !document.fullscreenElement) {
                   void enterFullscreen().then(() => {
                     if (document.fullscreenElement) setPhase("starting");
                   });
@@ -556,7 +633,16 @@ export default function AssessmentShell({
       )}
 
       {phase === "active" && (
-        <div style={{ flex: 1, overflow: "auto", padding: 20 }}>
+        <div
+          style={{
+            flex: 1,
+            overflow: assessmentType === "coding" ? "hidden" : "auto",
+            padding: assessmentType === "coding" ? 0 : 20,
+            minHeight: 0,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
           {children({ violations, secondsLeft })}
         </div>
       )}

@@ -24,6 +24,9 @@ import { assessmentSubmitSchema } from "@/lib/validation/roadmap-schemas";
 import type { RoadmapEdge, RoadmapNode } from "@/types/roadmap";
 
 const MAX_VIOLATIONS = 3;
+const PROCTORING_ENABLED =
+  process.env.NEXT_PUBLIC_ASSESSMENT_PROCTORING === "true" ||
+  process.env.ASSESSMENT_PROCTORING === "true";
 
 export async function POST(request: Request) {
   try {
@@ -56,7 +59,7 @@ export async function POST(request: Request) {
     }
 
     const violations = body.violations || [];
-    if (violations.length >= MAX_VIOLATIONS) {
+    if (PROCTORING_ENABLED && violations.length >= MAX_VIOLATIONS) {
       const [attempt] = await db
         .insert(roadmapAssessmentAttempts)
         .values({

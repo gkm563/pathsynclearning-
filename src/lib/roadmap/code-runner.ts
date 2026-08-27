@@ -28,6 +28,29 @@ function toPy(v: unknown): string {
   return JSON.stringify(v);
 }
 
+function toBase64(str: string): string {
+  return Buffer.from(str, "utf8").toString("base64");
+}
+
+function fromBase64(str: string | null | undefined): string {
+  if (!str) return "";
+  try {
+    return Buffer.from(str, "base64").toString("utf8");
+  } catch {
+    return str;
+  }
+}
+
+function toCppLiteral(v: unknown): string {
+  if (typeof v === "boolean") return v ? "true" : "false";
+  if (typeof v === "number") return `${v}`;
+  if (typeof v === "string") return JSON.stringify(v);
+  if (Array.isArray(v) && v.every((x) => typeof x === "number")) {
+    return `vector<int>{${v.join(",")}}`;
+  }
+  return "/*unsupported*/0";
+}
+
 function toJavaExpr(v: unknown): string {
   if (typeof v === "number") return Number.isInteger(v) ? `${v}` : `${v}d`;
   if (typeof v === "string") return JSON.stringify(v);
@@ -184,29 +207,60 @@ using namespace std;
     if (isCpp) {
       const cases = tests
         .map((t, i) => {
-          const args = t.args
-            .map((a) => {
-              if (Array.isArray(a) && a.every((x) => typeof x === "number")) {
-                return `vector<int>{${a.join(",")}}`;
-              }
-              if (typeof a === "number") return `${a}`;
-              if (typeof a === "string") return JSON.stringify(a);
-              return "/*unsupported*/0";
-            })
-            .join(", ");
+          const args = t.args.map(toCppLiteral).join(", ");
           const exp = t.expected;
+          // C++ string literal whose contents are the JSON encoding of `exp`
+          // Streamed AFTER ",\"expected\":" so quotes never break the C++ string.
+          const expectedLit = JSON.stringify(JSON.stringify(exp));
+          const comma =
+            i + 1 < tests.length ? `    if (${i} + 1 < ${tests.length}) cout << ",";` : "";
+
           if (Array.isArray(exp) && exp.every((x) => typeof x === "number")) {
             return `
   {
     auto actual = ${fn}(${args});
     vector<int> expected{${(exp as number[]).join(",")}};
     bool ok = actual == expected;
-    cout << "{\\"index\\":${i},\\"ok\\":" << (ok?"true":"false")
-         << ",\\"expected\\":${JSON.stringify(JSON.stringify(exp))}
-         << ",\\"actual\\":\\"" << "[";
-    for (size_t k=0;k<actual.size();k++){ if(k) cout<<","; cout<<actual[k]; }
-    cout << "]" << "\\"}";
-    if (${i} + 1 < ${tests.length}) cout << ",";
+    cout << "{\\"index\\":${i},\\"ok\\":" << (ok ? "true" : "false")
+         << ",\\"expected\\":" << ${expectedLit}
+         << ",\\"actual\\":[";
+    for (size_t k = 0; k < actual.size(); k++) {
+      if (k) cout << ",";
+      cout << actual[k];
+    }
+    cout << "]}";
+${comma}
+  }`;
+          }
+          if (typeof exp === "boolean") {
+            return `
+  {
+    auto actual = ${fn}(${args});
+    bool expected = ${exp ? "true" : "false"};
+    bool ok = static_cast<bool>(actual) == expected;
+    cout << "{\\"index\\":${i},\\"ok\\":" << (ok ? "true" : "false")
+         << ",\\"expected\\":" << ${expectedLit}
+         << ",\\"actual\\":" << (static_cast<bool>(actual) ? "true" : "false")
+         << "}";
+${comma}
+  }`;
+          }
+          if (typeof exp === "string") {
+            return `
+  {
+    auto actual = ${fn}(${args});
+    string expected = ${JSON.stringify(exp)};
+    bool ok = actual == expected;
+    cout << "{\\"index\\":${i},\\"ok\\":" << (ok ? "true" : "false")
+         << ",\\"expected\\":" << ${expectedLit}
+         << ",\\"actual\\":\\"";
+    for (char ch : actual) {
+      if (ch == '\\\\' || ch == '"') cout << '\\\\';
+      else if (ch == '\\n') cout << "\\\\n";
+      else cout << ch;
+    }
+    cout << "\\"}";
+${comma}
   }`;
           }
           return `
@@ -214,10 +268,10 @@ using namespace std;
     auto actual = ${fn}(${args});
     auto expected = ${typeof exp === "number" ? exp : 0};
     bool ok = actual == expected;
-    cout << "{\\"index\\":${i},\\"ok\\":" << (ok?"true":"false")
-         << ",\\"expected\\":${JSON.stringify(JSON.stringify(exp))}
+    cout << "{\\"index\\":${i},\\"ok\\":" << (ok ? "true" : "false")
+         << ",\\"expected\\":" << ${expectedLit}
          << ",\\"actual\\":" << actual << "}";
-    if (${i} + 1 < ${tests.length}) cout << ",";
+${comma}
   }`;
         })
         .join("\n");
@@ -234,19 +288,32 @@ ${cases}
 `;
     }
 
-    // C: scalar int only for harness simplicity; array problems should use C++
+    // C: scalar int / string (const char*) returning int (0/1 for bools)
     const cases = tests
       .map((t, i) => {
         const args = t.args
-          .map((a) => (typeof a === "number" ? `${a}` : "0"))
+          .map((a) => {
+            if (typeof a === "number") return `${a}`;
+            if (typeof a === "string") return JSON.stringify(a);
+            return "0";
+          })
           .join(", ");
-        const exp = typeof t.expected === "number" ? t.expected : 0;
+        const exp =
+          typeof t.expected === "boolean"
+            ? t.expected
+              ? 1
+              : 0
+            : typeof t.expected === "number"
+              ? t.expected
+              : 0;
+        // Build printf format with expected JSON embedded safely as a C string fragment
+        const expectedJson = JSON.stringify(t.expected); // true / false / 4 / "hi"
         return `
   {
     int actual = ${fn}(${args});
     int expected = ${exp};
     int ok = actual == expected;
-    printf("{\\"index\\":${i},\\"ok\\":%s,\\"expected\\":${exp},\\"actual\\":%d}", ok ? "true" : "false", actual);
+    printf("{\\"index\\":${i},\\"ok\\":%s,\\"expected\\":%s,\\"actual\\":%d}", ok ? "true" : "false", ${JSON.stringify(expectedJson)}, actual);
     if (${i} + 1 < ${tests.length}) printf(",");
   }`;
       })
@@ -294,12 +361,12 @@ async function executeOnJudge0(
   }
 
   const res = await fetch(
-    `${JUDGE0_URL}/submissions?base64_encoded=false&wait=true`,
+    `${JUDGE0_URL}/submissions?base64_encoded=true&wait=true`,
     {
       method: "POST",
       headers,
       body: JSON.stringify({
-        source_code: source,
+        source_code: toBase64(source),
         language_id,
         cpu_time_limit: 3,
         wall_time_limit: 8,
@@ -318,18 +385,22 @@ async function executeOnJudge0(
   }
 
   const data = (await res.json()) as Judge0Response;
+  const stdout = fromBase64(data.stdout);
+  const stderr = fromBase64(data.stderr);
+  const compileOutput = fromBase64(data.compile_output);
+  const message = fromBase64(data.message);
   const statusId = data.status?.id ?? 0;
   // 3 = Accepted
   if (statusId !== 3) {
     const err =
-      data.stderr ||
-      data.compile_output ||
-      data.message ||
+      stderr ||
+      compileOutput ||
+      message ||
       data.status?.description ||
       "Execution failed";
-    return { ok: false, stdout: data.stdout || "", error: err };
+    return { ok: false, stdout, error: err };
   }
-  return { ok: true, stdout: data.stdout || "" };
+  return { ok: true, stdout };
 }
 
 function parseResultsJson(stdout: string): CodingTestResult[] | null {

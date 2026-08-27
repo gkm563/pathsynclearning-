@@ -113,9 +113,8 @@ export default function NodeAssessmentModal({
           setAnswerReview(res.answerReview);
         }
         setShowResult(true);
-        if (res.passed) {
-          setAutoAdvanceIn(res.answerReview ? 4 : 2);
-        }
+        // Always return to roadmap after a short countdown
+        setAutoAdvanceIn(res.passed && res.answerReview ? 4 : 2);
         setData((prev) =>
           prev
             ? {
@@ -140,6 +139,7 @@ export default function NodeAssessmentModal({
         setResultPassed(false);
         setResultMsg(e instanceof Error ? e.message : "Submit failed");
         setShowResult(true);
+        setAutoAdvanceIn(3);
       } finally {
         setSubmitting(false);
       }
@@ -169,15 +169,19 @@ export default function NodeAssessmentModal({
     }
   }, [resultPassed, onCompleted, pendingProgress, unlockedNodeIds, onClose]);
 
+  // After any result (pass or fail), return to the roadmap view
   useEffect(() => {
-    if (!showResult || !resultPassed || autoAdvanceIn === null) return;
+    if (!showResult || autoAdvanceIn === null) return;
     if (autoAdvanceIn <= 0) {
       finishResult();
       return;
     }
-    const t = setTimeout(() => setAutoAdvanceIn((n) => (n === null ? null : n - 1)), 1000);
+    const t = setTimeout(
+      () => setAutoAdvanceIn((n) => (n === null ? null : n - 1)),
+      1000,
+    );
     return () => clearTimeout(t);
-  }, [showResult, resultPassed, autoAdvanceIn, finishResult]);
+  }, [showResult, autoAdvanceIn, finishResult]);
 
   if (error && !data) {
     return (
@@ -296,9 +300,9 @@ export default function NodeAssessmentModal({
           <p style={{ color: "var(--text-muted)", fontFamily: "Inter", fontSize: 14 }}>
             {resultPassed
               ? unlockedNodeIds.length
-                ? "Great work — opening the next learning node…"
-                : "Great work — this path is complete."
-              : "Review the module resources (including YouTube videos) and try again."}
+                ? "Great work — new nodes unlocked on your roadmap."
+                : "Great work — returning to your roadmap."
+              : "Review the module resources (including YouTube videos) and try again from the roadmap."}
           </p>
 
           {resultPassed && answerReview && <AnswerReview review={answerReview} />}
@@ -348,40 +352,35 @@ export default function NodeAssessmentModal({
             </div>
           )}
 
-          {resultPassed ? (
-            <p
-              style={{
-                marginTop: 20,
-                fontFamily: "Outfit",
-                fontWeight: 600,
-                fontSize: 14,
-                color: "var(--text-muted)",
-              }}
-            >
-              {unlockedNodeIds.length
-                ? `Starting next learning in ${autoAdvanceIn ?? 0}s…`
-                : `Returning to roadmap in ${autoAdvanceIn ?? 0}s…`}
-            </p>
-          ) : (
-            <button
-              type="button"
-              onClick={finishResult}
-              style={{
-                marginTop: 20,
-                width: "100%",
-                padding: "12px 24px",
-                borderRadius: 10,
-                border: "none",
-                background: "#6c63ff",
-                color: "#fff",
-                fontFamily: "Outfit",
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
-            >
-              Back to roadmap
-            </button>
-          )}
+          <p
+            style={{
+              marginTop: 20,
+              fontFamily: "Outfit",
+              fontWeight: 600,
+              fontSize: 14,
+              color: "var(--text-muted)",
+            }}
+          >
+            Returning to roadmap in {autoAdvanceIn ?? 0}s…
+          </p>
+          <button
+            type="button"
+            onClick={finishResult}
+            style={{
+              marginTop: 12,
+              width: "100%",
+              padding: "12px 24px",
+              borderRadius: 10,
+              border: "none",
+              background: resultPassed ? "#00c9a7" : "#6c63ff",
+              color: "#fff",
+              fontFamily: "Outfit",
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            Back to roadmap
+          </button>
         </div>
       </div>
     );

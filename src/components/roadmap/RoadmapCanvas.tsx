@@ -436,6 +436,9 @@ export default function RoadmapCanvas({
         preventScrolling
         zoomOnScroll
         panOnScroll={false}
+        // Disable Space-to-pan so coding assessments can type spaces
+        panActivationKeyCode={assessmentNodeId ? null : "Space"}
+        deleteKeyCode={assessmentNodeId ? null : "Backspace"}
         style={{ width: '100%', height: '100%', overflow: 'hidden' }}
       >
         <Background color="var(--border-strong)" gap={24} size={2} />
@@ -549,12 +552,13 @@ export default function RoadmapCanvas({
           onClose={() => setAssessmentNodeId(null)}
           onCompleted={async ({ unlockedNodeIds }) => {
             await onRefresh?.();
-            const nextId = (unlockedNodeIds || []).find((id) => {
-              const n = roadmap.nodes.find((x) => x.id === id);
-              return n ? isAssessableNode(n) : false;
-            });
-            const nextAny =
-              nextId ||
+            setAssessmentNodeId(null);
+
+            const nextId =
+              (unlockedNodeIds || []).find((id) => {
+                const n = roadmap.nodes.find((x) => x.id === id);
+                return n ? isAssessableNode(n) : false;
+              }) ||
               (unlockedNodeIds || []).find((id) =>
                 roadmap.nodes.some((x) => x.id === id),
               );
@@ -562,18 +566,8 @@ export default function RoadmapCanvas({
             if (nextId) {
               const n = roadmap.nodes.find((x) => x.id === nextId)!;
               lastFocusedLearningIdRef.current = nextId;
-              setSelectedNode({ ...n, status: 'available' });
-              setAssessmentNodeId(nextId);
+              setSelectedNode({ ...n, status: "available" });
               focusNode(nextId);
-              return;
-            }
-
-            setAssessmentNodeId(null);
-            if (nextAny) {
-              const n = roadmap.nodes.find((x) => x.id === nextAny)!;
-              lastFocusedLearningIdRef.current = nextAny;
-              setSelectedNode({ ...n, status: 'available' });
-              focusNode(nextAny);
             } else {
               setSelectedNode(null);
             }
