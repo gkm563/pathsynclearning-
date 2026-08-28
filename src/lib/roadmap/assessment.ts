@@ -46,6 +46,15 @@ export function stripAssessmentSecrets(assessment: NodeAssessment): NodeAssessme
     };
   }
 
+  if (assessment.type === "project" && assessment.project) {
+    return {
+      type: "project",
+      passScore: assessment.passScore,
+      timeLimitMinutes: assessment.timeLimitMinutes,
+      project: assessment.project,
+    };
+  }
+
   return assessment;
 }
 

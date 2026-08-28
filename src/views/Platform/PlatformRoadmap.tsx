@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { ReactFlowProvider } from "@xyflow/react";
 import { apiGet, apiSend, ApiClientError } from "@/lib/api";
 import type { Roadmap, RoadmapNodeProgress } from "@/types/roadmap";
@@ -15,6 +16,8 @@ const RoadmapCanvas = React.lazy(
 type ViewState = "loading" | "onboarding" | "canvas";
 
 export default function RoadmapPage() {
+  const searchParams = useSearchParams();
+  const focusNodeId = searchParams.get("node") || undefined;
   const [view, setView] = useState<ViewState>("loading");
   const [roadmap, setRoadmap] = useState<Roadmap | null>(null);
   const [progress, setProgress] = useState<RoadmapNodeProgress[]>([]);
@@ -158,6 +161,7 @@ export default function RoadmapPage() {
             onRegenerate={handleRegenerate}
             onRefresh={fetchRoadmap}
             statusError={statusError}
+            initialFocusNodeId={focusNodeId}
           />
         </div>
       </ReactFlowProvider>

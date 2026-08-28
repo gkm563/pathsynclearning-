@@ -28,14 +28,49 @@ export const codingAssessmentSchema = z.object({
 });
 
 export const nodeAssessmentSchema = z.object({
-  type: z.enum(['mcq', 'coding']),
+  type: z.enum(['mcq', 'coding', 'project']),
   passScore: z.number().min(0).max(100),
   timeLimitMinutes: z.number().min(5).max(180),
   mcq: z.object({ questions: z.array(mcqQuestionSchema).min(3).max(10) }).optional(),
   coding: codingAssessmentSchema.optional(),
+  project: z.object({
+    overview: z.object({
+      goal: z.string(),
+      stack: z.array(z.string()),
+      deliverables: z.array(z.string()),
+      estimatedHours: z.number(),
+    }),
+    steps: z.array(z.object({
+      id: z.string(),
+      title: z.string(),
+      instructions: z.string(),
+      acceptance: z.array(z.string()),
+      resources: z.array(z.object({ label: z.string(), url: z.string() })).optional(),
+      requiredEvidence: z.array(z.enum(['repo_url', 'screenshot_url', 'demo_url', 'notes'])).optional(),
+    })).min(1),
+    rubric: z.array(z.object({
+      id: z.string(),
+      label: z.string(),
+      weight: z.number(),
+      check: z.enum([
+        'evidence_present',
+        'checklist_complete',
+        'keyword_notes',
+        'manual',
+        'github_readme',
+        'github_structure',
+        'github_commits',
+      ]),
+      keywords: z.array(z.string()).optional(),
+      requiredPaths: z.array(z.string()).optional(),
+    })).min(1),
+  }).optional(),
 }).refine(
-  (a) => (a.type === 'mcq' && a.mcq) || (a.type === 'coding' && a.coding),
-  { message: 'Assessment must include mcq or coding payload matching type' },
+  (a) =>
+    (a.type === 'mcq' && a.mcq) ||
+    (a.type === 'coding' && a.coding) ||
+    (a.type === 'project' && a.project),
+  { message: 'Assessment must include payload matching type' },
 );
 
 export const roadmapNodeSchema = z.object({
@@ -127,17 +162,29 @@ export const roadmapProgressUpdateSchema = z.object({
 
 export const assessmentSubmitSchema = z.object({
   nodeId: z.string().min(1),
-  type: z.enum(['mcq', 'coding']),
+  type: z.enum(['mcq', 'coding', 'project']),
   answers: z.record(z.string(), z.number().int()).optional(),
   code: z.string().max(50000).optional(),
   language: z.enum(['javascript', 'python', 'java', 'c', 'cpp']).optional(),
+  stepsDone: z.array(z.string()).max(40).optional(),
+  evidence: z.array(z.object({
+    kind: z.enum(['repo_url', 'screenshot_url', 'demo_url', 'notes']),
+    url: z.string().url().optional(),
+    text: z.string().max(8000).optional(),
+    stepId: z.string().optional(),
+  })).max(40).optional(),
+  repoUrl: z.string().url().optional(),
+  reflection: z.string().max(8000).optional(),
   violations: z.array(z.object({
     kind: z.string(),
     at: z.string().optional(),
   })).max(50).optional(),
 }).strict().refine(
-  (v) => (v.type === 'mcq' && v.answers) || (v.type === 'coding' && typeof v.code === 'string'),
-  { message: 'Provide answers for MCQ or code for coding' },
+  (v) =>
+    (v.type === 'mcq' && v.answers) ||
+    (v.type === 'coding' && typeof v.code === 'string') ||
+    (v.type === 'project' && Array.isArray(v.stepsDone)),
+  { message: 'Provide answers for MCQ, code for coding, or stepsDone for project' },
 );
 
 export type RoadmapNodeResource = z.infer<typeof roadmapNodeResourceSchema>;

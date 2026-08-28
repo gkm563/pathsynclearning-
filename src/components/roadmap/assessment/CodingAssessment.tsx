@@ -19,6 +19,7 @@ import type { NodeAssessment } from "@/types/roadmap";
 import {
   formatDiff,
   runPublicTestsInBrowser,
+  type CodingGradeResult,
   type CodingTestResult,
 } from "@/lib/roadmap/coding-client";
 import {
@@ -154,11 +155,21 @@ export default function CodingAssessment({
   nodeId,
   onSubmit,
   submitting,
+  runSource = "roadmap",
 }: {
   assessment: NodeAssessment;
   nodeId: string;
-  onSubmit: (payload: { code: string; language: CodingLanguageId }) => void;
+  onSubmit: (payload: {
+    code: string;
+    language: CodingLanguageId;
+  }) =>
+    | void
+    | Promise<void>
+    | Promise<CodingGradeResult | void>
+    | CodingGradeResult;
   submitting: boolean;
+  /** Use challenges judge API instead of roadmap node assessment run */
+  runSource?: "roadmap" | "challenge";
 }) {
   const coding = assessment.coding!;
   const [language, setLanguage] = useState<CodingLanguageId>("javascript");
@@ -320,6 +331,22 @@ export default function CodingAssessment({
     setBottomTab("result");
     setSummary("Running…");
     try {
+      if (runSource === "challenge") {
+        const result = await apiSend<CodingGradeResult>(
+          "/api/me/challenges/run",
+          "POST",
+          {
+            questionId: nodeId,
+            code,
+            language,
+            mode: "public",
+          },
+        );
+        setResults(result.results || []);
+        setSummary(`${result.passedCount}/${result.total} testcases passed`);
+        return;
+      }
+
       if (language === "javascript") {
         const result = runPublicTestsInBrowser(
           code,
@@ -355,7 +382,7 @@ export default function CodingAssessment({
     } finally {
       setRunning(false);
     }
-  }, [code, coding, language, nodeId]);
+  }, [code, coding, language, nodeId, runSource]);
 
   const activeTest = coding.publicTests[activeCase];
   const activeResult = results?.find((r) => r.index === activeCase);
@@ -829,8 +856,32 @@ export default function CodingAssessment({
                 type="button"
                 disabled={submitting || running}
                 onClick={() => {
-                  pushCodeHistory(nodeId, language, code);
-                  onSubmit({ code, language });
+                  void (async () => {
+                    pushCodeHistory(nodeId, language, code);
+                    setBottomTab("result");
+                    setSummary("Submitting…");
+                    try {
+                      const maybe = await Promise.resolve(
+                        onSubmit({ code, language }),
+                      );
+                      if (
+                        maybe &&
+                        typeof maybe === "object" &&
+                        Array.isArray(maybe.results)
+                      ) {
+                        setResults(maybe.results);
+                        setSummary(
+                          `${maybe.passedCount}/${maybe.total} testcases passed · score ${maybe.score}%`,
+                        );
+                      }
+                    } catch (err) {
+                      setSummary(
+                        err instanceof Error
+                          ? err.message
+                          : "Submit failed",
+                      );
+                    }
+                  })();
                 }}
                 style={{
                   display: "inline-flex",

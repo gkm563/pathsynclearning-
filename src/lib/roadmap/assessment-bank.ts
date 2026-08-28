@@ -1,5 +1,9 @@
 import type { NodeAssessment, RoadmapNode } from "@/types/roadmap";
 import { ASSESSABLE_NODE_TYPES } from "@/lib/roadmap/assessment";
+import {
+  buildProjectSpecForNode,
+  nodeAssessmentFromProjectSpec,
+} from "@/lib/projects/specs";
 
 type TopicPack = {
   id: string;
@@ -422,6 +426,10 @@ function wantsCoding(node: RoadmapNode, pack: TopicPack | null): boolean {
 }
 
 export function buildAssessmentForNode(node: RoadmapNode): NodeAssessment {
+  if (node.type === "project") {
+    return nodeAssessmentFromProjectSpec(buildProjectSpecForNode(node));
+  }
+
   const pack = pickPack(node);
   const coding = wantsCoding(node, pack);
 
@@ -477,6 +485,11 @@ function isMisalignedAssessment(node: RoadmapNode, assessment: NodeAssessment): 
       const pack = pickPack(node);
       if (pack && !pack.preferCoding) return true;
     }
+  }
+
+  // Project nodes should use project assessments
+  if (node.type === "project" && assessment.type !== "project") {
+    return true;
   }
 
   return false;

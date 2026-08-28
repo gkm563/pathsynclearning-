@@ -397,11 +397,12 @@ export default function NodeAssessmentModal({
       onClose={onClose}
       onFailProctor={onFailProctor}
     >
-      {({ violations }) =>
+      {({ violations, secondsLeft }) =>
         data.assessment.type === "mcq" ? (
           <McqAssessment
             assessment={data.assessment}
             submitting={submitting}
+            secondsLeft={secondsLeft}
             onSubmit={(answers) => submit({ answers, violations })}
           />
         ) : (

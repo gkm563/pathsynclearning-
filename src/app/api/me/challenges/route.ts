@@ -1,38 +1,25 @@
-import { eq } from "drizzle-orm";
-import { parseJson, errorResponse, jsonResponse } from "@/lib/api/http";
-import { getDb } from "@/lib/db/client";
-import { challengeProgress } from "@/lib/db/schema";
+import { errorResponse, jsonResponse } from "@/lib/api/http";
+import {
+  buildChallengesResponse,
+  loadChallengeContext,
+  persistChallengeState,
+} from "@/lib/challenges/service";
 import { requireDbUser } from "@/lib/db/users";
-import { challengesUpdateSchema } from "@/lib/validation/schemas";
 
 export async function GET() {
   try {
     const user = await requireDbUser();
-    const db = getDb();
-    const rows = await db
-      .select({ state: challengeProgress.state })
-      .from(challengeProgress)
-      .where(eq(challengeProgress.userId, user.id))
-      .limit(1);
-    return jsonResponse({ state: rows[0]?.state || [] });
-  } catch (e) {
-    return errorResponse(e);
-  }
-}
-
-export async function PUT(request: Request) {
-  try {
-    const user = await requireDbUser();
-    const body = await parseJson(request, challengesUpdateSchema);
-    const db = getDb();
-    await db
-      .update(challengeProgress)
-      .set({
-        state: body.state,
-        updatedAt: new Date(),
-      })
-      .where(eq(challengeProgress.userId, user.id));
-    return jsonResponse({ ok: true });
+    const ctx = await loadChallengeContext(user.id);
+    await persistChallengeState(user.id, ctx.state, ctx.progressExists);
+    return jsonResponse(
+      buildChallengesResponse({
+        state: ctx.state,
+        careerGoal: ctx.careerGoal,
+        roadmapTopics: ctx.roadmapTopics,
+        unfinishedNodes: ctx.unfinishedNodes,
+        userId: user.id,
+      }),
+    );
   } catch (e) {
     return errorResponse(e);
   }

@@ -45,7 +45,66 @@ export const settingsUpdateSchema = z
 
 export const challengesUpdateSchema = z
   .object({
-    state: z.array(z.unknown()),
+    state: z.unknown(),
+  })
+  .strict();
+
+export const challengesSyncSchema = z
+  .object({
+    enabled: z.boolean().optional(),
+    pinnedNodeIds: z.array(z.string().trim().min(1).max(128)).max(40).optional(),
+  })
+  .strict();
+
+export const challengesAttemptSchema = z
+  .object({
+    questionId: z.string().trim().min(1).max(128),
+    /** Client hint only — server re-grades MCQ/coding strictly */
+    passed: z.boolean().optional(),
+    score: z.number().min(0).max(100).optional(),
+    answers: z.record(z.string(), z.number().int().min(0).max(20)).optional(),
+    code: z.string().max(50000).optional(),
+    language: z.enum(["javascript", "python", "java", "c", "cpp"]).optional(),
+  })
+  .strict();
+
+const projectEvidenceSchema = z.object({
+  kind: z.enum(["repo_url", "screenshot_url", "demo_url", "notes"]),
+  url: z.string().trim().url().max(2000).optional(),
+  text: z.string().trim().max(8000).optional(),
+  stepId: z.string().trim().max(128).optional(),
+});
+
+export const challengesProjectProgressSchema = z
+  .object({
+    questionId: z.string().trim().min(1).max(128),
+    stepsDone: z.array(z.string().trim().min(1).max(128)).max(40),
+    evidence: z.array(projectEvidenceSchema).max(40).optional(),
+    repoUrl: z.string().trim().url().max(2000).optional(),
+    reflection: z.string().trim().max(8000).optional(),
+  })
+  .strict();
+
+export const challengesProjectSubmitSchema = z
+  .object({
+    questionId: z.string().trim().min(1).max(128),
+    stepsDone: z.array(z.string().trim().min(1).max(128)).max(40),
+    evidence: z.array(projectEvidenceSchema).max(40).default([]),
+    repoUrl: z.string().trim().url().max(2000).optional(),
+    reflection: z.string().trim().max(8000).optional(),
+  })
+  .strict();
+
+export const challengesActionSchema = z
+  .object({
+    action: z.enum([
+      "buy_shield",
+      "unlock_hint",
+      "arena_complete",
+      "refresh_duel",
+    ]),
+    questionId: z.string().trim().min(1).max(128).optional(),
+    score: z.number().min(0).max(100).optional(),
   })
   .strict();
 

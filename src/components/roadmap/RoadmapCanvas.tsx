@@ -101,6 +101,7 @@ export default function RoadmapCanvas({
   onRegenerate,
   onRefresh,
   statusError,
+  initialFocusNodeId,
 }: {
   roadmap: Roadmap;
   progress: RoadmapNodeProgress[];
@@ -108,6 +109,7 @@ export default function RoadmapCanvas({
   onRegenerate: () => void;
   onRefresh?: () => void | Promise<void>;
   statusError?: string | null;
+  initialFocusNodeId?: string;
 }) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -118,6 +120,7 @@ export default function RoadmapCanvas({
   const rfRef = useRef<any>(null);
   const didFitRef = useRef(false);
   const lastFocusedLearningIdRef = useRef<string | null>(null);
+  const deepLinkAppliedRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showMinimap, setShowMinimap] = useState(true);
@@ -263,6 +266,24 @@ export default function RoadmapCanvas({
     },
     [progressMap, focusNode],
   );
+
+  // Deep-link from Challenges (?node=id)
+  useEffect(() => {
+    if (!initialFocusNodeId || deepLinkAppliedRef.current) return;
+    const node = roadmap.nodes.find((n) => n.id === initialFocusNodeId);
+    if (!node) return;
+    deepLinkAppliedRef.current = true;
+    lastFocusedLearningIdRef.current = initialFocusNodeId;
+    setSelectedNode({
+      ...node,
+      status: (progressMap.get(node.id) || node.status || "available") as RTNode["status"],
+    });
+    const t = setTimeout(
+      () => focusNode(initialFocusNodeId, { zoom: 1.1, duration: 700 }),
+      didFitRef.current ? 150 : 400,
+    );
+    return () => clearTimeout(t);
+  }, [initialFocusNodeId, roadmap.nodes, progressMap, focusNode]);
 
   // Zoom to active / selected learning node
   useEffect(() => {

@@ -10,6 +10,8 @@ import React, {
 } from "react";
 import { useUser } from "@clerk/nextjs";
 import { apiGet } from "@/lib/api";
+import { levelFromXp } from "@/lib/challenges/progress";
+import type { ChallengesApiResponse } from "@/lib/challenges/types";
 
 export type StudentGoal = {
   role: string;
@@ -58,7 +60,7 @@ const SKILL_COLORS = ["#6c63ff", "#00c9a7", "#f7971e", "#e040fb"];
 
 const FALLBACK_CHALLENGES: DailyChallengeCard[] = [
   {
-    icon: "🌳",
+    icon: "BST",
     title: "Implement Binary Search Tree",
     category: "DSA",
     time: "45 min",
@@ -71,7 +73,7 @@ const FALLBACK_CHALLENGES: DailyChallengeCard[] = [
     border: "#6c63ff40",
   },
   {
-    icon: "🔥",
+    icon: "LL",
     title: "Reverse a Linked List in-place",
     category: "DSA",
     time: "20 min",
@@ -84,7 +86,7 @@ const FALLBACK_CHALLENGES: DailyChallengeCard[] = [
     border: "#f7971e40",
   },
   {
-    icon: "🧠",
+    icon: "SYS",
     title: "Design a Rate Limiter System",
     category: "System Design",
     time: "90 min",
@@ -97,7 +99,7 @@ const FALLBACK_CHALLENGES: DailyChallengeCard[] = [
     border: "#00c9a740",
   },
   {
-    icon: "🎨",
+    icon: "WEB",
     title: "Build a Responsive Card Component",
     category: "Web Dev",
     time: "15 min",
@@ -111,14 +113,6 @@ const FALLBACK_CHALLENGES: DailyChallengeCard[] = [
   },
 ];
 
-function levelFromXp(xp: number) {
-  if (xp >= 5000) return 5;
-  if (xp >= 3000) return 4;
-  if (xp >= 1500) return 3;
-  if (xp >= 800) return 2;
-  return 1;
-}
-
 function shortNameFrom(full: string) {
   const parts = full.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "Student";
@@ -126,26 +120,34 @@ function shortNameFrom(full: string) {
   return `${parts[0]} ${parts[parts.length - 1][0]}.`;
 }
 
-function mapChallenges(state: unknown): DailyChallengeCard[] {
-  if (!Array.isArray(state) || state.length === 0) return FALLBACK_CHALLENGES;
+function mapDailyFromApi(res: ChallengesApiResponse | null): DailyChallengeCard[] {
+  if (!res?.daily) return FALLBACK_CHALLENGES;
+  const pack = [
+    res.daily.featured,
+    ...(res.daily.side || []),
+  ].filter(Boolean) as NonNullable<typeof res.daily.featured>[];
+  if (!pack.length) return FALLBACK_CHALLENGES;
+
   const palette = [
     { col: "#6c63ff", bg: "rgba(108,99,255,0.08)", border: "#6c63ff40" },
     { col: "#f7971e", bg: "rgba(247,151,30,0.08)", border: "#f7971e40" },
     { col: "#00c9a7", bg: "rgba(0,201,167,0.08)", border: "#00c9a740" },
     { col: "#e040fb", bg: "rgba(224,64,251,0.08)", border: "#e040fb40" },
   ];
-  return state.slice(0, 4).map((c: any, idx: number) => {
+  const diffLabel = { easy: "Easy", medium: "Medium", hard: "Hard" } as const;
+
+  return pack.slice(0, 4).map((c, idx) => {
     const colors = palette[idx % palette.length];
-    const pct = Number(c.pct) || (c.done ? 100 : 0);
+    const pct = c.status === "solved" ? 100 : c.status === "attempted" ? 40 : 0;
     return {
-      icon: c.icon || "⚡",
-      title: c.label || c.title || "Challenge",
-      category: c.cat || c.category || "DSA",
-      time: c.time || "30 min",
-      diff: c.diff || "Medium",
+      icon: String(c.icon || c.category || "CH").slice(0, 4).toUpperCase(),
+      title: c.title || "Challenge",
+      category: c.category || "DSA",
+      time: `${c.estMinutes || 30} min`,
+      diff: diffLabel[c.difficulty] || "Medium",
       xp: Number(c.xp) || 100,
       pct,
-      isStarted: pct > 0 || Boolean(c.done),
+      isStarted: pct > 0,
       ...colors,
     };
   });
@@ -202,7 +204,7 @@ export function StudentProvider({ children }: { children: ReactNode }) {
           await Promise.all([
             apiGet<{ profile: any }>("/api/me/profile").catch(() => null),
             apiGet<{ settings: any }>("/api/me/settings").catch(() => null),
-            apiGet<{ state: any }>("/api/me/challenges").catch(() => null),
+            apiGet<ChallengesApiResponse>("/api/me/challenges").catch(() => null),
           ]);
 
         if (cancelled) return;
@@ -219,6 +221,7 @@ export function StudentProvider({ children }: { children: ReactNode }) {
           "Student";
 
         const career =
+          challengesRes?.careerGoal ||
           (p?.objective as string) ||
           (p?.passion as string) ||
           "Software Engineer";
@@ -228,9 +231,10 @@ export function StudentProvider({ children }: { children: ReactNode }) {
           skillsFromProfile ||
           ["DSA", "Programming", "DBMS", "OS", "Web Development"];
 
-        const xp = Number(p?.xp) || 0;
-        const coins = Number(p?.coins) || 0;
-        const streak = Number(p?.streak) || 0;
+        const g = challengesRes?.gamification;
+        const xp = Math.max(Number(p?.xp) || 0, Number(g?.xp) || 0);
+        const coins = Math.max(Number(p?.coins) || 0, Number(g?.coins) || 0);
+        const streak = Math.max(Number(p?.streak) || 0, Number(g?.streak) || 0);
         const cri = Number(p?.cri) || 0;
         const degree =
           [p?.degree, p?.branch].filter(Boolean).join(" · ") ||
@@ -268,7 +272,7 @@ export function StudentProvider({ children }: { children: ReactNode }) {
               "Industry-ready with strong fundamentals and portfolio projects",
           },
           skillsProgress,
-          dailyChallenges: mapChallenges(challengesRes?.state),
+          dailyChallenges: mapDailyFromApi(challengesRes),
           plan: (settingsRes?.settings?.plan as string) || "free",
         });
       } catch {

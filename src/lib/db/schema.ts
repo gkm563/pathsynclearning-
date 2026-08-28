@@ -42,7 +42,13 @@ export const profiles = pgTable("profiles", {
   rankGlobal: text("rank_global"),
   rankUniv: text("rank_univ"),
   xp: integer("xp").notNull().default(0),
+  /** Derived from xp; kept in sync by challenge attempt awards */
+  level: integer("level").notNull().default(1),
   streak: integer("streak").notNull().default(0),
+  /** Streak shields — consume one to keep streak after a missed day */
+  streakShields: integer("streak_shields").notNull().default(1),
+  /** UTC date key (YYYY-MM-DD) of last challenge solve — for streak logic */
+  lastSolveDateKey: text("last_solve_date_key"),
   skills: jsonb("skills").$type<unknown[]>().notNull().default([]),
   passion: text("passion"),
   objective: text("objective"),
@@ -154,9 +160,98 @@ export const challengeProgress = pgTable("challenge_progress", {
   userId: uuid("user_id")
     .primaryKey()
     .references(() => users.id, { onDelete: "cascade" }),
-  state: jsonb("state").$type<unknown[]>().notNull().default([]),
+  state: jsonb("state").$type<unknown>().notNull().default({}),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/** Strict per-attempt ledger — XP/coins awarded at most once per question. */
+export const challengeAttempts = pgTable(
+  "challenge_attempts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    questionId: text("question_id").notNull(),
+    challengeType: text("challenge_type").notNull(),
+    passed: boolean("passed").notNull().default(false),
+    score: integer("score").notNull().default(0),
+    xpAwarded: integer("xp_awarded").notNull().default(0),
+    coinsAwarded: integer("coins_awarded").notNull().default(0),
+    payload: jsonb("payload").$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("idx_challenge_attempts_user").on(t.userId, t.createdAt),
+    index("idx_challenge_attempts_user_q").on(t.userId, t.questionId),
+  ],
+);
+
+/** Guided project assessment runs (Challenges + Roadmap). */
+export const projectRuns = pgTable(
+  "project_runs",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    source: text("source").notNull(), // challenge | roadmap
+    refId: text("ref_id").notNull(),
+    status: text("status").notNull().default("in_progress"),
+    score: integer("score").notNull().default(0),
+    checklistPct: integer("checklist_pct").notNull().default(0),
+    rubricBreakdown: jsonb("rubric_breakdown")
+      .$type<unknown[]>()
+      .notNull()
+      .default([]),
+    xpAwarded: integer("xp_awarded").notNull().default(0),
+    coinsAwarded: integer("coins_awarded").notNull().default(0),
+    repoUrl: text("repo_url"),
+    reflection: text("reflection"),
+    submittedAt: timestamp("submitted_at", { withTimezone: true }),
+    passedAt: timestamp("passed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("idx_project_runs_user").on(t.userId, t.updatedAt),
+    index("idx_project_runs_user_ref").on(t.userId, t.source, t.refId),
+  ],
+);
+
+export const projectStepProgress = pgTable(
+  "project_step_progress",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    runId: uuid("run_id")
+      .notNull()
+      .references(() => projectRuns.id, { onDelete: "cascade" }),
+    stepId: text("step_id").notNull(),
+    done: boolean("done").notNull().default(false),
+    doneAt: timestamp("done_at", { withTimezone: true }),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("project_step_progress_run_step").on(t.runId, t.stepId),
+    index("idx_project_step_run").on(t.runId),
+  ],
+);
+
+export const projectEvidence = pgTable(
+  "project_evidence",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    runId: uuid("run_id")
+      .notNull()
+      .references(() => projectRuns.id, { onDelete: "cascade" }),
+    stepId: text("step_id"),
+    kind: text("kind").notNull(),
+    url: text("url"),
+    text: text("text"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("idx_project_evidence_run").on(t.runId)],
+);
 
 export const memoryLaneEntries = pgTable(
   "memory_lane_entries",

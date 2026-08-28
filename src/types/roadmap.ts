@@ -54,12 +54,49 @@ export interface CodingAssessment {
   hiddenTests?: CodingTestCase[];
 }
 
+export interface ProjectStepSpec {
+  id: string;
+  title: string;
+  instructions: string;
+  acceptance: string[];
+  resources?: { label: string; url: string }[];
+  requiredEvidence?: Array<"repo_url" | "screenshot_url" | "demo_url" | "notes">;
+}
+
+export interface ProjectRubricSpec {
+  id: string;
+  label: string;
+  weight: number;
+  check:
+    | "evidence_present"
+    | "checklist_complete"
+    | "keyword_notes"
+    | "manual"
+    | "github_readme"
+    | "github_structure"
+    | "github_commits";
+  keywords?: string[];
+  requiredPaths?: string[];
+}
+
+export interface ProjectAssessment {
+  overview: {
+    goal: string;
+    stack: string[];
+    deliverables: string[];
+    estimatedHours: number;
+  };
+  steps: ProjectStepSpec[];
+  rubric: ProjectRubricSpec[];
+}
+
 export interface NodeAssessment {
-  type: "mcq" | "coding";
+  type: "mcq" | "coding" | "project";
   passScore: number;
   timeLimitMinutes: number;
   mcq?: { questions: McqQuestion[] };
   coding?: CodingAssessment;
+  project?: ProjectAssessment;
 }
 
 export interface RoadmapNode {

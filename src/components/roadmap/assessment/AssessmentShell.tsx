@@ -636,8 +636,8 @@ export default function AssessmentShell({
         <div
           style={{
             flex: 1,
-            overflow: assessmentType === "coding" ? "hidden" : "auto",
-            padding: assessmentType === "coding" ? 0 : 20,
+            overflow: "hidden",
+            padding: 0,
             minHeight: 0,
             display: "flex",
             flexDirection: "column",

@@ -4,7 +4,10 @@
   "version": "1.0.0",
   "description": "PathEd — career readiness platform for engineering students",
   "scripts": {
+    "clean": "node scripts/clean-next.mjs",
     "dev": "next dev",
+    "dev:fresh": "node scripts/clean-next.mjs --dev && next dev",
+    "prebuild": "node scripts/clean-next.mjs --prod",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
