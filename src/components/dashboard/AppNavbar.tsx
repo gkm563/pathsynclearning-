@@ -10,7 +10,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { UserButton } from "@clerk/nextjs";
+import { useClerk, useUser } from "@clerk/nextjs";
 import {
   BarChart2,
   Bell,
@@ -19,9 +19,11 @@ import {
   Check,
   GraduationCap,
   LayoutDashboard,
+  LogOut,
   Map,
   Menu,
   Newspaper,
+  UserRound,
   Zap,
 } from "lucide-react";
 import { apiGet, apiSend } from "@/lib/api";
@@ -104,9 +106,13 @@ export default function AppNavbar({ onMenuOpen }: AppNavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement>(null);
+  const accountRef = useRef<HTMLDivElement>(null);
+  const { user } = useUser();
+  const { signOut } = useClerk();
 
   const [focusMode, setFocusMode] = useState<FocusMode>("career");
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
   useEffect(() => {
@@ -133,16 +139,19 @@ export default function AppNavbar({ onMenuOpen }: AppNavbarProps) {
   }, []);
 
   useEffect(() => {
-    if (!isPanelOpen) return;
+    if (!isPanelOpen && !isAccountOpen) return;
 
     const onPointerDown = (event: globalThis.MouseEvent) => {
-      if (!panelRef.current?.contains(event.target as Node)) {
-        setIsPanelOpen(false);
-      }
+      const target = event.target as Node;
+      if (!panelRef.current?.contains(target)) setIsPanelOpen(false);
+      if (!accountRef.current?.contains(target)) setIsAccountOpen(false);
     };
 
     const onEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsPanelOpen(false);
+      if (event.key === "Escape") {
+        setIsPanelOpen(false);
+        setIsAccountOpen(false);
+      }
     };
 
     document.addEventListener("mousedown", onPointerDown);
@@ -151,7 +160,7 @@ export default function AppNavbar({ onMenuOpen }: AppNavbarProps) {
       document.removeEventListener("mousedown", onPointerDown);
       document.removeEventListener("keydown", onEscape);
     };
-  }, [isPanelOpen]);
+  }, [isPanelOpen, isAccountOpen]);
 
   const unreadCount = notifications.filter((item) => !item.read).length;
 
@@ -275,7 +284,10 @@ export default function AppNavbar({ onMenuOpen }: AppNavbarProps) {
           <div className="relative" ref={panelRef}>
             <button
               type="button"
-              onClick={() => setIsPanelOpen((open) => !open)}
+              onClick={() => {
+                setIsAccountOpen(false);
+                setIsPanelOpen((open) => !open);
+              }}
               aria-label="Notifications"
               aria-expanded={isPanelOpen}
               className="relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border-light)] bg-[var(--bg-alt)] text-[var(--text-main)] transition-colors hover:bg-[var(--bg-alt)]/80 sm:h-10 sm:w-10"
@@ -369,11 +381,71 @@ export default function AppNavbar({ onMenuOpen }: AppNavbarProps) {
             </AnimatePresence>
           </div>
 
-          <div className="flex items-center pl-0.5 sm:pl-1">
-            <UserButton
-              userProfileMode="navigation"
-              userProfileUrl={routes.app.profile}
-            />
+          <div className="relative pl-0.5 sm:pl-1" ref={accountRef}>
+            <button
+              type="button"
+              onClick={() => {
+                setIsPanelOpen(false);
+                setIsAccountOpen((open) => !open);
+              }}
+              aria-label="Account menu"
+              aria-expanded={isAccountOpen}
+              className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-[var(--border-light)] bg-[var(--bg-alt)]"
+            >
+              {user?.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={user.imageUrl}
+                  alt=""
+                  className="h-full w-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <span className="text-xs font-bold text-[var(--text-main)]">
+                  {(user?.firstName?.[0] || user?.username?.[0] || "U").toUpperCase()}
+                </span>
+              )}
+            </button>
+
+            <AnimatePresence>
+              {isAccountOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute top-[calc(100%+8px)] right-0 z-[200] w-52 overflow-hidden rounded-2xl border border-[var(--border-light)] bg-[var(--bg-card)] shadow-[0_12px_40px_rgba(0,0,0,0.12)]"
+                >
+                  <div className="border-b border-[var(--border-light)] px-3 py-2.5">
+                    <p className="truncate text-sm font-bold text-[var(--text-main)]">
+                      {user?.fullName || user?.username || "Account"}
+                    </p>
+                    <p className="truncate text-xs text-[var(--text-muted)]">
+                      {user?.primaryEmailAddress?.emailAddress}
+                    </p>
+                  </div>
+                  <Link
+                    href={routes.app.profile}
+                    onClick={() => setIsAccountOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--bg-alt)]"
+                  >
+                    <UserRound size={15} />
+                    Profile
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setIsAccountOpen(false);
+                      await signOut({ redirectUrl: "/" });
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm font-semibold text-[var(--text-muted)] hover:bg-[var(--bg-alt)]"
+                  >
+                    <LogOut size={15} />
+                    Sign out
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>
