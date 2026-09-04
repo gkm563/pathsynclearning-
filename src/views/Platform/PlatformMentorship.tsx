@@ -11,6 +11,7 @@ import {
   UserCheck, ShieldAlert, ArrowLeft, ArrowUpRight, Check, Heart, ExternalLink
 } from "lucide-react";
 import { usePlan } from "@/hooks/useStudentData";
+import { AddNoteButton } from "@/components/memory-lane/AddNoteButton";
 const COLS = {
   primary: "#6c63ff",
   success: "#00c9a7",
@@ -1076,6 +1077,13 @@ export default function PlatformMentorship() {
                       ))}
                     </div>
                   </div>
+
+                  <AddNoteButton
+                    sourceType="mentorship"
+                    sourceId={selectedMentor.id}
+                    defaultTitle={`Session with ${selectedMentor.name}`}
+                    contextLabel={`Mentorship · ${selectedMentor.name}`}
+                  />
                 </div>
               </motion.div>
             </div>

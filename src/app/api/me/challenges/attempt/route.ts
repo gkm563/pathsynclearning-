@@ -21,6 +21,7 @@ import {
   walletTransactions,
 } from "@/lib/db/schema";
 import { requireDbUser } from "@/lib/db/users";
+import { recordChallengeMemory } from "@/lib/memory/processor";
 import { challengesAttemptSchema } from "@/lib/validation/schemas";
 import type { CodingLanguageId } from "@/lib/roadmap/coding-languages";
 
@@ -142,6 +143,21 @@ export async function POST(request: Request) {
       coinsAwarded,
       payload,
     });
+
+    if (passed) {
+      await recordChallengeMemory({
+        userId: user.id,
+        questionId: question.id,
+        title: question.title,
+        description: question.description?.slice(0, 280),
+        difficulty: question.difficulty,
+        score,
+        category: question.category,
+        topics: question.topics,
+        xpAwarded,
+        challengeType: question.type,
+      }).catch(() => null);
+    }
 
     if (awarded) {
       const [updatedProfile] = await db

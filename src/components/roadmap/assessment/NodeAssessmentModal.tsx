@@ -12,6 +12,7 @@ import AnswerReview, { type AnswerReviewPayload } from "./AnswerReview";
 import type { NodeAssessment } from "@/types/roadmap";
 import { apiGet, apiSend } from "@/lib/api";
 import type { ProjectEvidenceInput } from "@/lib/projects/types";
+import { AddNoteButton } from "@/components/memory-lane/AddNoteButton";
 
 type LoadState = {
   title: string;
@@ -395,44 +396,60 @@ export default function NodeAssessmentModal({
     );
   }
 
-  return data.assessment.type === "project" ? (
-    <ProjectAssessment
-      assessment={data.assessment}
-      title={data.title}
-      submitting={submitting}
-      onClose={onClose}
-      onSubmit={(payload) => void submit(payload)}
-    />
-  ) : (
-    <AssessmentShell
-      title={data.title}
-      timeLimitMinutes={data.assessment.timeLimitMinutes}
-      assessmentType={data.assessment.type}
-      passScore={data.assessment.passScore}
-      previousAttempts={data.attempts}
-      answerReview={data.hasPassed ? answerReview : null}
-      onClose={onClose}
-      onFailProctor={onFailProctor}
-    >
-      {({ violations, secondsLeft }) =>
-        data.assessment.type === "mcq" ? (
-          <McqAssessment
-            assessment={data.assessment}
-            submitting={submitting}
-            secondsLeft={secondsLeft}
-            onSubmit={(answers) => submit({ answers, violations })}
+  return (
+    <>
+      {data.assessment.type !== "coding" ? (
+        <div style={{ position: "fixed", top: 16, right: 72, zIndex: 1300 }}>
+          <AddNoteButton
+            sourceType="roadmap_node"
+            sourceId={nodeId}
+            defaultTitle={data.title}
+            contextLabel={`Learning · ${data.title}`}
+            compact
           />
-        ) : (
-          <CodingAssessment
-            assessment={data.assessment}
-            nodeId={nodeId}
-            submitting={submitting}
-            onSubmit={({ code, language }) =>
-              submit({ code, language, violations })
-            }
-          />
-        )
-      }
-    </AssessmentShell>
+        </div>
+      ) : null}
+      {data.assessment.type === "project" ? (
+        <ProjectAssessment
+          assessment={data.assessment}
+          title={data.title}
+          submitting={submitting}
+          onClose={onClose}
+          onSubmit={(payload) => void submit(payload)}
+        />
+      ) : (
+        <AssessmentShell
+          title={data.title}
+          timeLimitMinutes={data.assessment.timeLimitMinutes}
+          assessmentType={data.assessment.type}
+          passScore={data.assessment.passScore}
+          previousAttempts={data.attempts}
+          answerReview={data.hasPassed ? answerReview : null}
+          onClose={onClose}
+          onFailProctor={onFailProctor}
+        >
+          {({ violations, secondsLeft }) =>
+            data.assessment.type === "mcq" ? (
+              <McqAssessment
+                assessment={data.assessment}
+                submitting={submitting}
+                secondsLeft={secondsLeft}
+                onSubmit={(answers) => submit({ answers, violations })}
+              />
+            ) : (
+              <CodingAssessment
+                assessment={data.assessment}
+                nodeId={nodeId}
+                noteTitle={data.title}
+                submitting={submitting}
+                onSubmit={({ code, language }) =>
+                  submit({ code, language, violations })
+                }
+              />
+            )
+          }
+        </AssessmentShell>
+      )}
+    </>
   );
 }

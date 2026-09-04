@@ -1,10 +1,15 @@
 import type { ReactNode } from "react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
 
-export default function AppDashboardLayout({ children }: { children: ReactNode }) {
-  return (
-    <DashboardLayout>
-      {children}
-    </DashboardLayout>
-  );
+/**
+ * Dashboard segment layout — content only.
+ *
+ * Portal chrome (header/sidebar) lives in `(portal)/layout.tsx`.
+ * Never wrap children in PortalShell / DashboardLayout here.
+ */
+export default function DashboardSegmentLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  return children;
 }

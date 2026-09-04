@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import type { RoadmapNode } from '@/types/roadmap';
 import { isAssessableNode, nodeRequiresAssessment } from '@/lib/roadmap/assessment';
+import { AddNoteButton } from '@/components/memory-lane/AddNoteButton';
 
 function youtubeEmbedUrl(url: string): string | null {
   try {
@@ -116,6 +117,16 @@ export default function RoadmapDetailPanel({
               >
                 {node.title}
               </h2>
+              <div style={{ marginTop: 12 }}>
+                <AddNoteButton
+                  sourceType="roadmap_node"
+                  sourceId={node.id}
+                  defaultTitle={node.title}
+                  contextLabel={`Roadmap · ${node.title}`}
+                  links={[{ entityType: 'roadmap_node', entityId: node.id }]}
+                  compact
+                />
+              </div>
             </div>
             <button
               onClick={onClose}

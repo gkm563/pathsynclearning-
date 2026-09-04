@@ -4,6 +4,7 @@ import React, { useCallback, useMemo, useRef, useState } from "react";
 import AssessmentShell from "@/components/roadmap/assessment/AssessmentShell";
 import McqAssessment from "@/components/roadmap/assessment/McqAssessment";
 import ChallengeResultScreen from "@/components/challenges/ChallengeResultScreen";
+import { AddNoteButton } from "@/components/memory-lane/AddNoteButton";
 import type { ChallengeSummary } from "@/lib/challenges/types";
 import type { NodeAssessment } from "@/types/roadmap";
 
@@ -94,7 +95,17 @@ export default function ChallengeMcqIde({
   }
 
   return (
-    <AssessmentShell
+    <>
+      <div style={{ position: "fixed", top: 16, right: 72, zIndex: 1300 }}>
+        <AddNoteButton
+          sourceType="challenge"
+          sourceId={item.id}
+          defaultTitle={`${item.title} notes`}
+          contextLabel={`Challenge · ${item.title}`}
+          compact
+        />
+      </div>
+      <AssessmentShell
       title={item.title}
       timeLimitMinutes={assessment.timeLimitMinutes}
       assessmentType="mcq"
@@ -120,5 +131,6 @@ export default function ChallengeMcqIde({
         />
       )}
     </AssessmentShell>
+    </>
   );
 }

@@ -23,6 +23,7 @@ import {
   walletTransactions,
 } from "@/lib/db/schema";
 import { requireDbUser } from "@/lib/db/users";
+import { recordProjectMemory } from "@/lib/memory/processor";
 import { challengesProjectSubmitSchema } from "@/lib/validation/schemas";
 
 export async function POST(request: Request) {
@@ -215,6 +216,19 @@ export async function POST(request: Request) {
       });
     } else {
       await persistChallengeEconomy(user.id, state);
+    }
+
+    if (graded.passed) {
+      await recordProjectMemory({
+        userId: user.id,
+        projectId: question.id,
+        title: question.title,
+        description: question.description?.slice(0, 280),
+        score: graded.score,
+        repoUrl: body.repoUrl,
+        skills: question.topics,
+        checklistPct: graded.checklistPct,
+      }).catch(() => null);
     }
 
     return jsonResponse({

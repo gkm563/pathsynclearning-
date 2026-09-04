@@ -11,11 +11,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "lint:portal-shell": "node scripts/check-portal-shell.mjs",
     "typecheck": "tsc --noEmit",
     "db:setup": "npx tsx scripts/sync-db.ts",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "npx tsx scripts/migrate.ts",
+    "db:migrate:memory-lane": "npx tsx scripts/migrate-memory-lane.ts",
     "db:sync": "npx tsx scripts/sync-db.ts",
     "db:seed": "npx tsx scripts/seed.ts",
     "db:studio": "drizzle-kit studio"

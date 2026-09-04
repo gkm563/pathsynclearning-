@@ -35,6 +35,7 @@ import {
   type CodeHistoryEntry,
 } from "@/lib/roadmap/coding-languages";
 import { apiSend } from "@/lib/api";
+import { AddNoteButton } from "@/components/memory-lane/AddNoteButton";
 
 /** LeetCode-inspired dark palette for the coding workspace */
 const LC = {
@@ -156,6 +157,7 @@ export default function CodingAssessment({
   onSubmit,
   submitting,
   runSource = "roadmap",
+  noteTitle,
 }: {
   assessment: NodeAssessment;
   nodeId: string;
@@ -170,6 +172,8 @@ export default function CodingAssessment({
   submitting: boolean;
   /** Use challenges judge API instead of roadmap node assessment run */
   runSource?: "roadmap" | "challenge";
+  /** Optional display title for Notes context */
+  noteTitle?: string;
 }) {
   const coding = assessment.coding!;
   const [language, setLanguage] = useState<CodingLanguageId>("javascript");
@@ -619,7 +623,33 @@ export default function CodingAssessment({
             </span>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <AddNoteButton
+              variant="ide"
+              sourceType={
+                runSource === "challenge" ? "coding_session" : "roadmap_node"
+              }
+              sourceId={nodeId}
+              defaultTitle={
+                noteTitle
+                  ? `${noteTitle} — coding notes`
+                  : "Coding IDE notes"
+              }
+              contextLabel={
+                noteTitle
+                  ? `${runSource === "challenge" ? "Challenge" : "Roadmap"} · ${noteTitle} · ${langMeta.label}`
+                  : `Coding session · ${langMeta.label}`
+              }
+              links={[
+                {
+                  entityType:
+                    runSource === "challenge" ? "challenge" : "roadmap_node",
+                  entityId: nodeId,
+                },
+                { entityType: "coding_session", entityId: nodeId },
+              ]}
+              titleAttr="Notes"
+            />
             <button
               type="button"
               title="Format code (Shift+Alt+F)"

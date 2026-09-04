@@ -30,6 +30,10 @@ import { assessmentSubmitSchema } from "@/lib/validation/roadmap-schemas";
 import type { RoadmapEdge, RoadmapNode } from "@/types/roadmap";
 import type { ProjectAssessmentSpec } from "@/lib/projects/types";
 import { buildProjectSpecForNode } from "@/lib/projects/specs";
+import {
+  recordLearningMemory,
+  recordProjectMemory,
+} from "@/lib/memory/processor";
 
 const MAX_VIOLATIONS = 3;
 const PROCTORING_ENABLED =
@@ -323,6 +327,27 @@ export async function POST(request: Request) {
           progressMap.set(unlockId, unlocked);
         }
       }
+    }
+
+    await recordLearningMemory({
+      userId: user.id,
+      nodeId: body.nodeId,
+      roadmapId: activeRoadmap.id,
+      title: node.title || body.nodeId,
+      description: node.description?.slice(0, 280) || undefined,
+      score,
+      assessmentType: body.type,
+    }).catch(() => null);
+
+    if (body.type === "project") {
+      await recordProjectMemory({
+        userId: user.id,
+        projectId: body.nodeId,
+        title: node.title || body.nodeId,
+        description: node.description?.slice(0, 280) || undefined,
+        score,
+        repoUrl: body.repoUrl,
+      }).catch(() => null);
     }
 
     return jsonResponse({

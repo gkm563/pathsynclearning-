@@ -3,6 +3,7 @@ import { parseJson, errorResponse, jsonResponse } from "@/lib/api/http";
 import { getDb } from "@/lib/db/client";
 import { eventApplications } from "@/lib/db/schema";
 import { requireDbUser } from "@/lib/db/users";
+import { recordEventAttended } from "@/lib/memory/processor";
 import { applicationCreateSchema } from "@/lib/validation/schemas";
 
 export async function GET() {
@@ -44,6 +45,13 @@ export async function POST(request: Request) {
       .insert(eventApplications)
       .values({ userId: user.id, eventId, kind })
       .onConflictDoNothing();
+
+    await recordEventAttended({
+      userId: user.id,
+      eventId,
+      kind,
+      title: kind === "og" ? "Opportunity Applied" : "Event Attended",
+    }).catch(() => null);
 
     const rows = await db
       .select({

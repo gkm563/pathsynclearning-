@@ -118,20 +118,7 @@ export default function PlatformChallenges() {
           ids.includes(item.id) ? ids : [...ids, item.id],
         );
         if (res.awarded) {
-          apiSend("/api/me/memory-lane", "POST", {
-            payload: {
-              id: `mem_${Date.now()}`,
-              title: item.title,
-              type: item.type,
-              category: item.category,
-              xpEarned: res.xpAwarded ?? item.xp,
-              date: new Date().toLocaleDateString(),
-              snippet:
-                item.solution?.editorial?.slice(0, 160) ||
-                item.description.slice(0, 120),
-              complexity: item.solution?.complexity,
-            },
-          }).catch(() => {});
+          // Memory Lane is written server-side via domain events
         }
       }
     } catch (e) {
@@ -178,19 +165,7 @@ export default function PlatformChallenges() {
       setArenaSessionSolved((ids) =>
         ids.includes(projectItem.id) ? ids : [...ids, projectItem.id],
       );
-      if (projectItem.status !== "solved") {
-        apiSend("/api/me/memory-lane", "POST", {
-          payload: {
-            id: `mem_${Date.now()}`,
-            title: projectItem.title,
-            type: "project",
-            category: projectItem.category,
-            xpEarned: projectItem.xp,
-            date: new Date().toLocaleDateString(),
-            snippet: projectItem.description.slice(0, 120),
-          },
-        }).catch(() => {});
-      }
+      // Memory Lane project memories are created server-side on submit
     }
   };
 

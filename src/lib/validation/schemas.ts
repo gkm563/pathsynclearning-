@@ -108,11 +108,83 @@ export const challengesActionSchema = z
   })
   .strict();
 
+/** @deprecated Legacy opaque payload — prefer domain event processor. */
 export const memoryLaneCreateSchema = z
   .object({
     payload: z.record(z.string(), z.unknown()),
   })
   .strict();
+
+export const noteVisibilitySchema = z.enum(["private", "public"]);
+
+export const noteCreateSchema = z
+  .object({
+    title: z.string().trim().min(1).max(200),
+    content: z.string().trim().min(1).max(12000),
+    visibility: noteVisibilitySchema.optional().default("private"),
+    sourceType: z.string().trim().min(1).max(64).nullable().optional(),
+    sourceId: z.string().trim().min(1).max(200).nullable().optional(),
+    links: z
+      .array(
+        z.object({
+          entityType: z.string().trim().min(1).max(64),
+          entityId: z.string().trim().min(1).max(200),
+        }),
+      )
+      .max(20)
+      .optional(),
+  })
+  .strict();
+
+export const noteUpdateSchema = z
+  .object({
+    title: z.string().trim().min(1).max(200).optional(),
+    content: z.string().trim().min(1).max(12000).optional(),
+    visibility: noteVisibilitySchema.optional(),
+  })
+  .strict()
+  .refine((v) => Object.keys(v).length > 0, {
+    message: "Provide at least one field to update",
+  });
+
+export const memorySettingsUpdateSchema = z
+  .object({
+    includeLearning: z.boolean().optional(),
+    includeProjects: z.boolean().optional(),
+    includeAchievements: z.boolean().optional(),
+    includeCertifications: z.boolean().optional(),
+    includeMentorship: z.boolean().optional(),
+    includeChallenges: z.boolean().optional(),
+    includeEvents: z.boolean().optional(),
+    includeCareer: z.boolean().optional(),
+    includePrivateNotes: z.boolean().optional(),
+    allowAiNotes: z.boolean().optional(),
+  })
+  .strict();
+
+export const memoryTimelineQuerySchema = z.object({
+  filter: z
+    .enum([
+      "all",
+      "learning",
+      "skills",
+      "projects",
+      "challenges",
+      "mentorship",
+      "collaboration",
+      "achievements",
+      "events",
+      "career",
+      "certifications",
+      "notes",
+      "milestones",
+    ])
+    .optional()
+    .default("all"),
+  search: z.string().trim().max(200).optional(),
+  cursor: z.string().trim().max(64).optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional().default(30),
+});
 
 export const notificationPatchSchema = z
   .object({

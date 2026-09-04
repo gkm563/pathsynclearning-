@@ -121,6 +121,7 @@ export default function ChallengeCodingIde({
           assessment={assessment}
           nodeId={item.id}
           runSource="challenge"
+          noteTitle={item.title}
           submitting={submitting}
           onSubmit={async ({ code, language }) => {
             setSubmitting(true);

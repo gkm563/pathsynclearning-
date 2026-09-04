@@ -1,0 +1,31 @@
+---
+description: Portal chrome ownership — never double-wrap header/nav
+globs: src/views/**/*.tsx,src/app/(app)/(portal)/**/*.tsx,src/components/dashboard/**/*.tsx
+alwaysApply: false
+---
+
+# Portal shell ownership (no double nav)
+
+## Rule
+
+Authenticated PathEd chrome (header + sidebar + main frame) has **exactly one owner**:
+
+`src/app/(app)/(portal)/layout.tsx` → `<PortalShell>`
+
+## Do
+
+- Put page UI only in `src/views/Platform/*` and route `page.tsx` loaders
+- Nested layouts under `(portal)/dashboard` must pass `children` through unchanged
+- Reuse feature components inside `<main>` content only
+
+## Do not
+
+- Import or render `PortalShell`, `DashboardLayout`, `DashboardHeader`, or `DashboardSidebar` from:
+  - `src/views/**`
+  - any `page.tsx`
+  - nested dashboard layouts
+- Wrap a view in a second full-page shell (`min-h-screen` + header clone)
+
+## Why
+
+Mounting chrome twice creates the double-nav bug. App Router layouts own shells; pages own content. This matches Next.js App Router industry practice.

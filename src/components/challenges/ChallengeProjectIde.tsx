@@ -6,6 +6,7 @@ import ChallengeResultScreen from "@/components/challenges/ChallengeResultScreen
 import ProjectWorkspace, {
   ProjectRubricList,
 } from "@/components/projects/ProjectWorkspace";
+import { AddNoteButton } from "@/components/memory-lane/AddNoteButton";
 import type { ChallengeSummary } from "@/lib/challenges/types";
 import type {
   ProjectAssessmentSpec,
@@ -142,7 +143,17 @@ export default function ChallengeProjectIde({
   }
 
   return (
-    <ProjectWorkspace
+    <>
+      <div style={{ position: "fixed", top: 16, right: 72, zIndex: 1300 }}>
+        <AddNoteButton
+          sourceType="project"
+          sourceId={item.id}
+          defaultTitle={`${data.title} notes`}
+          contextLabel={`Project · ${data.title}`}
+          links={[{ entityType: "project_run", entityId: data.run.id }]}
+        />
+      </div>
+      <ProjectWorkspace
       title={data.title}
       xp={data.xp}
       coins={data.coins}
@@ -186,6 +197,7 @@ export default function ChallengeProjectIde({
         }
       }}
     />
+    </>
   );
 }
 

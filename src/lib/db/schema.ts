@@ -253,6 +253,7 @@ export const projectEvidence = pgTable(
   (t) => [index("idx_project_evidence_run").on(t.runId)],
 );
 
+/** @deprecated Prefer `memories` — kept for legacy rows during migration. */
 export const memoryLaneEntries = pgTable(
   "memory_lane_entries",
   {
@@ -265,6 +266,135 @@ export const memoryLaneEntries = pgTable(
   },
   (t) => [index("idx_memory_user").on(t.userId, t.createdAt)],
 );
+
+/** Chronological Memory Lane events (meaningful accomplishments only). */
+export const memories = pgTable(
+  "memories",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    title: text("title").notNull(),
+    description: text("description"),
+    occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull().defaultNow(),
+    sourceType: text("source_type"),
+    sourceId: text("source_id"),
+    visibility: text("visibility").notNull().default("private"),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("idx_memories_user_occurred").on(t.userId, t.occurredAt),
+    index("idx_memories_user_type").on(t.userId, t.type),
+    index("idx_memories_source").on(t.userId, t.sourceType, t.sourceId),
+  ],
+);
+
+/** Personal notes — private by default; reusable across PathEd. */
+export const notes = pgTable(
+  "notes",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    content: text("content").notNull(),
+    visibility: text("visibility").notNull().default("private"),
+    sourceType: text("source_type"),
+    sourceId: text("source_id"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("idx_notes_user_created").on(t.userId, t.createdAt),
+    index("idx_notes_source").on(t.userId, t.sourceType, t.sourceId),
+    index("idx_notes_visibility").on(t.userId, t.visibility),
+  ],
+);
+
+/** Optional multi-entity links for a note. */
+export const noteLinks = pgTable(
+  "note_links",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    noteId: uuid("note_id")
+      .notNull()
+      .references(() => notes.id, { onDelete: "cascade" }),
+    entityType: text("entity_type").notNull(),
+    entityId: text("entity_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("idx_note_links_note").on(t.noteId),
+    unique("note_links_note_entity").on(t.noteId, t.entityType, t.entityId),
+  ],
+);
+
+/** Special milestone events on Memory Lane. */
+export const milestones = pgTable(
+  "milestones",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    title: text("title").notNull(),
+    description: text("description"),
+    occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull().defaultNow(),
+    sourceType: text("source_type"),
+    sourceId: text("source_id"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("idx_milestones_user_occurred").on(t.userId, t.occurredAt),
+    unique("milestones_user_type").on(t.userId, t.type),
+  ],
+);
+
+/** Lightweight domain event log → memory processor. */
+export const domainEvents = pgTable(
+  "domain_events",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    sourceType: text("source_type"),
+    sourceId: text("source_id"),
+    payload: jsonb("payload").$type<Record<string, unknown>>().notNull().default({}),
+    occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull().defaultNow(),
+    processedAt: timestamp("processed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("idx_domain_events_user").on(t.userId, t.occurredAt),
+    index("idx_domain_events_unprocessed").on(t.processedAt, t.createdAt),
+  ],
+);
+
+/** Per-user Memory Lane preferences. */
+export const memorySettings = pgTable("memory_settings", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  includeLearning: boolean("include_learning").notNull().default(true),
+  includeProjects: boolean("include_projects").notNull().default(true),
+  includeAchievements: boolean("include_achievements").notNull().default(true),
+  includeCertifications: boolean("include_certifications").notNull().default(true),
+  includeMentorship: boolean("include_mentorship").notNull().default(true),
+  includeChallenges: boolean("include_challenges").notNull().default(true),
+  includeEvents: boolean("include_events").notNull().default(true),
+  includeCareer: boolean("include_career").notNull().default(true),
+  includePrivateNotes: boolean("include_private_notes").notNull().default(true),
+  allowAiNotes: boolean("allow_ai_notes").notNull().default(false),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
 
 export const eventApplications = pgTable(
   "event_applications",
@@ -432,3 +562,7 @@ export type RoadmapRow = typeof roadmaps.$inferSelect;
 export type RoadmapProgressRow = typeof roadmapProgress.$inferSelect;
 export type RoadmapAssessmentAttempt =
   typeof roadmapAssessmentAttempts.$inferSelect;
+export type Memory = typeof memories.$inferSelect;
+export type Note = typeof notes.$inferSelect;
+export type Milestone = typeof milestones.$inferSelect;
+export type DomainEvent = typeof domainEvents.$inferSelect;
