@@ -4,25 +4,54 @@ import { env } from "@/lib/env";
 import { errorResponse } from "@/lib/api/http";
 import { AppError } from "@/lib/api/errors";
 
-interface AiInsight {
-  icon: string;
+export type AiInsight = {
+  /** Lucide-style icon key — never emoji */
+  icon: "target" | "zap" | "rocket" | "book" | "code" | "shield";
   text: string;
-}
+};
 
 const FALLBACK: AiInsight[] = [
   {
-    icon: "🎯",
-    text: "Solve 2 BST & Graph problems today to boost DSA competency to 75%.",
+    icon: "target",
+    text: "Solve two graph or tree problems today to strengthen DSA fundamentals.",
   },
   {
-    icon: "⚡",
-    text: "Review Indexing & B-Trees in DBMS before your upcoming mock assessment.",
+    icon: "book",
+    text: "Review indexing and B-trees before your next DBMS assessment.",
   },
   {
-    icon: "🚀",
-    text: "Push your responsive card component to GitHub to raise your CRI score by +3%.",
+    icon: "code",
+    text: "Ship a small component or API endpoint to raise your CRI this week.",
   },
 ];
+
+const ICON_KEYS = new Set<AiInsight["icon"]>([
+  "target",
+  "zap",
+  "rocket",
+  "book",
+  "code",
+  "shield",
+]);
+
+function normalizeInsights(raw: unknown): AiInsight[] | null {
+  if (!Array.isArray(raw)) return null;
+  const out: AiInsight[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const text = String((item as { text?: unknown }).text || "").trim();
+    if (!text) continue;
+    const iconRaw = String((item as { icon?: unknown }).icon || "target")
+      .toLowerCase()
+      .replace(/[^a-z]/g, "") as AiInsight["icon"];
+    out.push({
+      icon: ICON_KEYS.has(iconRaw) ? iconRaw : "target",
+      text: text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "").trim(),
+    });
+    if (out.length >= 3) break;
+  }
+  return out.length >= 3 ? out : null;
+}
 
 export async function POST() {
   try {
@@ -45,7 +74,7 @@ export async function POST() {
               {
                 parts: [
                   {
-                    text: `Provide 3 short, actionable, bulleted career reminders for a Software Engineering student targeting SDE roles at Tier 1 companies. Return JSON array of objects: [{"icon": "🎯", "text": "reminder text"}]`,
+                    text: `Provide 3 short, actionable career reminders for a Software Engineering student targeting SDE roles. Return ONLY a JSON array of objects with keys icon and text. icon must be one of: target, zap, rocket, book, code, shield. No emojis.`,
                   },
                 ],
               },
@@ -58,9 +87,12 @@ export async function POST() {
         | string
         | undefined;
       if (rawText) {
-        const parsed = JSON.parse(rawText.replace(/```json|```/g, "").trim()) as AiInsight[];
-        if (Array.isArray(parsed) && parsed.length >= 3) {
-          return NextResponse.json({ insights: parsed.slice(0, 3) });
+        const parsed = JSON.parse(
+          rawText.replace(/```json|```/g, "").trim(),
+        ) as unknown;
+        const normalized = normalizeInsights(parsed);
+        if (normalized) {
+          return NextResponse.json({ insights: normalized });
         }
       }
     } catch {

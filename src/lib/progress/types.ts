@@ -90,6 +90,50 @@ export type ProgressNextAction = {
   remainingTasks: number | null;
 };
 
+/** One day cell in the consistency heatmap (weeks × weekdays). */
+export type HeatmapDay = {
+  /** UTC date key YYYY-MM-DD */
+  date: string;
+  /** Activity events that day (attempts, assessments, etc.) */
+  count: number;
+  /** 0 idle … 4 peak — derived from count */
+  level: 0 | 1 | 2 | 3 | 4;
+  /** False for padding days from adjacent years in first/last weeks */
+  inYear: boolean;
+};
+
+export type HeatmapMonthLabel = {
+  /** Short month name, e.g. Jan */
+  label: string;
+  /** Week column index (0-based) */
+  weekIndex: number;
+};
+
+export type ConsistencyHeatmap = {
+  /** Anchor year (current year = rolling 12 months ending today) */
+  year: number;
+  /** Inclusive window start YYYY-MM-DD */
+  windowStart: string;
+  /** Inclusive window end YYYY-MM-DD */
+  windowEnd: string;
+  /** True when the window slides with today (not a closed calendar year) */
+  rolling: boolean;
+  rangeLabel: string;
+  /** Years with recorded activity, plus the current calendar year */
+  availableYears: number[];
+  weeks: number;
+  days: HeatmapDay[];
+  monthLabels: HeatmapMonthLabel[];
+  /** 7 weekday labels (Mon→Sun); blank entries hide the row label */
+  weekdayLabels: string[];
+  activeDays: number;
+  totalEvents: number;
+  currentStreak: number;
+  bestStreak: number;
+  monthActiveDays: number;
+  monthDayCount: number;
+};
+
 export type ProgressPayload = {
   range: ProgressRange;
   summary: ProgressSummary;
@@ -98,4 +142,5 @@ export type ProgressPayload = {
   activity: ProgressActivityItem[];
   milestones: ProgressMilestone[];
   nextAction: ProgressNextAction;
+  heatmap: ConsistencyHeatmap;
 };

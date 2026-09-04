@@ -64,7 +64,7 @@ export type StudentSnapshot = {
   refresh: () => Promise<void>;
 };
 
-const SKILL_COLORS = ["#6c63ff", "#00c9a7", "#f7971e", "#e040fb"];
+const SKILL_COLORS = ["#0f766e", "#0369a1", "#d97706", "#0ea5e9"];
 
 const FALLBACK_CHALLENGES: DailyChallengeCard[] = [
   {
@@ -139,10 +139,10 @@ function mapDailyFromApi(
   if (!pack.length) return FALLBACK_CHALLENGES;
 
   const palette = [
-    { col: "#6c63ff", bg: "rgba(108,99,255,0.08)", border: "#6c63ff40" },
-    { col: "#f7971e", bg: "rgba(247,151,30,0.08)", border: "#f7971e40" },
-    { col: "#00c9a7", bg: "rgba(0,201,167,0.08)", border: "#00c9a740" },
-    { col: "#e040fb", bg: "rgba(224,64,251,0.08)", border: "#e040fb40" },
+    { col: "#0f766e", bg: "rgba(15,118,110,0.08)", border: "#0f766e40" },
+    { col: "#d97706", bg: "rgba(217,119,6,0.08)", border: "#d9770640" },
+    { col: "#0369a1", bg: "rgba(3,105,161,0.08)", border: "#0369a140" },
+    { col: "#0ea5e9", bg: "rgba(14,165,233,0.08)", border: "#0ea5e940" },
   ];
   const diffLabel = { easy: "Easy", medium: "Medium", hard: "Hard" } as const;
 

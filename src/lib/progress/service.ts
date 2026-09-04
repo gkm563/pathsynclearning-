@@ -18,6 +18,7 @@ import {
 import {
   averageScore,
   bestScoresByKey,
+  buildConsistencyHeatmap,
   buildJourneyMilestones,
   buildPerformanceSeries,
   completionPct,
@@ -62,6 +63,7 @@ function asNodes(raw: unknown): RoadmapNode[] {
 export async function getProgressPayload(
   userId: string,
   range: ProgressRange = "all",
+  heatmapYear?: number,
 ): Promise<ProgressPayload> {
   const db = getDb();
   const now = new Date();
@@ -579,6 +581,24 @@ export async function getProgressPayload(
     attemptStatus,
   });
 
+  // ── Consistency heatmap from recorded activity timestamps ──
+  const heatmapTimestamps: Date[] = [
+    ...allAttempts.map((a) => a.createdAt),
+    ...assessmentAttemptRows.map((a) => a.createdAt),
+    ...memoryRows.map((m) => m.occurredAt),
+    ...state.attempts
+      .filter((a) => a.at)
+      .map((a) => new Date(a.at)),
+    ...nodeProgress
+      .filter((n) => n.completedAt || n.updatedAt)
+      .map((n) => n.completedAt ?? n.updatedAt),
+  ];
+  const heatmap = buildConsistencyHeatmap(
+    heatmapTimestamps,
+    heatmapYear ?? now.getUTCFullYear(),
+    now,
+  );
+
   return {
     range,
     summary: {
@@ -598,6 +618,7 @@ export async function getProgressPayload(
     activity: activity.slice(0, 30),
     milestones,
     nextAction,
+    heatmap,
   };
 }
 

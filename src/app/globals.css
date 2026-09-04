@@ -175,6 +175,15 @@
   }
 }
 
+@keyframes shShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 .shimmer-text {
   background: linear-gradient(90deg, #6c63ff, #00c9a7, #f7971e, #6c63ff);
   background-size: 300% auto;

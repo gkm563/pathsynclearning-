@@ -4,7 +4,7 @@ import {
   useEffect,
   useRef,
   useState,
-  type MouseEvent,
+  type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from "react";
 import Link from "next/link";
@@ -135,7 +135,7 @@ export default function AppNavbar({ onMenuOpen }: AppNavbarProps) {
   useEffect(() => {
     if (!isPanelOpen) return;
 
-    const onPointerDown = (event: MouseEvent) => {
+    const onPointerDown = (event: globalThis.MouseEvent) => {
       if (!panelRef.current?.contains(event.target as Node)) {
         setIsPanelOpen(false);
       }
@@ -155,7 +155,7 @@ export default function AppNavbar({ onMenuOpen }: AppNavbarProps) {
 
   const unreadCount = notifications.filter((item) => !item.read).length;
 
-  const markAllAsRead = async (event: MouseEvent) => {
+  const markAllAsRead = async (event: ReactMouseEvent) => {
     event.stopPropagation();
     setNotifications((prev) => prev.map((item) => ({ ...item, read: true })));
     try {

@@ -421,6 +421,7 @@ export const progressRangeSchema = z.enum(["week", "month", "all"]).default("all
 export const progressQuerySchema = z
   .object({
     range: progressRangeSchema,
+    year: z.coerce.number().int().min(2000).max(2100).optional(),
   })
   .strict();
 

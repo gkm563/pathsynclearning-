@@ -1,7 +1,6 @@
-"use client";
+import StudentHome from "@/views/Dashboard/StudentHome";
 
-import { createClientPage } from "@/lib/create-client-page";
-
-export default createClientPage(
-  () => import("@/views/Platform/PlatformDashboard"),
-);
+/** Canonical student home — `/dashboard`. */
+export default function DashboardHomePage() {
+  return <StudentHome />;
+}

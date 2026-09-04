@@ -13,9 +13,14 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const parsed = progressQuerySchema.parse({
       range: url.searchParams.get("range") || "all",
+      year: url.searchParams.get("year") || undefined,
     });
 
-    const payload = await getProgressPayload(user.id, parsed.range);
+    const payload = await getProgressPayload(
+      user.id,
+      parsed.range,
+      parsed.year,
+    );
     return jsonResponse(payload);
   } catch (e) {
     return errorResponse(e);
