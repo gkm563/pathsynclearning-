@@ -7,9 +7,11 @@ import AssessmentShell, {
 } from "./AssessmentShell";
 import McqAssessment from "./McqAssessment";
 import CodingAssessment from "./CodingAssessment";
+import ProjectAssessment from "./ProjectAssessment";
 import AnswerReview, { type AnswerReviewPayload } from "./AnswerReview";
 import type { NodeAssessment } from "@/types/roadmap";
 import { apiGet, apiSend } from "@/lib/api";
+import type { ProjectEvidenceInput } from "@/lib/projects/types";
 
 type LoadState = {
   title: string;
@@ -81,6 +83,10 @@ export default function NodeAssessmentModal({
       answers?: Record<string, number>;
       code?: string;
       language?: string;
+      stepsDone?: string[];
+      evidence?: ProjectEvidenceInput[];
+      repoUrl?: string;
+      reflection?: string;
       violations?: ProctorViolation[];
     }) => {
       if (!data) return;
@@ -100,6 +106,10 @@ export default function NodeAssessmentModal({
           answers: payload.answers,
           code: payload.code,
           language: payload.language,
+          stepsDone: payload.stepsDone,
+          evidence: payload.evidence,
+          repoUrl: payload.repoUrl,
+          reflection: payload.reflection,
           violations: payload.violations || [],
         });
         setResultScore(res.score ?? 0);
@@ -113,7 +123,6 @@ export default function NodeAssessmentModal({
           setAnswerReview(res.answerReview);
         }
         setShowResult(true);
-        // Always return to roadmap after a short countdown
         setAutoAdvanceIn(res.passed && res.answerReview ? 4 : 2);
         setData((prev) =>
           prev
@@ -386,7 +395,15 @@ export default function NodeAssessmentModal({
     );
   }
 
-  return (
+  return data.assessment.type === "project" ? (
+    <ProjectAssessment
+      assessment={data.assessment}
+      title={data.title}
+      submitting={submitting}
+      onClose={onClose}
+      onSubmit={(payload) => void submit(payload)}
+    />
+  ) : (
     <AssessmentShell
       title={data.title}
       timeLimitMinutes={data.assessment.timeLimitMinutes}

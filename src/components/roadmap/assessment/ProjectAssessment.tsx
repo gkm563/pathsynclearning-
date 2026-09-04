@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import ProjectWorkspace from "@/components/projects/ProjectWorkspace";
 import type { NodeAssessment } from "@/types/roadmap";
 import type {
@@ -12,21 +12,29 @@ export default function ProjectAssessment({
   assessment,
   title,
   submitting,
+  onClose,
+  onSaveProgress,
   onSubmit,
 }: {
   assessment: NodeAssessment;
   title: string;
   submitting: boolean;
+  onClose: () => void;
+  onSaveProgress?: (payload: {
+    stepsDone: string[];
+    evidence: ProjectEvidenceInput[];
+    repoUrl?: string;
+    reflection?: string;
+  }) => Promise<void> | void;
   onSubmit: (payload: {
     stepsDone: string[];
     evidence: ProjectEvidenceInput[];
     repoUrl?: string;
     reflection?: string;
-  }) => void;
+  }) => void | Promise<void>;
 }) {
   const project = assessment.project;
-  const [mounted] = useState(true);
-  if (!project || !mounted) {
+  if (!project) {
     return (
       <div style={{ padding: 24, fontFamily: "Outfit" }}>
         No project assessment configured for this node.
@@ -50,8 +58,8 @@ export default function ProjectAssessment({
       coins={0}
       spec={spec}
       submitting={submitting}
-      onClose={() => {}}
-      onSaveProgress={() => undefined}
+      onClose={onClose}
+      onSaveProgress={onSaveProgress || (() => undefined)}
       onSubmit={onSubmit}
     />
   );

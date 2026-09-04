@@ -72,6 +72,12 @@ export type ChallengeAttemptPayload = {
   answers?: Record<string, number>;
   code?: string;
   language?: string;
+  /** Project assessment submission */
+  stepsDone?: string[];
+  evidence?: unknown[];
+  repoUrl?: string;
+  reflection?: string;
+  breakdown?: unknown[];
 };
 
 export type ChallengeAttempt = {

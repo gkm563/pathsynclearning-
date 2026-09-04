@@ -4,6 +4,7 @@ import { errorResponse, jsonResponse, parseJson } from "@/lib/api/http";
 import { AppError } from "@/lib/api/errors";
 import { getDb } from "@/lib/db/client";
 import {
+  projectRuns,
   roadmapAssessmentAttempts,
   roadmapProgress,
   roadmaps,
@@ -15,6 +16,11 @@ import {
   isAssessableNode,
 } from "@/lib/roadmap/assessment";
 import { gradeCoding } from "@/lib/roadmap/coding-judge";
+import { gradeProject } from "@/lib/projects/grader";
+import {
+  getOrCreateProjectRun,
+  saveProjectProgress,
+} from "@/lib/projects/service";
 import {
   assertDependenciesMet,
   findNodesToUnlock,
@@ -22,6 +28,8 @@ import {
 } from "@/lib/roadmap/progress";
 import { assessmentSubmitSchema } from "@/lib/validation/roadmap-schemas";
 import type { RoadmapEdge, RoadmapNode } from "@/types/roadmap";
+import type { ProjectAssessmentSpec } from "@/lib/projects/types";
+import { buildProjectSpecForNode } from "@/lib/projects/specs";
 
 const MAX_VIOLATIONS = 3;
 const PROCTORING_ENABLED =
@@ -115,6 +123,70 @@ export async function POST(request: Request) {
           questions: buildMcqAnswerReview(node.assessment, body.answers || {}),
         };
       }
+    } else if (body.type === "project") {
+      const projectPart = node.assessment.project;
+      const spec: ProjectAssessmentSpec = projectPart
+        ? {
+            type: "project",
+            passScore: node.assessment.passScore,
+            timeLimitMinutes: node.assessment.timeLimitMinutes,
+            overview: projectPart.overview,
+            steps: projectPart.steps,
+            rubric: projectPart.rubric,
+          }
+        : buildProjectSpecForNode(node);
+
+      const refId = `${activeRoadmap.id}:${body.nodeId}`;
+      const run = await getOrCreateProjectRun({
+        userId: user.id,
+        source: "roadmap",
+        refId,
+      });
+
+      await saveProjectProgress({
+        runId: run.id,
+        stepsDone: body.stepsDone || [],
+        evidence: body.evidence,
+        repoUrl: body.repoUrl,
+        reflection: body.reflection,
+      });
+
+      const graded = await gradeProject(spec, {
+        stepsDone: body.stepsDone || [],
+        evidence: body.evidence || [],
+        repoUrl: body.repoUrl,
+        reflection: body.reflection,
+      });
+      score = graded.score;
+      passed = graded.passed;
+      details = {
+        checklistPct: graded.checklistPct,
+        breakdown: graded.breakdown,
+      };
+
+      const now = new Date();
+      await db
+        .update(projectRuns)
+        .set({
+          status: passed ? "passed" : "failed",
+          score,
+          checklistPct: graded.checklistPct,
+          rubricBreakdown: graded.breakdown,
+          repoUrl: body.repoUrl || null,
+          reflection: body.reflection || null,
+          submittedAt: now,
+          passedAt: passed ? now : null,
+          updatedAt: now,
+        })
+        .where(eq(projectRuns.id, run.id));
+
+      if (passed) {
+        answerReview = {
+          type: "project",
+          overview: spec.overview,
+          breakdown: graded.breakdown,
+        };
+      }
     } else {
       const language = (body.language || "javascript") as
         | "javascript"
@@ -165,7 +237,16 @@ export async function POST(request: Request) {
         passed,
         score,
         violations,
-        answers: body.answers || {},
+        answers:
+          body.type === "project"
+            ? {
+                stepsDone: body.stepsDone || [],
+                evidence: body.evidence || [],
+                repoUrl: body.repoUrl,
+                reflection: body.reflection,
+                ...(details && typeof details === "object" ? details : {}),
+              }
+            : body.answers || {},
         code: body.code || null,
       })
       .returning();

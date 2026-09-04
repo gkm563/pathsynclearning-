@@ -20,6 +20,7 @@ export default function ProjectWorkspace({
   initialRepoUrl,
   initialReflection,
   submitting,
+  embedded,
   onSaveProgress,
   onSubmit,
   onClose,
@@ -33,6 +34,8 @@ export default function ProjectWorkspace({
   initialRepoUrl?: string;
   initialReflection?: string;
   submitting?: boolean;
+  /** When true, fills parent instead of fixed fullscreen (roadmap shell). */
+  embedded?: boolean;
   onSaveProgress: (payload: {
     stepsDone: string[];
     evidence: ProjectEvidenceInput[];
@@ -103,9 +106,11 @@ export default function ProjectWorkspace({
   return (
     <div
       style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 1200,
+        position: embedded ? "relative" : "fixed",
+        inset: embedded ? undefined : 0,
+        flex: embedded ? 1 : undefined,
+        minHeight: embedded ? 0 : undefined,
+        zIndex: embedded ? undefined : 1200,
         background: "var(--bg-main, #f8fafc)",
         display: "flex",
         flexDirection: "column",
