@@ -22,7 +22,7 @@ export default function DashboardSidebar({ isOpen, onClose }) {
     { id: "challenges", path: routes.app.challenges, label: "Challenges", icon: <Zap size={20} /> },
     { id: "memory-lane", path: routes.app.memoryLane, label: "Memory Lane", icon: <BookOpen size={20} /> },
     { id: "progress", path: routes.app.progress, label: "Progress", icon: <BarChart2 size={20} /> },
-    { id: "technews", path: routes.app.techNews, label: "Tech News", icon: <Newspaper size={20} /> },
+    { id: "tech-news", path: routes.app.techNews, label: "Tech News", icon: <Newspaper size={20} /> },
   ];
 
   const expandedFeatures = [
@@ -30,7 +30,7 @@ export default function DashboardSidebar({ isOpen, onClose }) {
     { id: "placement-inbox", path: routes.app.placementInbox, label: "Placement Inbox", icon: <Inbox size={20} /> },
     { id: "placement-insights", path: routes.app.placementInsights, label: "Placement Insights", icon: <Lightbulb size={20} /> },
     { id: "records-certs", path: routes.app.recordsCerts, label: "Records & Certs", icon: <Award size={20} /> },
-    { id: "hack-attack", path: routes.app.ogOpportunities, label: "OG Oppurtanities", icon: <Award size={20} /> },
+    { id: "og-opportunities", path: routes.app.ogOpportunities, label: "OG Opportunities", icon: <Award size={20} /> },
     { id: "community", path: routes.app.community, label: "Community", icon: <Users size={20} /> },
     { id: "store", path: routes.app.store, label: "Store", icon: <ShoppingBag size={20} /> },
   ];
@@ -188,7 +188,7 @@ export default function DashboardSidebar({ isOpen, onClose }) {
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border-light)"; e.currentTarget.style.color = "var(--text-main)"; }}
               >
                 <Settings size={22} />
-                <span>Platform Settings</span>
+                <span>Settings</span>
               </button>
             </div>
           </motion.aside>

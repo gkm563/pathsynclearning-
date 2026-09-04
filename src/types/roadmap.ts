@@ -141,6 +141,19 @@ export interface Roadmap {
   createdAt: string;
 }
 
+/** Lightweight row for roadmap list / switcher. */
+export interface RoadmapSummary {
+  id: string;
+  title: string;
+  targetRole: string;
+  version: number;
+  estimatedWeeks: number | null;
+  isActive: boolean;
+  createdAt: string;
+  completionPercent: number;
+  nodeCount: number;
+}
+
 /* ─── Progress ────────────────────────────────────────────────────── */
 
 export interface RoadmapNodeProgress {

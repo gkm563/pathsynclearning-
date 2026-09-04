@@ -1,18 +1,29 @@
-import { NextResponse } from 'next/server';
 import { requireDbUser } from '@/lib/db/users';
 import { getDb } from '@/lib/db/client';
 import { roadmapProfiles, roadmaps, roadmapProgress } from '@/lib/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { errorResponse, jsonResponse } from '@/lib/api/http';
 import { generateRoadmap } from '@/lib/ai/roadmap-generator';
 import { AppError } from '@/lib/api/errors';
 import { computeInitialNodeStatus } from '@/lib/roadmap/progress';
+import {
+  deactivateActiveRoadmaps,
+  nextRoadmapVersion,
+} from '@/lib/roadmap/active';
 import crypto from 'crypto';
 
+/**
+ * Create a new roadmap from the user's profile.
+ * Only deactivates the currently active roadmap — other saved roadmaps stay available.
+ * Body: { mode?: "new" | "replace" } — both keep inactive history; "replace" is an alias for regenerate UX.
+ */
 export async function POST(request: Request) {
   try {
     const user = await requireDbUser();
     const db = await getDb();
+
+    // mode reserved for future semantics; both keep prior inactive roadmaps
+    await request.json().catch(() => ({}));
 
     const [profile] = await db
       .select()
@@ -20,30 +31,26 @@ export async function POST(request: Request) {
       .where(eq(roadmapProfiles.userId, user.id))
       .limit(1);
 
-    if (!profile || !profile.targetRole || !profile.knownSkills || (Array.isArray(profile.knownSkills) && profile.knownSkills.length === 0)) {
-      throw new AppError('BAD_REQUEST', 'Profile must include targetRole and at least 1 known skill.');
+    if (
+      !profile ||
+      !profile.targetRole ||
+      !profile.knownSkills ||
+      (Array.isArray(profile.knownSkills) && profile.knownSkills.length === 0)
+    ) {
+      throw new AppError(
+        'BAD_REQUEST',
+        'Profile must include targetRole and at least 1 known skill.',
+      );
     }
 
     const generatedData = await generateRoadmap(profile as unknown as any, user.id);
+    const newVersion = await nextRoadmapVersion(db, user.id);
 
-    const existingRoadmaps = await db
-      .select()
-      .from(roadmaps)
-      .where(eq(roadmaps.userId, user.id))
-      .orderBy(desc(roadmaps.version));
-
-    let newVersion = 1;
-    if (existingRoadmaps.length > 0) {
-      newVersion = existingRoadmaps[0].version + 1;
-      
-      await db
-        .update(roadmaps)
-        .set({ isActive: false })
-        .where(eq(roadmaps.userId, user.id));
-    }
+    // Keep other (inactive) roadmaps — only clear the current active slot
+    await deactivateActiveRoadmaps(db, user.id);
 
     const roadmapId = crypto.randomUUID();
-    
+
     const [newRoadmap] = await db
       .insert(roadmaps)
       .values({

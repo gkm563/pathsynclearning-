@@ -26,6 +26,7 @@ import DependencyEdge from './edges/DependencyEdge';
 import RoadmapToolbar from './RoadmapToolbar';
 import RoadmapDetailPanel from './RoadmapDetailPanel';
 import RoadmapOverview from './RoadmapOverview';
+import RoadmapSwitcher from './RoadmapSwitcher';
 import NodeAssessmentModal from './assessment/NodeAssessmentModal';
 import { isAssessableNode } from '@/lib/roadmap/assessment';
 
@@ -100,6 +101,7 @@ export default function RoadmapCanvas({
   onStatusChange,
   onRegenerate,
   onRefresh,
+  onCreateNew,
   statusError,
   initialFocusNodeId,
 }: {
@@ -108,12 +110,14 @@ export default function RoadmapCanvas({
   onStatusChange: (nodeId: string, status: string) => void | Promise<void>;
   onRegenerate: () => void;
   onRefresh?: () => void | Promise<void>;
+  onCreateNew?: () => void;
   statusError?: string | null;
   initialFocusNodeId?: string;
 }) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState<RTNode | null>(null);
+  const [panelExpanded, setPanelExpanded] = useState(false);
   const [assessmentNodeId, setAssessmentNodeId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
@@ -435,6 +439,24 @@ export default function RoadmapCanvas({
         overflow: 'hidden',
       }}
     >
+      <div
+        style={{
+          position: 'absolute',
+          top: 24,
+          left: 24,
+          zIndex: 10,
+        }}
+      >
+        <RoadmapSwitcher
+          activeRoadmapId={roadmap.id}
+          activeTitle={roadmap.title}
+          onSwitched={async () => {
+            await onRefresh?.();
+          }}
+          onCreateNew={() => onCreateNew?.()}
+        />
+      </div>
+
       <RoadmapOverview nodes={roadmap.nodes} progress={progressMap} />
 
       <ReactFlow
@@ -500,7 +522,7 @@ export default function RoadmapCanvas({
               borderRadius: 16,
               boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
               marginBottom: 24,
-              marginRight: selectedNode ? 424 : 24,
+              marginRight: selectedNode && !panelExpanded ? 424 : 24,
               transition: 'margin-right 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
               overflow: 'hidden',
               width: 190,
@@ -563,7 +585,11 @@ export default function RoadmapCanvas({
           await onStatusChange(id, status);
         }}
         onTakeAssessment={(id) => setAssessmentNodeId(id)}
-        onClose={() => setSelectedNode(null)}
+        onClose={() => {
+          setSelectedNode(null);
+          setPanelExpanded(false);
+        }}
+        onExpandedChange={setPanelExpanded}
       />
 
       {assessmentNodeId && (

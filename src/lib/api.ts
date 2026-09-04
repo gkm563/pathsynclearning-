@@ -58,7 +58,7 @@ export async function apiGet<T = unknown>(url: string): Promise<T> {
 
 export async function apiSend<T = unknown>(
   url: string,
-  method: "POST" | "PUT" | "PATCH",
+  method: "POST" | "PUT" | "PATCH" | "DELETE",
   body?: unknown,
 ): Promise<T> {
   const res = await fetch(url, {
@@ -68,5 +68,8 @@ export async function apiSend<T = unknown>(
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   if (!res.ok) await parseFailure(res);
-  return res.json() as Promise<T>;
+  // DELETE may return empty body in some APIs; ours returns JSON
+  const text = await res.text();
+  if (!text) return undefined as T;
+  return JSON.parse(text) as T;
 }

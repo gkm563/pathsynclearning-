@@ -19,9 +19,9 @@ const PORTAL_SHELL_BAN = {
         "DashboardLayout is deprecated. Portal chrome is owned by (portal)/layout.tsx via PortalShell — never wrap views/pages.",
     },
     {
-      name: "@/components/dashboard/DashboardHeader",
+      name: "@/components/dashboard/AppNavbar",
       message:
-        "DashboardHeader is part of PortalShell. Import it only inside components/dashboard shell files.",
+        "AppNavbar is part of PortalShell. Import it only inside components/dashboard shell files.",
     },
     {
       name: "@/components/dashboard/DashboardSidebar",
@@ -34,7 +34,7 @@ const PORTAL_SHELL_BAN = {
       group: [
         "**/components/dashboard/PortalShell",
         "**/components/dashboard/DashboardLayout",
-        "**/components/dashboard/DashboardHeader",
+        "**/components/dashboard/AppNavbar",
         "**/components/dashboard/DashboardSidebar",
       ],
       message:

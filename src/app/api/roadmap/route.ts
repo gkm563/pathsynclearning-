@@ -1,10 +1,11 @@
 import { requireDbUser } from '@/lib/db/users';
 import { getDb } from '@/lib/db/client';
 import { roadmaps, roadmapProgress } from '@/lib/db/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { errorResponse, jsonResponse } from '@/lib/api/http';
 import { isProgressSatisfied } from '@/lib/roadmap/progress';
 import { ensureNodeAssessments } from '@/lib/roadmap/assessment-bank';
+import { deactivateActiveRoadmaps, getActiveRoadmap } from '@/lib/roadmap/active';
 import type { RoadmapNode } from '@/types/roadmap';
 import crypto from 'crypto';
 
@@ -62,12 +63,7 @@ export async function GET() {
     const user = await requireDbUser();
     const db = await getDb();
 
-    const [activeRoadmap] = await db
-      .select()
-      .from(roadmaps)
-      .where(and(eq(roadmaps.userId, user.id), eq(roadmaps.isActive, true)))
-      .orderBy(desc(roadmaps.createdAt))
-      .limit(1);
+    const activeRoadmap = await getActiveRoadmap(db, user.id);
 
     if (!activeRoadmap) {
       return jsonResponse({ roadmap: null });
@@ -125,10 +121,7 @@ export async function DELETE() {
     const user = await requireDbUser();
     const db = await getDb();
 
-    await db
-      .update(roadmaps)
-      .set({ isActive: false })
-      .where(and(eq(roadmaps.userId, user.id), eq(roadmaps.isActive, true)));
+    await deactivateActiveRoadmaps(db, user.id);
 
     return jsonResponse({ success: true });
   } catch (e) {

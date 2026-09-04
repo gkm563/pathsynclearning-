@@ -10,7 +10,7 @@ const SCAN_DIRS = [join(ROOT, "src", "views"), join(ROOT, "src", "app")];
 const FORBIDDEN = [
   "components/dashboard/PortalShell",
   "components/dashboard/DashboardLayout",
-  "components/dashboard/DashboardHeader",
+  "components/dashboard/AppNavbar",
   "components/dashboard/DashboardSidebar",
 ];
 

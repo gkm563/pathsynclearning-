@@ -37,7 +37,8 @@ export function AddNoteButton({
   variant = "default",
   titleAttr = "Notes",
   style,
-}: NoteSourceProps) {
+  onSaved,
+}: NoteSourceProps & { onSaved?: (note: NoteRow) => void }) {
   const [open, setOpen] = useState(false);
   const isIde = variant === "ide";
 
@@ -94,6 +95,7 @@ export function AddNoteButton({
           contextLabel={contextLabel}
           links={links}
           onClose={() => setOpen(false)}
+          onSaved={onSaved}
         />
       ) : null}
     </>
@@ -112,6 +114,7 @@ export function NoteEditor({
   initialVisibility = "private",
   onClose,
   onSaved,
+  inline = false,
 }: NoteSourceProps & {
   noteId?: string;
   initialTitle?: string;
@@ -119,6 +122,8 @@ export function NoteEditor({
   initialVisibility?: "private" | "public";
   onClose: () => void;
   onSaved?: (note: NoteRow) => void;
+  /** Render form in-place instead of a centered modal overlay. */
+  inline?: boolean;
 }) {
   const [title, setTitle] = useState(initialTitle ?? defaultTitle);
   const [content, setContent] = useState(initialContent ?? "");
@@ -162,6 +167,157 @@ export function NoteEditor({
     }
   };
 
+  const form = (
+    <div
+      onClick={inline ? undefined : (e) => e.stopPropagation()}
+      style={{
+        width: inline ? "100%" : "min(480px, 100%)",
+        background: "var(--bg-card)",
+        borderRadius: inline ? 12 : 18,
+        border: "1.5px solid var(--border-light)",
+        boxShadow: inline ? "none" : "0 24px 60px rgba(15,23,42,0.25)",
+        padding: inline ? 14 : 20,
+        fontFamily: "Outfit, sans-serif",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 14,
+        }}
+      >
+        <h3 style={{ margin: 0, fontSize: inline ? 15 : 18, fontWeight: 800, color: "var(--text-main)" }}>
+          {noteId ? "Edit note" : "Add note"}
+        </h3>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          style={{
+            border: "none",
+            background: "transparent",
+            cursor: "pointer",
+            color: "var(--text-muted)",
+          }}
+        >
+          <X size={18} />
+        </button>
+      </div>
+
+      <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--text-muted)" }}>
+        Title
+      </label>
+      <input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Understanding Recursion"
+        style={{
+          width: "100%",
+          marginTop: 6,
+          marginBottom: 12,
+          padding: "10px 12px",
+          borderRadius: 10,
+          border: "1.5px solid var(--border-light)",
+          background: "var(--bg-alt)",
+          color: "var(--text-main)",
+          fontFamily: "Outfit, sans-serif",
+          fontSize: 14,
+          boxSizing: "border-box",
+        }}
+      />
+
+      <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--text-muted)" }}>
+        Note
+      </label>
+      <textarea
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        placeholder="I finally understood how recursion works..."
+        rows={inline ? 4 : 5}
+        style={{
+          width: "100%",
+          marginTop: 6,
+          marginBottom: 12,
+          padding: "10px 12px",
+          borderRadius: 10,
+          border: "1.5px solid var(--border-light)",
+          background: "var(--bg-alt)",
+          color: "var(--text-main)",
+          fontFamily: "Inter, sans-serif",
+          fontSize: 14,
+          resize: "vertical",
+          boxSizing: "border-box",
+        }}
+      />
+
+      {contextLabel ? (
+        <div
+          style={{
+            marginBottom: 12,
+            fontSize: 13,
+            color: "var(--text-muted)",
+          }}
+        >
+          {contextLabel}
+        </div>
+      ) : null}
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          marginBottom: 16,
+          fontSize: 13,
+          color: "var(--text-muted)",
+        }}
+      >
+        <Lock size={14} />
+        <select
+          value={visibility}
+          onChange={(e) =>
+            setVisibility(e.target.value as "private" | "public")
+          }
+          style={{
+            border: "1.5px solid var(--border-light)",
+            borderRadius: 8,
+            padding: "6px 10px",
+            background: "var(--bg-card)",
+            color: "var(--text-main)",
+            fontFamily: "Outfit, sans-serif",
+            fontWeight: 600,
+          }}
+        >
+          <option value="private">Private</option>
+          <option value="public">Public</option>
+        </select>
+      </div>
+
+      {error ? (
+        <p style={{ color: "#ef4444", fontSize: 13, marginBottom: 10 }}>{error}</p>
+      ) : null}
+
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+        <Button variant="ghost" onClick={onClose} disabled={saving}>
+          Cancel
+        </Button>
+        <Button onClick={() => void save()} disabled={saving}>
+          {saving ? "Saving…" : "Save Note"}
+        </Button>
+      </div>
+    </div>
+  );
+
+  if (inline) {
+    return (
+      <div role="form" aria-label={noteId ? "Edit note" : "Add note"}>
+        {form}
+      </div>
+    );
+  }
+
   return (
     <div
       role="dialog"
@@ -178,144 +334,7 @@ export function NoteEditor({
       }}
       onClick={onClose}
     >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: "min(480px, 100%)",
-          background: "var(--bg-card)",
-          borderRadius: 18,
-          border: "1.5px solid var(--border-light)",
-          boxShadow: "0 24px 60px rgba(15,23,42,0.25)",
-          padding: 20,
-          fontFamily: "Outfit, sans-serif",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 14,
-          }}
-        >
-          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>
-            📝 {noteId ? "Edit Note" : "Add Note"}
-          </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            style={{
-              border: "none",
-              background: "transparent",
-              cursor: "pointer",
-              color: "var(--text-muted)",
-            }}
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--text-muted)" }}>
-          Title
-        </label>
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Understanding Recursion"
-          style={{
-            width: "100%",
-            marginTop: 6,
-            marginBottom: 12,
-            padding: "10px 12px",
-            borderRadius: 10,
-            border: "1.5px solid var(--border-light)",
-            background: "var(--bg-alt)",
-            color: "var(--text-main)",
-            fontFamily: "Outfit, sans-serif",
-            fontSize: 14,
-          }}
-        />
-
-        <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--text-muted)" }}>
-          Note
-        </label>
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="I finally understood how recursion works..."
-          rows={5}
-          style={{
-            width: "100%",
-            marginTop: 6,
-            marginBottom: 12,
-            padding: "10px 12px",
-            borderRadius: 10,
-            border: "1.5px solid var(--border-light)",
-            background: "var(--bg-alt)",
-            color: "var(--text-main)",
-            fontFamily: "Inter, sans-serif",
-            fontSize: 14,
-            resize: "vertical",
-          }}
-        />
-
-        {contextLabel ? (
-          <div
-            style={{
-              marginBottom: 12,
-              fontSize: 13,
-              color: "var(--text-muted)",
-            }}
-          >
-            🔗 {contextLabel}
-          </div>
-        ) : null}
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            marginBottom: 16,
-            fontSize: 13,
-            color: "var(--text-muted)",
-          }}
-        >
-          <Lock size={14} />
-          <select
-            value={visibility}
-            onChange={(e) =>
-              setVisibility(e.target.value as "private" | "public")
-            }
-            style={{
-              border: "1.5px solid var(--border-light)",
-              borderRadius: 8,
-              padding: "6px 10px",
-              background: "var(--bg-card)",
-              color: "var(--text-main)",
-              fontFamily: "Outfit, sans-serif",
-              fontWeight: 600,
-            }}
-          >
-            <option value="private">Private</option>
-            <option value="public">Public</option>
-          </select>
-        </div>
-
-        {error ? (
-          <p style={{ color: "#ef4444", fontSize: 13, marginBottom: 10 }}>{error}</p>
-        ) : null}
-
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-          <Button variant="ghost" onClick={onClose} disabled={saving}>
-            Cancel
-          </Button>
-          <Button onClick={() => void save()} disabled={saving}>
-            {saving ? "Saving…" : "Save Note"}
-          </Button>
-        </div>
-      </div>
+      {form}
     </div>
   );
 }
@@ -401,15 +420,27 @@ export function NotesForSource({
   sourceType,
   sourceId,
   contextLabel,
+  defaultTitle,
+  links,
+  emptyHint,
+  inline = false,
 }: {
   sourceType: string;
   sourceId: string;
   contextLabel?: string;
+  defaultTitle?: string;
+  links?: Array<{ entityType: string; entityId: string }>;
+  emptyHint?: string;
+  /** Edit/add notes in-panel instead of a modal overlay. */
+  inline?: boolean;
 }) {
   const [notes, setNotes] = useState<NoteRow[]>([]);
   const [editing, setEditing] = useState<NoteRow | null>(null);
+  const [composing, setComposing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
+    setLoading(true);
     try {
       const res = await apiGet<{ notes: NoteRow[] }>(
         `/api/me/notes?sourceType=${encodeURIComponent(sourceType)}&sourceId=${encodeURIComponent(sourceId)}`,
@@ -417,6 +448,8 @@ export function NotesForSource({
       setNotes(res.notes || []);
     } catch {
       setNotes([]);
+    } finally {
+      setLoading(false);
     }
   }, [sourceType, sourceId]);
 
@@ -424,31 +457,125 @@ export function NotesForSource({
     void load();
   }, [load]);
 
+  useEffect(() => {
+    setEditing(null);
+    setComposing(false);
+  }, [sourceId]);
+
   const remove = async (id: string) => {
     await fetch(`/api/me/notes/${id}`, { method: "DELETE", credentials: "include" });
     void load();
   };
 
+  const showEditor = composing || editing;
+
   return (
     <div style={{ display: "grid", gap: 10 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <strong style={{ fontFamily: "Outfit, sans-serif" }}>Notes</strong>
-        <AddNoteButton
+        <strong style={{ fontFamily: "Outfit, sans-serif", color: "var(--text-main)" }}>
+          Your notes{notes.length ? ` (${notes.length})` : ""}
+        </strong>
+        {inline ? (
+          !showEditor ? (
+            <button
+              type="button"
+              onClick={() => {
+                setEditing(null);
+                setComposing(true);
+              }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                borderRadius: 8,
+                border: "1.5px solid var(--border-light)",
+                background: "var(--bg-card)",
+                color: "var(--text-main)",
+                padding: "6px 10px",
+                fontFamily: "Outfit, sans-serif",
+                fontWeight: 700,
+                fontSize: 12,
+                cursor: "pointer",
+              }}
+            >
+              <StickyNote size={14} /> Note
+            </button>
+          ) : null
+        ) : (
+          <AddNoteButton
+            sourceType={sourceType}
+            sourceId={sourceId}
+            defaultTitle={defaultTitle}
+            contextLabel={contextLabel}
+            links={links}
+            compact
+            onSaved={() => void load()}
+          />
+        )}
+      </div>
+
+      {inline && showEditor ? (
+        <NoteEditor
+          key={editing?.id || "new"}
           sourceType={sourceType}
           sourceId={sourceId}
+          defaultTitle={defaultTitle}
           contextLabel={contextLabel}
-          compact
+          links={links}
+          noteId={editing?.id}
+          initialTitle={editing?.title}
+          initialContent={editing?.content}
+          initialVisibility={editing?.visibility === "public" ? "public" : "private"}
+          inline
+          onClose={() => {
+            setEditing(null);
+            setComposing(false);
+          }}
+          onSaved={() => {
+            setEditing(null);
+            setComposing(false);
+            void load();
+          }}
         />
-      </div>
-      {notes.map((n) => (
-        <NoteCard
-          key={n.id}
-          note={n}
-          onEdit={() => setEditing(n)}
-          onDelete={() => void remove(n.id)}
-        />
-      ))}
-      {editing ? (
+      ) : null}
+
+      {loading && notes.length === 0 ? (
+        <p style={{ margin: 0, fontSize: 13, color: "var(--text-muted)", fontFamily: "Inter, sans-serif" }}>
+          Loading notes…
+        </p>
+      ) : null}
+      {!loading && notes.length === 0 && !showEditor ? (
+        <p
+          style={{
+            margin: 0,
+            padding: 14,
+            borderRadius: 12,
+            background: "var(--bg-alt)",
+            border: "1px dashed var(--border-light)",
+            fontSize: 13,
+            color: "var(--text-muted)",
+            fontFamily: "Inter, sans-serif",
+            lineHeight: 1.5,
+          }}
+        >
+          {emptyHint ||
+            "No notes yet. Capture key takeaways while you study — they stay linked to this topic."}
+        </p>
+      ) : null}
+      {notes.map((n) =>
+        inline && editing?.id === n.id ? null : (
+          <NoteCard
+            key={n.id}
+            note={n}
+            onEdit={() => {
+              setComposing(false);
+              setEditing(n);
+            }}
+            onDelete={() => void remove(n.id)}
+          />
+        ),
+      )}
+      {!inline && editing ? (
         <NoteEditor
           sourceType={sourceType}
           sourceId={sourceId}

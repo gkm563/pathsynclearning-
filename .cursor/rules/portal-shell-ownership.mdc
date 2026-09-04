@@ -20,7 +20,7 @@ Authenticated PathEd chrome (header + sidebar + main frame) has **exactly one ow
 
 ## Do not
 
-- Import or render `PortalShell`, `DashboardLayout`, `DashboardHeader`, or `DashboardSidebar` from:
+- Import or render `PortalShell`, `DashboardLayout`, `AppNavbar`, or `DashboardSidebar` from:
   - `src/views/**`
   - any `page.tsx`
   - nested dashboard layouts

@@ -23,7 +23,11 @@ const SECTIONS = [
   { id: 'timeline', Component: TimelineSection },
 ];
 
-export default function RoadmapOnboarding({ onComplete }: { onComplete: (roadmap: any) => void }) {
+export default function RoadmapOnboarding({
+  onComplete,
+}: {
+  onComplete?: (roadmap: unknown) => void;
+}) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [formData, setFormData] = useState<Record<string, unknown>>({});
 
@@ -163,7 +167,10 @@ export default function RoadmapOnboarding({ onComplete }: { onComplete: (roadmap
       const res = await apiSend<{ roadmap: any }>('/api/roadmap/generate', 'POST', {});
       // Wait for animation to finish before calling onComplete
       setTimeout(() => {
-        onComplete(res.roadmap);
+        if (onComplete) onComplete(res.roadmap);
+        else if (typeof window !== "undefined") {
+          window.location.href = "/dashboard/roadmap";
+        }
       }, 6000); // 1.5s per step * 4 steps
     } catch (err) {
       console.error(err);

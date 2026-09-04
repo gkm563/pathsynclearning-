@@ -152,7 +152,7 @@ export default function RoadmapToolbar({
       </button>
 
       <button onClick={() => {
-        if(confirm('Are you sure you want to regenerate this roadmap? This will lose custom adjustments.')) {
+        if(confirm('Regenerate this roadmap? A new version becomes active — your other saved roadmaps stay available. Progress on the current active roadmap will not carry over.')) {
           onRegenerate();
         }
       }} style={{...btnStyle, color: '#f7971e'}}>

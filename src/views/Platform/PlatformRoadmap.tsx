@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ReactFlowProvider } from "@xyflow/react";
 import { apiGet, apiSend, ApiClientError } from "@/lib/api";
 import type { Roadmap, RoadmapNodeProgress } from "@/types/roadmap";
+import { routes } from "@/lib/routes";
 
 const RoadmapOnboarding = React.lazy(
   () => import("@/views/RoadmapOnboarding/RoadmapOnboarding"),
@@ -16,12 +17,16 @@ const RoadmapCanvas = React.lazy(
 type ViewState = "loading" | "onboarding" | "canvas";
 
 export default function RoadmapPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const focusNodeId = searchParams.get("node") || undefined;
+  const intentNew = searchParams.get("intent") === "new";
   const [view, setView] = useState<ViewState>("loading");
   const [roadmap, setRoadmap] = useState<Roadmap | null>(null);
   const [progress, setProgress] = useState<RoadmapNodeProgress[]>([]);
   const [statusError, setStatusError] = useState<string | null>(null);
+  /** True when user chose "Create new" while already having roadmaps. */
+  const [creatingNew, setCreatingNew] = useState(intentNew);
 
   const fetchRoadmap = useCallback(async () => {
     try {
@@ -32,22 +37,53 @@ export default function RoadmapPage() {
       if (data.roadmap) {
         setRoadmap(data.roadmap);
         setProgress(data.progress || []);
-        setView("canvas");
-      } else {
-        setView("onboarding");
+        return data.roadmap;
       }
+      setRoadmap(null);
+      setProgress([]);
+      return null;
     } catch {
-      setView("onboarding");
+      setRoadmap(null);
+      setProgress([]);
+      return null;
     }
   }, []);
 
   useEffect(() => {
-    fetchRoadmap();
-  }, [fetchRoadmap]);
+    let cancelled = false;
+    (async () => {
+      const active = await fetchRoadmap();
+      if (cancelled) return;
+      if (creatingNew) setView("onboarding");
+      else if (active) setView("canvas");
+      else setView("onboarding");
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchRoadmap, creatingNew]);
 
   const handleOnboardingComplete = useCallback(async () => {
-    await fetchRoadmap();
-  }, [fetchRoadmap]);
+    setCreatingNew(false);
+    if (intentNew) {
+      router.replace(routes.app.roadmap);
+    }
+    const active = await fetchRoadmap();
+    setView(active ? "canvas" : "onboarding");
+  }, [fetchRoadmap, intentNew, router]);
+
+  const handleCreateNew = useCallback(() => {
+    setCreatingNew(true);
+    setView("onboarding");
+  }, []);
+
+  const handleCancelCreate = useCallback(() => {
+    if (roadmap) {
+      setCreatingNew(false);
+      setView("canvas");
+      if (intentNew) router.replace(routes.app.roadmap);
+    }
+  }, [roadmap, intentNew, router]);
 
   const handleStatusChange = useCallback(
     async (nodeId: string, status: string) => {
@@ -63,7 +99,6 @@ export default function RoadmapPage() {
               ? err.message
               : "Failed to update progress";
         setStatusError(message);
-        // Clear toast after a few seconds
         window.setTimeout(() => setStatusError(null), 5000);
       }
     },
@@ -119,7 +154,36 @@ export default function RoadmapPage() {
           />
         }
       >
-        <RoadmapOnboarding onComplete={handleOnboardingComplete} />
+        <div style={{ position: "relative" }}>
+          {creatingNew && roadmap ? (
+            <button
+              type="button"
+              onClick={handleCancelCreate}
+              style={{
+                position: "sticky",
+                top: 12,
+                marginLeft: 20,
+                marginTop: 12,
+                zIndex: 5,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "8px 12px",
+                borderRadius: 10,
+                border: "1.5px solid var(--border-light)",
+                background: "var(--bg-card)",
+                color: "var(--text-main)",
+                fontFamily: "Outfit",
+                fontWeight: 700,
+                fontSize: 13,
+                cursor: "pointer",
+              }}
+            >
+              ← Back to current roadmap
+            </button>
+          ) : null}
+          <RoadmapOnboarding onComplete={handleOnboardingComplete} />
+        </div>
       </React.Suspense>
     );
   }
@@ -138,7 +202,6 @@ export default function RoadmapPage() {
       }
     >
       <ReactFlowProvider>
-        {/* Break out of dashboard main padding so React Flow gets a real viewport */}
         <div
           style={{
             width: "calc(100% + 72px)",
@@ -159,7 +222,14 @@ export default function RoadmapPage() {
             progress={progress}
             onStatusChange={handleStatusChange}
             onRegenerate={handleRegenerate}
-            onRefresh={fetchRoadmap}
+            onRefresh={async () => {
+              const active = await fetchRoadmap();
+              if (!active) {
+                setCreatingNew(false);
+                setView("onboarding");
+              }
+            }}
+            onCreateNew={handleCreateNew}
             statusError={statusError}
             initialFocusNodeId={focusNodeId}
           />
@@ -169,7 +239,6 @@ export default function RoadmapPage() {
   );
 }
 
-/** Locks document scroll while the roadmap canvas is mounted. */
 function RoadmapNoPageScroll() {
   useEffect(() => {
     const html = document.documentElement;
