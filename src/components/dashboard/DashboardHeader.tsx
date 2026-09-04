@@ -246,7 +246,7 @@ export default function DashboardHeader({ onToggleSidebar }) {
                         </div>
                         <div>
                           <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: n.read ? 600 : 800, color: "var(--text-main)", marginBottom: 2 }}>{n.title}</div>
-                          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>{n.message}</div>
+                          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>{n.message || n.desc}</div>
                         </div>
                       </div>
                     ))
@@ -265,9 +265,12 @@ export default function DashboardHeader({ onToggleSidebar }) {
           </AnimatePresence>
         </div>
 
-        {/* User Profile / Sign Out */}
+        {/* User Profile / Sign Out — Manage account opens PathEd Profile Management */}
         <div style={{ marginLeft: 8, display: "flex", alignItems: "center" }}>
-          <UserButton />
+          <UserButton
+            userProfileMode="navigation"
+            userProfileUrl={routes.app.profile}
+          />
         </div>
 
       </div>

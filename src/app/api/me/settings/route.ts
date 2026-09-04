@@ -1,7 +1,5 @@
 import { eq } from "drizzle-orm";
-import { ZodError } from "zod";
-import { errorResponse, jsonResponse } from "@/lib/api/http";
-import { AppError } from "@/lib/api/errors";
+import { parseJson, errorResponse, jsonResponse } from "@/lib/api/http";
 import { getDb } from "@/lib/db/client";
 import { mapSettings } from "@/lib/db/mappers";
 import { userSettings } from "@/lib/db/schema";
@@ -28,30 +26,29 @@ export async function GET() {
 export async function PUT(request: Request) {
   try {
     const user = await requireDbUser();
-    let raw: unknown;
-    try {
-      raw = await request.json();
-    } catch {
-      throw AppError.badRequest("Invalid JSON body");
-    }
-
-    let body: ReturnType<typeof settingsUpdateSchema.parse>;
-    try {
-      body = settingsUpdateSchema.parse(raw);
-    } catch (err) {
-      if (err instanceof ZodError) {
-        throw AppError.validation("Validation failed", err.flatten());
-      }
-      throw err;
-    }
-
+    const body = await parseJson(request, settingsUpdateSchema);
     const db = getDb();
-    const clearPlugin = Object.prototype.hasOwnProperty.call(body, "activePlugin");
+    const clearPlugin = Object.prototype.hasOwnProperty.call(
+      body,
+      "activePlugin",
+    );
 
     const patch: Record<string, unknown> = { updatedAt: new Date() };
     if (body.theme != null) patch.theme = body.theme;
     if (body.accentColor != null) patch.accentColor = body.accentColor;
     if (clearPlugin) patch.activePlugin = body.activePlugin ?? null;
+    if (body.emailNotifications !== undefined) {
+      patch.emailNotifications = body.emailNotifications;
+    }
+    if (body.pushNotifications !== undefined) {
+      patch.pushNotifications = body.pushNotifications;
+    }
+    if (body.productUpdates !== undefined) {
+      patch.productUpdates = body.productUpdates;
+    }
+    if (body.profileVisibility != null) {
+      patch.profileVisibility = body.profileVisibility;
+    }
 
     await db
       .update(userSettings)

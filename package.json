@@ -18,7 +18,11 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "npx tsx scripts/migrate.ts",
     "db:migrate:memory-lane": "npx tsx scripts/migrate-memory-lane.ts",
+    "db:migrate:tech-news": "npx tsx scripts/migrate-tech-news.ts",
+    "db:migrate:profile": "npx tsx scripts/migrate-profile-management.ts",
     "db:sync": "npx tsx scripts/sync-db.ts",
+    "test:progress": "npx tsx scripts/test-progress-calc.ts",
+    "test:news": "npx tsx scripts/test-news-normalize.ts",
     "db:seed": "npx tsx scripts/seed.ts",
     "db:studio": "drizzle-kit studio"
   },

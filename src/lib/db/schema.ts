@@ -30,6 +30,12 @@ export const profiles = pgTable("profiles", {
   userId: uuid("user_id")
     .primaryKey()
     .references(() => users.id, { onDelete: "cascade" }),
+  username: text("username"),
+  phone: text("phone"),
+  dateOfBirth: text("date_of_birth"),
+  bio: text("bio"),
+  location: text("location"),
+  website: text("website"),
   tagline: text("tagline"),
   institute: text("institute"),
   degree: text("degree"),
@@ -71,6 +77,11 @@ export const userSettings = pgTable("user_settings", {
   accentColor: text("accent_color").notNull().default("Purple"),
   plan: text("plan").notNull().default("free"),
   activePlugin: text("active_plugin"),
+  language: text("language").notNull().default("en"),
+  emailNotifications: boolean("email_notifications").notNull().default(true),
+  pushNotifications: boolean("push_notifications").notNull().default(true),
+  productUpdates: boolean("product_updates").notNull().default(true),
+  profileVisibility: text("profile_visibility").notNull().default("public"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -566,3 +577,91 @@ export type Memory = typeof memories.$inferSelect;
 export type Note = typeof notes.$inferSelect;
 export type Milestone = typeof milestones.$inferSelect;
 export type DomainEvent = typeof domainEvents.$inferSelect;
+
+// ─── Tech News ──────────────────────────────────────────────────────
+
+/** Cached / normalized tech articles from external providers. */
+export const newsArticles = pgTable(
+  "news_articles",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    /** Stable provider identity, e.g. `devto:12345` or `newsapi:hash` */
+    externalId: text("external_id").notNull(),
+    canonicalUrl: text("canonical_url").notNull(),
+    title: text("title").notNull(),
+    summary: text("summary"),
+    content: text("content"),
+    imageUrl: text("image_url"),
+    sourceName: text("source_name").notNull(),
+    sourceUrl: text("source_url"),
+    author: text("author"),
+    category: text("category").notNull().default("Programming"),
+    tags: jsonb("tags").$type<string[]>().notNull().default([]),
+    publishedAt: timestamp("published_at", { withTimezone: true }).notNull(),
+    readingMinutes: integer("reading_minutes").notNull().default(3),
+    popularity: integer("popularity").notNull().default(0),
+    featured: boolean("featured").notNull().default(false),
+    provider: text("provider").notNull().default("devto"),
+    raw: jsonb("raw").$type<Record<string, unknown>>().notNull().default({}),
+    fetchedAt: timestamp("fetched_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("news_articles_external_id").on(t.externalId),
+    unique("news_articles_canonical_url").on(t.canonicalUrl),
+    index("idx_news_articles_published").on(t.publishedAt),
+    index("idx_news_articles_category").on(t.category, t.publishedAt),
+    index("idx_news_articles_featured").on(t.featured, t.publishedAt),
+    index("idx_news_articles_popularity").on(t.popularity),
+  ],
+);
+
+export const newsBookmarks = pgTable(
+  "news_bookmarks",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    articleId: uuid("article_id")
+      .notNull()
+      .references(() => newsArticles.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("news_bookmarks_user_article").on(t.userId, t.articleId),
+    index("idx_news_bookmarks_user").on(t.userId, t.createdAt),
+  ],
+);
+
+export const newsReads = pgTable(
+  "news_reads",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    articleId: uuid("article_id")
+      .notNull()
+      .references(() => newsArticles.id, { onDelete: "cascade" }),
+    readAt: timestamp("read_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("news_reads_user_article").on(t.userId, t.articleId),
+    index("idx_news_reads_user").on(t.userId, t.readAt),
+  ],
+);
+
+export const newsPreferences = pgTable("news_preferences", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  categories: jsonb("categories").$type<string[]>().notNull().default([]),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type NewsArticle = typeof newsArticles.$inferSelect;
+export type NewsBookmark = typeof newsBookmarks.$inferSelect;
+export type NewsRead = typeof newsReads.$inferSelect;
+export type NewsPreferences = typeof newsPreferences.$inferSelect;

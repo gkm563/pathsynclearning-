@@ -8,30 +8,83 @@ export const meUpsertSchema = z
   })
   .strict();
 
+/** Coerce blank strings to null for optional nullable text fields */
+const optionalText = (max: number) =>
+  z.preprocess(
+    (v) => (typeof v === "string" && v.trim() === "" ? null : v),
+    z.string().trim().max(max).nullable().optional(),
+  );
+
+const optionalUsername = z.preprocess(
+  (v) => (typeof v === "string" && v.trim() === "" ? null : v),
+  z
+    .string()
+    .trim()
+    .min(3)
+    .max(32)
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      "Username may only contain letters, numbers, and underscores",
+    )
+    .nullable()
+    .optional(),
+);
+
+const optionalPhone = z.preprocess(
+  (v) => (typeof v === "string" && v.trim() === "" ? null : v),
+  z
+    .string()
+    .trim()
+    .max(32)
+    .regex(/^[+\d\s()-]+$/, "Enter a valid phone number")
+    .nullable()
+    .optional(),
+);
+
+const optionalDate = z.preprocess(
+  (v) => (typeof v === "string" && v.trim() === "" ? null : v),
+  z
+    .string()
+    .trim()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD")
+    .nullable()
+    .optional(),
+);
+
 export const profileUpdateSchema = z
   .object({
     fullName: z.string().trim().min(1).max(120).optional(),
-    tagline: z.string().trim().max(280).nullable().optional(),
-    institute: z.string().trim().max(200).nullable().optional(),
-    degree: z.string().trim().max(120).nullable().optional(),
-    branch: z.string().trim().max(120).nullable().optional(),
-    cgpa: z.string().trim().max(16).nullable().optional(),
-    gradYear: z.string().trim().max(16).nullable().optional(),
-    rollNumber: z.string().trim().max(64).nullable().optional(),
-    semester: z.string().trim().max(32).nullable().optional(),
-    rankGlobal: z.string().trim().max(64).nullable().optional(),
-    rankUniv: z.string().trim().max(64).nullable().optional(),
+    username: optionalUsername,
+    phone: optionalPhone,
+    dateOfBirth: optionalDate,
+    bio: optionalText(500),
+    location: optionalText(120),
+    website: optionalText(300),
+    tagline: optionalText(280),
+    institute: optionalText(200),
+    degree: optionalText(120),
+    branch: optionalText(120),
+    cgpa: optionalText(16),
+    gradYear: optionalText(16),
+    rollNumber: optionalText(64),
+    semester: optionalText(32),
+    rankGlobal: optionalText(64),
+    rankUniv: optionalText(64),
     skills: z.array(z.unknown()).optional(),
-    passion: z.string().trim().max(2000).nullable().optional(),
-    objective: z.string().trim().max(2000).nullable().optional(),
-    pitch: z.string().trim().max(4000).nullable().optional(),
-    github: z.string().trim().max(300).nullable().optional(),
-    linkedin: z.string().trim().max(300).nullable().optional(),
-    portfolio: z.string().trim().max(300).nullable().optional(),
+    passion: optionalText(2000),
+    objective: optionalText(2000),
+    pitch: optionalText(4000),
+    github: optionalText(300),
+    linkedin: optionalText(300),
+    portfolio: optionalText(300),
     projects: z.array(z.unknown()).optional(),
     badges: z.array(z.unknown()).optional(),
     additionalData: z.record(z.string(), z.unknown()).optional(),
     additionalCompleted: z.boolean().optional(),
+    imageUrl: z.preprocess(
+      (v) => (typeof v === "string" && v.trim() === "" ? null : v),
+      z.string().trim().url().max(2000).nullable().optional(),
+    ),
   })
   .strict();
 
@@ -40,6 +93,48 @@ export const settingsUpdateSchema = z
     theme: z.enum(["light", "dark"]).optional(),
     accentColor: z.string().trim().max(64).optional(),
     activePlugin: z.string().trim().max(200).nullable().optional(),
+    emailNotifications: z.boolean().optional(),
+    pushNotifications: z.boolean().optional(),
+    productUpdates: z.boolean().optional(),
+    profileVisibility: z.enum(["public", "private", "connections"]).optional(),
+  })
+  .strict();
+
+export const passwordChangeSchema = z
+  .object({
+    currentPassword: z.string().min(1).max(200),
+    newPassword: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(128)
+      .regex(/[A-Z]/, "Include at least one uppercase letter")
+      .regex(/[a-z]/, "Include at least one lowercase letter")
+      .regex(/[0-9]/, "Include at least one number"),
+  })
+  .strict();
+
+export const avatarSyncSchema = z
+  .object({
+    imageUrl: z.preprocess(
+      (v) => (typeof v === "string" && v.trim() === "" ? null : v),
+      z.string().trim().url().max(2000).nullable(),
+    ),
+  })
+  .strict();
+
+export const sessionsRevokeSchema = z
+  .object({
+    sessionId: z.string().trim().min(1).max(200).optional(),
+    revokeOthers: z.boolean().optional(),
+  })
+  .strict()
+  .refine((v) => Boolean(v.sessionId) || v.revokeOthers === true, {
+    message: "Provide sessionId or set revokeOthers",
+  });
+
+export const accountDeleteSchema = z
+  .object({
+    confirmation: z.literal("DELETE"),
   })
   .strict();
 
@@ -248,5 +343,57 @@ export const walletActionSchema = z.discriminatedUnion("action", [
 export const quoteRequestSchema = z
   .object({
     phase: z.string().trim().min(1).max(64).default("motivation"),
+  })
+  .strict();
+
+export const progressRangeSchema = z.enum(["week", "month", "all"]).default("all");
+
+export const progressQuerySchema = z
+  .object({
+    range: progressRangeSchema,
+  })
+  .strict();
+
+export const newsCategorySchema = z.enum([
+  "AI",
+  "Programming",
+  "Startups",
+  "Cybersecurity",
+  "Web Development",
+  "Cloud",
+  "Open Source",
+  "Gadgets",
+]);
+
+export const newsListQuerySchema = z
+  .object({
+    category: newsCategorySchema.optional(),
+    search: z.string().trim().max(120).optional(),
+    sort: z.enum(["latest", "popular"]).default("latest"),
+    cursor: z.string().trim().max(200).optional(),
+    limit: z.coerce.number().int().min(1).max(40).default(18),
+    saved: z
+      .union([z.literal("1"), z.literal("true"), z.literal("0"), z.literal("false")])
+      .optional()
+      .transform((v) => v === "1" || v === "true"),
+  })
+  .strict();
+
+export const newsBookmarkSchema = z
+  .object({
+    articleId: z.string().uuid(),
+    bookmarked: z.boolean(),
+  })
+  .strict();
+
+export const newsReadSchema = z
+  .object({
+    articleId: z.string().uuid(),
+  })
+  .strict();
+
+export const newsPreferencesUpdateSchema = z
+  .object({
+    categories: z.array(newsCategorySchema).max(8),
   })
   .strict();

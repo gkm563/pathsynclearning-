@@ -1,7 +1,7 @@
 import { and, desc, eq } from "drizzle-orm";
 import { parseJson, errorResponse, jsonResponse } from "@/lib/api/http";
 import { getDb } from "@/lib/db/client";
-import { notifications } from "@/lib/db/schema";
+import { notifications, userSettings } from "@/lib/db/schema";
 import { requireDbUser } from "@/lib/db/users";
 import { notificationPatchSchema } from "@/lib/validation/schemas";
 
@@ -67,6 +67,16 @@ export async function GET() {
   try {
     const user = await requireDbUser();
     const db = getDb();
+
+    const settingsRows = await db
+      .select()
+      .from(userSettings)
+      .where(eq(userSettings.userId, user.id))
+      .limit(1);
+    const settings = settingsRows[0];
+    const pushOn = settings?.pushNotifications !== false;
+    const productOn = settings?.productUpdates !== false;
+
     let rows = await db
       .select()
       .from(notifications)
@@ -97,7 +107,25 @@ export async function GET() {
         .limit(50);
     }
 
-    return jsonResponse({ notifications: serialize(rows) });
+    // Honor notification preferences for in-app delivery
+    let filtered = rows;
+    if (!pushOn) {
+      filtered = filtered.filter((n) => n.type === "system" || n.type === "mentor");
+    }
+    if (!productOn) {
+      filtered = filtered.filter(
+        (n) => n.type !== "event" && n.type !== "invite",
+      );
+    }
+
+    return jsonResponse({
+      notifications: serialize(filtered),
+      preferences: {
+        push_notifications: pushOn,
+        product_updates: productOn,
+        email_notifications: settings?.emailNotifications !== false,
+      },
+    });
   } catch (e) {
     return errorResponse(e);
   }

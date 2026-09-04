@@ -36,6 +36,11 @@ export function mapSettings(row: {
   accentColor: string;
   plan: string;
   activePlugin: string | null;
+  language?: string;
+  emailNotifications?: boolean;
+  pushNotifications?: boolean;
+  productUpdates?: boolean;
+  profileVisibility?: string;
   updatedAt?: Date | null;
 }) {
   return {
@@ -44,6 +49,11 @@ export function mapSettings(row: {
     accent_color: row.accentColor,
     plan: row.plan,
     active_plugin: row.activePlugin,
+    language: row.language ?? "en",
+    email_notifications: row.emailNotifications ?? true,
+    push_notifications: row.pushNotifications ?? true,
+    product_updates: row.productUpdates ?? true,
+    profile_visibility: row.profileVisibility ?? "public",
     updated_at: row.updatedAt,
   };
 }

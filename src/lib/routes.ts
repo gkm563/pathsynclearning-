@@ -44,6 +44,7 @@ export const routes = {
     memoryLane: "/dashboard/memory-lane",
     progress: "/dashboard/progress",
     techNews: "/dashboard/tech-news",
+    techNewsSaved: "/dashboard/tech-news/saved",
     store: "/dashboard/store",
     wallet: "/dashboard/store/wallet",
     mentorship: "/dashboard/mentorship",
@@ -69,8 +70,14 @@ export const routes = {
     store: "/api/store",
     ai: "/api/ai",
     roadmap: "/api/roadmap",
+    progress: "/api/me/progress",
+    techNews: "/api/me/tech-news",
   },
 } as const;
+
+export function techNewsArticlePath(id: string): string {
+  return `${routes.app.techNews}/${encodeURIComponent(id)}`;
+}
 
 export type AppRoute = (typeof routes.app)[keyof typeof routes.app];
 export type MarketingRoute = (typeof routes.marketing)[keyof typeof routes.marketing];

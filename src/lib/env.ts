@@ -36,6 +36,15 @@ export const env = {
     if (!key || key === "YOUR_GROQ_API_KEY") return undefined;
     return key;
   },
+  /** Optional NewsAPI.org key — Dev.to remains the primary free source. */
+  get newsApiKey() {
+    const key = optional("NEWS_API_KEY");
+    if (!key || key === "YOUR_NEWS_API_KEY") return undefined;
+    return key;
+  },
+  get newsCacheTtlMinutes() {
+    return optional("NEWS_CACHE_TTL_MINUTES");
+  },
   get isProd() {
     return process.env.NODE_ENV === "production";
   },
@@ -51,5 +60,6 @@ export function getEnvStatus() {
     CLERK_SECRET_KEY: Boolean(process.env.CLERK_SECRET_KEY),
     GEMINI_API_KEY: Boolean(env.geminiApiKey),
     GROQ_API_KEY: Boolean(env.groqApiKey),
+    NEWS_API_KEY: Boolean(env.newsApiKey),
   };
 }

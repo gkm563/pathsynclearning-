@@ -51,6 +51,36 @@ export async function requireDbUser(roleHint?: AppRole): Promise<DbUser> {
 
   if (existing[0]) {
     await ensureRelatedRows(existing[0].id);
+
+    // Keep email / avatar fresh from Clerk on each authenticated request
+    const clerkUser = await currentUser().catch(() => null);
+    if (clerkUser) {
+      const email =
+        clerkUser.primaryEmailAddress?.emailAddress ||
+        clerkUser.emailAddresses?.[0]?.emailAddress ||
+        existing[0].email;
+      const imageUrl = clerkUser.imageUrl || existing[0].imageUrl;
+      if (email !== existing[0].email || imageUrl !== existing[0].imageUrl) {
+        const updated = await db
+          .update(users)
+          .set({
+            email,
+            imageUrl,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, existing[0].id))
+          .returning({
+            id: users.id,
+            clerkId: users.clerkId,
+            email: users.email,
+            role: users.role,
+            fullName: users.fullName,
+            imageUrl: users.imageUrl,
+          });
+        return mapUser(updated[0]) as DbUser;
+      }
+    }
+
     return mapUser(existing[0]) as DbUser;
   }
 

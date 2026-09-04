@@ -2,6 +2,7 @@
 
 import React, {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -12,6 +13,11 @@ import { useUser } from "@clerk/nextjs";
 import { apiGet } from "@/lib/api";
 import { levelFromXp } from "@/lib/challenges/progress";
 import type { ChallengesApiResponse } from "@/lib/challenges/types";
+import type { PreferencesFormState } from "@/lib/profile/types";
+import {
+  EMPTY_PREFERENCES,
+  mapApiSettings,
+} from "@/lib/profile/types";
 
 export type StudentGoal = {
   role: string;
@@ -54,6 +60,8 @@ export type StudentSnapshot = {
   skillsProgress: SkillProgress[];
   dailyChallenges: DailyChallengeCard[];
   plan: string;
+  preferences: PreferencesFormState;
+  refresh: () => Promise<void>;
 };
 
 const SKILL_COLORS = ["#6c63ff", "#00c9a7", "#f7971e", "#e040fb"];
@@ -120,7 +128,9 @@ function shortNameFrom(full: string) {
   return `${parts[0]} ${parts[parts.length - 1][0]}.`;
 }
 
-function mapDailyFromApi(res: ChallengesApiResponse | null): DailyChallengeCard[] {
+function mapDailyFromApi(
+  res: ChallengesApiResponse | null,
+): DailyChallengeCard[] {
   if (!res?.daily) return FALLBACK_CHALLENGES;
   const pack = [
     res.daily.featured,
@@ -153,142 +163,158 @@ function mapDailyFromApi(res: ChallengesApiResponse | null): DailyChallengeCard[
   });
 }
 
+function applyAppearance(prefs: PreferencesFormState) {
+  if (typeof document === "undefined") return;
+  document.documentElement.setAttribute("data-theme", prefs.theme);
+  document.body.setAttribute("data-theme", prefs.theme);
+}
+
 const StudentContext = createContext<StudentSnapshot | null>(null);
+
+const DEFAULT_SNAPSHOT: Omit<StudentSnapshot, "loading" | "refresh"> = {
+  name: "Student",
+  shortName: "Student",
+  title: "SDE Trainee",
+  degree: "B.Tech · Computer Science",
+  institute: "Your Institute",
+  cri: 0,
+  xp: 0,
+  coins: 0,
+  streak: 0,
+  level: 1,
+  goal: {
+    role: "Software Engineer",
+    tag: "SDE · UG Journey",
+    why: "Build strong fundamentals and ship real projects",
+    skills: ["DSA", "Programming", "DBMS", "OS", "Web Development"],
+    timeline: "4 Years · Full UG",
+    outcome: "Industry-ready with strong fundamentals and portfolio projects",
+  },
+  skillsProgress: [
+    { label: "DSA", pct: 20, col: "#6c63ff" },
+    { label: "System Design", pct: 10, col: "#00c9a7" },
+    { label: "Web Dev", pct: 25, col: "#f7971e" },
+    { label: "Algorithms", pct: 15, col: "#e040fb" },
+  ],
+  dailyChallenges: FALLBACK_CHALLENGES,
+  plan: "free",
+  preferences: { ...EMPTY_PREFERENCES },
+};
 
 export function StudentProvider({ children }: { children: ReactNode }) {
   const { user: clerkUser, isLoaded } = useUser();
-  const [snapshot, setSnapshot] = useState<Omit<StudentSnapshot, "loading">>({
-    name: "Student",
-    shortName: "Student",
-    title: "SDE Trainee",
-    degree: "B.Tech · Computer Science",
-    institute: "Your Institute",
-    cri: 0,
-    xp: 0,
-    coins: 0,
-    streak: 0,
-    level: 1,
-    goal: {
-      role: "Software Engineer",
-      tag: "SDE · UG Journey",
-      why: "Build strong fundamentals and ship real projects",
-      skills: ["DSA", "Programming", "DBMS", "OS", "Web Development"],
-      timeline: "4 Years · Full UG",
-      outcome: "Industry-ready with strong fundamentals and portfolio projects",
-    },
-    skillsProgress: [
-      { label: "DSA", pct: 20, col: "#6c63ff" },
-      { label: "System Design", pct: 10, col: "#00c9a7" },
-      { label: "Web Dev", pct: 25, col: "#f7971e" },
-      { label: "Algorithms", pct: 15, col: "#e040fb" },
-    ],
-    dailyChallenges: FALLBACK_CHALLENGES,
-    plan: "free",
-  });
+  const [snapshot, setSnapshot] =
+    useState<Omit<StudentSnapshot, "loading" | "refresh">>(DEFAULT_SNAPSHOT);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      if (!isLoaded) return;
-      try {
-        // Ensure DB user row exists when signed in
-        await fetch("/api/me", {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({}),
-        }).catch(() => null);
+  const load = useCallback(async (signal?: { cancelled: boolean }) => {
+    if (!isLoaded) return;
+    try {
+      await fetch("/api/me", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      }).catch(() => null);
 
-        const [profileRes, settingsRes, challengesRes] =
-          await Promise.all([
-            apiGet<{ profile: any }>("/api/me/profile").catch(() => null),
-            apiGet<{ settings: any }>("/api/me/settings").catch(() => null),
-            apiGet<ChallengesApiResponse>("/api/me/challenges").catch(() => null),
-          ]);
+      const [profileRes, settingsRes, challengesRes] = await Promise.all([
+        apiGet<{ profile: any }>("/api/me/profile").catch(() => null),
+        apiGet<{ settings: any }>("/api/me/settings").catch(() => null),
+        apiGet<ChallengesApiResponse>("/api/me/challenges").catch(() => null),
+      ]);
 
-        if (cancelled) return;
+      if (signal?.cancelled) return;
 
-        const p = profileRes?.profile;
-        const clerkName =
-          [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(" ") ||
-          clerkUser?.fullName ||
-          clerkUser?.username ||
-          "";
-        const name =
-          (p?.full_name as string) ||
-          clerkName ||
-          "Student";
+      const p = profileRes?.profile;
+      const prefs = mapApiSettings(settingsRes?.settings);
+      applyAppearance(prefs);
 
-        const career =
-          challengesRes?.careerGoal ||
-          (p?.objective as string) ||
-          (p?.passion as string) ||
-          "Software Engineer";
+      const clerkName =
+        [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(" ") ||
+        clerkUser?.fullName ||
+        clerkUser?.username ||
+        "";
+      const name = (p?.full_name as string) || clerkName || "Student";
 
-        const skillsFromProfile = Array.isArray(p?.skills) ? p.skills : null;
-        const skills =
-          skillsFromProfile ||
-          ["DSA", "Programming", "DBMS", "OS", "Web Development"];
+      const career =
+        challengesRes?.careerGoal ||
+        (p?.objective as string) ||
+        (p?.passion as string) ||
+        "Software Engineer";
 
-        const g = challengesRes?.gamification;
-        const xp = Math.max(Number(p?.xp) || 0, Number(g?.xp) || 0);
-        const coins = Math.max(Number(p?.coins) || 0, Number(g?.coins) || 0);
-        const streak = Math.max(Number(p?.streak) || 0, Number(g?.streak) || 0);
-        const cri = Number(p?.cri) || 0;
-        const degree =
-          [p?.degree, p?.branch].filter(Boolean).join(" · ") ||
-          "B.Tech · Computer Science";
-        const institute = (p?.institute as string) || "Your Institute";
+      const skillsFromProfile = Array.isArray(p?.skills) ? p.skills : null;
+      const skills =
+        skillsFromProfile ||
+        ["DSA", "Programming", "DBMS", "OS", "Web Development"];
 
-        const skillsProgress: SkillProgress[] = skills
-          .slice(0, 4)
-          .map((label: string, idx: number) => ({
-            label,
-            pct: Math.min(95, Math.max(12, cri + idx * 8 - 5)),
-            col: SKILL_COLORS[idx % SKILL_COLORS.length],
-          }));
+      const g = challengesRes?.gamification;
+      const xp = Math.max(Number(p?.xp) || 0, Number(g?.xp) || 0);
+      const coins = Math.max(Number(p?.coins) || 0, Number(g?.coins) || 0);
+      const streak = Math.max(Number(p?.streak) || 0, Number(g?.streak) || 0);
+      const cri = Number(p?.cri) || 0;
+      const degree =
+        [p?.degree, p?.branch].filter(Boolean).join(" · ") ||
+        "B.Tech · Computer Science";
+      const institute = (p?.institute as string) || "Your Institute";
 
-        setSnapshot({
-          name,
-          shortName: shortNameFrom(name),
-          title: career.includes("Engineer") ? "SDE Trainee" : "PathEd Student",
-          degree,
-          institute,
-          cri,
-          xp,
-          coins,
-          streak,
-          level: levelFromXp(xp),
-          goal: {
-            role: career,
-            tag: "Career Path · PathEd",
-            why:
-              (p?.passion as string) ||
-              "Interest in problem-solving, scalable systems & real-world impact",
-            skills,
-            timeline: "4 Years · Full UG",
-            outcome:
-              "Industry-ready with strong fundamentals and portfolio projects",
-          },
-          skillsProgress,
-          dailyChallenges: mapDailyFromApi(challengesRes),
-          plan: (settingsRes?.settings?.plan as string) || "free",
-        });
-      } catch {
-        // keep defaults
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
+      const skillsProgress: SkillProgress[] = skills
+        .slice(0, 4)
+        .map((label: string, idx: number) => ({
+          label,
+          pct: Math.min(95, Math.max(12, cri + idx * 8 - 5)),
+          col: SKILL_COLORS[idx % SKILL_COLORS.length],
+        }));
+
+      setSnapshot({
+        name,
+        shortName: shortNameFrom(name),
+        title: career.includes("Engineer") ? "SDE Trainee" : "PathEd Student",
+        degree,
+        institute,
+        cri,
+        xp,
+        coins,
+        streak,
+        level: levelFromXp(xp),
+        goal: {
+          role: career,
+          tag: "Career Path · PathEd",
+          why:
+            (p?.bio as string) ||
+            (p?.passion as string) ||
+            "Interest in problem-solving, scalable systems & real-world impact",
+          skills,
+          timeline: "4 Years · Full UG",
+          outcome:
+            "Industry-ready with strong fundamentals and portfolio projects",
+        },
+        skillsProgress,
+        dailyChallenges: mapDailyFromApi(challengesRes),
+        plan: (settingsRes?.settings?.plan as string) || "free",
+        preferences: prefs,
+      });
+    } catch {
+      // keep defaults
+    } finally {
+      if (!signal?.cancelled) setLoading(false);
+    }
   }, [isLoaded, clerkUser]);
 
+  useEffect(() => {
+    const signal = { cancelled: false };
+    void load(signal);
+    return () => {
+      signal.cancelled = true;
+    };
+  }, [load]);
+
+  const refresh = useCallback(async () => {
+    await load();
+  }, [load]);
+
   const value = useMemo(
-    () => ({ ...snapshot, loading }),
-    [snapshot, loading],
+    () => ({ ...snapshot, loading, refresh }),
+    [snapshot, loading, refresh],
   );
 
   return (
@@ -300,33 +326,9 @@ export function useStudent(): StudentSnapshot {
   const ctx = useContext(StudentContext);
   if (!ctx) {
     return {
+      ...DEFAULT_SNAPSHOT,
       loading: false,
-      name: "Student",
-      shortName: "Student",
-      title: "SDE Trainee",
-      degree: "B.Tech · Computer Science",
-      institute: "Your Institute",
-      cri: 0,
-      xp: 0,
-      coins: 0,
-      streak: 0,
-      level: 1,
-      goal: {
-        role: "Software Engineer",
-        tag: "SDE · UG Journey",
-        why: "Build strong fundamentals and ship real projects",
-        skills: ["DSA", "Programming", "DBMS", "OS", "Web Development"],
-        timeline: "4 Years · Full UG",
-        outcome: "Industry-ready with strong fundamentals and portfolio projects",
-      },
-      skillsProgress: [
-        { label: "DSA", pct: 20, col: "#6c63ff" },
-        { label: "System Design", pct: 10, col: "#00c9a7" },
-        { label: "Web Dev", pct: 25, col: "#f7971e" },
-        { label: "Algorithms", pct: 15, col: "#e040fb" },
-      ],
-      dailyChallenges: FALLBACK_CHALLENGES,
-      plan: "free",
+      refresh: async () => undefined,
     };
   }
   return ctx;
