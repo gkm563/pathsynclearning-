@@ -82,21 +82,56 @@ export default function ProjectWorkspace({
   ) => {
     setEvidence((prev) => {
       const rest = prev.filter((e) => e.kind !== kind);
-      return [...rest, { kind, ...patch }];
+      const next = { kind, ...patch };
+      const url = typeof next.url === "string" ? next.url.trim() : "";
+      const text = typeof next.text === "string" ? next.text.trim() : "";
+      // Drop empty optional evidence instead of sending blank URLs
+      if (!url && !text) return rest;
+      return [
+        ...rest,
+        {
+          ...next,
+          ...(url ? { url } : { url: undefined }),
+          ...(text ? { text } : { text: undefined }),
+        },
+      ];
     });
   };
 
   const evidenceValue = (kind: ProjectEvidenceKind) =>
     evidence.find((e) => e.kind === kind);
 
+  const sanitizeEvidence = (items: ProjectEvidenceInput[]) =>
+    items
+      .map((e) => {
+        const url =
+          typeof e.url === "string" && e.url.trim() ? e.url.trim() : undefined;
+        const text =
+          typeof e.text === "string" && e.text.trim()
+            ? e.text.trim()
+            : undefined;
+        const stepId =
+          typeof e.stepId === "string" && e.stepId.trim()
+            ? e.stepId.trim()
+            : undefined;
+        if (!url && !text) return null;
+        return {
+          kind: e.kind,
+          ...(url ? { url } : {}),
+          ...(text ? { text } : {}),
+          ...(stepId ? { stepId } : {}),
+        } as ProjectEvidenceInput;
+      })
+      .filter((e): e is ProjectEvidenceInput => Boolean(e));
+
   const persist = async () => {
     setSaving(true);
     try {
       await onSaveProgress({
         stepsDone,
-        evidence,
-        repoUrl: repoUrl || undefined,
-        reflection: reflection || undefined,
+        evidence: sanitizeEvidence(evidence),
+        repoUrl: repoUrl.trim() || undefined,
+        reflection: reflection.trim() || undefined,
       });
     } finally {
       setSaving(false);
@@ -410,17 +445,17 @@ export default function ProjectWorkspace({
                 onClick={() =>
                   void onSubmit({
                     stepsDone,
-                    evidence: [
+                    evidence: sanitizeEvidence([
                       ...evidence,
-                      ...(reflection
-                        ? [{ kind: "notes" as const, text: reflection }]
+                      ...(reflection.trim()
+                        ? [{ kind: "notes" as const, text: reflection.trim() }]
                         : []),
-                      ...(repoUrl
-                        ? [{ kind: "repo_url" as const, url: repoUrl }]
+                      ...(repoUrl.trim()
+                        ? [{ kind: "repo_url" as const, url: repoUrl.trim() }]
                         : []),
-                    ],
-                    repoUrl: repoUrl || undefined,
-                    reflection: reflection || undefined,
+                    ]),
+                    repoUrl: repoUrl.trim() || undefined,
+                    reflection: reflection.trim() || undefined,
                   })
                 }
                 style={primaryBtn}
@@ -489,11 +524,50 @@ export function ProjectRubricList({
   breakdown: ProjectRubricBreakdownItem[];
 }) {
   if (!breakdown?.length) return null;
+  const failed = breakdown.filter((b) => !b.passed);
   return (
     <div style={{ marginTop: 16, textAlign: "left" }}>
       <div style={{ fontFamily: "Outfit", fontWeight: 800, marginBottom: 8 }}>
-        Rubric
+        Rubric breakdown
       </div>
+      {failed.length > 0 ? (
+        <div
+          style={{
+            marginBottom: 12,
+            padding: 12,
+            borderRadius: 12,
+            background: "rgba(239,68,68,0.06)",
+            border: "1px solid rgba(239,68,68,0.2)",
+          }}
+        >
+          <div
+            style={{
+              fontFamily: "Outfit",
+              fontWeight: 800,
+              fontSize: 13,
+              color: "#b91c1c",
+              marginBottom: 6,
+            }}
+          >
+            Missing to pass
+          </div>
+          <ul style={{ margin: 0, paddingLeft: 18 }}>
+            {failed.map((b) => (
+              <li
+                key={`missing-${b.id}`}
+                style={{
+                  fontSize: 13,
+                  fontFamily: "Outfit",
+                  marginBottom: 4,
+                  color: "var(--text-main)",
+                }}
+              >
+                <strong>{b.label}</strong> — {b.detail}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
       {breakdown.map((b) => (
         <div
           key={b.id}
@@ -508,8 +582,13 @@ export function ProjectRubricList({
           }}
         >
           <div>
-            <div style={{ fontWeight: 700 }}>
-              {b.passed ? "Pass" : "Fail"} · {b.label}
+            <div
+              style={{
+                fontWeight: 700,
+                color: b.passed ? "#059669" : "#ef4444",
+              }}
+            >
+              {b.passed ? "✓ Pass" : "✗ Fail"} · {b.label}
             </div>
             <div style={{ color: "var(--text-muted)" }}>{b.detail}</div>
           </div>

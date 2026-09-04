@@ -48,6 +48,7 @@ export default function ChallengeProjectIde({
 }) {
   const [data, setData] = useState<ProjectLoad | null>(null);
   const [error, setError] = useState("");
+  const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [resultScore, setResultScore] = useState(0);
@@ -99,45 +100,32 @@ export default function ChallengeProjectIde({
   }
 
   if (showResult || data.run.status === "passed") {
+    const activeBreakdown =
+      breakdown.length > 0
+        ? breakdown
+        : (data.run.rubricBreakdown as ProjectRubricBreakdownItem[]) || [];
+    const didPass = resultPassed || data.run.status === "passed";
+
     return (
       <div style={{ position: "relative", zIndex: 1300 }}>
         <ChallengeResultScreen
           score={resultScore || data.run.score}
-          passed={resultPassed || data.run.status === "passed"}
+          passed={didPass}
           passMark={data.spec.passScore}
           xp={data.xp}
           coins={data.coins}
           alreadySolved={item.status === "solved"}
+          breakdown={activeBreakdown}
           onDone={onClose}
-        />
-        {(breakdown.length > 0 || data.run.rubricBreakdown?.length) &&
-          (resultPassed || data.run.status === "passed") && (
-            <div
-              style={{
-                position: "fixed",
-                bottom: 24,
-                left: "50%",
-                transform: "translateX(-50%)",
-                zIndex: 1301,
-                width: "min(520px, 92vw)",
-                maxHeight: 220,
-                overflow: "auto",
-                padding: 16,
-                borderRadius: 14,
-                background: "var(--bg-card)",
-                border: "1px solid var(--border-light)",
-                boxShadow: "0 12px 40px rgba(0,0,0,0.12)",
-              }}
-            >
-              <ProjectRubricList
-                breakdown={
-                  breakdown.length
-                    ? breakdown
-                    : (data.run.rubricBreakdown as ProjectRubricBreakdownItem[])
+          onRetry={
+            didPass
+              ? undefined
+              : () => {
+                  setShowResult(false);
+                  setSubmitError("");
                 }
-              />
-            </div>
-          )}
+          }
+        />
       </div>
     );
   }
@@ -172,6 +160,7 @@ export default function ChallengeProjectIde({
       }}
       onSubmit={async (payload) => {
         setSubmitting(true);
+        setSubmitError("");
         try {
           const res = await apiSend<{
             passed: boolean;
@@ -192,11 +181,38 @@ export default function ChallengeProjectIde({
             passed: res.passed,
             challengesPayload: res,
           });
+        } catch (e) {
+          setSubmitError(
+            e instanceof Error ? e.message : "Unable to submit project",
+          );
         } finally {
           setSubmitting(false);
         }
       }}
     />
+    {submitError ? (
+      <div
+        role="alert"
+        style={{
+          position: "fixed",
+          bottom: 24,
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 1400,
+          maxWidth: "min(480px, 92vw)",
+          padding: "12px 16px",
+          borderRadius: 12,
+          background: "rgba(127,29,29,0.95)",
+          color: "#fff",
+          fontFamily: "Outfit, sans-serif",
+          fontWeight: 700,
+          fontSize: 13.5,
+          boxShadow: "0 12px 40px rgba(0,0,0,0.25)",
+        }}
+      >
+        {submitError}
+      </div>
+    ) : null}
     </>
   );
 }

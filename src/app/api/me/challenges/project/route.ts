@@ -42,9 +42,9 @@ export async function GET(request: Request) {
         stepsDone: bundle.steps.filter((s) => s.done).map((s) => s.stepId),
         evidence: bundle.evidence.map((e) => ({
           kind: e.kind,
-          url: e.url,
-          text: e.text,
-          stepId: e.stepId,
+          ...(e.url ? { url: e.url } : {}),
+          ...(e.text ? { text: e.text } : {}),
+          ...(e.stepId ? { stepId: e.stepId } : {}),
         })),
         rubricBreakdown: passed ? run.rubricBreakdown : [],
         solution: passed ? question.solution : null,

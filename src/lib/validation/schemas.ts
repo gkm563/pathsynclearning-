@@ -163,20 +163,90 @@ export const challengesAttemptSchema = z
   })
   .strict();
 
+function normalizeOptionalUrl(value: unknown): string | undefined {
+  if (value == null) return undefined;
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  const withProtocol = /^[a-z][a-z0-9+.-]*:/i.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
+  try {
+    const parsed = new URL(withProtocol);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return undefined;
+    }
+    return parsed.toString();
+  } catch {
+    return undefined;
+  }
+}
+
+function normalizeOptionalText(value: unknown, max = 8000): string | undefined {
+  if (value == null) return undefined;
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  return trimmed.slice(0, max);
+}
+
+const optionalUrl = z.preprocess(
+  normalizeOptionalUrl,
+  z.string().url().max(2000).optional(),
+);
+
+const optionalLongText = z.preprocess(
+  (v) => normalizeOptionalText(v, 8000),
+  z.string().max(8000).optional(),
+);
+
 const projectEvidenceSchema = z.object({
   kind: z.enum(["repo_url", "screenshot_url", "demo_url", "notes"]),
-  url: z.string().trim().url().max(2000).optional(),
-  text: z.string().trim().max(8000).optional(),
-  stepId: z.string().trim().max(128).optional(),
+  url: optionalUrl,
+  text: optionalLongText,
+  stepId: z.preprocess(
+    (v) => normalizeOptionalText(v, 128),
+    z.string().max(128).optional(),
+  ),
 });
+
+const projectEvidenceListSchema = z.preprocess((value) => {
+  if (value == null) return [];
+  if (!Array.isArray(value)) return value;
+  return value
+    .map((raw) => {
+      if (!raw || typeof raw !== "object") return null;
+      const item = raw as Record<string, unknown>;
+      const kind = item.kind;
+      if (
+        kind !== "repo_url" &&
+        kind !== "screenshot_url" &&
+        kind !== "demo_url" &&
+        kind !== "notes"
+      ) {
+        return null;
+      }
+      const url = normalizeOptionalUrl(item.url);
+      const text = normalizeOptionalText(item.text, 8000);
+      const stepId = normalizeOptionalText(item.stepId, 128);
+      if (!url && !text) return null;
+      return {
+        kind,
+        ...(url ? { url } : {}),
+        ...(text ? { text } : {}),
+        ...(stepId ? { stepId } : {}),
+      };
+    })
+    .filter(Boolean);
+}, z.array(projectEvidenceSchema).max(40));
 
 export const challengesProjectProgressSchema = z
   .object({
     questionId: z.string().trim().min(1).max(128),
     stepsDone: z.array(z.string().trim().min(1).max(128)).max(40),
-    evidence: z.array(projectEvidenceSchema).max(40).optional(),
-    repoUrl: z.string().trim().url().max(2000).optional(),
-    reflection: z.string().trim().max(8000).optional(),
+    evidence: projectEvidenceListSchema.optional(),
+    repoUrl: optionalUrl,
+    reflection: optionalLongText,
   })
   .strict();
 
@@ -184,9 +254,9 @@ export const challengesProjectSubmitSchema = z
   .object({
     questionId: z.string().trim().min(1).max(128),
     stepsDone: z.array(z.string().trim().min(1).max(128)).max(40),
-    evidence: z.array(projectEvidenceSchema).max(40).default([]),
-    repoUrl: z.string().trim().url().max(2000).optional(),
-    reflection: z.string().trim().max(8000).optional(),
+    evidence: projectEvidenceListSchema.default([]),
+    repoUrl: optionalUrl,
+    reflection: optionalLongText,
   })
   .strict();
 

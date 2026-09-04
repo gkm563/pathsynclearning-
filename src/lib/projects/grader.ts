@@ -6,6 +6,21 @@ import type {
 } from "@/lib/projects/types";
 import { inspectGithubRepo } from "@/lib/projects/github-inspector";
 
+function evidenceLabel(kind: string): string {
+  switch (kind) {
+    case "repo_url":
+      return "GitHub repository URL";
+    case "demo_url":
+      return "Live demo URL";
+    case "screenshot_url":
+      return "Screenshot / preview URL";
+    case "notes":
+      return "Written notes (at least 20 characters)";
+    default:
+      return kind;
+  }
+}
+
 function isHttpUrl(v: string | undefined): boolean {
   if (!v) return false;
   try {
@@ -53,6 +68,9 @@ export async function gradeProject(
 ): Promise<ProjectGradeResult> {
   const stepIds = spec.steps.map((s) => s.id);
   const pct = checklistPct(stepIds, opts.stepsDone);
+  const missingSteps = spec.steps
+    .filter((s) => !opts.stepsDone.includes(s.id))
+    .map((s) => s.title);
   const evidence = [...opts.evidence];
   if (opts.repoUrl && isHttpUrl(opts.repoUrl)) {
     evidence.push({ kind: "repo_url", url: opts.repoUrl });
@@ -85,14 +103,15 @@ export async function gradeProject(
     switch (item.check) {
       case "checklist_complete": {
         passed = pct >= 100;
-        detail = `Checklist ${pct}% complete`;
+        detail = passed
+          ? `All ${stepIds.length} guide steps completed`
+          : `Complete remaining steps: ${missingSteps.join(", ") || "unfinished checklist"} (${pct}% done)`;
         break;
       }
       case "evidence_present": {
         const missing = [...requiredKinds].filter(
           (k) => !hasEvidenceKind(evidence, k),
         );
-        // Also require at least one valid evidence if no per-step requirements
         if (requiredKinds.size === 0) {
           passed = evidence.some(
             (e) =>
@@ -101,12 +120,12 @@ export async function gradeProject(
           );
           detail = passed
             ? "Evidence provided"
-            : "Add at least one valid evidence link or notes (20+ chars)";
+            : "Add a valid demo/repo link or notes with at least 20 characters";
         } else {
           passed = missing.length === 0;
           detail = passed
             ? "All required evidence present"
-            : `Missing evidence: ${missing.join(", ")}`;
+            : `Still need: ${missing.map(evidenceLabel).join("; ")}`;
         }
         break;
       }
@@ -118,34 +137,44 @@ export async function gradeProject(
         const keywords =
           item.keywords ||
           spec.steps.flatMap((s) => s.acceptance).slice(0, 8);
+        const missingKeywords = keywords.filter(
+          (k) => !text.toLowerCase().includes(k.toLowerCase()),
+        );
         passed = keywordHit(text, keywords);
         detail = passed
           ? "Reflection covers key acceptance themes"
-          : "Reflection missing key project terms — expand your write-up";
+          : missingKeywords.length
+            ? `Expand your reflection to cover: ${missingKeywords.slice(0, 5).join(", ")}`
+            : "Write a longer reflection covering how you met the acceptance criteria";
         break;
       }
       case "manual": {
         passed = false;
-        detail = "Manual review not scored in automated pass";
+        detail = "Manual review is not scored in the automated pass";
         break;
       }
       case "github_readme": {
         passed = Boolean(githubReport?.hasReadme);
         detail = githubReport?.ok
           ? passed
-            ? "README found"
-            : "README.md not found in repo"
-          : githubReport?.error || "Could not inspect repository";
+            ? "README found in repository"
+            : "Add a README.md to your GitHub repository root"
+          : githubReport?.error ||
+            "Add a public GitHub repository URL so we can check for README.md";
         break;
       }
       case "github_structure": {
         const required = item.requiredPaths || [];
         if (!githubReport?.ok) {
           passed = false;
-          detail = githubReport?.error || "Could not inspect repository";
+          detail =
+            githubReport?.error ||
+            "Add a public GitHub repository URL so we can inspect project structure";
         } else if (!required.length) {
           passed = (githubReport.paths?.length || 0) > 0;
-          detail = passed ? "Repository has files" : "Repository appears empty";
+          detail = passed
+            ? "Repository has files"
+            : "Repository appears empty — push your project files";
         } else {
           const missing = required.filter(
             (p) =>
@@ -156,7 +185,7 @@ export async function gradeProject(
           passed = missing.length === 0;
           detail = passed
             ? "Required paths present"
-            : `Missing paths: ${missing.join(", ")}`;
+            : `Add these paths to the repo: ${missing.join(", ")}`;
         }
         break;
       }
@@ -164,8 +193,11 @@ export async function gradeProject(
         const count = githubReport?.recentCommits ?? 0;
         passed = Boolean(githubReport?.ok) && count >= 1;
         detail = githubReport?.ok
-          ? `Recent commits: ${count}`
-          : githubReport?.error || "Could not inspect commits";
+          ? passed
+            ? `Repository has ${count} recent commit${count === 1 ? "" : "s"}`
+            : "Push at least one commit to your repository"
+          : githubReport?.error ||
+            "Add a public GitHub repository URL so we can check commits";
         break;
       }
       default:
