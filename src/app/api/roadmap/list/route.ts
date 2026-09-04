@@ -3,7 +3,8 @@ import { getDb } from "@/lib/db/client";
 import { roadmaps, roadmapProgress } from "@/lib/db/schema";
 import { eq, desc, inArray } from "drizzle-orm";
 import { errorResponse, jsonResponse } from "@/lib/api/http";
-import { isProgressSatisfied } from "@/lib/roadmap/progress";
+import { computeRoadmapStats } from "@/lib/roadmap/stats";
+import type { RoadmapNode } from "@/types/roadmap";
 
 export async function GET() {
   try {
@@ -39,26 +40,19 @@ export async function GET() {
       .from(roadmapProgress)
       .where(inArray(roadmapProgress.roadmapId, ids));
 
-    const byRoadmap = new Map<string, { total: number; done: number }>();
-    for (const row of rows) {
-      const nodes = Array.isArray(row.nodes) ? row.nodes : [];
-      const trackable = nodes.filter(
-        (n: { type?: string }) =>
-          n?.type !== "phase" && n?.type !== "goal" && n?.type !== "career",
-      );
-      byRoadmap.set(row.id, { total: trackable.length, done: 0 });
-    }
-
+    const progressByRoadmap = new Map<string, Map<string, string>>();
     for (const p of progressRows) {
-      const bucket = byRoadmap.get(p.roadmapId);
-      if (!bucket) continue;
-      if (isProgressSatisfied(p.status)) bucket.done += 1;
+      let map = progressByRoadmap.get(p.roadmapId);
+      if (!map) {
+        map = new Map();
+        progressByRoadmap.set(p.roadmapId, map);
+      }
+      map.set(p.nodeId, p.status);
     }
 
     const summaries = rows.map((r) => {
-      const stats = byRoadmap.get(r.id) || { total: 0, done: 0 };
-      const completionPercent =
-        stats.total > 0 ? Math.round((stats.done / stats.total) * 100) : 0;
+      const nodes = (Array.isArray(r.nodes) ? r.nodes : []) as RoadmapNode[];
+      const stats = computeRoadmapStats(nodes, progressByRoadmap.get(r.id));
       return {
         id: r.id,
         title: r.title,
@@ -67,8 +61,10 @@ export async function GET() {
         estimatedWeeks: r.estimatedWeeks,
         isActive: r.isActive,
         createdAt: r.createdAt,
-        completionPercent,
-        nodeCount: stats.total,
+        completionPercent: stats.completionPercent,
+        nodeCount: stats.totalNodes,
+        completedNodes: stats.completedNodes,
+        remainingHours: stats.remainingHours,
       };
     });
 

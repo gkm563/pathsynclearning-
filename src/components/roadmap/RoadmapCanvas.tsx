@@ -26,7 +26,6 @@ import DependencyEdge from './edges/DependencyEdge';
 import RoadmapToolbar from './RoadmapToolbar';
 import RoadmapDetailPanel from './RoadmapDetailPanel';
 import RoadmapOverview from './RoadmapOverview';
-import RoadmapSwitcher from './RoadmapSwitcher';
 import NodeAssessmentModal from './assessment/NodeAssessmentModal';
 import { isAssessableNode } from '@/lib/roadmap/assessment';
 
@@ -195,13 +194,16 @@ export default function RoadmapCanvas({
 
   const progressMap = useMemo(() => {
     const m = new Map<string, string>();
-    progress.forEach((p) => m.set(p.nodeId, p.status));
-    // Prefer status already merged onto roadmap nodes when progress rows are missing
+    // Active roadmap node statuses (already merged from DB on GET) win first
     roadmap.nodes.forEach((n) => {
-      if (!m.has(n.id) && n.status) m.set(n.id, n.status);
+      if (n.status) m.set(n.id, n.status);
+    });
+    // Fill any gaps from progress rows for this roadmap
+    progress.forEach((p) => {
+      if (p.nodeId && p.status) m.set(p.nodeId, p.status);
     });
     return m;
-  }, [progress, roadmap.nodes]);
+  }, [progress, roadmap.nodes, roadmap.id]);
 
   /** Current learning target: last unlocked node in learning phase (in_progress, else available). */
   const currentLearningNodeId = useMemo(() => {
@@ -439,25 +441,17 @@ export default function RoadmapCanvas({
         overflow: 'hidden',
       }}
     >
-      <div
-        style={{
-          position: 'absolute',
-          top: 24,
-          left: 24,
-          zIndex: 10,
+      <RoadmapOverview
+        key={roadmap.id}
+        roadmapId={roadmap.id}
+        roadmapTitle={roadmap.title}
+        nodes={roadmap.nodes}
+        progress={progressMap}
+        onSwitched={async () => {
+          await onRefresh?.();
         }}
-      >
-        <RoadmapSwitcher
-          activeRoadmapId={roadmap.id}
-          activeTitle={roadmap.title}
-          onSwitched={async () => {
-            await onRefresh?.();
-          }}
-          onCreateNew={() => onCreateNew?.()}
-        />
-      </div>
-
-      <RoadmapOverview nodes={roadmap.nodes} progress={progressMap} />
+        onCreateNew={() => onCreateNew?.()}
+      />
 
       <ReactFlow
         nodes={nodes}

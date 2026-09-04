@@ -152,6 +152,8 @@ export interface RoadmapSummary {
   createdAt: string;
   completionPercent: number;
   nodeCount: number;
+  completedNodes?: number;
+  remainingHours?: number;
 }
 
 /* ─── Progress ────────────────────────────────────────────────────── */

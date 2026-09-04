@@ -1,69 +1,171 @@
 "use client";
 
-import React from 'react';
-import type { RoadmapNode } from '@/types/roadmap';
+import React from "react";
+import type { RoadmapNode } from "@/types/roadmap";
+import { computeRoadmapStats } from "@/lib/roadmap/stats";
+import RoadmapSwitcher from "./RoadmapSwitcher";
 
-export default function RoadmapOverview({ 
-  nodes, 
-  progress 
-}: { 
-  nodes: RoadmapNode[]; 
-  progress: Map<string, string>; 
+export default function RoadmapOverview({
+  roadmapId,
+  roadmapTitle,
+  nodes,
+  progress,
+  onSwitched,
+  onCreateNew,
+}: {
+  roadmapId: string;
+  roadmapTitle: string;
+  nodes: RoadmapNode[];
+  progress: Map<string, string>;
+  onSwitched?: () => void | Promise<void>;
+  onCreateNew?: () => void;
 }) {
-  const trackable = nodes.filter((n) => n.type !== 'phase' && n.type !== 'goal' && n.type !== 'career');
-  const totalNodes = trackable.length;
-  const completedNodes = trackable.filter((n) => progress.get(n.id) === 'completed' || progress.get(n.id) === 'skipped').length;
-  const completionPercentage = totalNodes > 0 ? Math.round((completedNodes / totalNodes) * 100) : 0;
-  
-  const estimatedTotalHours = nodes.reduce((acc, node) => acc + (node.estimatedHours || 0), 0);
-  const completedHours = nodes.reduce((acc, node) => {
-    if (progress.get(node.id) === 'completed') {
-      return acc + (node.estimatedHours || 0);
-    }
-    return acc;
-  }, 0);
-  const remainingHours = Math.max(0, estimatedTotalHours - completedHours);
+  const stats = computeRoadmapStats(nodes, progress);
 
   return (
-    <div style={{
-      position: 'absolute',
-      top: 24,
-      left: '50%',
-      transform: 'translateX(-50%)',
-      zIndex: 10,
-      background: 'rgba(var(--bg-card-rgb, 255, 255, 255), 0.8)',
-      backdropFilter: 'blur(12px)',
-      border: '1px solid var(--border-light)',
-      borderRadius: 16,
-      padding: '12px 24px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: 32,
-      boxShadow: '0 4px 16px rgba(0,0,0,0.05)'
-    }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <span style={{ fontFamily: 'Fira Code', fontSize: 11, color: 'var(--text-muted)' }}>PROGRESS</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontFamily: 'Outfit', fontSize: 20, fontWeight: 700, color: '#00c9a7' }}>{completionPercentage}%</span>
-          <div style={{ width: 100, height: 6, background: 'var(--bg-alt)', borderRadius: 3, overflow: 'hidden' }}>
-            <div style={{ width: `${completionPercentage}%`, height: '100%', background: '#00c9a7', borderRadius: 3 }} />
+    <div
+      style={{
+        position: "absolute",
+        top: 20,
+        left: "50%",
+        transform: "translateX(-50%)",
+        zIndex: 10,
+        width: "max-content",
+        maxWidth: "calc(100% - 32px)",
+        background: "rgba(var(--bg-card-rgb, 255, 255, 255), 0.94)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        border: "1.5px solid var(--border-light)",
+        borderRadius: 18,
+        padding: "12px 18px",
+        display: "flex",
+        alignItems: "center",
+        gap: 0,
+        boxShadow: "0 8px 28px rgba(15, 23, 42, 0.08)",
+        overflowX: "auto",
+        overflowY: "hidden",
+        scrollbarWidth: "none",
+      }}
+    >
+      {onSwitched && onCreateNew ? (
+        <>
+          <div style={colStyle}>
+            <RoadmapSwitcher
+              activeRoadmapId={roadmapId}
+              activeTitle={roadmapTitle}
+              onSwitched={onSwitched}
+              onCreateNew={onCreateNew}
+              embedded
+            />
+          </div>
+          <Divider />
+        </>
+      ) : null}
+
+      <div style={{ ...colStyle, minWidth: 148 }}>
+        <span style={labelStyle}>PROGRESS</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
+          <span
+            style={{
+              fontFamily: "Outfit",
+              fontSize: 18,
+              fontWeight: 800,
+              color: "#00c9a7",
+              lineHeight: 1,
+              letterSpacing: "-0.02em",
+              minWidth: 40,
+            }}
+          >
+            {stats.completionPercent}%
+          </span>
+          <div
+            style={{
+              width: 84,
+              height: 7,
+              background: "var(--bg-alt)",
+              borderRadius: 999,
+              overflow: "hidden",
+              flexShrink: 0,
+            }}
+          >
+            <div
+              style={{
+                width: `${stats.completionPercent}%`,
+                height: "100%",
+                background: "linear-gradient(90deg, #00c9a7, #2dd4bf)",
+                borderRadius: 999,
+                transition: "width 0.35s ease",
+              }}
+            />
           </div>
         </div>
       </div>
-      
-      <div style={{ width: 1, height: 32, background: 'var(--border-strong)' }} />
-      
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <span style={{ fontFamily: 'Fira Code', fontSize: 11, color: 'var(--text-muted)' }}>NODES COMPLETED</span>
-        <span style={{ fontFamily: 'Outfit', fontSize: 16, fontWeight: 600, color: 'var(--text-main)' }}>{completedNodes} / {totalNodes}</span>
+
+      <Divider />
+
+      <div style={colStyle}>
+        <span style={labelStyle}>NODES</span>
+        <div style={{ ...valueStyle, marginTop: 4 }}>
+          <span style={{ color: "var(--text-main)" }}>{stats.completedNodes}</span>
+          <span style={{ color: "var(--text-muted)", fontWeight: 600 }}>
+            {" "}
+            / {stats.totalNodes}
+          </span>
+        </div>
       </div>
 
-      <div style={{ width: 1, height: 32, background: 'var(--border-strong)' }} />
+      <Divider />
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <span style={{ fontFamily: 'Fira Code', fontSize: 11, color: 'var(--text-muted)' }}>EST. REMAINING</span>
-        <span style={{ fontFamily: 'Outfit', fontSize: 16, fontWeight: 600, color: 'var(--text-main)' }}>~{remainingHours} hours</span>
+      <div style={colStyle}>
+        <span style={labelStyle}>TIME LEFT</span>
+        <div style={{ ...valueStyle, marginTop: 4 }}>
+          ~{stats.remainingHours}
+          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)" }}>
+            {" "}
+            hrs
+          </span>
+        </div>
       </div>
     </div>
   );
 }
+
+function Divider() {
+  return (
+    <div
+      aria-hidden
+      style={{
+        width: 1,
+        height: 36,
+        background: "var(--border-light)",
+        margin: "0 16px",
+        flexShrink: 0,
+      }}
+    />
+  );
+}
+
+const colStyle: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  flexShrink: 0,
+};
+
+const labelStyle: React.CSSProperties = {
+  fontFamily: "Fira Code, monospace",
+  fontSize: 10,
+  fontWeight: 600,
+  letterSpacing: "0.06em",
+  color: "var(--text-muted)",
+  lineHeight: 1,
+};
+
+const valueStyle: React.CSSProperties = {
+  fontFamily: "Outfit",
+  fontSize: 16,
+  fontWeight: 700,
+  color: "var(--text-main)",
+  lineHeight: 1.15,
+  whiteSpace: "nowrap",
+};
