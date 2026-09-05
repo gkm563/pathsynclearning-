@@ -1,3 +1,5 @@
+import "server-only";
+
 export type GithubInspectResult = {
   ok: boolean;
   error?: string;

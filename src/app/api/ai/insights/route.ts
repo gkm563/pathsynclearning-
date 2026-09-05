@@ -1,8 +1,7 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { env } from "@/lib/env";
 import { errorResponse } from "@/lib/api/http";
-import { AppError } from "@/lib/api/errors";
+import { requireDbUser } from "@/lib/db/users";
 
 export type AiInsight = {
   /** Lucide-style icon key — never emoji */
@@ -55,8 +54,7 @@ function normalizeInsights(raw: unknown): AiInsight[] | null {
 
 export async function POST() {
   try {
-    const { userId } = await auth();
-    if (!userId) throw AppError.unauthorized();
+    await requireDbUser();
 
     const apiKey = env.geminiApiKey;
     if (!apiKey) {

@@ -1,5 +1,3 @@
-"use client";
-
 export { HomeHero } from "./HomeHero";
 export { CriGauge } from "./CriGauge";
 export { InsightPanel } from "./InsightPanel";

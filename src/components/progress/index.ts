@@ -1,5 +1,3 @@
-"use client";
-
 export { ProgressHeader } from "@/components/progress/ProgressHeader";
 export { OverallProgressCard } from "@/components/progress/OverallProgressCard";
 export { ProgressStats } from "@/components/progress/ProgressStats";

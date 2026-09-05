@@ -1,12 +1,11 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { asc, eq } from "drizzle-orm";
 import quotesData from "@/data/quotes_dataset.json";
 import type { Quote } from "@/types";
-import { AppError } from "@/lib/api/errors";
 import { parseJson, errorResponse } from "@/lib/api/http";
 import { getDb } from "@/lib/db/client";
 import { quotes } from "@/lib/db/schema";
+import { requireDbUser } from "@/lib/db/users";
 import { env } from "@/lib/env";
 import { quoteRequestSchema } from "@/lib/validation/schemas";
 
@@ -30,8 +29,7 @@ function pickByDay(list: Quote[], phase: string): Quote {
 
 export async function POST(request: Request) {
   try {
-    const { userId } = await auth();
-    if (!userId) throw AppError.unauthorized();
+    await requireDbUser();
 
     const { phase } = await parseJson(request, quoteRequestSchema);
 

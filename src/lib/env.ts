@@ -1,3 +1,5 @@
+import "server-only";
+
 /**
  * Server env accessors. Never import this from Client Components.
  * Required vars throw when missing so misconfiguration fails loudly.

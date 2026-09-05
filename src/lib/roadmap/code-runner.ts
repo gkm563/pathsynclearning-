@@ -1,3 +1,4 @@
+import "server-only";
 import type { CodingLanguageId } from "@/lib/roadmap/coding-languages";
 import type { CodingTestCase } from "@/types/roadmap";
 import type { CodingGradeResult, CodingTestResult } from "@/lib/roadmap/coding-client";

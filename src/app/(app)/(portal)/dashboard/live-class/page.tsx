@@ -1,9 +1,7 @@
 "use client";
 
-import { createClientPage } from "@/lib/create-client-page";
+import { createClientOnlyPage } from "@/lib/create-client-only-page";
 
-export default createClientPage(
+export default createClientOnlyPage(
   () => import("@/views/Platform/PlatformLiveClass"),
-  { ssr: false },
 );
-

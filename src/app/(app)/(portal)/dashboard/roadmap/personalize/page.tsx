@@ -1,5 +1,3 @@
-"use client";
-
 import { createClientPage } from "@/lib/create-client-page";
 
 /** Standalone roadmap personalization page for existing users. */

@@ -1,5 +1,3 @@
-"use client";
-
 export { ProfileHeader } from "./ProfileHeader";
 export { PersonalInfoForm } from "./PersonalInfoForm";
 export { ProfilePhotoSection } from "./ProfilePhotoSection";

@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { Globe, Users, Code, Mail } from "lucide-react";
 import type { FooterSection } from "@/types";

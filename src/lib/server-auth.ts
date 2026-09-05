@@ -1,3 +1,4 @@
+import "server-only";
 import { redirect } from "next/navigation";
 import { requireDbUser, type DbUser } from "@/lib/db/users";
 import { routes } from "@/lib/routes";

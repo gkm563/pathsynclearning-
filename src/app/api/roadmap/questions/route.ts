@@ -1,15 +1,16 @@
-import { NextResponse } from 'next/server';
 import { requireDbUser } from '@/lib/db/users';
 import { getDb } from '@/lib/db/client';
 import { roadmapProfiles } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { errorResponse, jsonResponse } from '@/lib/api/http';
 import { generateFollowUpQuestions } from '@/lib/ai/roadmap-questions';
+import { toRoadmapProfile } from '@/lib/roadmap/persist-generated';
+import { logger } from '@/lib/logger';
 
-export async function POST(request: Request) {
+export async function POST() {
   try {
     const user = await requireDbUser();
-    const db = await getDb();
+    const db = getDb();
 
     const [profile] = await db
       .select()
@@ -22,10 +23,12 @@ export async function POST(request: Request) {
     }
 
     try {
-      const response = await generateFollowUpQuestions(profile as unknown as any, user.id);
+      const response = await generateFollowUpQuestions(toRoadmapProfile(profile), user.id);
       return jsonResponse(response);
     } catch (aiError) {
-      console.error('Failed to generate follow up questions:', aiError);
+      logger.error('Failed to generate follow up questions', {
+        message: aiError instanceof Error ? aiError.message : String(aiError),
+      });
       return jsonResponse({ needsMoreInformation: false, questions: [] });
     }
   } catch (e) {

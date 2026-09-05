@@ -1,24 +1,21 @@
-"use client";
-
 import type { ComponentType } from "react";
 import dynamic from "next/dynamic";
 
-type Options = {
-  /** Default true for marketing/SEO. Portal views can opt out when needed. */
-  ssr?: boolean;
-};
+function RouteFallback() {
+  return (
+    <div className="min-h-screen bg-[var(--bg-main)]" aria-busy="true" />
+  );
+}
 
-/** Thin App Router page wrapper for heavy client views. */
+/**
+ * App Router page helper: keep the route module a Server Component while
+ * code-splitting a heavy Client view. Do not add `"use client"` to pages
+ * that only call this helper.
+ */
 export function createClientPage(
   loader: () => Promise<{ default: ComponentType }>,
-  options: Options = { ssr: true },
 ) {
-  const Page = dynamic(loader, {
-    ssr: options.ssr !== false,
-    loading: () => <div className="min-h-screen bg-[var(--bg-main)]" />,
+  return dynamic(loader, {
+    loading: RouteFallback,
   });
-
-  return function RoutePage() {
-    return <Page />;
-  };
 }

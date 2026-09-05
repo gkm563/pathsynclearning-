@@ -1,5 +1,7 @@
+import "server-only";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
+import { AppError } from "@/lib/api/errors";
 import { getDb } from "@/lib/db/client";
 import { mapUser } from "@/lib/db/mappers";
 import {
@@ -32,7 +34,7 @@ async function ensureRelatedRows(userId: string) {
 export async function requireDbUser(roleHint?: AppRole): Promise<DbUser> {
   const { userId: clerkId } = await auth();
   if (!clerkId) {
-    throw new Error("UNAUTHORIZED");
+    throw AppError.unauthorized();
   }
 
   const db = getDb();
@@ -130,7 +132,3 @@ export async function requireDbUser(roleHint?: AppRole): Promise<DbUser> {
   return user;
 }
 
-export {
-  jsonResponse,
-  errorResponse,
-} from "@/lib/api/http";

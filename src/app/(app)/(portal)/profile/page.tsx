@@ -1,5 +1,3 @@
-"use client";
-
 import { Suspense } from "react";
 import { createClientPage } from "@/lib/create-client-page";
 import { ProfileSkeleton } from "@/components/profile";

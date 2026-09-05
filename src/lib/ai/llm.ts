@@ -1,3 +1,4 @@
+import "server-only";
 import { env } from '@/lib/env';
 import { callGroq } from './groq';
 import { callGemini } from './gemini';

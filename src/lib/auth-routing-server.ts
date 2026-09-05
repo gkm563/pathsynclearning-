@@ -1,3 +1,5 @@
+import "server-only";
+import { AppError } from "@/lib/api/errors";
 import { requireDbUser, type AppRole } from "@/lib/db/users";
 import { routes } from "@/lib/routes";
 
@@ -15,7 +17,10 @@ export async function resolvePostAuthPathServer(
     if (user.role !== "student") return routes.home;
     return routes.app.dashboard;
   } catch (e) {
-    if (e instanceof Error && e.message === "UNAUTHORIZED") {
+    if (
+      (e instanceof AppError && e.code === "UNAUTHORIZED") ||
+      (e instanceof Error && e.message === "UNAUTHORIZED")
+    ) {
       return routes.auth.signIn;
     }
     console.error("resolvePostAuthPathServer:", e);

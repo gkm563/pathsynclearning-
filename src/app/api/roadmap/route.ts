@@ -1,7 +1,7 @@
 import { requireDbUser } from '@/lib/db/users';
 import { getDb } from '@/lib/db/client';
 import { roadmaps, roadmapProgress } from '@/lib/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { errorResponse, jsonResponse } from '@/lib/api/http';
 import { isProgressSatisfied } from '@/lib/roadmap/progress';
 import { ensureNodeAssessments } from '@/lib/roadmap/assessment-bank';
@@ -16,7 +16,7 @@ async function reconcileProgress(
   db: Awaited<ReturnType<typeof getDb>>,
   userId: string,
   roadmapId: string,
-  nodes: any[],
+  nodes: RoadmapNode[],
   edges: Array<{ source: string; target: string }>,
   progress: RoadmapProgress[],
 ): Promise<RoadmapProgress[]> {
@@ -96,7 +96,7 @@ export async function GET() {
       enrichedNodes,
       edges,
       progress,
-    )) as any;
+    ));
 
     const progressMap = new Map(progress.map((p) => [p.nodeId, p]));
 
