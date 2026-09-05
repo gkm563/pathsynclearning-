@@ -127,6 +127,7 @@ export const roadmapProfileUpdateSchema = z.object({
   struggledSubjects: z.array(z.string()).optional(),
   careerGoal: z.string().max(200).nullable().optional(),
   targetRole: z.string().max(200).nullable().optional(),
+  targetCompany: z.string().max(120).nullable().optional(),
   knownSkills: z.array(
     z.object({
       skill: z.string(),

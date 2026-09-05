@@ -18,7 +18,17 @@ const STEPS_CONFIG = [
   { text: "Building your personalized roadmap...", icon: Sparkles, color: "#6c63ff" }
 ];
 
-export default function RoadmapGenerating({ isOpen, onComplete }: { isOpen: boolean, onComplete: () => void }) {
+export default function RoadmapGenerating({
+  isOpen,
+  onComplete,
+  targetCompany,
+  targetRole,
+}: {
+  isOpen: boolean;
+  onComplete: () => void;
+  targetCompany?: string | null;
+  targetRole?: string;
+}) {
   const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
@@ -75,9 +85,16 @@ export default function RoadmapGenerating({ isOpen, onComplete }: { isOpen: bool
               <CurrentIcon size={48} color={currentColor} />
             </motion.div>
             
-            <div style={{ fontSize: '24px', fontWeight: 'bold', fontFamily: 'Outfit', color: '#fff', textAlign: 'center' }}>
-              {STEPS_CONFIG[currentStep]?.text}
+            <div style={{ fontSize: '24px', fontWeight: 'bold', fontFamily: 'Outfit', color: '#fff', textAlign: 'center', maxWidth: 480 }}>
+              {targetCompany && currentStep === STEPS_CONFIG.length - 1
+                ? `Building your ${targetCompany}${targetRole ? ` ${targetRole}` : ''} roadmap...`
+                : STEPS_CONFIG[currentStep]?.text}
             </div>
+            {targetCompany && currentStep === 0 ? (
+              <div style={{ fontSize: 14, fontFamily: 'Outfit', color: 'rgba(255,255,255,0.75)', textAlign: 'center' }}>
+                Matching interview prep and skills to {targetCompany}
+              </div>
+            ) : null}
           </motion.div>
 
           <div style={{ width: '300px', height: '6px', backgroundColor: 'var(--bg-card)', borderRadius: '3px', marginTop: '48px', overflow: 'hidden' }}>

@@ -11,6 +11,12 @@ import PreferencesSection from './sections/PreferencesSection';
 import TimelineSection from './sections/TimelineSection';
 import AIFollowUpQuestions, { FollowUpQuestion } from './AIFollowUpQuestions';
 import RoadmapGenerating from './RoadmapGenerating';
+import RoadmapTypeSelect, { type RoadmapGenerationMode } from './RoadmapTypeSelect';
+import RoadmapStartChoice from './RoadmapStartChoice';
+import { resolvedTargetCompany, resolvedTargetRole } from '@/lib/roadmap/target-companies';
+import { setRoadmapDeferred } from '@/lib/roadmap/defer';
+import { useRouter } from 'next/navigation';
+import { routes } from '@/lib/routes';
 
 const SECTIONS = [
   { id: 'education', Component: EducationSection },
@@ -25,9 +31,15 @@ const SECTIONS = [
 
 export default function RoadmapOnboarding({
   onComplete,
+  onSkip,
 }: {
   onComplete?: (roadmap: unknown) => void;
+  onSkip?: () => void;
 }) {
+  const router = useRouter();
+  const [showStartChoice, setShowStartChoice] = useState(true);
+  const [generationMode, setGenerationMode] = useState<RoadmapGenerationMode | null>(null);
+  const [showTypeSelect, setShowTypeSelect] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [formData, setFormData] = useState<Record<string, unknown>>({});
 
@@ -39,6 +51,7 @@ export default function RoadmapOnboarding({
   const [error, setError] = useState<string | null>(null);
 
   const mapToApi = (data: any, aiAns?: any) => {
+    const targeted = generationMode === 'targeted';
     return {
       currentStudy: data.currentStudy,
       yearSemester: data.yearSemester,
@@ -47,6 +60,7 @@ export default function RoadmapOnboarding({
       struggledSubjects: data.struggledSubjects,
       careerGoal: data.achieveGoal,
       targetRole: data.roleOfInterest === 'Other' && data.customRole ? data.customRole : data.roleOfInterest,
+      targetCompany: targeted ? resolvedTargetCompany(data.targetCompany, data.customCompany) : null,
       knownSkills: data.skills ? data.skills.map((s: any) => ({
         skill: s.skill,
         confidence: (s.confidence || '').toLowerCase().replace(' ', '_')
@@ -105,7 +119,6 @@ export default function RoadmapOnboarding({
   };
 
   useEffect(() => {
-    // Attempt to load existing profile
     apiGet<{ profile: any }>('/api/roadmap/profile').then(res => {
       if (res && res.profile) {
         setFormData(prev => ({ ...prev, ...mapFromApi(res.profile) }));
@@ -113,12 +126,50 @@ export default function RoadmapOnboarding({
     }).catch(() => {});
   }, []);
 
+  const targetedReady =
+    !!resolvedTargetCompany(formData.targetCompany, formData.customCompany) &&
+    !!resolvedTargetRole(formData.roleOfInterest, formData.customRole);
+
+  const skipForLater = () => {
+    setRoadmapDeferred(true);
+    if (onSkip) onSkip();
+    else router.push(routes.app.dashboard);
+  };
+
+  const handleCreateFromStart = () => {
+    setRoadmapDeferred(false);
+    setShowStartChoice(false);
+    setShowTypeSelect(true);
+    setError(null);
+  };
+
+  const handleModeChange = (mode: RoadmapGenerationMode) => {
+    setGenerationMode(mode);
+    setError(null);
+    if (mode === 'general') {
+      setFormData((prev) => ({ ...prev, targetCompany: '', customCompany: '' }));
+    }
+  };
+
   const handleNext = async () => {
     setError(null);
+    if (showStartChoice) return;
+    if (showTypeSelect) {
+      if (!generationMode) {
+        setError('Choose how you want this roadmap generated.');
+        return;
+      }
+      if (generationMode === 'targeted' && !targetedReady) {
+        setError('Pick a target company and job role to continue.');
+        return;
+      }
+      setShowTypeSelect(false);
+      setCurrentStepIndex(0);
+      return;
+    }
     if (currentStepIndex < SECTIONS.length - 1) {
       setCurrentStepIndex(prev => prev + 1);
     } else if (currentStepIndex === SECTIONS.length - 1 && !isAiStep) {
-      // Reached end of manual sections, save profile and fetch questions
       setIsLoading(true);
       try {
         const payload = mapToApi(formData);
@@ -128,7 +179,6 @@ export default function RoadmapOnboarding({
           setAiQuestions(res.questions);
           setIsAiStep(true);
         } else {
-          // No follow-up questions needed, generate directly
           await generateRoadmap();
         }
       } catch (err) {
@@ -138,7 +188,6 @@ export default function RoadmapOnboarding({
         setIsLoading(false);
       }
     } else if (isAiStep) {
-      // Finished AI questions, generate roadmap
       setIsLoading(true);
       try {
         await apiSend('/api/roadmap/profile', 'PUT', mapToApi(formData, aiAnswers));
@@ -157,6 +206,11 @@ export default function RoadmapOnboarding({
       setIsAiStep(false);
     } else if (currentStepIndex > 0) {
       setCurrentStepIndex(prev => prev - 1);
+    } else if (!showStartChoice && !showTypeSelect) {
+      setShowTypeSelect(true);
+    } else if (showTypeSelect) {
+      setShowTypeSelect(false);
+      setShowStartChoice(true);
     }
   };
 
@@ -165,22 +219,18 @@ export default function RoadmapOnboarding({
     setError(null);
     try {
       const res = await apiSend<{ roadmap: any }>('/api/roadmap/generate', 'POST', {});
-      // Wait for animation to finish before calling onComplete
+      setRoadmapDeferred(false);
       setTimeout(() => {
         if (onComplete) onComplete(res.roadmap);
         else if (typeof window !== "undefined") {
           window.location.href = "/dashboard/roadmap";
         }
-      }, 6000); // 1.5s per step * 4 steps
+      }, 6000);
     } catch (err) {
       console.error(err);
       setIsGenerating(false);
       setError(err instanceof Error ? err.message : 'Failed to generate roadmap. Please try again.');
     }
-  };
-
-  const updateSectionData = (sectionId: string, data: any) => {
-    setFormData(prev => ({ ...prev, [sectionId]: data }));
   };
 
   const containerStyle: React.CSSProperties = {
@@ -208,28 +258,58 @@ export default function RoadmapOnboarding({
   });
 
   if (isGenerating) {
-    return <RoadmapGenerating isOpen={isGenerating} onComplete={() => {}} />;
+    const generatingCompany =
+      generationMode === 'targeted'
+        ? resolvedTargetCompany(formData.targetCompany, formData.customCompany)
+        : null;
+    const generatingRole = resolvedTargetRole(formData.roleOfInterest, formData.customRole) || undefined;
+
+    return (
+      <RoadmapGenerating
+        isOpen={isGenerating}
+        onComplete={() => {}}
+        targetCompany={generatingCompany}
+        targetRole={generatingRole}
+      />
+    );
   }
 
   const CurrentSection = SECTIONS[currentStepIndex].Component;
-  const currentSectionId = SECTIONS[currentStepIndex].id;
+  const continueDisabled =
+    isLoading ||
+    showStartChoice ||
+    (showTypeSelect && (!generationMode || (generationMode === 'targeted' && !targetedReady)));
+  const hideNav = showStartChoice;
+  const hideBack = showStartChoice;
+  const inFormSteps = !showStartChoice && !showTypeSelect;
 
   return (
     <div style={containerStyle}>
       <div style={progressBarStyle}>
+        <div style={getDotStyle(showStartChoice, !showStartChoice)} />
+        <div style={getDotStyle(showTypeSelect, inFormSteps || isAiStep)} />
         {SECTIONS.map((s, i) => (
-          <div key={s.id} style={getDotStyle(i === currentStepIndex && !isAiStep, i < currentStepIndex || isAiStep)} />
+          <div key={s.id} style={getDotStyle(inFormSteps && i === currentStepIndex && !isAiStep, inFormSteps && (i < currentStepIndex || isAiStep))} />
         ))}
         <div style={getDotStyle(isAiStep, false)} />
       </div>
 
-      {!isAiStep ? (
-        <CurrentSection 
-          data={formData} 
-          onChange={(d: any) => setFormData(d)} 
+      {showStartChoice ? (
+        <RoadmapStartChoice onCreate={handleCreateFromStart} onSkip={skipForLater} />
+      ) : showTypeSelect ? (
+        <RoadmapTypeSelect
+          mode={generationMode}
+          data={formData}
+          onModeChange={handleModeChange}
+          onChange={setFormData}
+        />
+      ) : !isAiStep ? (
+        <CurrentSection
+          data={formData}
+          onChange={(d: any) => setFormData(d)}
         />
       ) : (
-        <AIFollowUpQuestions 
+        <AIFollowUpQuestions
           questions={aiQuestions}
           answers={aiAnswers}
           onChange={setAiAnswers}
@@ -242,21 +322,35 @@ export default function RoadmapOnboarding({
         </p>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
-        <button 
-          onClick={handleBack} 
-          style={{ ...btnStyle(false, currentStepIndex === 0 && !isAiStep), visibility: (currentStepIndex === 0 && !isAiStep) ? 'hidden' : 'visible' }}
-        >
-          Back
-        </button>
-        <button 
-          onClick={handleNext} 
-          disabled={isLoading}
-          style={btnStyle(true, isLoading)}
-        >
-          {isLoading ? 'Loading...' : (isAiStep || currentStepIndex === SECTIONS.length - 1) ? 'Generate Roadmap ✨' : 'Continue'}
-        </button>
-      </div>
+      {hideNav ? null : (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', gap: 12 }}>
+          <button
+            onClick={handleBack}
+            style={{ ...btnStyle(false, hideBack), visibility: hideBack ? 'hidden' : 'visible' }}
+          >
+            Back
+          </button>
+          <button
+            type="button"
+            onClick={skipForLater}
+            style={{
+              ...btnStyle(false, false),
+              backgroundColor: 'transparent',
+              color: 'var(--text-muted)',
+              fontWeight: 600,
+            }}
+          >
+            Skip for later
+          </button>
+          <button
+            onClick={handleNext}
+            disabled={continueDisabled}
+            style={btnStyle(true, continueDisabled)}
+          >
+            {isLoading ? 'Loading...' : (isAiStep || (inFormSteps && currentStepIndex === SECTIONS.length - 1)) ? 'Generate Roadmap ✨' : 'Continue'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

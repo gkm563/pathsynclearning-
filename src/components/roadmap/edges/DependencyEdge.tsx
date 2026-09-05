@@ -26,7 +26,7 @@ export default function DependencyEdge({
 
   const status = data?.status || 'locked';
   
-  let stroke = 'var(--border-light)';
+  let stroke = 'var(--roadmap-edge)';
   if (status === 'completed') stroke = '#00c9a7';
   else if (status === 'in_progress') stroke = '#6c63ff';
   
@@ -37,7 +37,7 @@ export default function DependencyEdge({
         markerEnd={markerEnd} 
         style={{
           ...style,
-          strokeWidth: 2,
+          strokeWidth: 2.5,
           stroke,
           animation: status === 'in_progress' ? 'dashdraw 1s linear infinite' : 'none'
         }} 

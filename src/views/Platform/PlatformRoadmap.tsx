@@ -6,6 +6,8 @@ import { ReactFlowProvider } from "@xyflow/react";
 import { apiGet, apiSend, ApiClientError } from "@/lib/api";
 import type { Roadmap, RoadmapNodeProgress } from "@/types/roadmap";
 import { routes } from "@/lib/routes";
+import { isRoadmapDeferred, setRoadmapDeferred } from "@/lib/roadmap/defer";
+import RoadmapEmptyState from "@/components/roadmap/RoadmapEmptyState";
 
 const RoadmapOnboarding = React.lazy(
   () => import("@/views/RoadmapOnboarding/RoadmapOnboarding"),
@@ -14,7 +16,7 @@ const RoadmapCanvas = React.lazy(
   () => import("@/components/roadmap/RoadmapCanvas"),
 );
 
-type ViewState = "loading" | "onboarding" | "canvas";
+type ViewState = "loading" | "onboarding" | "canvas" | "empty";
 
 export default function RoadmapPage() {
   const router = useRouter();
@@ -56,6 +58,7 @@ export default function RoadmapPage() {
       if (cancelled) return;
       if (creatingNew) setView("onboarding");
       else if (active) setView("canvas");
+      else if (isRoadmapDeferred()) setView("empty");
       else setView("onboarding");
     })();
     return () => {
@@ -65,17 +68,27 @@ export default function RoadmapPage() {
 
   const handleOnboardingComplete = useCallback(async () => {
     setCreatingNew(false);
+    setRoadmapDeferred(false);
     if (intentNew) {
       router.replace(routes.app.roadmap);
     }
     const active = await fetchRoadmap();
-    setView(active ? "canvas" : "onboarding");
+    setView(active ? "canvas" : isRoadmapDeferred() ? "empty" : "onboarding");
   }, [fetchRoadmap, intentNew, router]);
 
   const handleCreateNew = useCallback(() => {
+    setRoadmapDeferred(false);
     setCreatingNew(true);
     setView("onboarding");
   }, []);
+
+  const handleSkipOnboarding = useCallback(() => {
+    setCreatingNew(false);
+    setRoadmapDeferred(true);
+    if (intentNew) router.replace(routes.app.roadmap);
+    if (roadmap) setView("canvas");
+    else setView("empty");
+  }, [intentNew, roadmap, router]);
 
   const handleCancelCreate = useCallback(() => {
     if (roadmap) {
@@ -142,6 +155,10 @@ export default function RoadmapPage() {
     );
   }
 
+  if (view === "empty") {
+    return <RoadmapEmptyState onCreate={handleCreateNew} />;
+  }
+
   if (view === "onboarding") {
     return (
       <React.Suspense
@@ -182,7 +199,10 @@ export default function RoadmapPage() {
               ← Back to current roadmap
             </button>
           ) : null}
-          <RoadmapOnboarding onComplete={handleOnboardingComplete} />
+          <RoadmapOnboarding
+            onComplete={handleOnboardingComplete}
+            onSkip={handleSkipOnboarding}
+          />
         </div>
       </React.Suspense>
     );
@@ -226,7 +246,7 @@ export default function RoadmapPage() {
               const active = await fetchRoadmap();
               if (!active) {
                 setCreatingNew(false);
-                setView("onboarding");
+                setView(isRoadmapDeferred() ? "empty" : "onboarding");
               }
             }}
             onCreateNew={handleCreateNew}

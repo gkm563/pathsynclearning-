@@ -8,6 +8,8 @@ export async function generateFollowUpQuestions(profile: RoadmapProfile, userId:
 Generate 3-7 highly relevant follow-up questions. Each question should fill a specific knowledge gap. Do NOT ask about things already covered.
 Example: If student wants AI/ML but hasn't mentioned math → ask about math comfort.
 Example: If student wants cybersecurity but no mention of Linux → ask about Linux experience.
+If targetCompany is already set, do NOT ask which company they want.
+If they want a job, internship, or placements and targetCompany is empty, you MAY ask whether they have a target company (optional, not required).
 If the profile is comprehensive enough, return { "needsMoreInformation": false, "questions": [] }.
 Question types: single_choice, multi_choice, text, rating.
 Each question must have an 'id' (kebab-case), 'reason' (why asking), 'required' boolean.

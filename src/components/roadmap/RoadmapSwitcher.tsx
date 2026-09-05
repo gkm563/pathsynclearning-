@@ -308,6 +308,7 @@ export default function RoadmapSwitcher({
                               fontFamily: "Inter",
                             }}
                           >
+                            {item.targetCompany ? `${item.targetCompany} · ` : ""}
                             {item.completionPercent}% · {item.completedNodes ?? 0}/
                             {item.nodeCount} nodes
                             {typeof item.remainingHours === "number"

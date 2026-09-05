@@ -10,6 +10,7 @@ import {
   deactivateActiveRoadmaps,
   nextRoadmapVersion,
 } from '@/lib/roadmap/active';
+import { roadmapTitleForTarget } from '@/lib/roadmap/target-companies';
 import crypto from 'crypto';
 
 /**
@@ -57,8 +58,13 @@ export async function POST(request: Request) {
         id: roadmapId,
         userId: user.id,
         version: newVersion,
-        title: generatedData.title,
+        title: roadmapTitleForTarget(
+          generatedData.title,
+          profile.targetRole,
+          profile.targetCompany,
+        ),
         targetRole: profile.targetRole,
+        targetCompany: profile.targetCompany,
         estimatedWeeks: generatedData.estimatedWeeks,
         nodes: generatedData.nodes,
         edges: generatedData.edges,

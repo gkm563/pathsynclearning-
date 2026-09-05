@@ -133,6 +133,7 @@ export interface Roadmap {
   version: number;
   title: string;
   targetRole: string;
+  targetCompany: string | null;
   estimatedWeeks: number | null;
   nodes: RoadmapNode[];
   edges: RoadmapEdge[];
@@ -146,6 +147,7 @@ export interface RoadmapSummary {
   id: string;
   title: string;
   targetRole: string;
+  targetCompany: string | null;
   version: number;
   estimatedWeeks: number | null;
   isActive: boolean;
@@ -189,6 +191,7 @@ export interface RoadmapProfile {
   // Career
   careerGoal: string | null;
   targetRole: string | null;
+  targetCompany: string | null;
   // Skills
   knownSkills: SkillConfidence[];
   // Projects

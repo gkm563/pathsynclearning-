@@ -14,6 +14,7 @@ function compactProfile(profile: RoadmapProfile) {
     struggledSubjects: profile.struggledSubjects,
     careerGoal: profile.careerGoal,
     targetRole: profile.targetRole,
+    targetCompany: profile.targetCompany,
     knownSkills: profile.knownSkills,
     hasProjects: profile.hasProjects,
     projects: profile.projects?.slice(0, 5),
@@ -46,6 +47,13 @@ Hard limits (must obey — oversized JSON will be truncated):
 - Edges: one edge per dependency; source = prerequisite, target = dependent.
 - Skip topics the student already knows at advanced/very_confident.
 - Scale estimatedHours to weeklyHours and targetTimeline.
+- If targetCompany is set, this is a COMPANY-TARGETED roadmap:
+  - Title should mention the company and role (e.g. "Google SDE Interview Path").
+  - Align skills, projects, and checkpoints with that company's publicly known hiring bar, typical tech stack, and interview loop for the targetRole (OA/DSA, system design if relevant, behavioral / leadership principles).
+  - Include at least one checkpoint for mock interviews or company-specific prep.
+  - Do not invent confidential interview questions; use well-known public patterns only.
+  - Goal node should state the company + role outcome.
+- If targetCompany is null, keep a general role-based path (not company-specific).
 - For skill/topic/project/checkpoint nodes, include an "assessment" object that tests THIS NODE's learning content only:
   - Questions/problems MUST be about the node's title, description, skills, and topics — never generic study-habit trivia, never a random unrelated LeetCode (e.g. do not use twoSum unless the node is about arrays/hashing).
   - Conceptual nodes (topic/checkpoint, HTML/CSS, SQL, Git, OOP theory, React concepts): type "mcq" with 3-5 questions (options + correctIndex 0-based) grounded in that module.

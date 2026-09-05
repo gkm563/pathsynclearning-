@@ -8,6 +8,7 @@ import RoadmapSwitcher from "./RoadmapSwitcher";
 export default function RoadmapOverview({
   roadmapId,
   roadmapTitle,
+  targetCompany,
   nodes,
   progress,
   onSwitched,
@@ -15,6 +16,7 @@ export default function RoadmapOverview({
 }: {
   roadmapId: string;
   roadmapTitle: string;
+  targetCompany?: string | null;
   nodes: RoadmapNode[];
   progress: Map<string, string>;
   onSwitched?: () => void | Promise<void>;
@@ -57,6 +59,18 @@ export default function RoadmapOverview({
               onCreateNew={onCreateNew}
               embedded
             />
+          </div>
+          <Divider />
+        </>
+      ) : null}
+
+      {targetCompany ? (
+        <>
+          <div style={colStyle}>
+            <span style={labelStyle}>COMPANY</span>
+            <div style={{ ...valueStyle, marginTop: 4, maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis" }}>
+              {targetCompany}
+            </div>
           </div>
           <Divider />
         </>

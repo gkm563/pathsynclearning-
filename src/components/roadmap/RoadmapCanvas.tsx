@@ -377,7 +377,7 @@ export default function RoadmapCanvas({
               ? '#00c9a7'
               : sourceStatus === 'in_progress'
                 ? '#6c63ff'
-                : 'var(--border-light)',
+                : 'var(--roadmap-edge)',
         },
       };
     });
@@ -445,6 +445,7 @@ export default function RoadmapCanvas({
         key={roadmap.id}
         roadmapId={roadmap.id}
         roadmapTitle={roadmap.title}
+        targetCompany={roadmap.targetCompany}
         nodes={roadmap.nodes}
         progress={progressMap}
         onSwitched={async () => {

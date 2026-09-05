@@ -10,6 +10,7 @@ import {
   deactivateActiveRoadmaps,
   nextRoadmapVersion,
 } from '@/lib/roadmap/active';
+import { roadmapTitleForTarget } from '@/lib/roadmap/target-companies';
 import crypto from 'crypto';
 
 /** Regenerate a fresh roadmap for the active slot; other saved roadmaps are kept. */
@@ -49,8 +50,13 @@ export async function POST() {
         id: roadmapId,
         userId: user.id,
         version: newVersion,
-        title: generatedData.title,
+        title: roadmapTitleForTarget(
+          generatedData.title,
+          profile.targetRole,
+          profile.targetCompany,
+        ),
         targetRole: profile.targetRole,
+        targetCompany: profile.targetCompany,
         estimatedWeeks: generatedData.estimatedWeeks,
         nodes: generatedData.nodes,
         edges: generatedData.edges,
