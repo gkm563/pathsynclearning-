@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Shield, Sparkles } from "lucide-react";
 import { apiGet, apiSend } from "@/lib/api";
-import { hrefForNavId, routes } from "@/lib/routes";
+import { routes } from "@/lib/routes";
 import { SHIELD_COST, xpProgress } from "@/lib/challenges/progress";
 import type {
   ChallengesApiResponse,
@@ -498,7 +498,7 @@ export default function PlatformChallenges() {
           </div>
           <button
             type="button"
-            onClick={() => router.push(hrefForNavId("memory-lane"))}
+            onClick={() => router.push(`${routes.app.memoryLane}?section=challenges`)}
             style={{
               padding: "10px 16px",
               borderRadius: 12,

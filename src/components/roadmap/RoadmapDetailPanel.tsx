@@ -4,14 +4,15 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Clock, ExternalLink, Book, Video, Code, CheckCircle, SkipForward, Play, Lock, ClipboardCheck,
-  Maximize2, ChevronLeft, ChevronRight, StickyNote, ListChecks, GraduationCap,
+  Maximize2, ChevronLeft, ChevronRight, StickyNote, ListChecks, GraduationCap, Sparkles,
 } from 'lucide-react';
 import type { RoadmapNode, RoadmapNodeResource } from '@/types/roadmap';
 import { isAssessableNode, nodeRequiresAssessment } from '@/lib/roadmap/assessment';
 import { AddNoteButton, NotesForSource } from '@/components/memory-lane/AddNoteButton';
+import StudyRoomTutor from '@/components/roadmap/StudyRoomTutor';
 
 type PanelTab = 'overview' | 'resources' | 'notes';
-type SideRail = 'playlist' | 'notes';
+type SideRail = 'playlist' | 'notes' | 'tutor';
 
 function youtubeId(url: string): string | null {
   try {
@@ -427,6 +428,19 @@ export default function RoadmapDetailPanel({
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => setSideRail('tutor')}
+                title="Ask the AI tutor"
+                style={{
+                  ...chromeBtn,
+                  background: sideRail === 'tutor' ? 'rgba(108,99,255,0.12)' : 'var(--bg-alt)',
+                  color: sideRail === 'tutor' ? '#6c63ff' : 'var(--text-main)',
+                  borderColor: sideRail === 'tutor' ? '#6c63ff' : 'var(--border-light)',
+                }}
+              >
+                <Sparkles size={16} /> AI Tutor
+              </button>
               {!isCompleted && !isLocked && !needsExam && (
                 <button
                   type="button"
@@ -728,6 +742,10 @@ export default function RoadmapDetailPanel({
               <aside
                 style={{
                   minWidth: 0,
+                  minHeight: 0,
+                  height: 'calc(100vh - 120px)',
+                  maxHeight: 'calc(100vh - 120px)',
+                  alignSelf: 'start',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 0,
@@ -735,7 +753,6 @@ export default function RoadmapDetailPanel({
                   border: '1px solid var(--border-light)',
                   borderRadius: 14,
                   overflow: 'hidden',
-                  maxHeight: 'calc(100vh - 120px)',
                   position: 'sticky',
                   top: 0,
                   boxShadow: '0 4px 20px rgba(15,23,42,0.06)',
@@ -765,15 +782,42 @@ export default function RoadmapDetailPanel({
                   >
                     <StickyNote size={14} /> Notes
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setSideRail('tutor')}
+                    style={railTab(sideRail === 'tutor')}
+                  >
+                    <Sparkles size={14} /> Tutor
+                  </button>
                 </div>
 
                 <div
                   style={{
                     flex: 1,
-                    overflowY: 'auto',
+                    minHeight: 0,
+                    overflow: sideRail === 'tutor' ? 'hidden' : 'auto',
+                    overscrollBehavior: 'contain',
                     padding: sideRail === 'notes' ? 12 : 0,
+                    display: sideRail === 'tutor' ? 'flex' : undefined,
+                    flexDirection: sideRail === 'tutor' ? 'column' : undefined,
                   }}
                 >
+                  <div
+                    style={{
+                      display: sideRail === 'tutor' ? 'flex' : 'none',
+                      flex: 1,
+                      minHeight: 0,
+                      height: '100%',
+                      flexDirection: 'column',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <StudyRoomTutor
+                      node={node}
+                      videoTitle={currentVideo?.title}
+                      videoChannel={currentVideo?.channel}
+                    />
+                  </div>
                   {sideRail === 'playlist' ? (
                     ytResources.length === 0 ? (
                       <p
@@ -821,7 +865,7 @@ export default function RoadmapDetailPanel({
                         })}
                       </>
                     )
-                  ) : (
+                  ) : sideRail === 'notes' ? (
                     <NotesForSource
                       sourceType="roadmap_node"
                       sourceId={node.id}
@@ -831,7 +875,7 @@ export default function RoadmapDetailPanel({
                       emptyHint="Jot takeaways while the video plays."
                       inline
                     />
-                  )}
+                  ) : null}
                 </div>
               </aside>
             </div>

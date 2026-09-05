@@ -78,6 +78,10 @@ export const DOMAIN_EVENT_TYPES = [
 
 export type DomainEventType = (typeof DOMAIN_EVENT_TYPES)[number];
 
+/** Top-level Memory Lane sections. */
+export const MEMORY_SECTIONS = ["roadmap", "challenges", "general"] as const;
+export type MemorySection = (typeof MEMORY_SECTIONS)[number];
+
 /** Filter chips on Memory Lane (maps to memory types / notes). */
 export const MEMORY_FILTERS = [
   "all",
@@ -121,6 +125,11 @@ export type MemoryStats = {
   achievements: number;
   notes: number;
   total: number;
+  sections: {
+    roadmap: number;
+    challenges: number;
+    general: number;
+  };
 };
 
 export type MemorySettingsDto = {

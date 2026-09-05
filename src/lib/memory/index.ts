@@ -1,5 +1,6 @@
 export * from "@/lib/memory/types";
 export * from "@/lib/memory/constants";
+export * from "@/lib/memory/sections";
 export * from "@/lib/memory/source-hrefs";
 export * from "@/lib/memory/memories";
 export * from "@/lib/memory/notes";

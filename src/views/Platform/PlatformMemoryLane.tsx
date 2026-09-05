@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MemoryLaneHeader } from "@/components/memory-lane/MemoryLaneHeader";
+import { MemorySections } from "@/components/memory-lane/MemorySections";
 import {
   MemoryFilters,
   MemorySearch,
@@ -17,8 +18,13 @@ import {
 import { EmptyState, PageSpinner } from "@/components/ui/primitives";
 import { apiGet } from "@/lib/api";
 import { routes } from "@/lib/routes";
+import {
+  MEMORY_SECTION_META,
+  SECTION_FILTERS,
+} from "@/lib/memory/sections";
 import type {
   MemoryFilter,
+  MemorySection,
   MemorySettingsDto,
   MemoryStats,
   TimelineItem,
@@ -43,11 +49,44 @@ const DEFAULT_SETTINGS: MemorySettingsDto = {
   allowAiNotes: false,
 };
 
+const DEFAULT_SECTION_COUNTS = { roadmap: 0, challenges: 0, general: 0 };
+
+function parseSection(raw: string | null): MemorySection {
+  if (raw === "roadmap" || raw === "challenges" || raw === "general") return raw;
+  return "roadmap";
+}
+
+function noteDefaults(section: MemorySection) {
+  if (section === "roadmap") {
+    return {
+      sourceType: "roadmap",
+      sourceId: "personal",
+      contextLabel: "Roadmap note",
+    };
+  }
+  if (section === "challenges") {
+    return {
+      sourceType: "challenge",
+      sourceId: "personal",
+      contextLabel: "Challenge note",
+    };
+  }
+  return {
+    sourceType: "career",
+    sourceId: "personal",
+    contextLabel: "Personal Memory Lane note",
+  };
+}
+
 export default function PlatformMemoryLane() {
   const router = useRouter();
   const [items, setItems] = useState<TimelineItem[]>([]);
   const [stats, setStats] = useState<MemoryStats | null>(null);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [section, setSection] = useState<MemorySection>(() => {
+    if (typeof window === "undefined") return "roadmap";
+    return parseSection(new URLSearchParams(window.location.search).get("section"));
+  });
   const [filter, setFilter] = useState<MemoryFilter>("all");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -64,13 +103,22 @@ export default function PlatformMemoryLane() {
     return () => clearTimeout(t);
   }, [search]);
 
+  const changeSection = (next: MemorySection) => {
+    setSection(next);
+    setFilter("all");
+    const url = new URL(window.location.href);
+    url.searchParams.set("section", next);
+    window.history.replaceState({}, "", url);
+  };
+
   const queryString = useMemo(() => {
     const p = new URLSearchParams();
+    p.set("section", section);
     p.set("filter", filter);
     p.set("limit", "30");
     if (debouncedSearch) p.set("search", debouncedSearch);
     return p.toString();
-  }, [filter, debouncedSearch]);
+  }, [section, filter, debouncedSearch]);
 
   const load = useCallback(
     async (cursor?: string | null, append = false) => {
@@ -151,13 +199,20 @@ export default function PlatformMemoryLane() {
 
   const empty = !loading && items.length === 0;
   const emptySearch = empty && (Boolean(debouncedSearch) || filter !== "all");
+  const sectionMeta = MEMORY_SECTION_META[section];
+  const noteMeta = noteDefaults(section);
 
   return (
     <div style={{ maxWidth: 920, margin: "0 auto" }}>
         <MemoryLaneHeader
-          stats={stats}
           onOpenSettings={() => setSettingsOpen(true)}
           onExport={() => void exportJourney()}
+        />
+
+        <MemorySections
+          value={section}
+          counts={stats?.sections ?? DEFAULT_SECTION_COUNTS}
+          onChange={changeSection}
         />
 
         <div
@@ -166,17 +221,22 @@ export default function PlatformMemoryLane() {
             flexWrap: "wrap",
             gap: 10,
             alignItems: "center",
+            marginTop: 16,
           }}
         >
           <MemorySearch value={search} onChange={setSearch} />
           <AddNoteButton
-            sourceType="career"
-            sourceId="personal"
+            sourceType={noteMeta.sourceType}
+            sourceId={noteMeta.sourceId}
             defaultTitle=""
-            contextLabel="Personal Memory Lane note"
+            contextLabel={noteMeta.contextLabel}
           />
         </div>
-        <MemoryFilters value={filter} onChange={setFilter} />
+        <MemoryFilters
+          value={filter}
+          onChange={setFilter}
+          filters={SECTION_FILTERS[section]}
+        />
 
         {error ? (
           <p style={{ color: "#ef4444", marginTop: 16, fontSize: 14 }}>{error}</p>
@@ -214,24 +274,46 @@ export default function PlatformMemoryLane() {
         {!loading && empty && !emptySearch ? (
           <div style={{ marginTop: 28 }}>
             <EmptyState
-              title="🧠 Your Memory Lane is waiting."
-              description="Complete a learning activity, challenge, project, or milestone and your journey will appear here. You can also add your own personal notes."
+              title={sectionMeta.emptyTitle}
+              description={sectionMeta.emptyDescription}
               action={
                 <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
-                  <button
-                    type="button"
-                    onClick={() => router.push(routes.app.roadmap)}
-                    style={cta}
-                  >
-                    Open Roadmap
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => router.push(routes.app.challenges)}
-                    style={cta}
-                  >
-                    Try a Challenge
-                  </button>
+                  {section === "roadmap" ? (
+                    <button
+                      type="button"
+                      onClick={() => router.push(routes.app.roadmap)}
+                      style={cta}
+                    >
+                      Open Roadmap
+                    </button>
+                  ) : null}
+                  {section === "challenges" ? (
+                    <button
+                      type="button"
+                      onClick={() => router.push(routes.app.challenges)}
+                      style={cta}
+                    >
+                      Try a Challenge
+                    </button>
+                  ) : null}
+                  {section === "general" ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => router.push(routes.app.roadmap)}
+                        style={cta}
+                      >
+                        Open Roadmap
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => router.push(routes.app.challenges)}
+                        style={cta}
+                      >
+                        Try a Challenge
+                      </button>
+                    </>
+                  ) : null}
                 </div>
               }
             />

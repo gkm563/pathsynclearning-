@@ -63,9 +63,11 @@ export function MemorySearch({
 export function MemoryFilters({
   value,
   onChange,
+  filters = MEMORY_FILTERS,
 }: {
   value: MemoryFilter;
   onChange: (v: MemoryFilter) => void;
+  filters?: readonly MemoryFilter[];
 }) {
   return (
     <div
@@ -78,7 +80,7 @@ export function MemoryFilters({
       role="tablist"
       aria-label="Memory filters"
     >
-      {MEMORY_FILTERS.map((f) => {
+      {filters.map((f) => {
         const active = f === value;
         return (
           <button

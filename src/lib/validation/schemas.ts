@@ -328,6 +328,10 @@ export const memorySettingsUpdateSchema = z
   .strict();
 
 export const memoryTimelineQuerySchema = z.object({
+  section: z
+    .enum(["all", "roadmap", "challenges", "general"])
+    .optional()
+    .default("all"),
   filter: z
     .enum([
       "all",
@@ -423,6 +427,40 @@ export const walletActionSchema = z.discriminatedUnion("action", [
 export const quoteRequestSchema = z
   .object({
     phase: z.string().trim().min(1).max(64).default("motivation"),
+  })
+  .strict();
+
+export const tutorMessageSchema = z
+  .object({
+    role: z.enum(["user", "assistant"]),
+    content: z.string().trim().min(1).max(4000),
+  })
+  .strict();
+
+export const tutorChatSchema = z
+  .object({
+    message: z.string().trim().min(1).max(2000),
+    history: z.array(tutorMessageSchema).max(16).optional().default([]),
+    node: z
+      .object({
+        id: z.string().trim().min(1).max(128),
+        title: z.string().trim().min(1).max(240),
+        type: z.string().trim().max(64).optional(),
+        description: z.string().trim().max(4000).optional(),
+        whyLearn: z.string().trim().max(2000).optional(),
+        interviewFocus: z.string().trim().max(2000).optional(),
+        skills: z.array(z.string().trim().max(80)).max(20).optional(),
+        topics: z.array(z.string().trim().max(120)).max(20).optional(),
+        learningOutcomes: z.array(z.string().trim().max(240)).max(12).optional(),
+      })
+      .strict(),
+    video: z
+      .object({
+        title: z.string().trim().max(240).optional(),
+        channel: z.string().trim().max(120).optional(),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 

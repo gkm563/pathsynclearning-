@@ -2,6 +2,11 @@ import { and, desc, eq, ilike, lt, or, inArray, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { memories, notes } from "@/lib/db/schema";
 import { FILTER_TO_TYPES } from "@/lib/memory/constants";
+import {
+  challengesSectionCondition,
+  roadmapSectionCondition,
+  sectionSqlCondition,
+} from "@/lib/memory/sections";
 import { hrefForSource } from "@/lib/memory/source-hrefs";
 import {
   getMemorySettings,
@@ -11,6 +16,7 @@ import { countNotes } from "@/lib/memory/notes";
 import { getMilestones } from "@/lib/memory/milestones";
 import type {
   MemoryFilter,
+  MemorySection,
   MemoryStats,
   TimelineItem,
 } from "@/lib/memory/types";
@@ -82,6 +88,18 @@ export async function getMemoryStats(userId: string): Promise<MemoryStats> {
   const notesCount = await countNotes(userId);
   const total = rows.reduce((acc, r) => acc + (Number(r.count) || 0), 0);
 
+  const [roadmapRow] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(memories)
+    .where(and(eq(memories.userId, userId), roadmapSectionCondition()));
+  const [challengeRow] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(memories)
+    .where(and(eq(memories.userId, userId), challengesSectionCondition()));
+
+  const roadmap = Number(roadmapRow?.count) || 0;
+  const challenges = Number(challengeRow?.count) || 0;
+
   return {
     milestones,
     skills,
@@ -89,11 +107,17 @@ export async function getMemoryStats(userId: string): Promise<MemoryStats> {
     achievements,
     notes: notesCount,
     total,
+    sections: {
+      roadmap,
+      challenges,
+      general: Math.max(0, total - roadmap - challenges),
+    },
   };
 }
 
 export type TimelineQuery = {
   userId: string;
+  section?: MemorySection | "all" | string;
   filter?: MemoryFilter | string;
   search?: string;
   cursor?: string | null;
@@ -112,6 +136,8 @@ export async function getMemoryTimeline(query: TimelineQuery): Promise<{
   const search = query.search?.trim();
 
   const conditions = [eq(memories.userId, query.userId)];
+  const sectionCond = sectionSqlCondition(query.section);
+  if (sectionCond) conditions.push(sectionCond);
 
   if (query.cursor) {
     conditions.push(lt(memories.occurredAt, new Date(query.cursor)));

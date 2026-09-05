@@ -19,6 +19,7 @@ export async function GET(request: Request) {
     const user = await requireDbUser();
     const url = new URL(request.url);
     const parsed = memoryTimelineQuerySchema.parse({
+      section: url.searchParams.get("section") || "all",
       filter: url.searchParams.get("filter") || "all",
       search: url.searchParams.get("search") || undefined,
       cursor: url.searchParams.get("cursor") || undefined,
@@ -46,6 +47,7 @@ export async function GET(request: Request) {
 
     const timeline = await getMemoryTimeline({
       userId: user.id,
+      section: parsed.section,
       filter: parsed.filter,
       search: parsed.search,
       cursor: parsed.cursor,
