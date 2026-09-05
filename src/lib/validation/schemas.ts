@@ -362,6 +362,16 @@ export const notificationPatchSchema = z
     message: "Provide markAllRead or id+read",
   });
 
+export const notificationDeleteSchema = z
+  .object({
+    id: z.string().uuid().optional(),
+    clearAll: z.boolean().optional(),
+  })
+  .strict()
+  .refine((v) => v.clearAll === true || v.id != null, {
+    message: "Provide clearAll or id",
+  });
+
 export const applicationCreateSchema = z
   .object({
     eventId: z.string().trim().min(1).max(128),

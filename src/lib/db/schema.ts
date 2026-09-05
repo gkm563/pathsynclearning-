@@ -164,7 +164,10 @@ export const notifications = pgTable(
     read: boolean("read").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("idx_notifications_user").on(t.userId, t.createdAt)],
+  (t) => [
+    index("idx_notifications_user").on(t.userId, t.createdAt),
+    index("idx_notifications_user_unread").on(t.userId, t.read, t.createdAt),
+  ],
 );
 
 export const challengeProgress = pgTable("challenge_progress", {

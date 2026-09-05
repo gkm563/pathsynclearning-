@@ -1,155 +1,51 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { 
-  Bell, ArrowLeft, Trash2, CheckCircle2, AlertCircle, Sparkles, 
-  MessageSquare, UserPlus, Trophy, Calendar, RefreshCw, Zap
+  Bell, Trash2, CheckCircle2, Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { apiGet, apiSend } from "@/lib/api";
-
-const DEFAULT_NOTIFICATIONS = [
-  {
-    id: "n1",
-    type: "challenge",
-    title: "Daily SDE Challenge Dropped",
-    desc: "Solve 'Subarray Sum Equals K' using Prefix Sum before midnight to preserve your 7-day streak!",
-    time: "20m ago",
-    read: false,
-    icon: "⚡",
-    color: "#6c63ff",
-    bg: "rgba(108,99,255,0.08)",
-    bdr: "rgba(108,99,255,0.25)"
-  },
-  {
-    id: "n2",
-    type: "invite",
-    title: "HackSquad Invitation Received",
-    desc: "Siddharth (IIT-K) invited you to join team 'CodeBlox' for HackAttack '26.",
-    time: "2h ago",
-    read: false,
-    icon: "⚔️",
-    color: "#e040fb",
-    bg: "rgba(224,64,251,0.08)",
-    bdr: "rgba(224,64,251,0.25)",
-    actionable: true,
-    teamName: "CodeBlox"
-  },
-  {
-    id: "n3",
-    type: "mentor",
-    title: "Code Review Comments",
-    desc: "Aarav Mehta (SDE 2 @ Google) left 3 suggestions on your Distributed Chat App socket connector logic.",
-    time: "4h ago",
-    read: true,
-    icon: "🧑‍🏫",
-    color: "#00c9a7",
-    bg: "rgba(0,201,167,0.08)",
-    bdr: "rgba(0,201,167,0.25)"
-  },
-  {
-    id: "n4",
-    type: "event",
-    title: "RSVP Confirmed: System Design Masterclass",
-    desc: "Your session with Sophia Vance on high-concurrency database partitioned scale starts tomorrow at 6 PM.",
-    time: "1d ago",
-    read: true,
-    icon: "📅",
-    color: "#f7971e",
-    bg: "rgba(247,151,30,0.08)",
-    bdr: "rgba(247,151,30,0.25)"
-  },
-  {
-    id: "n5",
-    type: "system",
-    title: "Profile Milestone Achieved",
-    desc: "You completed your Professional DNA Profile calibration and unlocked 250 platform Coins!",
-    time: "3d ago",
-    read: true,
-    icon: "🏆",
-    color: "#1677ff",
-    bg: "rgba(22,119,255,0.08)",
-    bdr: "rgba(22,119,255,0.25)"
-  }
-];
+import { useNotifications } from "@/hooks/useNotifications";
+import { relativeNotificationTime } from "@/lib/notifications/client";
 
 export default function PlatformNotifications() {
-  const router = useRouter();
+  const {
+    notifications,
+    markAsRead,
+    markAllAsRead,
+    deleteItem,
+    clearAll,
+  } = useNotifications({ load: "list" });
 
-  const [notifications, setNotifications] = useState<any[]>(DEFAULT_NOTIFICATIONS);
   const [filter, setFilter] = useState("all");
   const [toastMessage, setToastMessage] = useState("");
 
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      try {
-        const data = await apiGet<{ notifications: any[] }>("/api/me/notifications");
-        if (!cancelled && data.notifications?.length) {
-          setNotifications(data.notifications);
-        }
-      } catch {
-        if (!cancelled) setNotifications(DEFAULT_NOTIFICATIONS);
-      }
-    };
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const triggerToast = (msg) => {
+  const triggerToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(""), 4000);
   };
 
   const handleMarkAllRead = async () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    try {
-      await apiSend("/api/me/notifications", "PATCH", { markAllRead: true });
-    } catch {
-      // keep UI state
-    }
+    await markAllAsRead();
     triggerToast("✅ Marked all notifications as read!");
   };
 
-  const handleClearAll = () => {
-    setNotifications([]);
+  const handleClearAll = async () => {
+    await clearAll();
     triggerToast("🗑️ Notifications cleared.");
   };
 
-  const handleDeleteItem = (id) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+  const handleDeleteItem = (id: string) => {
+    void deleteItem(id);
   };
 
-  const handleAcceptInvite = (id, teamName) => {
-    setNotifications(prev => prev.map(n => {
-      if (n.id === id) {
-        return {
-          ...n,
-          actionable: false,
-          desc: `You accepted Siddharth's invitation to join team '${teamName}'.`,
-          read: true
-        };
-      }
-      return n;
-    }));
-    triggerToast(`⚔️ Successfully joined team '${teamName}'!`);
+  const handleAcceptInvite = (id: string, teamName?: string) => {
+    void markAsRead(id);
+    triggerToast(`⚔️ Successfully joined team '${teamName ?? "the team"}'!`);
   };
 
-  const handleDeclineInvite = (id) => {
-    setNotifications(prev => prev.map(n => {
-      if (n.id === id) {
-        return {
-          ...n,
-          actionable: false,
-          desc: "You declined the team invitation.",
-          read: true
-        };
-      }
-      return n;
-    }));
+  const handleDeclineInvite = (id: string) => {
+    void markAsRead(id);
     triggerToast("Declined invitation.");
   };
 
@@ -299,7 +195,7 @@ export default function PlatformNotifications() {
                       <h4 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 15.5, fontWeight: 900, color: "var(--text-main)" }}>
                         {n.title}
                       </h4>
-                      <span style={{ fontSize: 11, fontFamily: "'Fira Code', monospace", color: "var(--text-light)" }}>{n.time}</span>
+                      <span style={{ fontSize: 11, fontFamily: "'Fira Code', monospace", color: "var(--text-light)" }}>{relativeNotificationTime(n.time)}</span>
                     </div>
 
                     <p style={{ margin: "6px 0 0", fontSize: 13.5, color: "var(--text-muted)", lineHeight: 1.5 }}>

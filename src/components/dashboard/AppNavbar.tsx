@@ -26,7 +26,8 @@ import {
   UserRound,
   Zap,
 } from "lucide-react";
-import { apiGet, apiSend } from "@/lib/api";
+import { useNotifications } from "@/hooks/useNotifications";
+import { relativeNotificationTime } from "@/lib/notifications/client";
 import { routes } from "@/lib/routes";
 
 type FocusMode = "career" | "academic";
@@ -36,15 +37,6 @@ type NavItem = {
   label: string;
   icon: ReactNode;
   match: "exact" | "prefix";
-};
-
-type AppNotification = {
-  id: string;
-  title: string;
-  message?: string;
-  desc?: string;
-  type?: string;
-  read?: boolean;
 };
 
 const PRIMARY_NAV: NavItem[] = [
@@ -113,30 +105,13 @@ export default function AppNavbar({ onMenuOpen }: AppNavbarProps) {
   const [focusMode, setFocusMode] = useState<FocusMode>("career");
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
-  const [notifications, setNotifications] = useState<AppNotification[]>([]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadNotifications = async () => {
-      try {
-        const data = await apiGet<{ notifications: AppNotification[] }>(
-          "/api/me/notifications"
-        );
-        if (!cancelled) setNotifications(data.notifications ?? []);
-      } catch {
-        if (!cancelled) setNotifications([]);
-      }
-    };
-
-    loadNotifications();
-    const interval = setInterval(loadNotifications, 30_000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, []);
+  const {
+    notifications,
+    unreadCount,
+    openInbox,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications({ load: "summary" });
 
   useEffect(() => {
     if (!isPanelOpen && !isAccountOpen) return;
@@ -162,27 +137,9 @@ export default function AppNavbar({ onMenuOpen }: AppNavbarProps) {
     };
   }, [isPanelOpen, isAccountOpen]);
 
-  const unreadCount = notifications.filter((item) => !item.read).length;
-
-  const markAllAsRead = async (event: ReactMouseEvent) => {
+  const handleMarkAllAsRead = async (event: ReactMouseEvent) => {
     event.stopPropagation();
-    setNotifications((prev) => prev.map((item) => ({ ...item, read: true })));
-    try {
-      await apiSend("/api/me/notifications", "PATCH", { markAllRead: true });
-    } catch {
-      // ignore network errors for optimistic UI
-    }
-  };
-
-  const markAsRead = async (id: string) => {
-    setNotifications((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, read: true } : item))
-    );
-    try {
-      await apiSend("/api/me/notifications", "PATCH", { id, read: true });
-    } catch {
-      // ignore network errors for optimistic UI
-    }
+    await markAllAsRead();
   };
 
   return (
@@ -286,7 +243,11 @@ export default function AppNavbar({ onMenuOpen }: AppNavbarProps) {
               type="button"
               onClick={() => {
                 setIsAccountOpen(false);
-                setIsPanelOpen((open) => !open);
+                setIsPanelOpen((open) => {
+                  const next = !open;
+                  if (next) openInbox();
+                  return next;
+                });
               }}
               aria-label="Notifications"
               aria-expanded={isPanelOpen}
@@ -316,7 +277,7 @@ export default function AppNavbar({ onMenuOpen }: AppNavbarProps) {
                     {unreadCount > 0 && (
                       <button
                         type="button"
-                        onClick={markAllAsRead}
+                        onClick={handleMarkAllAsRead}
                         className="inline-flex items-center gap-1 text-xs font-semibold text-[#6c63ff] hover:opacity-80"
                       >
                         <Check size={14} />
@@ -357,6 +318,11 @@ export default function AppNavbar({ onMenuOpen }: AppNavbarProps) {
                             </span>
                             <span className="mt-0.5 block text-xs leading-relaxed text-[var(--text-muted)]">
                               {item.message || item.desc}
+                            {item.time ? (
+                              <span className="mt-1 block text-[10px] text-[var(--text-light)]">
+                                {relativeNotificationTime(item.time)}
+                              </span>
+                            ) : null}
                             </span>
                           </span>
                         </button>
