@@ -1,63 +1,100 @@
 "use client";
 
-import type { CSSProperties, ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { isGeneratedSocialCard, nonemptyUrl } from "@/lib/news/normalize";
 
-export const newsCardStyle: CSSProperties = {
-  background: "var(--bg-card)",
-  border: "1.5px solid var(--border-light)",
-  borderRadius: 16,
-  overflow: "hidden",
-};
+export function NewsCover({
+  src,
+  alt = "",
+  tint,
+}: {
+  src: string | null;
+  alt?: string;
+  tint?: string;
+}) {
+  const [failed, setFailed] = useState(false);
+  const photo = nonemptyUrl(src);
+  const showPhoto = Boolean(photo) && !isGeneratedSocialCard(photo) && !failed;
+
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
+
+  return (
+    <div
+      className="news-cover"
+      style={
+        tint
+          ? {
+              background: `linear-gradient(135deg, ${tint}22, var(--bg-alt))`,
+            }
+          : undefined
+      }
+    >
+      {showPhoto ? (
+        <img
+          src={photo ?? undefined}
+          alt={alt}
+          loading="lazy"
+          decoding="async"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <div className="news-cover-fallback" aria-hidden>
+          <img src="/favicon.svg" alt="" />
+          <span>PathEd</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function NewsFeedBusy({ label = "Updating stories…" }: { label?: string }) {
+  return (
+    <div className="news-feed-overlay">
+      <div className="news-feed-status" role="status" aria-live="polite">
+        <span className="news-spin" aria-hidden />
+        {label}
+      </div>
+    </div>
+  );
+}
 
 export function NewsSkeletonGrid({ count = 6 }: { count?: number }) {
   return (
-    <div
-      className="news-grid"
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-        gap: 16,
-      }}
-      aria-busy="true"
-      aria-label="Loading news"
-    >
+    <div className="tech-news-grid" aria-busy="true" aria-label="Loading news">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} style={{ ...newsCardStyle, padding: 0 }}>
+        <div
+          key={i}
+          className="news-card"
+          style={{ pointerEvents: "none", boxShadow: "none" }}
+        >
           <div
+            className="news-cover"
             style={{
-              height: 140,
               background:
                 "linear-gradient(90deg, var(--border-light) 25%, var(--bg-alt) 50%, var(--border-light) 75%)",
               backgroundSize: "200% 100%",
               animation: "newsShimmer 1.2s ease-in-out infinite",
             }}
           />
-          <div style={{ padding: 16 }}>
+          <div className="news-card-body">
+            <div className="news-skel-line" style={{ height: 10, width: "28%" }} />
             <div
-              style={{
-                height: 14,
-                width: "40%",
-                borderRadius: 8,
-                background: "var(--border-light)",
-                marginBottom: 10,
-              }}
+              className="news-skel-line"
+              style={{ height: 16, width: "92%", marginTop: 12 }}
             />
             <div
-              style={{
-                height: 18,
-                width: "90%",
-                borderRadius: 8,
-                background: "var(--border-light)",
-                marginBottom: 8,
-              }}
+              className="news-skel-line"
+              style={{ height: 16, width: "74%", marginTop: 8 }}
             />
             <div
-              style={{
-                height: 14,
-                width: "70%",
-                borderRadius: 8,
-                background: "var(--border-light)",
-              }}
+              className="news-skel-line"
+              style={{ height: 12, width: "100%", marginTop: 14 }}
+            />
+            <div
+              className="news-skel-line"
+              style={{ height: 12, width: "64%", marginTop: 8 }}
             />
           </div>
         </div>
@@ -67,14 +104,8 @@ export function NewsSkeletonGrid({ count = 6 }: { count?: number }) {
           0% { background-position: 200% 0; }
           100% { background-position: -200% 0; }
         }
-        @media (max-width: 960px) {
-          .news-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-        }
-        @media (max-width: 640px) {
-          .news-grid { grid-template-columns: 1fr !important; }
-        }
         @media (prefers-reduced-motion: reduce) {
-          .news-grid * { animation: none !important; }
+          .tech-news-grid .news-cover { animation: none !important; }
         }
       `}</style>
     </div>
@@ -91,22 +122,22 @@ export function NewsSection({
   children: ReactNode;
 }) {
   return (
-    <section style={{ marginBottom: 28 }}>
+    <section style={{ marginBottom: 32 }}>
       <div
         style={{
           display: "flex",
-          alignItems: "center",
+          alignItems: "baseline",
           justifyContent: "space-between",
           gap: 12,
-          marginBottom: 14,
+          marginBottom: 16,
         }}
       >
         <h2
           style={{
             margin: 0,
-            fontFamily: "Outfit, sans-serif",
-            fontSize: 18,
-            fontWeight: 800,
+            fontSize: 15,
+            fontWeight: 700,
+            letterSpacing: "-0.02em",
             color: "var(--text-main)",
           }}
         >

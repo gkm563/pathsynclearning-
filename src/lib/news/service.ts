@@ -22,8 +22,8 @@ import {
   type NewsCategory,
   type NewsSort,
 } from "@/lib/news/constants";
-import { isNewsCategory } from "@/lib/news/normalize";
-import { fetchAllProviders } from "@/lib/news/providers";
+import { estimateReadingMinutes, isNewsCategory, resolveNewsImageUrl } from "@/lib/news/normalize";
+import { fetchAllProviders, fetchDevToFullArticle } from "@/lib/news/providers";
 import type {
   NewsArticleDto,
   NewsListQuery,
@@ -49,7 +49,7 @@ function toDto(
     title: row.title,
     summary: row.summary || "",
     content: row.content,
-    imageUrl: row.imageUrl,
+    imageUrl: resolveNewsImageUrl(row.imageUrl, row.raw),
     sourceName: row.sourceName,
     sourceUrl: row.sourceUrl,
     canonicalUrl: row.canonicalUrl,
@@ -101,7 +101,12 @@ async function upsertArticles(articles: NormalizedArticle[]) {
           set: {
             title: a.title,
             summary: a.summary,
-            content: a.content,
+            content: sql`CASE
+              WHEN excluded.content IS NULL OR btrim(excluded.content) = '' THEN ${newsArticles.content}
+              WHEN ${newsArticles.content} IS NOT NULL AND length(${newsArticles.content}) > length(excluded.content)
+                THEN ${newsArticles.content}
+              ELSE excluded.content
+            END`,
             imageUrl: a.imageUrl,
             sourceName: a.sourceName,
             sourceUrl: a.sourceUrl,
@@ -374,6 +379,52 @@ export async function listNews(
   };
 }
 
+function looksIncompleteBody(content: string | null): boolean {
+  if (!content || content.trim().length < 280) return true;
+  return /\[\+\d+\s*chars?\]/i.test(content);
+}
+
+async function hydrateFullArticle(
+  row: typeof newsArticles.$inferSelect,
+): Promise<typeof newsArticles.$inferSelect> {
+  if (!looksIncompleteBody(row.content)) return row;
+  if (row.provider !== "devto" && !row.externalId.startsWith("devto:")) {
+    return row;
+  }
+
+  const full = await fetchDevToFullArticle(row.externalId, row.sourceUrl);
+  if (!full?.content || full.content.length <= (row.content?.length || 0)) {
+    return row;
+  }
+
+  const readingMinutes = estimateReadingMinutes(full.content);
+  const db = getDb();
+  const now = new Date();
+  await db
+    .update(newsArticles)
+    .set({
+      content: full.content,
+      summary: row.summary || full.summary,
+      imageUrl: full.imageUrl,
+      author: row.author || full.author,
+      readingMinutes,
+      raw: full.raw,
+      updatedAt: now,
+    })
+    .where(eq(newsArticles.id, row.id));
+
+  return {
+    ...row,
+    content: full.content,
+    summary: row.summary || full.summary,
+    imageUrl: full.imageUrl,
+    author: row.author || full.author,
+    readingMinutes,
+    raw: full.raw,
+    updatedAt: now,
+  };
+}
+
 export async function getArticle(
   userId: string,
   articleId: string,
@@ -386,10 +437,11 @@ export async function getArticle(
     .where(eq(newsArticles.id, articleId))
     .limit(1);
   if (!row) return null;
-  const flags = await userFlags(userId, [row.id]);
-  return toDto(row, {
-    bookmarked: flags.bookmarked.has(row.id),
-    read: flags.read.has(row.id),
+  const hydrated = await hydrateFullArticle(row);
+  const flags = await userFlags(userId, [hydrated.id]);
+  return toDto(hydrated, {
+    bookmarked: flags.bookmarked.has(hydrated.id),
+    read: flags.read.has(hydrated.id),
   });
 }
 

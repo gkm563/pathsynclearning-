@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { X } from "lucide-react";
 import { NEWS_CATEGORIES } from "@/lib/news/constants";
 import { Button } from "@/components/ui/primitives";
@@ -19,6 +20,15 @@ export function PreferencesPanel({
   onSave: () => void;
   saving: boolean;
 }) {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   const toggle = (cat: string) => {
@@ -38,7 +48,7 @@ export function PreferencesPanel({
         position: "fixed",
         inset: 0,
         zIndex: 80,
-        background: "rgba(0,0,0,0.45)",
+        background: "rgba(15, 23, 42, 0.4)",
         display: "grid",
         placeItems: "center",
         padding: 16,
@@ -50,8 +60,9 @@ export function PreferencesPanel({
           width: "min(480px, 100%)",
           background: "var(--bg-card)",
           borderRadius: 18,
-          border: "1.5px solid var(--border-light)",
-          padding: 20,
+          border: "1px solid var(--border-light)",
+          padding: 22,
+          boxShadow: "0 18px 48px rgba(26, 26, 46, 0.12)",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -60,15 +71,15 @@ export function PreferencesPanel({
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: 12,
+            marginBottom: 10,
           }}
         >
           <h2
             style={{
               margin: 0,
-              fontFamily: "Outfit, sans-serif",
               fontSize: 18,
-              fontWeight: 800,
+              fontWeight: 750,
+              letterSpacing: "-0.03em",
             }}
           >
             Preferred categories
@@ -76,19 +87,24 @@ export function PreferencesPanel({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
+            aria-label="Close preferences"
             style={{
+              width: 40,
+              height: 40,
               border: "none",
+              borderRadius: 10,
               background: "transparent",
               cursor: "pointer",
               color: "var(--text-muted)",
+              display: "grid",
+              placeItems: "center",
             }}
           >
             <X size={18} />
           </button>
         </div>
-        <p style={{ margin: "0 0 14px", color: "var(--text-muted)", fontSize: 13 }}>
-          We’ll prioritize these topics in your category strip. Feed still shows all news.
+        <p style={{ margin: "0 0 16px", color: "var(--text-muted)", fontSize: 13, lineHeight: 1.5 }}>
+          We’ll prioritize these topics in your category strip. The feed still shows all news.
         </p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18 }}>
           {NEWS_CATEGORIES.map((cat) => {
@@ -99,17 +115,7 @@ export function PreferencesPanel({
                 type="button"
                 aria-pressed={on}
                 onClick={() => toggle(cat)}
-                style={{
-                  borderRadius: 999,
-                  padding: "8px 12px",
-                  fontWeight: 700,
-                  fontSize: 13,
-                  cursor: "pointer",
-                  border: on ? "none" : "1.5px solid var(--border-light)",
-                  background: on ? "#6c63ff" : "var(--bg-alt)",
-                  color: on ? "#fff" : "var(--text-main)",
-                  fontFamily: "Outfit, sans-serif",
-                }}
+                className={`news-chip${on ? " is-active" : ""}`}
               >
                 {cat}
               </button>

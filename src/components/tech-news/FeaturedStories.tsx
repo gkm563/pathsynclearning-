@@ -1,11 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import type { KeyboardEvent } from "react";
 import type { NewsArticleDto } from "@/lib/news/types";
 import { techNewsArticlePath } from "@/lib/routes";
 import {
   CATEGORY_COLOR,
   formatNewsTime,
+  NewsCover,
   NewsSection,
 } from "@/components/tech-news/shared";
 
@@ -20,21 +22,14 @@ export function FeaturedStories({
   const [hero, ...rest] = articles;
 
   return (
-    <NewsSection title="Featured stories">
-      <div
-        className="news-featured"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1.4fr 1fr",
-          gap: 14,
-        }}
-      >
+    <NewsSection title="Featured">
+      <div className="news-featured">
         <FeaturedCard
           article={hero}
           large
           onOpen={() => router.push(techNewsArticlePath(hero.id))}
         />
-        <div style={{ display: "grid", gap: 14 }}>
+        <div className="news-featured-side">
           {rest.slice(0, 2).map((a) => (
             <FeaturedCard
               key={a.id}
@@ -44,11 +39,6 @@ export function FeaturedStories({
           ))}
         </div>
       </div>
-      <style>{`
-        @media (max-width: 860px) {
-          .news-featured { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
     </NewsSection>
   );
 }
@@ -63,69 +53,34 @@ function FeaturedCard({
   onOpen: () => void;
 }) {
   const color = CATEGORY_COLOR[article.category] || "#6c63ff";
+
+  const onKey = (e: KeyboardEvent<HTMLButtonElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onOpen();
+    }
+  };
+
   return (
     <button
       type="button"
       onClick={onOpen}
-      style={{
-        textAlign: "left",
-        border: "1.5px solid var(--border-light)",
-        borderRadius: 16,
-        overflow: "hidden",
-        background: "var(--bg-card)",
-        cursor: "pointer",
-        padding: 0,
-        display: "grid",
-        gridTemplateColumns: large ? "1fr" : "120px 1fr",
-        minHeight: large ? 280 : 110,
-      }}
+      onKeyDown={onKey}
+      className={`news-featured-card ${large ? "news-featured-card--hero" : "news-featured-card--row"}`}
+      aria-label={article.title}
     >
-      <div
-        style={{
-          minHeight: large ? 160 : 110,
-          backgroundColor: "var(--bg-alt)",
-          backgroundImage: article.imageUrl
-            ? `url(${article.imageUrl}), linear-gradient(135deg, ${color}33, var(--bg-alt))`
-            : `linear-gradient(135deg, ${color}33, var(--bg-alt))`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-        }}
-      />
-      <div style={{ padding: large ? 18 : 14 }}>
-        <div
-          style={{
-            fontSize: 11,
-            fontWeight: 700,
-            color,
-            marginBottom: 6,
-          }}
-        >
-          {article.category} · {formatNewsTime(article.publishedAt)}
-        </div>
-        <div
-          style={{
-            fontFamily: "Outfit, sans-serif",
-            fontWeight: 800,
-            fontSize: large ? 22 : 15,
-            color: "var(--text-main)",
-            lineHeight: 1.3,
-          }}
-        >
-          {article.title}
-        </div>
-        {large ? (
-          <p
-            style={{
-              margin: "10px 0 0",
-              color: "var(--text-muted)",
-              fontSize: 14,
-              lineHeight: 1.45,
-            }}
-          >
-            {article.summary}
-          </p>
-        ) : null}
+      <NewsCover src={article.imageUrl} tint={color} />
+      <div className="news-featured-copy">
+        <p className="news-card-cat" style={{ marginBottom: 6 }}>
+          {article.category}
+          <span className="sep" aria-hidden>
+            {" "}
+            ·{" "}
+          </span>
+          {formatNewsTime(article.publishedAt)}
+        </p>
+        <h3 className="news-featured-title">{article.title}</h3>
+        {large ? <p className="news-featured-summary">{article.summary}</p> : null}
       </div>
     </button>
   );

@@ -10,7 +10,9 @@ import {
   estimateReadingMinutes,
   normalizeDevTo,
   normalizeNewsApi,
+  resolveNewsImageUrl,
 } from "../src/lib/news/normalize";
+import { renderNewsContent } from "../src/lib/news/render-markdown";
 
 assert.equal(
   canonicalizeUrl("https://Example.com/path/?utm_source=x#hash"),
@@ -37,6 +39,29 @@ assert.ok(dev);
 assert.equal(dev!.externalId, "devto:42");
 assert.equal(dev!.category, "Web Development");
 assert.equal(dev!.readingMinutes, 4);
+assert.equal(dev!.imageUrl, null);
+
+const withCover = normalizeDevTo({
+  id: 43,
+  title: "With cover",
+  url: "https://dev.to/user/cover",
+  cover_image: "https://images.example.com/shot.png",
+  social_image: "https://dev.to/social_previews/article/43.png",
+  published_at: "2026-09-01T10:00:00.000Z",
+});
+assert.equal(withCover!.imageUrl, "https://images.example.com/shot.png");
+assert.equal(
+  resolveNewsImageUrl("https://dev.to/social.png", {
+    cover_image: null,
+    social_image: "https://dev.to/social.png",
+  }),
+  null,
+);
+
+const html = renderNewsContent("# Hello\n\nThis is **bold** and `code`.");
+assert.match(html, /<h2>Hello<\/h2>/);
+assert.match(html, /<strong>bold<\/strong>/);
+assert.match(html, /<code>code<\/code>/);
 
 const bad = normalizeDevTo({
   id: 0,

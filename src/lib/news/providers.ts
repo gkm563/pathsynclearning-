@@ -184,3 +184,37 @@ export async function fetchAllProviders(): Promise<{
 
   return { articles, error: null };
 }
+
+/** Single-article payload includes body_markdown / body_html; the list API does not. */
+export async function fetchDevToFullArticle(
+  externalId: string,
+  sourceUrl?: string | null,
+): Promise<NormalizedArticle | null> {
+  const numericId = externalId.match(/^devto:(\d+)$/)?.[1];
+  const urls: string[] = [];
+  if (numericId) urls.push(`${DEVTO_BASE}/${numericId}`);
+
+  if (sourceUrl) {
+    try {
+      const u = new URL(sourceUrl);
+      if (u.hostname.replace(/^www\./, "") === "dev.to") {
+        const parts = u.pathname.split("/").filter(Boolean);
+        if (parts.length >= 2) {
+          urls.push(
+            `${DEVTO_BASE}/${encodeURIComponent(parts[0])}/${encodeURIComponent(parts[1])}`,
+          );
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  for (const url of urls) {
+    const result = await fetchJson<Parameters<typeof normalizeDevTo>[0]>(url);
+    if (result.ok === false) continue;
+    const normalized = normalizeDevTo(result.data);
+    if (normalized?.content) return normalized;
+  }
+  return null;
+}

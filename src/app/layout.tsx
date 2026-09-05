@@ -1,8 +1,22 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
+import { IBM_Plex_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import HashScroll from "@/components/layout/HashScroll";
 import { routes } from "@/lib/routes";
 import "./globals.css";
+
+const sans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const mono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -29,8 +43,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="app-container" suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${sans.variable} ${mono.variable}`}
+      suppressHydrationWarning
+    >
+      <body className={`${sans.className} app-container`} suppressHydrationWarning>
         <ClerkProvider
           signInUrl={routes.auth.signIn}
           signUpUrl={routes.auth.signUp}
@@ -38,6 +56,12 @@ export default function RootLayout({
           signUpFallbackRedirectUrl={routes.auth.continue}
           signInForceRedirectUrl={routes.auth.continue}
           signUpForceRedirectUrl={routes.auth.continue}
+          appearance={{
+            variables: {
+              fontFamily: "var(--font-sans), sans-serif",
+              fontFamilyButtons: "var(--font-sans), sans-serif",
+            },
+          }}
         >
           <HashScroll />
           {children}

@@ -15,6 +15,45 @@ export function estimateReadingMinutes(text: string | null | undefined): number 
   return Math.max(1, Math.min(30, Math.ceil(words / 200)));
 }
 
+export function nonemptyUrl(value: string | null | undefined): string | null {
+  const t = (value || "").trim();
+  return t ? t : null;
+}
+
+/** Dev.to social_image is a generated title card, not a photo. */
+export function isGeneratedSocialCard(url: string | null | undefined): boolean {
+  if (!url) return true;
+  const u = url.toLowerCase();
+  return (
+    u.includes("social_previews") ||
+    u.includes("article_social") ||
+    u.includes("social-preview") ||
+    u.includes("/dynamic/screenshots")
+  );
+}
+
+export function pickDevToImage(
+  coverImage: string | null | undefined,
+  _socialImage?: string | null,
+): string | null {
+  return nonemptyUrl(coverImage);
+}
+
+/** Prefer a real cover photo; drop cached Dev.to title-card images. */
+export function resolveNewsImageUrl(
+  imageUrl: string | null | undefined,
+  raw?: Record<string, unknown> | null,
+): string | null {
+  if (raw && "cover_image" in raw) {
+    const cover = nonemptyUrl(typeof raw.cover_image === "string" ? raw.cover_image : null);
+    if (cover) return cover;
+    return null;
+  }
+  const stored = nonemptyUrl(imageUrl);
+  if (!stored || isGeneratedSocialCard(stored)) return null;
+  return stored;
+}
+
 export function canonicalizeUrl(raw: string): string {
   try {
     const u = new URL(raw.trim());
@@ -68,6 +107,7 @@ type DevToArticle = {
   comments_count?: number;
   reading_time_minutes?: number;
   body_markdown?: string;
+  body_html?: string;
 };
 
 function tagList(raw: DevToArticle["tag_list"]): string[] {
@@ -97,8 +137,8 @@ export function normalizeDevTo(article: DevToArticle): NormalizedArticle | null 
     canonicalUrl: canonicalizeUrl(article.url),
     title: article.title.trim(),
     summary,
-    content: article.body_markdown?.trim() || null,
-    imageUrl: article.cover_image || article.social_image || null,
+    content: article.body_markdown?.trim() || article.body_html?.trim() || null,
+    imageUrl: pickDevToImage(article.cover_image, article.social_image),
     sourceName: "DEV Community",
     sourceUrl: article.url,
     author: article.user?.name || article.user?.username || null,
@@ -107,7 +147,7 @@ export function normalizeDevTo(article: DevToArticle): NormalizedArticle | null 
     publishedAt,
     readingMinutes:
       Number(article.reading_time_minutes) ||
-      estimateReadingMinutes(article.body_markdown || summary),
+      estimateReadingMinutes(article.body_markdown || article.body_html || summary),
     popularity,
     featured: popularity >= 40,
     provider: "devto",

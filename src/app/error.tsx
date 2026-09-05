@@ -10,7 +10,7 @@ export default function Error({
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center">
       <p className="text-xs font-bold tracking-[0.08em] text-[var(--purple)]">PATHED</p>
-      <h1 className="font-[family-name:var(--font-outfit,Outfit)] text-2xl font-extrabold text-[var(--text-main)]">
+      <h1 className="font-[family-name:var(--font-sans)] text-2xl font-extrabold tracking-tight text-[var(--text-main)]">
         Something went wrong
       </h1>
       <p className="max-w-md text-sm text-[var(--text-muted)]">

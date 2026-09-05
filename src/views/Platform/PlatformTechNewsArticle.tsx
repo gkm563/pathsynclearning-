@@ -14,7 +14,9 @@ import {
 import {
   CATEGORY_COLOR,
   formatNewsTime,
+  NewsCover,
 } from "@/components/tech-news/shared";
+import { NewsArticleBody } from "@/components/tech-news/NewsArticleBody";
 
 export default function PlatformTechNewsArticle() {
   const params = useParams<{ id: string }>();
@@ -71,14 +73,14 @@ export default function PlatformTechNewsArticle() {
   if (loading) {
     return (
       <div style={{ padding: 24 }}>
-        <PageSpinner />
+        <PageSpinner label="Loading article…" />
       </div>
     );
   }
 
   if (error || !article) {
     return (
-      <div style={{ padding: "8px 4px 40px", maxWidth: 800, margin: "0 auto" }}>
+      <div className="tech-news">
         <EmptyState
           title="Unable to open article"
           description={error || "This story may have been removed."}
@@ -97,9 +99,15 @@ export default function PlatformTechNewsArticle() {
     typeof window !== "undefined"
       ? window.location.href
       : `${routes.app.techNews}/${article.id}`;
+  const showDek =
+    Boolean(article.summary) &&
+    !(article.content || "")
+      .replace(/\s+/g, " ")
+      .toLowerCase()
+      .includes(article.summary.replace(/\s+/g, " ").toLowerCase().slice(0, 80));
 
   return (
-    <article style={{ padding: "8px 4px 48px", maxWidth: 800, margin: "0 auto" }}>
+    <article className="tech-news" style={{ maxWidth: 760 }}>
       <button
         type="button"
         onClick={() => router.push(routes.app.techNews)}
@@ -110,70 +118,50 @@ export default function PlatformTechNewsArticle() {
           border: "none",
           background: "transparent",
           color: "var(--text-muted)",
-          fontWeight: 700,
+          fontWeight: 650,
           fontSize: 13,
           cursor: "pointer",
-          marginBottom: 16,
-          fontFamily: "Outfit, sans-serif",
+          marginBottom: 18,
+          minHeight: 40,
           padding: 0,
         }}
       >
-        <ArrowLeft size={16} /> Back to Tech News
+        <ArrowLeft size={16} aria-hidden /> Back to Tech News
       </button>
 
       <div
         style={{
-          height: 240,
-          borderRadius: 18,
-          border: "1.5px solid var(--border-light)",
-          backgroundColor: "var(--bg-alt)",
-          backgroundImage: article.imageUrl
-            ? `url(${article.imageUrl}), linear-gradient(135deg, ${color}33, var(--bg-alt))`
-            : `linear-gradient(135deg, ${color}33, var(--bg-alt))`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          marginBottom: 20,
-        }}
-      />
-
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 10,
-          alignItems: "center",
-          marginBottom: 12,
-          fontSize: 13,
-          color: "var(--text-muted)",
-          fontWeight: 600,
+          borderRadius: 16,
+          border: "1px solid var(--border-light)",
+          overflow: "hidden",
+          marginBottom: 22,
         }}
       >
-        <span style={{ color, fontWeight: 800 }}>{article.category}</span>
-        <span aria-hidden>·</span>
+        <NewsCover src={article.imageUrl} alt="" tint={color} />
+      </div>
+
+      <div className="news-card-meta" style={{ marginTop: 0, paddingTop: 0, marginBottom: 14 }}>
+        <span>{article.category}</span>
+        <span className="sep" aria-hidden>
+          ·
+        </span>
         <span>{article.sourceName}</span>
-        <span aria-hidden>·</span>
+        <span className="sep" aria-hidden>
+          ·
+        </span>
         <span>{formatNewsTime(article.publishedAt)}</span>
-        <span aria-hidden>·</span>
+        <span className="sep" aria-hidden>
+          ·
+        </span>
         <span>{article.readingMinutes} min read</span>
         {article.read ? (
           <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-            <CheckCheck size={14} /> Read
+            <CheckCheck size={14} aria-hidden /> Read
           </span>
         ) : null}
       </div>
 
-      <h1
-        style={{
-          margin: "0 0 12px",
-          fontFamily: "Outfit, sans-serif",
-          fontSize: "clamp(26px, 4vw, 36px)",
-          fontWeight: 800,
-          color: "var(--text-main)",
-          lineHeight: 1.2,
-          letterSpacing: "-0.02em",
-        }}
-      >
+      <h1 className="tech-news-title" style={{ marginBottom: 12 }}>
         {article.title}
       </h1>
 
@@ -184,7 +172,7 @@ export default function PlatformTechNewsArticle() {
       ) : null}
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 22 }}>
-        <Button variant="secondary" onClick={() => void toggleBookmark()}>
+        <Button variant="secondary" onClick={() => void toggleBookmark()} style={{ minHeight: 40 }} className="news-toolbar-btn">
           <Bookmark
             size={16}
             fill={article.bookmarked ? "currentColor" : "none"}
@@ -197,36 +185,15 @@ export default function PlatformTechNewsArticle() {
         ) : null}
       </div>
 
-      <p
-        style={{
-          margin: 0,
-          fontSize: 17,
-          lineHeight: 1.65,
-          color: "var(--text-main)",
-        }}
-      >
-        {article.summary}
-      </p>
+      {showDek ? (
+        <p className="news-article-dek">{article.summary}</p>
+      ) : null}
 
       {article.content ? (
-        <div
-          style={{
-            marginTop: 24,
-            paddingTop: 20,
-            borderTop: "1.5px solid var(--border-light)",
-            whiteSpace: "pre-wrap",
-            fontSize: 15,
-            lineHeight: 1.7,
-            color: "var(--text-main)",
-            opacity: 0.92,
-          }}
-        >
-          {article.content.slice(0, 8000)}
-          {article.content.length > 8000 ? "…" : ""}
-        </div>
+        <NewsArticleBody content={article.content} />
       ) : (
-        <p style={{ marginTop: 20, color: "var(--text-muted)", fontSize: 14 }}>
-          Full story available on the original source.
+        <p className="news-article-fallback">
+          Full story is available on the original source.
         </p>
       )}
     </article>

@@ -15,7 +15,7 @@ export default function GlobalError({
           minHeight: "100vh",
           display: "grid",
           placeItems: "center",
-          fontFamily: "Outfit, system-ui, sans-serif",
+          fontFamily: "var(--font-sans), Plus Jakarta Sans, system-ui, sans-serif",
           background: "#fcfdff",
           color: "#1a1a2e",
           padding: 24,

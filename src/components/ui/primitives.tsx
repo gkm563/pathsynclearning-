@@ -11,7 +11,7 @@ const baseBtn: CSSProperties = {
   gap: 8,
   borderRadius: 12,
   padding: "10px 16px",
-  fontFamily: "Outfit, sans-serif",
+  fontFamily: "var(--font-sans), sans-serif",
   fontWeight: 700,
   fontSize: 14,
   border: "none",
@@ -84,7 +84,7 @@ export function EmptyState({
       <h3
         style={{
           margin: 0,
-          fontFamily: "Outfit, sans-serif",
+          fontFamily: "var(--font-sans), sans-serif",
           fontSize: 18,
           fontWeight: 800,
           color: "var(--text-main)",

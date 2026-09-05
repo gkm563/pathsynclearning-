@@ -56,7 +56,7 @@ export default function PlatformTechNewsSaved() {
   };
 
   return (
-    <div style={{ padding: "8px 4px 40px", maxWidth: 1100, margin: "0 auto" }}>
+    <div className="tech-news">
       <button
         type="button"
         onClick={() => router.push(routes.app.techNews)}
@@ -67,30 +67,22 @@ export default function PlatformTechNewsSaved() {
           border: "none",
           background: "transparent",
           color: "var(--text-muted)",
-          fontWeight: 700,
+          fontWeight: 650,
           fontSize: 13,
           cursor: "pointer",
-          marginBottom: 12,
-          fontFamily: "Outfit, sans-serif",
-          padding: 0,
+          marginBottom: 16,
+          minHeight: 40,
+          padding: "0 4px",
         }}
+        className="news-toolbar-btn"
       >
-        <ArrowLeft size={16} /> Back to Tech News
+        <ArrowLeft size={16} aria-hidden /> Back to Tech News
       </button>
 
-      <h1
-        style={{
-          margin: "0 0 8px",
-          fontFamily: "Outfit, sans-serif",
-          fontSize: 30,
-          fontWeight: 800,
-          color: "var(--text-main)",
-        }}
-      >
-        Saved News
-      </h1>
-      <p style={{ margin: "0 0 20px", color: "var(--text-muted)", fontSize: 15 }}>
-        Articles you bookmarked for later.
+      <p className="tech-news-kicker">Your library</p>
+      <h1 className="tech-news-title">Saved News</h1>
+      <p className="tech-news-lead" style={{ marginBottom: 24 }}>
+        Stories you bookmarked to read later.
       </p>
 
       {loading ? <NewsSkeletonGrid /> : null}
@@ -117,14 +109,7 @@ export default function PlatformTechNewsSaved() {
 
       {items.length > 0 ? (
         <>
-          <div
-            className="news-grid"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-              gap: 16,
-            }}
-          >
+          <div className="tech-news-grid">
             {items.map((article) => (
               <NewsCard
                 key={article.id}
@@ -133,16 +118,8 @@ export default function PlatformTechNewsSaved() {
               />
             ))}
           </div>
-          <style>{`
-            @media (max-width: 960px) {
-              .news-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-            }
-            @media (max-width: 640px) {
-              .news-grid { grid-template-columns: 1fr !important; }
-            }
-          `}</style>
           {nextCursor ? (
-            <div style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
+            <div style={{ display: "flex", justifyContent: "center", marginTop: 24 }}>
               <Button
                 variant="secondary"
                 disabled={loadingMore}

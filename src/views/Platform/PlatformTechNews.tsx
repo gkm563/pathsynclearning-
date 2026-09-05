@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { apiGet, apiSend } from "@/lib/api";
 import type { NewsSort } from "@/lib/news/constants";
 import type {
@@ -17,7 +17,7 @@ import {
   TechNewsHeader,
 } from "@/components/tech-news/NewsControls";
 import { PreferencesPanel } from "@/components/tech-news/PreferencesPanel";
-import { NewsSection, NewsSkeletonGrid } from "@/components/tech-news/shared";
+import { NewsFeedBusy, NewsSection, NewsSkeletonGrid } from "@/components/tech-news/shared";
 
 export default function PlatformTechNews() {
   const [category, setCategory] = useState<string | "all">("all");
@@ -35,6 +35,7 @@ export default function PlatformTechNews() {
   const [prefsOpen, setPrefsOpen] = useState(false);
   const [prefsDraft, setPrefsDraft] = useState<string[]>([]);
   const [savingPrefs, setSavingPrefs] = useState(false);
+  const requestId = useRef(0);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search.trim()), 300);
@@ -65,6 +66,7 @@ export default function PlatformTechNews() {
 
   const load = useCallback(
     async (cursor?: string | null, append = false) => {
+      const id = ++requestId.current;
       if (append) setLoadingMore(true);
       else setLoading(true);
       setError("");
@@ -74,19 +76,23 @@ export default function PlatformTechNews() {
         const data = await apiGet<NewsListResponse>(
           `/api/me/tech-news?${qs.toString()}`,
         );
+        if (id !== requestId.current) return;
         setStale(Boolean(data.stale));
         setNextCursor(data.nextCursor);
         if (!append) setFeatured(data.featured || []);
         setItems((prev) => (append ? [...prev, ...data.items] : data.items));
       } catch (e) {
+        if (id !== requestId.current) return;
         setError(e instanceof Error ? e.message : "Unable to load tech news.");
         if (!append) {
           setItems([]);
           setFeatured([]);
         }
       } finally {
-        setLoading(false);
-        setLoadingMore(false);
+        if (id === requestId.current) {
+          setLoading(false);
+          setLoadingMore(false);
+        }
       }
     },
     [queryString],
@@ -134,20 +140,21 @@ export default function PlatformTechNews() {
     }
   };
 
+  const searchPending = search.trim() !== debouncedSearch;
+  const feedRefreshing = (loading && !loadingMore) || searchPending;
+  const hasFeed = items.length > 0 || featured.length > 0;
+  const busyLabel = searchPending
+    ? "Searching…"
+    : category !== "all"
+      ? `Loading ${category}…`
+      : "Updating stories…";
+
   return (
-    <div style={{ padding: "8px 4px 40px", maxWidth: 1100, margin: "0 auto" }}>
+    <div className="tech-news">
       <TechNewsHeader />
 
       {stale ? (
-        <p
-          role="status"
-          style={{
-            margin: "0 0 12px",
-            fontSize: 13,
-            color: "#f59e0b",
-            fontWeight: 600,
-          }}
-        >
+        <p role="status" className="tech-news-banner">
           Showing cached headlines — live feed temporarily unavailable.
         </p>
       ) : null}
@@ -161,6 +168,7 @@ export default function PlatformTechNews() {
       <NewsControls
         search={search}
         sort={sort}
+        busy={feedRefreshing}
         onSearchChange={setSearch}
         onSortChange={setSort}
         onOpenPrefs={() => {
@@ -169,17 +177,25 @@ export default function PlatformTechNews() {
         }}
       />
 
-      {loading && items.length === 0 ? <NewsSkeletonGrid /> : null}
+      {feedRefreshing ? (
+        <div className="news-progress" role="progressbar" aria-label={busyLabel} />
+      ) : null}
 
-      {!loading && error && items.length === 0 ? (
+      {feedRefreshing && !hasFeed ? <NewsSkeletonGrid /> : null}
+
+      {!feedRefreshing && error && items.length === 0 ? (
         <EmptyState
           title="Unable to load tech news"
           description="Please try again in a moment."
-          action={<Button onClick={() => void load(null, false)}>Try Again</Button>}
+          action={
+            <Button className="news-toolbar-btn" onClick={() => void load(null, false)}>
+              Try Again
+            </Button>
+          }
         />
       ) : null}
 
-      {!loading && !error && items.length === 0 ? (
+      {!feedRefreshing && !error && items.length === 0 ? (
         <EmptyState
           title="No articles found"
           description={
@@ -191,6 +207,7 @@ export default function PlatformTechNews() {
             debouncedSearch || category !== "all" ? (
               <Button
                 variant="secondary"
+                className="news-toolbar-btn"
                 onClick={() => {
                   setSearch("");
                   setCategory("all");
@@ -203,49 +220,38 @@ export default function PlatformTechNews() {
         />
       ) : null}
 
-      {items.length > 0 || featured.length > 0 ? (
-        <>
-          {!debouncedSearch ? <FeaturedStories articles={featured} /> : null}
+      {hasFeed ? (
+        <div className={`news-feed${feedRefreshing ? " is-busy" : ""}`} aria-busy={feedRefreshing}>
+          {feedRefreshing ? <NewsFeedBusy label={busyLabel} /> : null}
+          <div className="news-feed-body">
+            {!debouncedSearch ? <FeaturedStories articles={featured} /> : null}
 
-          <NewsSection title="Latest news">
-            <div
-              className="news-grid"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-                gap: 16,
-              }}
-            >
-              {items.map((article) => (
-                <NewsCard
-                  key={article.id}
-                  article={article}
-                  onToggleBookmark={(a) => void toggleBookmark(a)}
-                />
-              ))}
-            </div>
-            <style>{`
-              @media (max-width: 960px) {
-                .news-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-              }
-              @media (max-width: 640px) {
-                .news-grid { grid-template-columns: 1fr !important; }
-              }
-            `}</style>
-          </NewsSection>
+            <NewsSection title="Latest">
+              <div className="tech-news-grid">
+                {items.map((article) => (
+                  <NewsCard
+                    key={article.id}
+                    article={article}
+                    onToggleBookmark={(a) => void toggleBookmark(a)}
+                  />
+                ))}
+              </div>
+            </NewsSection>
 
-          {nextCursor ? (
-            <div style={{ display: "flex", justifyContent: "center", marginTop: 8 }}>
-              <Button
-                variant="secondary"
-                disabled={loadingMore}
-                onClick={() => void load(nextCursor, true)}
-              >
-                {loadingMore ? "Loading…" : "Load more"}
-              </Button>
-            </div>
-          ) : null}
-        </>
+            {nextCursor ? (
+              <div style={{ display: "flex", justifyContent: "center", marginTop: 8 }}>
+                <Button
+                  variant="secondary"
+                  className="news-toolbar-btn"
+                  disabled={loadingMore || feedRefreshing}
+                  onClick={() => void load(nextCursor, true)}
+                >
+                  {loadingMore ? "Loading…" : "Load more"}
+                </Button>
+              </div>
+            ) : null}
+          </div>
+        </div>
       ) : null}
 
       <PreferencesPanel
