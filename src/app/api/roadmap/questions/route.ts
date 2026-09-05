@@ -3,14 +3,16 @@ import { getDb } from '@/lib/db/client';
 import { roadmapProfiles } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { errorResponse, jsonResponse } from '@/lib/api/http';
-import { generateFollowUpQuestions } from '@/lib/ai/roadmap-questions';
+import { generateFollowUpQuestions, type RoadmapGenerationMode } from '@/lib/ai/roadmap-questions';
 import { toRoadmapProfile } from '@/lib/roadmap/persist-generated';
 import { logger } from '@/lib/logger';
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
     const user = await requireDbUser();
     const db = getDb();
+    const body = (await request.json().catch(() => ({}))) as { mode?: RoadmapGenerationMode };
+    const mode: RoadmapGenerationMode = body.mode === 'targeted' ? 'targeted' : 'general';
 
     const [profile] = await db
       .select()
@@ -23,7 +25,9 @@ export async function POST() {
     }
 
     try {
-      const response = await generateFollowUpQuestions(toRoadmapProfile(profile), user.id);
+      const mapped = toRoadmapProfile(profile);
+      if (mode === 'general') mapped.targetCompany = null;
+      const response = await generateFollowUpQuestions(mapped, user.id, mode);
       return jsonResponse(response);
     } catch (aiError) {
       logger.error('Failed to generate follow up questions', {

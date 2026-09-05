@@ -15,6 +15,11 @@ import {
   nextRoadmapVersion,
 } from "@/lib/roadmap/active";
 import { roadmapTitleForTarget } from "@/lib/roadmap/target-companies";
+import { companyOffersRole } from "@/lib/roadmap/hiring-catalog";
+import {
+  progressFor,
+  type RoadmapGenerationProgress,
+} from "@/lib/roadmap/generation-progress";
 import type {
   ProjectEntry,
   RoadmapProfile,
@@ -65,9 +70,22 @@ export function toRoadmapProfile(row: RoadmapProfileRow): RoadmapProfile {
 export async function persistGeneratedRoadmap(
   userId: string,
   profile: RoadmapProfileRow,
+  onProgress?: (p: RoadmapGenerationProgress) => void,
 ) {
   const db = getDb();
-  const generatedData = await generateRoadmap(toRoadmapProfile(profile), userId);
+  onProgress?.(progressFor("profile"));
+  if (profile.targetCompany) {
+    onProgress?.(progressFor("hiring"));
+    const pairing = companyOffersRole(profile.targetCompany, profile.targetRole);
+    if (!pairing.ok) {
+      throw AppError.badRequest(pairing.message);
+    }
+  } else {
+    onProgress?.(progressFor("hiring", "Mapping the role curriculum…"));
+  }
+
+  const generatedData = await generateRoadmap(toRoadmapProfile(profile), userId, onProgress);
+  onProgress?.(progressFor("save"));
   const newVersion = await nextRoadmapVersion(db, userId);
 
   await deactivateActiveRoadmaps(db, userId);

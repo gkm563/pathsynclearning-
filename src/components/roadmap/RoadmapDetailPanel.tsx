@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Clock, ExternalLink, Book, Video, Code, CheckCircle, SkipForward, Play, Lock, ClipboardCheck,
-  Maximize2, ChevronLeft, StickyNote, ListChecks, GraduationCap,
+  Maximize2, ChevronLeft, ChevronRight, StickyNote, ListChecks, GraduationCap,
 } from 'lucide-react';
 import type { RoadmapNode, RoadmapNodeResource } from '@/types/roadmap';
 import { isAssessableNode, nodeRequiresAssessment } from '@/lib/roadmap/assessment';
@@ -13,15 +13,14 @@ import { AddNoteButton, NotesForSource } from '@/components/memory-lane/AddNoteB
 type PanelTab = 'overview' | 'resources' | 'notes';
 type SideRail = 'playlist' | 'notes';
 
-function youtubeEmbedUrl(url: string): string | null {
+function youtubeId(url: string): string | null {
   try {
     const u = new URL(url);
-    if (u.hostname.includes('youtu.be')) {
-      return `https://www.youtube.com/embed/${u.pathname.slice(1)}?rel=0&modestbranding=1`;
-    }
+    if (u.hostname.includes('youtu.be')) return u.pathname.split('/').filter(Boolean)[0] || null;
     if (u.hostname.includes('youtube.com')) {
-      const id = u.searchParams.get('v');
-      if (id) return `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1`;
+      if (u.searchParams.get('v')) return u.searchParams.get('v');
+      const parts = u.pathname.split('/').filter(Boolean);
+      if (parts[0] === 'embed' || parts[0] === 'shorts' || parts[0] === 'live') return parts[1] || null;
     }
   } catch {
     return null;
@@ -29,16 +28,18 @@ function youtubeEmbedUrl(url: string): string | null {
   return null;
 }
 
+function youtubeEmbedUrl(url: string): string | null {
+  const id = youtubeId(url);
+  return id ? `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1` : null;
+}
+
 function youtubeThumb(url: string): string | null {
-  try {
-    const u = new URL(url);
-    let id: string | null = null;
-    if (u.hostname.includes('youtu.be')) id = u.pathname.slice(1);
-    if (u.hostname.includes('youtube.com')) id = u.searchParams.get('v');
-    return id ? `https://i.ytimg.com/vi/${id}/mqdefault.jpg` : null;
-  } catch {
-    return null;
-  }
+  const id = youtubeId(url);
+  return id ? `https://i.ytimg.com/vi/${id}/mqdefault.jpg` : null;
+}
+
+function isYoutubeVideo(r: RoadmapNodeResource) {
+  return r.type === 'video' && /youtube\.com|youtu\.be/i.test(r.url);
 }
 
 const sectionTitle: React.CSSProperties = {
@@ -115,12 +116,17 @@ export default function RoadmapDetailPanel({
       : 'Complete prerequisite nodes first.'
     : null;
 
-  const ytResources = (node?.resources || []).filter(
-    (r) => r.type === 'video' && /youtube\.com|youtu\.be/i.test(r.url),
-  );
-  const otherResources = (node?.resources || []).filter(
-    (r) => !(r.type === 'video' && /youtube\.com|youtu\.be/i.test(r.url)),
-  );
+  const rawResources = node?.resources || [];
+  const hasSuggestedFlag = rawResources.some((r) => r.suggested);
+  const ytAll = rawResources.filter(isYoutubeVideo);
+  const ytLessons = hasSuggestedFlag
+    ? ytAll.filter((r) => !r.suggested)
+    : ytAll.slice(0, Math.min(2, ytAll.length));
+  const ytSuggested = hasSuggestedFlag
+    ? ytAll.filter((r) => r.suggested)
+    : ytAll.slice(ytLessons.length);
+  const ytResources = [...ytLessons, ...ytSuggested];
+  const otherResources = rawResources.filter((r) => !isYoutubeVideo(r));
 
   const currentVideo =
     ytResources.length > 0
@@ -293,7 +299,8 @@ export default function RoadmapDetailPanel({
           <div style={{ padding: 24, flex: 1, overflowY: 'auto' }}>
             <CompactOverview
               node={node}
-              ytResources={ytResources}
+              ytLessons={ytLessons}
+              ytSuggested={ytSuggested}
               otherResources={otherResources}
               needsExam={needsExam}
               onOpenStudy={() => void openStudyRoom(false)}
@@ -560,8 +567,8 @@ export default function RoadmapDetailPanel({
                 >
                   {ytResources.length > 0 ? (
                     <span>
-                      Lesson {Math.min(activeVideo, ytResources.length - 1) + 1} /{' '}
-                      {ytResources.length}
+                      Video {Math.min(activeVideo, ytResources.length - 1) + 1} / {ytResources.length}
+                      {currentVideo?.suggested ? ' · Suggested' : ' · Lesson'}
                     </span>
                   ) : null}
                   <span
@@ -591,7 +598,31 @@ export default function RoadmapDetailPanel({
                       Open on YouTube <ExternalLink size={12} />
                     </a>
                   ) : null}
+                  {currentVideo?.channel ? (
+                    <span>{currentVideo.channel}</span>
+                  ) : null}
                 </div>
+
+                {ytResources.length > 1 ? (
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                    <button
+                      type="button"
+                      disabled={activeVideo <= 0}
+                      onClick={() => setActiveVideo((i) => Math.max(0, i - 1))}
+                      style={navVideoBtn(activeVideo <= 0)}
+                    >
+                      <ChevronLeft size={16} /> Previous
+                    </button>
+                    <button
+                      type="button"
+                      disabled={activeVideo >= ytResources.length - 1}
+                      onClick={() => setActiveVideo((i) => Math.min(ytResources.length - 1, i + 1))}
+                      style={navVideoBtn(activeVideo >= ytResources.length - 1)}
+                    >
+                      Next video <ChevronRight size={16} />
+                    </button>
+                  </div>
+                ) : null}
 
                 <div
                   style={{
@@ -610,7 +641,7 @@ export default function RoadmapDetailPanel({
                       },
                       {
                         id: 'resources' as const,
-                        label: 'Resources',
+                        label: 'Suggested reading',
                         icon: <Book size={14} />,
                         count: otherResources.length || undefined,
                       },
@@ -677,8 +708,7 @@ export default function RoadmapDetailPanel({
                       <ResourceList resources={otherResources} />
                     ) : (
                       <p style={{ ...bodyText, margin: 0 }}>
-                        No extra docs for this node. Stay on the playlist and take notes as you
-                        watch.
+                        No extra docs for this node. Watch the playlist in the player — every video plays in the same window.
                       </p>
                     ))}
                   {tab === 'notes' && (
@@ -760,125 +790,36 @@ export default function RoadmapDetailPanel({
                         the player.
                       </p>
                     ) : (
-                      ytResources.map((res, i) => {
-                        const active = i === activeVideo;
-                        const thumb = youtubeThumb(res.url);
-                        return (
-                          <button
+                      <>
+                        {ytLessons.length > 0 ? (
+                          <div style={playlistSectionLabel}>Lessons</div>
+                        ) : null}
+                        {ytLessons.map((res, i) => (
+                          <PlaylistRow
                             key={`${res.url}-${i}`}
-                            type="button"
-                            onClick={() => setActiveVideo(i)}
-                            style={{
-                              display: 'grid',
-                              gridTemplateColumns: '24px 120px 1fr',
-                              gap: 10,
-                              width: '100%',
-                              padding: '10px 12px',
-                              border: 'none',
-                              borderBottom: '1px solid var(--border-light)',
-                              background: active ? 'rgba(108,99,255,0.08)' : 'transparent',
-                              color: 'var(--text-main)',
-                              cursor: 'pointer',
-                              textAlign: 'left',
-                              alignItems: 'center',
-                            }}
-                          >
-                            <span
-                              style={{
-                                fontFamily: 'Outfit',
-                                fontSize: 12,
-                                color: active ? '#6c63ff' : 'var(--text-muted)',
-                                textAlign: 'center',
-                              }}
-                            >
-                              {active ? <Play size={12} fill="#6c63ff" color="#6c63ff" /> : i + 1}
-                            </span>
-                            <div
-                              style={{
-                                position: 'relative',
-                                width: 120,
-                                height: 68,
-                                borderRadius: 8,
-                                overflow: 'hidden',
-                                background: 'var(--bg-alt)',
-                                flexShrink: 0,
-                                border: '1px solid var(--border-light)',
-                              }}
-                            >
-                              {thumb ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                  src={thumb}
-                                  alt=""
-                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                />
-                              ) : (
-                                <div
-                                  style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    display: 'grid',
-                                    placeItems: 'center',
-                                  }}
-                                >
-                                  <Video size={18} color="#94a3b8" />
-                                </div>
-                              )}
-                              {active ? (
-                                <div
-                                  style={{
-                                    position: 'absolute',
-                                    inset: 0,
-                                    background: 'rgba(108,99,255,0.28)',
-                                    display: 'grid',
-                                    placeItems: 'center',
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      fontSize: 10,
-                                      fontWeight: 800,
-                                      fontFamily: 'Outfit',
-                                      background: '#6c63ff',
-                                      color: '#fff',
-                                      padding: '3px 6px',
-                                      borderRadius: 4,
-                                    }}
-                                  >
-                                    NOW
-                                  </span>
-                                </div>
-                              ) : null}
-                            </div>
-                            <div style={{ minWidth: 0 }}>
-                              <div
-                                style={{
-                                  fontFamily: 'Outfit',
-                                  fontWeight: 700,
-                                  fontSize: 13,
-                                  lineHeight: 1.35,
-                                  display: '-webkit-box',
-                                  WebkitLineClamp: 2,
-                                  WebkitBoxOrient: 'vertical',
-                                  overflow: 'hidden',
-                                }}
-                              >
-                                {res.title}
-                              </div>
-                              <div
-                                style={{
-                                  marginTop: 4,
-                                  fontSize: 11,
-                                  color: 'var(--text-muted)',
-                                  fontFamily: 'Inter',
-                                }}
-                              >
-                                PathED lesson
-                              </div>
-                            </div>
-                          </button>
-                        );
-                      })
+                            res={res}
+                            index={i}
+                            active={i === activeVideo}
+                            onSelect={() => setActiveVideo(i)}
+                          />
+                        ))}
+                        {ytSuggested.length > 0 ? (
+                          <div style={playlistSectionLabel}>Suggested · other channels</div>
+                        ) : null}
+                        {ytSuggested.map((res, i) => {
+                          const idx = ytLessons.length + i;
+                          return (
+                            <PlaylistRow
+                              key={`${res.url}-s-${i}`}
+                              res={res}
+                              index={idx}
+                              active={idx === activeVideo}
+                              onSelect={() => setActiveVideo(idx)}
+                              suggested
+                            />
+                          );
+                        })}
+                      </>
                     )
                   ) : (
                     <NotesForSource
@@ -961,16 +902,240 @@ function primaryBtn(bg: string): React.CSSProperties {
   };
 }
 
+function navVideoBtn(disabled: boolean): React.CSSProperties {
+  return {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    padding: '8px 12px',
+    borderRadius: 10,
+    border: '1px solid var(--border-light)',
+    background: 'var(--bg-alt)',
+    color: 'var(--text-main)',
+    fontFamily: 'Outfit',
+    fontWeight: 700,
+    fontSize: 13,
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    opacity: disabled ? 0.45 : 1,
+  };
+}
+
+const playlistSectionLabel: React.CSSProperties = {
+  padding: '10px 12px 6px',
+  fontFamily: 'Outfit',
+  fontSize: 11,
+  fontWeight: 800,
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  color: 'var(--text-muted)',
+  background: 'var(--bg-alt)',
+  borderBottom: '1px solid var(--border-light)',
+};
+
+function PlaylistRow({
+  res,
+  index,
+  active,
+  onSelect,
+  suggested,
+}: {
+  res: RoadmapNodeResource;
+  index: number;
+  active: boolean;
+  onSelect: () => void;
+  suggested?: boolean;
+}) {
+  const thumb = youtubeThumb(res.url);
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '24px 120px 1fr',
+        gap: 10,
+        width: '100%',
+        padding: '10px 12px',
+        border: 'none',
+        borderBottom: '1px solid var(--border-light)',
+        background: active ? 'rgba(108,99,255,0.08)' : 'transparent',
+        color: 'var(--text-main)',
+        cursor: 'pointer',
+        textAlign: 'left',
+        alignItems: 'center',
+      }}
+    >
+      <span
+        style={{
+          fontFamily: 'Outfit',
+          fontSize: 12,
+          color: active ? '#6c63ff' : 'var(--text-muted)',
+          textAlign: 'center',
+        }}
+      >
+        {active ? <Play size={12} fill="#6c63ff" color="#6c63ff" /> : index + 1}
+      </span>
+      <div
+        style={{
+          position: 'relative',
+          width: 120,
+          height: 68,
+          borderRadius: 8,
+          overflow: 'hidden',
+          background: 'var(--bg-alt)',
+          flexShrink: 0,
+          border: '1px solid var(--border-light)',
+        }}
+      >
+        {thumb ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          <div style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center' }}>
+            <Video size={18} color="#94a3b8" />
+          </div>
+        )}
+        {active ? (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'rgba(108,99,255,0.28)',
+              display: 'grid',
+              placeItems: 'center',
+            }}
+          >
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 800,
+                fontFamily: 'Outfit',
+                background: '#6c63ff',
+                color: '#fff',
+                padding: '3px 6px',
+                borderRadius: 4,
+              }}
+            >
+              NOW
+            </span>
+          </div>
+        ) : null}
+      </div>
+      <div style={{ minWidth: 0 }}>
+        <div
+          style={{
+            fontFamily: 'Outfit',
+            fontWeight: 700,
+            fontSize: 13,
+            lineHeight: 1.35,
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+        >
+          {res.title}
+        </div>
+        <div style={{ marginTop: 4, fontSize: 11, color: 'var(--text-muted)', fontFamily: 'Inter' }}>
+          {suggested ? 'Suggested · ' : ''}
+          {res.channel || 'YouTube'}
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function CompactVideoList({
+  title,
+  items,
+  indexOffset,
+  onPlayIndex,
+}: {
+  title: string;
+  items: RoadmapNodeResource[];
+  indexOffset: number;
+  onPlayIndex: (i: number) => void;
+}) {
+  if (!items.length) return null;
+  return (
+    <div style={{ marginBottom: 24 }}>
+      <h3 style={sectionTitle}>{title}</h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {items.map((res, i) => {
+          const thumb = youtubeThumb(res.url);
+          return (
+            <button
+              key={`${res.url}-${indexOffset + i}`}
+              type="button"
+              onClick={() => onPlayIndex(indexOffset + i)}
+              style={{
+                display: 'flex',
+                gap: 10,
+                alignItems: 'center',
+                padding: 8,
+                borderRadius: 10,
+                border: '1px solid var(--border-light)',
+                background: 'var(--bg-alt)',
+                cursor: 'pointer',
+                textAlign: 'left',
+                color: 'var(--text-main)',
+              }}
+            >
+              <div
+                style={{
+                  width: 88,
+                  height: 50,
+                  borderRadius: 8,
+                  overflow: 'hidden',
+                  background: '#111',
+                  flexShrink: 0,
+                  position: 'relative',
+                }}
+              >
+                {thumb ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : null}
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'grid',
+                    placeItems: 'center',
+                    background: 'rgba(0,0,0,0.25)',
+                  }}
+                >
+                  <Play size={16} color="#fff" fill="#fff" />
+                </div>
+              </div>
+              <span style={{ fontFamily: 'Inter', fontSize: 13, fontWeight: 600 }}>
+                {res.title}
+                {res.channel ? (
+                  <span style={{ display: 'block', fontWeight: 500, color: 'var(--text-muted)', fontSize: 11, marginTop: 2 }}>
+                    {res.channel}
+                  </span>
+                ) : null}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function CompactOverview({
   node,
-  ytResources,
+  ytLessons,
+  ytSuggested,
   otherResources,
   needsExam,
   onOpenStudy,
   onPlayIndex,
 }: {
   node: RoadmapNode;
-  ytResources: RoadmapNodeResource[];
+  ytLessons: RoadmapNodeResource[];
+  ytSuggested: RoadmapNodeResource[];
   otherResources: RoadmapNodeResource[];
   needsExam: boolean;
   onOpenStudy: () => void;
@@ -1009,6 +1174,33 @@ function CompactOverview({
         </div>
       )}
 
+      {node.interviewFocus ? (
+        <div style={{ marginBottom: 24 }}>
+          <h3 style={sectionTitle}>Interview focus</h3>
+          <p style={bodyText}>{node.interviewFocus}</p>
+        </div>
+      ) : null}
+
+      {node.learningOutcomes && node.learningOutcomes.length > 0 ? (
+        <div style={{ marginBottom: 24 }}>
+          <h3 style={sectionTitle}>You will be able to</h3>
+          <ul
+            style={{
+              margin: 0,
+              paddingLeft: 20,
+              color: 'var(--text-muted)',
+              fontFamily: 'Inter',
+              fontSize: 14,
+              lineHeight: 1.6,
+            }}
+          >
+            {node.learningOutcomes.map((item, i) => (
+              <li key={i} style={{ marginBottom: 4 }}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       {node.topics && node.topics.length > 0 && (
         <div style={{ marginBottom: 24 }}>
           <h3 style={sectionTitle}>Key Topics</h3>
@@ -1031,8 +1223,8 @@ function CompactOverview({
         </div>
       )}
 
-      {ytResources.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
+      {(ytLessons.length > 0 || ytSuggested.length > 0) && (
+        <div style={{ marginBottom: 8 }}>
           <div
             style={{
               display: 'flex',
@@ -1041,7 +1233,7 @@ function CompactOverview({
               marginBottom: 8,
             }}
           >
-            <h3 style={{ ...sectionTitle, marginBottom: 0 }}>Lessons</h3>
+            <h3 style={{ ...sectionTitle, marginBottom: 0 }}>Watch in study room</h3>
             <button
               type="button"
               onClick={onOpenStudy}
@@ -1055,74 +1247,25 @@ function CompactOverview({
                 cursor: 'pointer',
               }}
             >
-              Watch full screen →
+              Open player →
             </button>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {ytResources.map((res, i) => {
-              const thumb = youtubeThumb(res.url);
-              return (
-                <button
-                  key={`${res.url}-${i}`}
-                  type="button"
-                  onClick={() => onPlayIndex(i)}
-                  style={{
-                    display: 'flex',
-                    gap: 10,
-                    alignItems: 'center',
-                    padding: 8,
-                    borderRadius: 10,
-                    border: '1px solid var(--border-light)',
-                    background: 'var(--bg-alt)',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    color: 'var(--text-main)',
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 88,
-                      height: 50,
-                      borderRadius: 8,
-                      overflow: 'hidden',
-                      background: '#111',
-                      flexShrink: 0,
-                      position: 'relative',
-                    }}
-                  >
-                    {thumb ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={thumb}
-                        alt=""
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                    ) : null}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        display: 'grid',
-                        placeItems: 'center',
-                        background: 'rgba(0,0,0,0.25)',
-                      }}
-                    >
-                      <Play size={16} color="#fff" fill="#fff" />
-                    </div>
-                  </div>
-                  <span style={{ fontFamily: 'Inter', fontSize: 13, fontWeight: 600 }}>
-                    {res.title}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          <p style={{ ...bodyText, marginBottom: 12, fontSize: 13 }}>
+            Every video plays in the same player. Suggested clips from other channels are listed separately so they are not mixed with core lessons.
+          </p>
+          <CompactVideoList title="Lessons" items={ytLessons} indexOffset={0} onPlayIndex={onPlayIndex} />
+          <CompactVideoList
+            title="Suggested from other channels"
+            items={ytSuggested}
+            indexOffset={ytLessons.length}
+            onPlayIndex={onPlayIndex}
+          />
         </div>
       )}
 
       {otherResources.length > 0 && (
         <div style={{ marginBottom: 24 }}>
-          <h3 style={sectionTitle}>Resources</h3>
+          <h3 style={sectionTitle}>Suggested reading</h3>
           <ResourceList resources={otherResources} />
         </div>
       )}
@@ -1177,6 +1320,22 @@ function StudyOverview({
         <div>
           <h3 style={{ ...sectionTitle, color: main }}>Why learn this?</h3>
           <p style={{ ...bodyText, color: muted }}>{node.whyLearn}</p>
+        </div>
+      ) : null}
+      {node.interviewFocus ? (
+        <div>
+          <h3 style={{ ...sectionTitle, color: main }}>Interview focus</h3>
+          <p style={{ ...bodyText, color: muted }}>{node.interviewFocus}</p>
+        </div>
+      ) : null}
+      {node.learningOutcomes?.length ? (
+        <div>
+          <h3 style={{ ...sectionTitle, color: main }}>You will be able to</h3>
+          <ul style={{ margin: 0, paddingLeft: 18, color: muted, fontFamily: 'Inter', fontSize: 14, lineHeight: 1.6 }}>
+            {node.learningOutcomes.map((item, i) => (
+              <li key={i}>{item}</li>
+            ))}
+          </ul>
         </div>
       ) : null}
       {node.topics?.length ? (
@@ -1255,7 +1414,9 @@ function ResourceList({
             ) : (
               <Book size={16} color="#6c63ff" />
             )}
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{res.title}</span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {res.title}{res.channel ? ` · ${res.channel}` : ''}
+            </span>
           </div>
           <ExternalLink size={14} color={dark ? '#888' : 'var(--text-muted)'} />
         </a>

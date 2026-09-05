@@ -3,6 +3,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Brain, Check } from 'lucide-react';
 
+import { OnboardingCard, StepHeader } from './onboarding-ui';
+
 export type FollowUpQuestion = {
   id: string;
   type: 'single_choice' | 'multi_choice' | 'text' | 'rating';
@@ -15,35 +17,27 @@ interface AIFollowUpQuestionsProps {
   questions: FollowUpQuestion[];
   answers: Record<string, any>;
   onChange: (answers: Record<string, any>) => void;
+  mode?: 'targeted' | 'general' | null;
 }
 
-export default function AIFollowUpQuestions({ questions, answers, onChange }: AIFollowUpQuestionsProps) {
+export default function AIFollowUpQuestions({ questions, answers, onChange, mode }: AIFollowUpQuestionsProps) {
   
   const handleUpdate = (id: string, value: any) => {
     onChange({ ...answers, [id]: value });
   };
 
-  const containerStyle: React.CSSProperties = {
-    display: 'flex', flexDirection: 'column', gap: '32px',
-    backgroundColor: 'var(--bg-card)', padding: '32px',
-    borderRadius: '16px', border: '1px solid var(--border-light)'
-  };
-
-  const titleStyle: React.CSSProperties = {
-    display: 'flex', alignItems: 'center', gap: '12px',
-    fontSize: '24px', fontWeight: 'bold', fontFamily: 'Outfit',
-    color: 'var(--text-main)'
-  };
-
   return (
-    <motion.div style={containerStyle} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-      <div style={titleStyle}>
-        <Brain size={28} color="#6c63ff" />
-        🤖 AI Follow-up Questions
-      </div>
-      <p style={{ color: 'var(--text-muted)', fontFamily: 'Outfit', marginTop: '-20px' }}>
-        We need a few more details to generate the perfect roadmap for you.
-      </p>
+    <OnboardingCard accent={mode === 'targeted' ? '#6c63ff' : '#00c9a7'}>
+      <StepHeader
+        icon={<Brain size={22} color="#6c63ff" />}
+        kicker={mode === 'targeted' ? 'Company-only questions' : 'Role-only questions'}
+        title={mode === 'targeted' ? 'Hiring-loop details' : 'Role-path details'}
+        subtitle={
+          mode === 'targeted'
+            ? 'These are not the same as the role-path questions. We only fill gaps that change this company’s interview plan.'
+            : 'These are not company questions. We only fill gaps that change this role’s curriculum.'
+        }
+      />
 
       {questions.map((q, i) => (
         <motion.div key={q.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} style={{ padding: '24px', backgroundColor: 'var(--bg-alt)', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
@@ -121,6 +115,6 @@ export default function AIFollowUpQuestions({ questions, answers, onChange }: AI
           )}
         </motion.div>
       ))}
-    </motion.div>
+    </OnboardingCard>
   );
 }

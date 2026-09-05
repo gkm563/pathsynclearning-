@@ -1,12 +1,12 @@
 "use client";
 import React from 'react';
-import { motion } from 'framer-motion';
 import { BookOpen, Check } from 'lucide-react';
+import { OnboardingCard, Pill, StepHeader, inputStyle, labelStyle } from '../onboarding-ui';
 
 const SUBJECTS = ["Mathematics", "Physics", "Programming", "Data Structures", "Databases", "Networks", "Operating Systems", "Web Development", "AI/ML", "Statistics", "Electronics", "Other"];
 const YEARS = ["1st Year", "2nd Year", "3rd Year", "4th Year", "MSc", "PhD", "Other"];
 
-export default function EducationSection({ data, onChange }: { data: any, onChange: (data: any) => void }) {
+export default function EducationSection({ data, onChange }: { data: any, onChange: (data: any) => void; hideRole?: boolean }) {
   const currentStudy = data.currentStudy || '';
   const yearSemester = data.yearSemester || '';
   const academicBackground = data.academicBackground || '';
@@ -22,140 +22,49 @@ export default function EducationSection({ data, onChange }: { data: any, onChan
     }
   };
 
-  const containerStyle: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-    backgroundColor: 'var(--bg-card)',
-    padding: '32px',
-    borderRadius: '16px',
-    border: '1px solid var(--border-light)'
-  };
-
-  const titleStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    fontSize: '24px',
-    fontWeight: 'bold',
-    fontFamily: 'Outfit',
-    color: 'var(--text-main)',
-    marginBottom: '8px'
-  };
-
-  const labelStyle: React.CSSProperties = {
-    display: 'block',
-    marginBottom: '8px',
-    fontWeight: 600,
-    color: 'var(--text-main)',
-    fontFamily: 'Outfit'
-  };
-
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '12px 16px',
-    borderRadius: '8px',
-    border: '1px solid var(--border-light)',
-    backgroundColor: 'var(--bg-main)',
-    color: 'var(--text-main)',
-    fontFamily: 'Outfit',
-    fontSize: '16px',
-    outline: 'none'
-  };
-
-  const selectStyle: React.CSSProperties = {
-    ...inputStyle,
-    appearance: 'none',
-    cursor: 'pointer'
-  };
-
-  const pillContainerStyle: React.CSSProperties = {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '10px'
-  };
-
-  const getPillStyle = (selected: boolean): React.CSSProperties => ({
-    padding: '8px 16px',
-    borderRadius: '24px',
-    border: `1px solid ${selected ? '#6c63ff' : 'var(--border-light)'}`,
-    backgroundColor: selected ? '#6c63ff' : 'var(--bg-alt)',
-    color: selected ? '#fff' : 'var(--text-main)',
-    cursor: 'pointer',
-    fontFamily: 'Outfit',
-    fontSize: '14px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    transition: 'all 0.2s'
-  });
-
   return (
-    <motion.div style={containerStyle} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-      <div style={titleStyle}>
-        <BookOpen size={28} color="#6c63ff" />
-        📚 Education
-      </div>
-      
+    <OnboardingCard accent="#6c63ff">
+      <StepHeader icon={<BookOpen size={22} color="#6c63ff" />} kicker="Background" title="Education" subtitle="Skip school-level nodes you already finished, and slow down topics you struggle with." />
+
       <div>
-        <label style={labelStyle}>Current Study / Degree</label>
-        <input 
-          style={inputStyle} 
-          placeholder="e.g. B.Tech in Computer Science"
-          value={currentStudy}
-          onChange={(e) => onChange({ ...data, currentStudy: e.target.value })}
-        />
+        <label style={labelStyle}>Current study / degree</label>
+        <input style={inputStyle} placeholder="e.g. B.Tech in Computer Science" value={currentStudy} onChange={(e) => onChange({ ...data, currentStudy: e.target.value })} />
       </div>
 
       <div>
-        <label style={labelStyle}>Year / Semester</label>
-        <select 
-          style={selectStyle}
-          value={yearSemester}
-          onChange={(e) => onChange({ ...data, yearSemester: e.target.value })}
-        >
-          <option value="">Select Year...</option>
+        <label style={labelStyle}>Year / semester</label>
+        <select style={{ ...inputStyle, appearance: 'none', cursor: 'pointer' }} value={yearSemester} onChange={(e) => onChange({ ...data, yearSemester: e.target.value })}>
+          <option value="">Select year…</option>
           {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
         </select>
       </div>
 
       <div>
-        <label style={labelStyle}>Academic Background</label>
-        <input 
-          style={inputStyle} 
-          placeholder="e.g. High school science with math..."
-          value={academicBackground}
-          onChange={(e) => onChange({ ...data, academicBackground: e.target.value })}
-        />
+        <label style={labelStyle}>Academic background</label>
+        <input style={inputStyle} placeholder="e.g. High school science with math" value={academicBackground} onChange={(e) => onChange({ ...data, academicBackground: e.target.value })} />
       </div>
 
       <div>
         <label style={labelStyle}>Subjects you enjoy</label>
-        <div style={pillContainerStyle}>
-          {SUBJECTS.map(sub => {
-            const selected = enjoyedSubjects.includes(sub);
-            return (
-              <div key={sub} style={getPillStyle(selected)} onClick={() => toggleSubject('enjoyedSubjects', sub)}>
-                {selected && <Check size={14} />} {sub}
-              </div>
-            )
-          })}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {SUBJECTS.map(sub => (
+            <Pill key={sub} selected={enjoyedSubjects.includes(sub)} onClick={() => toggleSubject('enjoyedSubjects', sub)} accent="#6c63ff">
+              {enjoyedSubjects.includes(sub) ? <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}><Check size={14} /> {sub}</span> : sub}
+            </Pill>
+          ))}
         </div>
       </div>
 
       <div>
         <label style={labelStyle}>Subjects you struggle with</label>
-        <div style={pillContainerStyle}>
-          {SUBJECTS.map(sub => {
-            const selected = struggledSubjects.includes(sub);
-            return (
-              <div key={sub} style={getPillStyle(selected)} onClick={() => toggleSubject('struggledSubjects', sub)}>
-                {selected && <Check size={14} />} {sub}
-              </div>
-            )
-          })}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {SUBJECTS.map(sub => (
+            <Pill key={`s-${sub}`} selected={struggledSubjects.includes(sub)} onClick={() => toggleSubject('struggledSubjects', sub)} accent="#f7971e">
+              {struggledSubjects.includes(sub) ? <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}><Check size={14} /> {sub}</span> : sub}
+            </Pill>
+          ))}
         </div>
       </div>
-    </motion.div>
+    </OnboardingCard>
   );
 }

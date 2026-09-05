@@ -2,6 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Settings, Check } from 'lucide-react';
+import { OnboardingCard, StepHeader } from '../onboarding-ui';
 
 const PREFERENCES = [
   "Video tutorials", "Documentation", "Building projects", 
@@ -9,7 +10,7 @@ const PREFERENCES = [
   "Courses", "Mentorship", "Community/Open Source"
 ];
 
-export default function PreferencesSection({ data, onChange }: { data: any, onChange: (data: any) => void }) {
+export default function PreferencesSection({ data, onChange }: { data: any, onChange: (data: any) => void; hideRole?: boolean }) {
   const learningPreferences = data.learningPreferences || [];
 
   const togglePref = (pref: string) => {
@@ -48,11 +49,8 @@ export default function PreferencesSection({ data, onChange }: { data: any, onCh
   });
 
   return (
-    <motion.div style={containerStyle} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-      <div style={titleStyle}>
-        <Settings size={28} color="#f7971e" />
-        ⚙️ Learning Preferences
-      </div>
+    <OnboardingCard accent="#f7971e">
+      <StepHeader icon={<Settings size={22} color="#f7971e" />} kicker="Format" title="How you learn" subtitle="We bias resources toward videos, docs, or practice based on this." />
       
       <div>
         <label style={labelStyle}>How do you learn best?</label>
@@ -67,6 +65,6 @@ export default function PreferencesSection({ data, onChange }: { data: any, onCh
           })}
         </div>
       </div>
-    </motion.div>
+    </OnboardingCard>
   );
 }

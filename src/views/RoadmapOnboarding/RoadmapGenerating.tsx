@@ -1,112 +1,176 @@
 "use client";
-import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, Network, Clock, Sparkles } from 'lucide-react';
 
-const STEPS = [
-  { text: "Analyzing your profile...", icon: Brain, color: "#6c63ff" },
-  { text: "Mapping skill dependencies...", icon: Network, color: "#00c9a7" },
-  { text: "Calculating learning timeline...", icon: "#f7971e" }, // wait, icon type mismatch, fixed below
-  { text: "Building your personalized roadmap...", icon: Sparkles, color: "#6c63ff" }
-];
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { Brain, Network, Clock, Sparkles, Clapperboard, Check, Save, AlertCircle } from "lucide-react";
+import {
+  GENERATION_STEPS,
+  type GenerationStepId,
+  type RoadmapGenerationProgress,
+} from "@/lib/roadmap/generation-progress";
 
-// Re-defining properly
-const STEPS_CONFIG = [
-  { text: "Analyzing your profile...", icon: Brain, color: "#6c63ff" },
-  { text: "Mapping skill dependencies...", icon: Network, color: "#00c9a7" },
-  { text: "Calculating learning timeline...", icon: Clock, color: "#f7971e" },
-  { text: "Building your personalized roadmap...", icon: Sparkles, color: "#6c63ff" }
-];
+const ICONS: Record<GenerationStepId, typeof Brain> = {
+  profile: Brain,
+  hiring: Network,
+  graph: Sparkles,
+  assessments: Clock,
+  resources: Clapperboard,
+  save: Save,
+  done: Check,
+};
+
+const COLORS: Record<GenerationStepId, string> = {
+  profile: "#6c63ff",
+  hiring: "#00c9a7",
+  graph: "#6c63ff",
+  assessments: "#f7971e",
+  resources: "#38bdf8",
+  save: "#a78bfa",
+  done: "#00c9a7",
+};
 
 export default function RoadmapGenerating({
   isOpen,
-  onComplete,
+  progress,
+  error,
   targetCompany,
   targetRole,
 }: {
   isOpen: boolean;
-  onComplete: () => void;
+  progress: RoadmapGenerationProgress | null;
+  error?: string | null;
   targetCompany?: string | null;
   targetRole?: string;
 }) {
-  const [currentStep, setCurrentStep] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
-    if (!isOpen) return;
-    
-    let step = 0;
-    const interval = setInterval(() => {
-      step++;
-      if (step >= STEPS_CONFIG.length) {
-        clearInterval(interval);
-        setTimeout(() => {
-          onComplete();
-        }, 1000);
-      } else {
-        setCurrentStep(step);
-      }
-    }, 1500);
-
-    return () => clearInterval(interval);
-  }, [isOpen, onComplete]);
+    if (!isOpen) {
+      setElapsed(0);
+      return;
+    }
+    const started = Date.now();
+    const t = window.setInterval(() => setElapsed(Math.floor((Date.now() - started) / 1000)), 250);
+    return () => window.clearInterval(t);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const overlayStyle: React.CSSProperties = {
-    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(10px)',
-    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-    zIndex: 9999
-  };
+  const step = progress?.step ?? "profile";
+  const percent = error ? progress?.percent ?? 0 : progress?.percent ?? 8;
+  const CurrentIcon = ICONS[step] || Sparkles;
+  const currentColor = error ? "#ef4444" : COLORS[step] || "#6c63ff";
+  const stepIndex = GENERATION_STEPS.findIndex((s) => s.id === step);
 
-  const CurrentIcon = STEPS_CONFIG[currentStep]?.icon || Sparkles;
-  const currentColor = STEPS_CONFIG[currentStep]?.color || '#fff';
+  const headline = error
+    ? "Generation failed"
+    : targetCompany && (step === "hiring" || step === "graph")
+      ? `Building a ${targetCompany}${targetRole ? ` ${targetRole}` : ""} hiring path`
+      : progress?.message || GENERATION_STEPS[Math.max(0, stepIndex)].label;
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div 
-          style={overlayStyle}
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background:
+          "radial-gradient(1200px 600px at 50% 20%, rgba(108,99,255,0.25), transparent 50%), rgba(6, 10, 24, 0.88)",
+        backdropFilter: "blur(14px)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 9999,
+        padding: 24,
+      }}
+    >
+      <motion.div
+        key={error ? "err" : step}
+        initial={{ scale: 0.94, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 18 }}
+      >
+        <motion.div
+          animate={error ? {} : { rotate: 360 }}
+          transition={error ? undefined : { repeat: Infinity, duration: 8, ease: "linear" }}
+          style={{
+            padding: 22,
+            borderRadius: "50%",
+            border: `2px solid ${currentColor}`,
+            boxShadow: `0 0 32px ${currentColor}55`,
+            background: "rgba(15,23,42,0.7)",
+          }}
         >
-          <motion.div 
-            key={currentStep}
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 1.2, opacity: 0 }}
-            transition={{ type: 'spring', damping: 20, stiffness: 100 }}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}
-          >
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
-              style={{ padding: '24px', backgroundColor: 'var(--bg-card)', borderRadius: '50%', border: `2px solid ${currentColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 20px ${currentColor}40` }}
-            >
-              <CurrentIcon size={48} color={currentColor} />
-            </motion.div>
-            
-            <div style={{ fontSize: '24px', fontWeight: 'bold', fontFamily: 'Outfit', color: '#fff', textAlign: 'center', maxWidth: 480 }}>
-              {targetCompany && currentStep === STEPS_CONFIG.length - 1
-                ? `Building your ${targetCompany}${targetRole ? ` ${targetRole}` : ''} roadmap...`
-                : STEPS_CONFIG[currentStep]?.text}
-            </div>
-            {targetCompany && currentStep === 0 ? (
-              <div style={{ fontSize: 14, fontFamily: 'Outfit', color: 'rgba(255,255,255,0.75)', textAlign: 'center' }}>
-                Matching interview prep and skills to {targetCompany}
-              </div>
-            ) : null}
-          </motion.div>
-
-          <div style={{ width: '300px', height: '6px', backgroundColor: 'var(--bg-card)', borderRadius: '3px', marginTop: '48px', overflow: 'hidden' }}>
-            <motion.div 
-              initial={{ width: '0%' }}
-              animate={{ width: `${((currentStep + 1) / STEPS_CONFIG.length) * 100}%` }}
-              transition={{ duration: 1.5, ease: "easeInOut" }}
-              style={{ height: '100%', backgroundColor: currentColor, borderRadius: '3px' }}
-            />
-          </div>
+          {error ? <AlertCircle size={40} color={currentColor} /> : <CurrentIcon size={40} color={currentColor} />}
         </motion.div>
-      )}
-    </AnimatePresence>
+        <div
+          style={{
+            fontSize: 24,
+            fontWeight: 800,
+            fontFamily: "Outfit",
+            color: "#fff",
+            textAlign: "center",
+            maxWidth: 520,
+            lineHeight: 1.35,
+          }}
+        >
+          {headline}
+        </div>
+        <div style={{ color: "rgba(255,255,255,0.7)", fontFamily: "Inter", fontSize: 14 }}>
+          {error ? error : `${percent}% · ${elapsed}s elapsed`}
+        </div>
+      </motion.div>
+
+      <div style={{ width: 360, maxWidth: "92vw", marginTop: 28 }}>
+        <div
+          style={{
+            height: 8,
+            background: "rgba(255,255,255,0.12)",
+            borderRadius: 99,
+            overflow: "hidden",
+          }}
+        >
+          <motion.div
+            animate={{ width: `${Math.max(4, percent)}%` }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            style={{ height: "100%", background: currentColor, borderRadius: 99 }}
+          />
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 18 }}>
+          {GENERATION_STEPS.filter((s) => s.id !== "done").map((s, i) => {
+            const done = stepIndex > i || step === "done";
+            const active = s.id === step && !error;
+            return (
+              <div
+                key={s.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  color: done || active ? "#fff" : "rgba(255,255,255,0.4)",
+                  fontFamily: "Outfit",
+                  fontSize: 13,
+                }}
+              >
+                <span
+                  style={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: 99,
+                    display: "grid",
+                    placeItems: "center",
+                    background: done ? "#00c9a7" : active ? COLORS[s.id] : "transparent",
+                    border: `1px solid ${done ? "#00c9a7" : active ? COLORS[s.id] : "rgba(255,255,255,0.25)"}`,
+                  }}
+                >
+                  {done ? <Check size={11} color="#041016" /> : null}
+                </span>
+                {s.label}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 }

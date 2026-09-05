@@ -47,6 +47,12 @@ export const env = {
   get newsCacheTtlMinutes() {
     return optional("NEWS_CACHE_TTL_MINUTES");
   },
+  /** Optional YouTube Data API key — used to search live, public, embeddable videos. */
+  get youtubeApiKey() {
+    const key = optional("YOUTUBE_API_KEY");
+    if (!key || key === "YOUR_YOUTUBE_API_KEY") return undefined;
+    return key;
+  },
   get isProd() {
     return process.env.NODE_ENV === "production";
   },
@@ -63,5 +69,6 @@ export function getEnvStatus() {
     GEMINI_API_KEY: Boolean(env.geminiApiKey),
     GROQ_API_KEY: Boolean(env.groqApiKey),
     NEWS_API_KEY: Boolean(env.newsApiKey),
+    YOUTUBE_API_KEY: Boolean(env.youtubeApiKey),
   };
 }

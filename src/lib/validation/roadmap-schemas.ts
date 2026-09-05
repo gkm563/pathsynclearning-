@@ -3,7 +3,9 @@ import { z } from 'zod';
 export const roadmapNodeResourceSchema = z.object({
   title: z.string(),
   url: z.string(),
-  type: z.enum(['documentation', 'video', 'course', 'practice', 'article', 'project'])
+  type: z.enum(['documentation', 'video', 'course', 'practice', 'article', 'project']),
+  channel: z.string().max(120).optional(),
+  suggested: z.boolean().optional(),
 });
 
 export const mcqQuestionSchema = z.object({
@@ -87,6 +89,8 @@ export const roadmapNodeSchema = z.object({
   resources: z.array(roadmapNodeResourceSchema).max(10),
   project: z.string().nullable().optional(),
   whyLearn: z.string().max(1000),
+  learningOutcomes: z.array(z.string().max(240)).max(8).optional(),
+  interviewFocus: z.string().max(500).optional(),
   assessment: nodeAssessmentSchema.optional(),
 });
 

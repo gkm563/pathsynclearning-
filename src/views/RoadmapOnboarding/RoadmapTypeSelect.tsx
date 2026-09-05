@@ -1,16 +1,39 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
-import { Building2, Compass } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Building2, Compass, Search, ShieldCheck, TriangleAlert } from "lucide-react";
+import { apiGet, apiSend } from "@/lib/api";
+import { OTHER_COMPANY, OTHER_ROLE } from "@/lib/roadmap/target-companies";
 import {
-  OTHER_COMPANY,
-  OTHER_ROLE,
-  TARGET_COMPANIES,
-  TARGET_ROLES,
-} from "@/lib/roadmap/target-companies";
+  ChoiceCard,
+  OnboardingCard,
+  Pill,
+  SearchField,
+  StepHeader,
+  inputStyle,
+  labelStyle,
+} from "./onboarding-ui";
 
 export type RoadmapGenerationMode = "targeted" | "general";
+
+type CatalogCompany = {
+  id: string;
+  name: string;
+  domain: string;
+  kind: string;
+  region: string;
+  logo: string;
+  stacks: string[];
+  interviewLoop: string[];
+  hiringNotes: string;
+  roleNames: string[];
+};
+
+type CatalogRole = {
+  id: string;
+  name: string;
+  summary: string;
+};
 
 export default function RoadmapTypeSelect({
   mode,
@@ -28,182 +51,317 @@ export default function RoadmapTypeSelect({
   const roleOfInterest = typeof data.roleOfInterest === "string" ? data.roleOfInterest : "";
   const customRole = typeof data.customRole === "string" ? data.customRole : "";
 
-  const card = (selected: boolean): React.CSSProperties => ({
-    flex: 1,
-    minWidth: 240,
-    padding: 24,
-    borderRadius: 16,
-    border: `2px solid ${selected ? "#6c63ff" : "var(--border-light)"}`,
-    backgroundColor: selected ? "rgba(108, 99, 255, 0.08)" : "var(--bg-alt)",
-    cursor: "pointer",
-    textAlign: "left",
-    fontFamily: "Outfit",
-    color: "var(--text-main)",
-    transition: "all 0.2s",
-  });
+  const [companies, setCompanies] = useState<CatalogCompany[]>([]);
+  const [allRoles, setAllRoles] = useState<CatalogRole[]>([]);
+  const [companyQuery, setCompanyQuery] = useState("");
+  const [roleQuery, setRoleQuery] = useState("");
+  const [pairingMessage, setPairingMessage] = useState<string | null>(null);
+  const [pairingOk, setPairingOk] = useState(true);
 
-  const chip = (selected: boolean): React.CSSProperties => ({
-    padding: "12px 14px",
-    borderRadius: 12,
-    border: `2px solid ${selected ? "#00c9a7" : "var(--border-light)"}`,
-    backgroundColor: selected ? "rgba(0, 201, 167, 0.1)" : "var(--bg-alt)",
-    color: "var(--text-main)",
-    cursor: "pointer",
-    fontFamily: "Outfit",
-    textAlign: "center",
-    fontWeight: selected ? 600 : 400,
-    fontSize: 14,
-    transition: "all 0.2s",
-  });
+  useEffect(() => {
+    apiGet<{ companies: CatalogCompany[]; roles: CatalogRole[] }>("/api/roadmap/catalog")
+      .then((res) => {
+        setCompanies(res.companies || []);
+        setAllRoles(res.roles || []);
+      })
+      .catch(() => {});
+  }, []);
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "12px 16px",
-    borderRadius: 8,
-    border: "1px solid var(--border-light)",
-    backgroundColor: "var(--bg-main)",
-    color: "var(--text-main)",
-    fontFamily: "Outfit",
-    fontSize: 16,
-    marginTop: 12,
-    outline: "none",
-    boxSizing: "border-box",
-  };
+  const selectedCompany = useMemo(
+    () => companies.find((c) => c.name === targetCompany) || null,
+    [companies, targetCompany],
+  );
 
-  const labelStyle: React.CSSProperties = {
-    display: "block",
-    marginBottom: 12,
-    fontWeight: 600,
-    color: "var(--text-main)",
-    fontFamily: "Outfit",
-    fontSize: 18,
-  };
+  const visibleCompanies = useMemo(() => {
+    const q = companyQuery.trim().toLowerCase();
+    if (!q) return companies;
+    return companies.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.region.toLowerCase().includes(q) ||
+        c.kind.toLowerCase().includes(q) ||
+        c.stacks.some((s) => s.toLowerCase().includes(q)),
+    );
+  }, [companies, companyQuery]);
 
-  const gridStyle: React.CSSProperties = {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
-    gap: 10,
-  };
+  const rolesForUi = useMemo(() => {
+    const base = selectedCompany
+      ? allRoles.filter((r) => selectedCompany.roleNames.includes(r.name))
+      : allRoles;
+    const q = roleQuery.trim().toLowerCase();
+    if (!q) return base;
+    return base.filter(
+      (r) => r.name.toLowerCase().includes(q) || r.summary.toLowerCase().includes(q),
+    );
+  }, [allRoles, selectedCompany, roleQuery]);
+
+  useEffect(() => {
+    if (mode !== "targeted") {
+      setPairingMessage(null);
+      return;
+    }
+    const companyName = targetCompany === OTHER_COMPANY ? customCompany : targetCompany;
+    const roleName = roleOfInterest === OTHER_ROLE ? customRole : roleOfInterest;
+    if (!companyName || !roleName || roleOfInterest === OTHER_ROLE) {
+      setPairingMessage(null);
+      setPairingOk(true);
+      return;
+    }
+    let cancelled = false;
+    apiSend<{ ok: boolean; message: string }>("/api/roadmap/catalog", "POST", {
+      company: companyName,
+      role: roleName,
+    })
+      .then((res) => {
+        if (cancelled) return;
+        setPairingOk(res.ok);
+        setPairingMessage(res.message);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, targetCompany, customCompany, roleOfInterest, customRole, selectedCompany?.id]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 24,
-        backgroundColor: "var(--bg-card)",
-        padding: 32,
-        borderRadius: 16,
-        border: "1px solid var(--border-light)",
-      }}
-    >
-      <div>
-        <div
-          style={{
-            fontSize: 24,
-            fontWeight: "bold",
-            fontFamily: "Outfit",
-            color: "var(--text-main)",
-          }}
-        >
-          How should we build this roadmap?
-        </div>
-        <p
-          style={{
-            fontFamily: "Outfit",
-            fontSize: 15,
-            color: "var(--text-muted)",
-            margin: "8px 0 0",
-          }}
-        >
-          Choose a company and job-role path, or a general learning path like before.
-        </p>
-      </div>
+    <OnboardingCard accent={mode === "general" ? "#00c9a7" : "#6c63ff"}>
+      <StepHeader
+        kicker="Path type"
+        title="How should we build this roadmap?"
+        subtitle="Company paths follow real hiring loops. Role paths stay industry-general and never reuse the company questionnaire."
+      />
 
-      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-        <button type="button" style={card(mode === "targeted")} onClick={() => onModeChange("targeted")}>
-          <Building2 size={28} color="#6c63ff" />
-          <div style={{ fontWeight: 700, fontSize: 18, marginTop: 12 }}>Company or job role</div>
-          <div style={{ fontSize: 14, color: "var(--text-muted)", marginTop: 6, lineHeight: 1.45 }}>
-            Aim at a specific employer and role, including interview prep and the skills they typically hire for.
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
+        <ChoiceCard selected={mode === "targeted"} onClick={() => onModeChange("targeted")} accent="#6c63ff">
+          <Building2 size={26} color="#6c63ff" />
+          <div style={{ fontWeight: 800, fontSize: 18, marginTop: 10 }}>Company hiring path</div>
+          <div style={{ fontSize: 14, color: "var(--text-muted)", marginTop: 6, lineHeight: 1.5 }}>
+            Pick an employer, then only roles they actually hire. Interview prep matches their OA, machine coding, and values rounds.
           </div>
-        </button>
-        <button type="button" style={card(mode === "general")} onClick={() => onModeChange("general")}>
-          <Compass size={28} color="#00c9a7" />
-          <div style={{ fontWeight: 700, fontSize: 18, marginTop: 12 }}>General roadmap</div>
-          <div style={{ fontSize: 14, color: "var(--text-muted)", marginTop: 6, lineHeight: 1.45 }}>
-            Build a personalized path from your goals, skills, and time — same as the previous experience.
+        </ChoiceCard>
+        <ChoiceCard selected={mode === "general"} onClick={() => onModeChange("general")} accent="#00c9a7">
+          <Compass size={26} color="#00c9a7" />
+          <div style={{ fontWeight: 800, fontSize: 18, marginTop: 10 }}>Role learning path</div>
+          <div style={{ fontSize: 14, color: "var(--text-muted)", marginTop: 6, lineHeight: 1.5 }}>
+            Build skills for a role across the industry. Different questions, no company lock-in.
           </div>
-        </button>
+        </ChoiceCard>
       </div>
 
       {mode === "targeted" ? (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
           <div>
-            <label style={labelStyle}>Target company</label>
-            <div style={gridStyle}>
-              {[...TARGET_COMPANIES, OTHER_COMPANY].map((company) => (
-                <div
-                  key={company}
-                  role="button"
-                  tabIndex={0}
-                  style={chip(targetCompany === company)}
-                  onClick={() =>
-                    onChange({
-                      ...data,
-                      targetCompany: company,
-                      customCompany: company === OTHER_COMPANY ? customCompany : "",
-                    })
-                  }
-                >
-                  {company}
-                </div>
-              ))}
+            <label style={labelStyle}>Search companies</label>
+            <SearchField value={companyQuery} onChange={setCompanyQuery} placeholder="Google, Razorpay, TCS…" />
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(168px, 1fr))",
+                gap: 10,
+                marginTop: 12,
+                maxHeight: 280,
+                overflowY: "auto",
+                paddingRight: 4,
+              }}
+            >
+              {visibleCompanies.map((company) => {
+                const selected = targetCompany === company.name;
+                return (
+                  <button
+                    key={company.id}
+                    type="button"
+                    onClick={() =>
+                      onChange({
+                        ...data,
+                        targetCompany: company.name,
+                        customCompany: "",
+                        roleOfInterest: company.roleNames.includes(roleOfInterest) ? roleOfInterest : "",
+                      })
+                    }
+                    style={{
+                      display: "flex",
+                      gap: 10,
+                      alignItems: "center",
+                      textAlign: "left",
+                      padding: "10px 12px",
+                      borderRadius: 14,
+                      border: `2px solid ${selected ? "#6c63ff" : "var(--border-light)"}`,
+                      background: selected ? "rgba(108,99,255,0.1)" : "var(--bg-alt)",
+                      cursor: "pointer",
+                      color: "var(--text-main)",
+                    }}
+                  >
+                    <img src={company.logo} alt="" width={22} height={22} style={{ borderRadius: 6 }} />
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: 13 }}>{company.name}</div>
+                      <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{company.region}</div>
+                    </div>
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() => onChange({ ...data, targetCompany: OTHER_COMPANY })}
+                style={{
+                  padding: 12,
+                  borderRadius: 14,
+                  border: `2px dashed ${targetCompany === OTHER_COMPANY ? "#6c63ff" : "var(--border-light)"}`,
+                  background: "transparent",
+                  cursor: "pointer",
+                  color: "var(--text-main)",
+                  fontWeight: 700,
+                }}
+              >
+                Other company
+              </button>
             </div>
             {targetCompany === OTHER_COMPANY ? (
               <input
-                style={inputStyle}
-                placeholder="Company name..."
+                style={{ ...inputStyle, marginTop: 12 }}
+                placeholder="Company name"
                 value={customCompany}
                 onChange={(e) => onChange({ ...data, customCompany: e.target.value })}
               />
             ) : null}
           </div>
 
+          {selectedCompany ? (
+            <div
+              style={{
+                padding: 16,
+                borderRadius: 16,
+                background: "var(--bg-alt)",
+                border: "1px solid var(--border-light)",
+              }}
+            >
+              <div style={{ fontWeight: 800, marginBottom: 6 }}>{selectedCompany.name} hiring snapshot</div>
+              <div style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
+                {selectedCompany.hiringNotes}
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
+                {selectedCompany.interviewLoop.map((step) => (
+                  <span
+                    key={step}
+                    style={{
+                      fontSize: 12,
+                      padding: "4px 8px",
+                      borderRadius: 999,
+                      background: "var(--bg-card)",
+                      border: "1px solid var(--border-light)",
+                    }}
+                  >
+                    {step}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           <div>
-            <label style={labelStyle}>Target job role</label>
-            <div style={gridStyle}>
-              {[...TARGET_ROLES, OTHER_ROLE].map((role) => (
-                <div
-                  key={role}
-                  role="button"
-                  tabIndex={0}
-                  style={chip(roleOfInterest === role)}
+            <label style={labelStyle}>
+              {selectedCompany ? `Roles ${selectedCompany.name} hires` : "Target role"}
+            </label>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+              <Search size={16} color="var(--text-muted)" />
+              <SearchField value={roleQuery} onChange={setRoleQuery} placeholder="Filter roles…" />
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {rolesForUi.map((role) => (
+                <Pill
+                  key={role.id}
+                  selected={roleOfInterest === role.name}
                   onClick={() =>
-                    onChange({
-                      ...data,
-                      roleOfInterest: role,
-                      customRole: role === OTHER_ROLE ? customRole : "",
-                    })
+                    onChange({ ...data, roleOfInterest: role.name, customRole: "" })
                   }
                 >
-                  {role}
-                </div>
+                  {role.name}
+                </Pill>
               ))}
+              {(!selectedCompany || targetCompany === OTHER_COMPANY) && (
+                <Pill
+                  selected={roleOfInterest === OTHER_ROLE}
+                  onClick={() => onChange({ ...data, roleOfInterest: OTHER_ROLE })}
+                  accent="#f7971e"
+                >
+                  Other role
+                </Pill>
+              )}
             </div>
             {roleOfInterest === OTHER_ROLE ? (
               <input
-                style={inputStyle}
-                placeholder="Job role..."
+                style={{ ...inputStyle, marginTop: 12 }}
+                placeholder="Job role"
                 value={customRole}
                 onChange={(e) => onChange({ ...data, customRole: e.target.value })}
               />
             ) : null}
+            {rolesForUi[0] && roleOfInterest && roleOfInterest !== OTHER_ROLE ? (
+              <p style={{ margin: "10px 0 0", color: "var(--text-muted)", fontSize: 13 }}>
+                {rolesForUi.find((r) => r.name === roleOfInterest)?.summary}
+              </p>
+            ) : null}
           </div>
-        </motion.div>
+
+          {pairingMessage ? (
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                alignItems: "flex-start",
+                padding: 12,
+                borderRadius: 12,
+                background: pairingOk ? "rgba(0,201,167,0.1)" : "rgba(239,68,68,0.1)",
+                color: "var(--text-main)",
+                fontSize: 13,
+              }}
+            >
+              {pairingOk ? <ShieldCheck size={18} color="#00c9a7" /> : <TriangleAlert size={18} color="#ef4444" />}
+              <span>{pairingMessage}</span>
+            </div>
+          ) : null}
+        </div>
       ) : null}
-    </motion.div>
+
+      {mode === "general" ? (
+        <div>
+          <label style={labelStyle}>Which role is this path for?</label>
+          <SearchField value={roleQuery} onChange={setRoleQuery} placeholder="Search roles…" />
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+            {(roleQuery
+              ? allRoles.filter(
+                  (r) =>
+                    r.name.toLowerCase().includes(roleQuery.toLowerCase()) ||
+                    r.summary.toLowerCase().includes(roleQuery.toLowerCase()),
+                )
+              : allRoles
+            ).map((role) => (
+              <Pill
+                key={role.id}
+                selected={roleOfInterest === role.name}
+                onClick={() => onChange({ ...data, roleOfInterest: role.name, customRole: "" })}
+              >
+                {role.name}
+              </Pill>
+            ))}
+            <Pill
+              selected={roleOfInterest === OTHER_ROLE}
+              onClick={() => onChange({ ...data, roleOfInterest: OTHER_ROLE })}
+              accent="#f7971e"
+            >
+              Other
+            </Pill>
+          </div>
+          {roleOfInterest === OTHER_ROLE ? (
+            <input
+              style={{ ...inputStyle, marginTop: 12 }}
+              placeholder="Job role"
+              value={customRole}
+              onChange={(e) => onChange({ ...data, customRole: e.target.value })}
+            />
+          ) : null}
+        </div>
+      ) : null}
+    </OnboardingCard>
   );
 }

@@ -2,13 +2,14 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Compass, Plus, Check } from 'lucide-react';
+import { OnboardingCard, StepHeader } from '../onboarding-ui';
 
 const SUGGESTED_SKILLS = [
   "React", "Node.js", "System Design", "Machine Learning", 
   "AWS", "GraphQL", "TypeScript", "Docker", "Algorithms", "UI/UX"
 ];
 
-export default function LearningGoalSection({ data, onChange }: { data: any, onChange: (data: any) => void }) {
+export default function LearningGoalSection({ data, onChange }: { data: any, onChange: (data: any) => void; hideRole?: boolean }) {
   const learningGoals = data.learningGoals || [];
   const reason = data.reason || '';
   const [customGoal, setCustomGoal] = useState('');
@@ -64,11 +65,8 @@ export default function LearningGoalSection({ data, onChange }: { data: any, onC
   };
 
   return (
-    <motion.div style={containerStyle} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-      <div style={titleStyle}>
-        <Compass size={28} color="#6c63ff" />
-        🧭 Learning Goals
-      </div>
+    <OnboardingCard accent="#6c63ff">
+      <StepHeader icon={<Compass size={22} color="#6c63ff" />} kicker="Role path" title="What else to learn" subtitle="Only asked on the general role path, not on company hiring paths." />
       
       <div>
         <label style={labelStyle}>What do you want to learn?</label>
@@ -104,6 +102,6 @@ export default function LearningGoalSection({ data, onChange }: { data: any, onC
           onChange={(e) => onChange({ ...data, reason: e.target.value })}
         />
       </div>
-    </motion.div>
+    </OnboardingCard>
   );
 }

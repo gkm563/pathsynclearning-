@@ -29,6 +29,9 @@ export interface RoadmapNodeResource {
   title: string;
   url: string;
   type: "documentation" | "video" | "course" | "practice" | "article" | "project";
+  channel?: string;
+  /** Extra videos/docs from other channels — not the core lesson. */
+  suggested?: boolean;
 }
 
 export interface McqQuestion {
@@ -113,6 +116,8 @@ export interface RoadmapNode {
   resources: RoadmapNodeResource[];
   project: string | null;
   whyLearn: string;
+  learningOutcomes?: string[];
+  interviewFocus?: string;
   assessment?: NodeAssessment;
   /** Position — set by auto-layout, not by AI */
   position?: { x: number; y: number };

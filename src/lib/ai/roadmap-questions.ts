@@ -1,50 +1,208 @@
-import { RoadmapProfile, FollowUpQuestionsResponse } from '@/types/roadmap';
+import { RoadmapProfile, FollowUpQuestionsResponse, FollowUpQuestion } from '@/types/roadmap';
 import { callAIWithFallback } from './llm';
 import { followUpQuestionsResponseSchema } from '@/lib/validation/roadmap-schemas';
-import { AppError } from '@/lib/api/errors';
+import { hiringBrief } from '@/lib/roadmap/hiring-catalog';
 
-export async function generateFollowUpQuestions(profile: RoadmapProfile, userId: string): Promise<FollowUpQuestionsResponse> {
-  const systemInstruction = `You are analyzing a student's profile to identify MISSING information needed for roadmap generation.
-Generate 3-7 highly relevant follow-up questions. Each question should fill a specific knowledge gap. Do NOT ask about things already covered.
-Example: If student wants AI/ML but hasn't mentioned math → ask about math comfort.
-Example: If student wants cybersecurity but no mention of Linux → ask about Linux experience.
-If targetCompany is already set, do NOT ask which company they want.
-If they want a job, internship, or placements and targetCompany is empty, you MAY ask whether they have a target company (optional, not required).
-If the profile is comprehensive enough, return { "needsMoreInformation": false, "questions": [] }.
-Question types: single_choice, multi_choice, text, rating.
-Each question must have an 'id' (kebab-case), 'reason' (why asking), 'required' boolean.
-You MUST return valid JSON exactly matching this structure:
-{
-  "needsMoreInformation": boolean,
-  "questions": [
-    {
-      "id": "string",
-      "question": "string",
-      "type": "single_choice|multi_choice|text|rating",
-      "options": ["string"],
-      "reason": "string",
-      "required": boolean
+export type RoadmapGenerationMode = 'targeted' | 'general';
+
+const COVERED: Array<{ test: (p: RoadmapProfile) => boolean; phrases: string[] }> = [
+  { test: (p) => Boolean(p.targetCompany), phrases: ['company', 'employer', 'which org', 'target company', 'dream company'] },
+  { test: (p) => Boolean(p.targetRole), phrases: ['which role', 'job role', 'target role', 'position are you'] },
+  { test: (p) => Boolean(p.careerGoal), phrases: ['career goal', 'what do you want to achieve', 'internship or job'] },
+  { test: (p) => Boolean(p.weeklyHours), phrases: ['weekly hours', 'how many hours', 'time per week'] },
+  { test: (p) => Boolean(p.targetTimeline), phrases: ['timeline', 'how soon', 'deadline', 'when do you want'] },
+  { test: (p) => Boolean(p.learningStyles?.length), phrases: ['learn best', 'learning style', 'video or docs'] },
+  { test: (p) => Boolean(p.experienceLevel), phrases: ['real-world experience', 'internship experience'] },
+  { test: (p) => p.hasProjects || Boolean(p.projects?.length), phrases: ['have you built projects', 'portfolio projects'] },
+  { test: (p) => Boolean(p.knownSkills?.length), phrases: ['which skills do you know', 'current skills'] },
+  { test: (p) => Boolean(p.currentStudy), phrases: ['what do you study', 'degree', 'college'] },
+];
+
+function normalize(s: string) {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function isCoveredQuestion(q: FollowUpQuestion, profile: RoadmapProfile) {
+  const text = normalize(`${q.id} ${q.question}`);
+  return COVERED.some((c) => c.test(profile) && c.phrases.some((p) => text.includes(p)));
+}
+
+function similar(a: string, b: string) {
+  const na = new Set(normalize(a).split(' ').filter((w) => w.length > 3));
+  const nb = new Set(normalize(b).split(' ').filter((w) => w.length > 3));
+  if (!na.size || !nb.size) return false;
+  let overlap = 0;
+  for (const w of na) if (nb.has(w)) overlap++;
+  return overlap / Math.min(na.size, nb.size) >= 0.6;
+}
+
+function sanitizeQuestions(
+  questions: FollowUpQuestion[],
+  profile: RoadmapProfile,
+  mode: RoadmapGenerationMode,
+): FollowUpQuestion[] {
+  const out: FollowUpQuestion[] = [];
+  for (const q of questions) {
+    if (!q?.id || !q.question) continue;
+    if (isCoveredQuestion(q, profile)) continue;
+    if (mode === 'general') {
+      const t = normalize(q.question);
+      if (t.includes('company') || t.includes('employer') || t.includes('faang')) continue;
     }
-  ]
-}`;
+    if (mode === 'targeted') {
+      const t = normalize(q.question);
+      if (t.includes('which role') || t.includes('target company')) continue;
+    }
+    if (out.some((prev) => prev.id === q.id || similar(prev.question, q.question))) continue;
+    out.push({
+      ...q,
+      options: Array.isArray(q.options) ? q.options.slice(0, 8) : [],
+    });
+  }
+  return out.slice(0, 6);
+}
 
-  const prompt = `Please analyze the following student profile and generate follow-up questions if needed:\n\n${JSON.stringify(profile, null, 2)}`;
+function fallbackQuestions(profile: RoadmapProfile, mode: RoadmapGenerationMode): FollowUpQuestion[] {
+  const role = (profile.targetRole || '').toLowerCase();
+  const isMl = /ml|machine|data scien|ai /.test(role);
+  const isSec = /security|cyber/.test(role);
+  const isSde = /sde|software|backend|full stack|frontend/.test(role);
+
+  const targeted: FollowUpQuestion[] = [
+    {
+      id: 'oa-dsa-comfort',
+      question: 'How comfortable are you with timed online assessments (LeetCode-style DSA)?',
+      type: 'single_choice',
+      options: ['Never tried', 'Can solve easy', 'Medium with hints', 'Medium consistently', 'Hard is fine'],
+      reason: 'Company OA difficulty should match your current DSA floor.',
+      required: true,
+    },
+    {
+      id: 'interview-track',
+      question: 'Which interview track should this company path prioritize first?',
+      type: 'single_choice',
+      options: ['Coding / DSA', 'Machine coding', 'System design', 'Domain + projects', 'Behavioral / values'],
+      reason: 'Hiring loops weight these rounds differently by company.',
+      required: true,
+    },
+    {
+      id: 'work-authorization',
+      question: 'What offer type are you aiming for at this company?',
+      type: 'single_choice',
+      options: ['Internship', 'New-grad / full-time', 'Either', 'Lateral / experienced'],
+      reason: 'Intern vs new-grad changes timeline and interview depth.',
+      required: false,
+    },
+  ];
+
+  const general: FollowUpQuestion[] = [
+    {
+      id: 'first-build-focus',
+      question: 'If we had to pick one portfolio outcome for this role, what should it be?',
+      type: 'single_choice',
+      options: ['Shipped web app', 'Strong DSA profile', 'ML / data project', 'Open source or intern-ready repo', 'Design / product case'],
+      reason: 'Role paths should end in proof, not only theory.',
+      required: true,
+    },
+    {
+      id: 'weak-foundation',
+      question: 'Which foundation feels weakest for this role right now?',
+      type: 'single_choice',
+      options: ['Programming fluency', 'CS fundamentals', 'Tools / Git / Linux', 'System thinking', 'Communication / interviews'],
+      reason: 'We skip advanced nodes until the weak layer is patched.',
+      required: true,
+    },
+  ];
+
+  if (isMl) {
+    general.push({
+      id: 'math-comfort',
+      question: 'How is your comfort with probability, linear algebra, and calculus for ML?',
+      type: 'single_choice',
+      options: ['Rusty / avoid', 'Course-level', 'Can use in notebooks', 'Can derive and explain'],
+      reason: 'ML hiring still tests math plus applied modeling.',
+      required: false,
+    });
+  }
+  if (isSec) {
+    general.push({
+      id: 'linux-network',
+      question: 'Have you used Linux networking / command line beyond classroom labs?',
+      type: 'single_choice',
+      options: ['No', 'A little', 'Weekly', 'Daily / intern level'],
+      reason: 'Security paths collapse without Linux comfort.',
+      required: false,
+    });
+  }
+  if (isSde && mode === 'general') {
+    general.push({
+      id: 'language-primary',
+      question: 'Which language should we treat as your interview language?',
+      type: 'single_choice',
+      options: ['Python', 'Java', 'C++', 'JavaScript / TypeScript', 'Not sure yet'],
+      reason: 'DSA and backend nodes should match the language you will code in interviews.',
+      required: false,
+    });
+  }
+
+  return sanitizeQuestions(mode === 'targeted' ? targeted : general, profile, mode);
+}
+
+export async function generateFollowUpQuestions(
+  profile: RoadmapProfile,
+  userId: string,
+  mode: RoadmapGenerationMode = profile.targetCompany ? 'targeted' : 'general',
+): Promise<FollowUpQuestionsResponse> {
+  const brief = hiringBrief(profile.targetCompany, profile.targetRole);
+  const alreadyCovered = COVERED.filter((c) => c.test(profile)).flatMap((c) => c.phrases);
+
+  const systemInstruction =
+    mode === 'targeted'
+      ? `You write follow-up questions for a COMPANY-TARGETED hiring roadmap.
+Company context: ${JSON.stringify(brief)}
+Rules:
+- Generate 3-5 questions MAX. Zero is allowed if the profile is enough.
+- NEVER ask anything already known: ${alreadyCovered.join(', ') || 'n/a'}.
+- NEVER ask target company or target role again.
+- NEVER repeat the same idea twice (no two DSA questions, no two "why this company" questions).
+- Ask only gaps that change a hiring plan: OA/DSA floor, intern vs full-time, machine-coding vs system design, location, referral, domain depth for THIS company's loop.
+- Do not ask generic career-exploration questions (those belong to the general roadmap).
+Question types: single_choice, multi_choice, text, rating.
+Return JSON:
+{ "needsMoreInformation": boolean, "questions": [{ "id": "kebab-case", "question": "string", "type": "single_choice|multi_choice|text|rating", "options": ["string"], "reason": "string", "required": boolean }] }`
+      : `You write follow-up questions for a ROLE-BASED (not company) learning roadmap.
+Target role: ${profile.targetRole}
+Rules:
+- Generate 3-5 questions MAX. Zero is allowed if the profile is enough.
+- NEVER ask anything already known: ${alreadyCovered.join(', ') || 'n/a'}.
+- NEVER ask which company they want. This is not a company path.
+- NEVER ask target role again.
+- NEVER repeat the same idea twice.
+- Ask only gaps that change a role curriculum: interview language, weak foundation, portfolio outcome, math/linux/domain if relevant to the role.
+Question types: single_choice, multi_choice, text, rating.
+Return JSON:
+{ "needsMoreInformation": boolean, "questions": [{ "id": "kebab-case", "question": "string", "type": "single_choice|multi_choice|text|rating", "options": ["string"], "reason": "string", "required": boolean }] }`;
+
+  const prompt = `Student profile:\n${JSON.stringify(profile, null, 2)}`;
 
   try {
     const result = await callAIWithFallback<unknown>({
       prompt,
       systemInstruction,
       userId,
-      maxTokens: 4096,
-      temperature: 1,
-      reasoningEffort: 'medium',
+      maxTokens: 2048,
+      temperature: 0.4,
+      reasoningEffort: 'low',
     });
-
-    return followUpQuestionsResponseSchema.parse(result);
-  } catch (error) {
-    if (error && typeof error === 'object' && 'name' in error && error.name === 'ZodError') {
-      throw AppError.badRequest('Invalid follow-up questions generated by AI.');
+    const parsed = followUpQuestionsResponseSchema.parse(result);
+    const questions = sanitizeQuestions(parsed.questions, profile, mode);
+    if (!questions.length) {
+      const fallback = fallbackQuestions(profile, mode);
+      return { needsMoreInformation: fallback.length > 0, questions: fallback };
     }
-    throw error;
+    return { needsMoreInformation: true, questions };
+  } catch {
+    const questions = fallbackQuestions(profile, mode);
+    return { needsMoreInformation: questions.length > 0, questions };
   }
 }

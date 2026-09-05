@@ -84,3 +84,68 @@ export async function apiSend<T = unknown>(
   if (!text) return undefined as T;
   return JSON.parse(text) as T;
 }
+
+export async function streamRoadmapGenerate(
+  onProgress: (p: { step: string; percent: number; message: string }) => void,
+): Promise<{ roadmap: unknown }> {
+  const res = await fetch("/api/roadmap/generate?stream=1", {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      Accept: "text/event-stream",
+      "Content-Type": "application/json",
+    },
+    body: "{}",
+  });
+
+  if (!res.ok) await parseFailure(res);
+  if (!res.body) {
+    throw new ApiClientError("Generation stream was empty.", 500);
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let result: { roadmap: unknown } | null = null;
+  let streamError: string | null = null;
+
+  const flushBlock = (block: string) => {
+    const lines = block.split("\n");
+    let event = "message";
+    const dataLines: string[] = [];
+    for (const line of lines) {
+      if (line.startsWith("event:")) event = line.slice(6).trim();
+      else if (line.startsWith("data:")) dataLines.push(line.slice(5).trim());
+    }
+    if (!dataLines.length) return;
+    let payload: unknown = dataLines.join("\n");
+    try {
+      payload = JSON.parse(dataLines.join("\n"));
+    } catch {
+      // keep string
+    }
+    if (event === "progress" && payload && typeof payload === "object") {
+      onProgress(payload as { step: string; percent: number; message: string });
+    } else if (event === "done" && payload && typeof payload === "object") {
+      result = payload as { roadmap: unknown };
+    } else if (event === "error") {
+      const rec = asRecord(payload);
+      streamError =
+        (typeof rec?.message === "string" && rec.message) || "Failed to generate roadmap";
+    }
+  };
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const parts = buffer.split("\n\n");
+    buffer = parts.pop() || "";
+    for (const part of parts) flushBlock(part.trim());
+  }
+  if (buffer.trim()) flushBlock(buffer.trim());
+
+  if (streamError) throw new ApiClientError(streamError, 500);
+  if (!result) throw new ApiClientError("Generation ended without a roadmap.", 500);
+  return result;
+}

@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
-import { motion } from "framer-motion";
 import { Target } from "lucide-react";
+import { OnboardingCard, StepHeader } from "../onboarding-ui";
 
 const GOALS = [
   "Get an internship", "Get a job", "Become a freelancer",
@@ -9,33 +9,27 @@ const GOALS = [
   "Learn a new skill", "Explore a career", "Build a startup", "Other",
 ];
 
-const ROLES = [
-  "Frontend Developer", "Backend Developer", "Full Stack Developer",
-  "Mobile Developer", "AI/ML Engineer", "Data Scientist",
-  "Cybersecurity Engineer", "Cloud/DevOps Engineer", "UI/UX Designer",
-  "Product Manager", "Data Analyst", "Other",
-];
-
-export default function CareerGoalSection({ data, onChange }: { data: any, onChange: (data: any) => void }) {
+export default function CareerGoalSection({
+  data,
+  onChange,
+}: {
+  data: any;
+  onChange: (data: any) => void;
+  hideRole?: boolean;
+}) {
   const achieveGoal = data.achieveGoal || "";
-  const roleOfInterest = data.roleOfInterest || "";
-  const customRole = data.customRole || "";
-
-  const containerStyle: React.CSSProperties = {
-    display: "flex", flexDirection: "column", gap: "24px",
-    backgroundColor: "var(--bg-card)", padding: "32px",
-    borderRadius: "16px", border: "1px solid var(--border-light)",
-  };
-
-  const titleStyle: React.CSSProperties = {
-    display: "flex", alignItems: "center", gap: "12px",
-    fontSize: "24px", fontWeight: "bold", fontFamily: "Outfit",
-    color: "var(--text-main)", marginBottom: "8px",
-  };
+  const roleLabel =
+    data.customRole && data.roleOfInterest === "Other"
+      ? data.customRole
+      : data.roleOfInterest;
 
   const labelStyle: React.CSSProperties = {
-    display: "block", marginBottom: "12px", fontWeight: 600,
-    color: "var(--text-main)", fontFamily: "Outfit", fontSize: "18px",
+    display: "block",
+    marginBottom: "12px",
+    fontWeight: 600,
+    color: "var(--text-main)",
+    fontFamily: "Outfit",
+    fontSize: "18px",
   };
 
   const gridStyle: React.CSSProperties = {
@@ -57,19 +51,30 @@ export default function CareerGoalSection({ data, onChange }: { data: any, onCha
     transition: "all 0.2s",
   });
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%", padding: "12px 16px", borderRadius: "8px",
-    border: "1px solid var(--border-light)", backgroundColor: "var(--bg-main)",
-    color: "var(--text-main)", fontFamily: "Outfit", fontSize: "16px",
-    marginTop: "12px", outline: "none",
-  };
-
   return (
-    <motion.div style={containerStyle} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-      <div style={titleStyle}>
-        <Target size={28} color="#00c9a7" />
-        🎯 Career Goals
-      </div>
+    <OnboardingCard accent="#00c9a7">
+      <StepHeader
+        icon={<Target size={22} color="#00c9a7" />}
+        kicker="Outcome"
+        title="Career goals"
+        subtitle="The role is already locked from your path type. Here we only ask what you want to achieve."
+      />
+
+      {roleLabel ? (
+        <div
+          style={{
+            padding: 14,
+            borderRadius: 12,
+            background: "var(--bg-alt)",
+            border: "1px solid var(--border-light)",
+            fontFamily: "Outfit",
+            fontSize: 14,
+            color: "var(--text-muted)",
+          }}
+        >
+          Selected role: <b style={{ color: "var(--text-main)" }}>{roleLabel}</b>
+        </div>
+      ) : null}
 
       <div>
         <label style={labelStyle}>What do you want to achieve?</label>
@@ -85,31 +90,6 @@ export default function CareerGoalSection({ data, onChange }: { data: any, onCha
           ))}
         </div>
       </div>
-
-      <div>
-        <label style={labelStyle}>What role are you interested in?</label>
-        <div style={gridStyle}>
-          {ROLES.map((role) => (
-            <div
-              key={role}
-              style={getCardStyle(roleOfInterest === role)}
-              onClick={() => onChange({ ...data, roleOfInterest: role, customRole: role === "Other" ? customRole : "" })}
-            >
-              {role}
-            </div>
-          ))}
-        </div>
-        {roleOfInterest === "Other" && (
-          <motion.input
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            style={inputStyle}
-            placeholder="Please specify..."
-            value={customRole}
-            onChange={(e) => onChange({ ...data, customRole: e.target.value })}
-          />
-        )}
-      </div>
-    </motion.div>
+    </OnboardingCard>
   );
 }

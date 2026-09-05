@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Wrench, Plus, X } from 'lucide-react';
+import { OnboardingCard, StepHeader } from '../onboarding-ui';
 
 const COMMON_SKILLS = [
   "HTML", "CSS", "JavaScript", "TypeScript", "Python", "C", "C++", "Java",
@@ -11,7 +12,7 @@ const COMMON_SKILLS = [
 
 const CONFIDENCE_LEVELS = ["Never used", "Beginner", "Basic", "Intermediate", "Advanced", "Very confident"];
 
-export default function SkillsSection({ data, onChange }: { data: any, onChange: (data: any) => void }) {
+export default function SkillsSection({ data, onChange }: { data: any, onChange: (data: any) => void; hideRole?: boolean }) {
   const skills = data.skills || []; // array of { skill: string, confidence: string }
   const [customSkill, setCustomSkill] = useState('');
 
@@ -39,8 +40,8 @@ export default function SkillsSection({ data, onChange }: { data: any, onChange:
 
   const containerStyle: React.CSSProperties = {
     display: 'flex', flexDirection: 'column', gap: '24px',
-    backgroundColor: 'var(--bg-card)', padding: '32px',
-    borderRadius: '16px', border: '1px solid var(--border-light)'
+    backgroundColor: 'transparent', padding: 0,
+    borderRadius: 0, border: 'none'
   };
 
   const titleStyle: React.CSSProperties = {
@@ -76,11 +77,8 @@ export default function SkillsSection({ data, onChange }: { data: any, onChange:
   };
 
   return (
-    <motion.div style={containerStyle} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-      <div style={titleStyle}>
-        <Wrench size={28} color="#f7971e" />
-        🛠️ Current Skills
-      </div>
+    <OnboardingCard accent="#f7971e">
+      <StepHeader icon={<Wrench size={22} color="#f7971e" />} kicker="Baseline" title="Current skills" subtitle="Rate what you already know so we skip advanced nodes you have already earned." />
       
       <div>
         <label style={{ display: 'block', marginBottom: '12px', fontWeight: 600, color: 'var(--text-main)', fontFamily: 'Outfit' }}>
@@ -145,6 +143,6 @@ export default function SkillsSection({ data, onChange }: { data: any, onChange:
           </div>
         </div>
       )}
-    </motion.div>
+    </OnboardingCard>
   );
 }

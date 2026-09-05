@@ -82,14 +82,6 @@ export default function RoadmapPage() {
     setView("onboarding");
   }, []);
 
-  const handleSkipOnboarding = useCallback(() => {
-    setCreatingNew(false);
-    setRoadmapDeferred(true);
-    if (intentNew) router.replace(routes.app.roadmap);
-    if (roadmap) setView("canvas");
-    else setView("empty");
-  }, [intentNew, roadmap, router]);
-
   const handleCancelCreate = useCallback(() => {
     if (roadmap) {
       setCreatingNew(false);
@@ -201,7 +193,6 @@ export default function RoadmapPage() {
           ) : null}
           <RoadmapOnboarding
             onComplete={handleOnboardingComplete}
-            onSkip={handleSkipOnboarding}
           />
         </div>
       </React.Suspense>

@@ -2,11 +2,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Clock } from 'lucide-react';
+import { OnboardingCard, StepHeader } from '../onboarding-ui';
 
 const HOURS = ["1–3 hours", "3–5 hours", "5–10 hours", "10–15 hours", "15–20 hours", "20+ hours"];
 const BALANCES = ["Mostly learning", "Balanced", "Mostly projects"];
 
-export default function TimeSection({ data, onChange }: { data: any, onChange: (data: any) => void }) {
+export default function TimeSection({ data, onChange }: { data: any, onChange: (data: any) => void; hideRole?: boolean }) {
   const weeklyHours = data.weeklyHours || '';
   const balance = data.balance || '';
 
@@ -42,11 +43,8 @@ export default function TimeSection({ data, onChange }: { data: any, onChange: (
   });
 
   return (
-    <motion.div style={containerStyle} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-      <div style={titleStyle}>
-        <Clock size={28} color="#00c9a7" />
-        ⏳ Time Availability
-      </div>
+    <OnboardingCard accent="#00c9a7">
+      <StepHeader icon={<Clock size={22} color="#00c9a7" />} kicker="Pace" title="Time you can spend" subtitle="Hours per week change how dense the graph is." />
       
       <div>
         <label style={labelStyle}>Weekly hours you can commit</label>
@@ -69,6 +67,6 @@ export default function TimeSection({ data, onChange }: { data: any, onChange: (
           ))}
         </div>
       </div>
-    </motion.div>
+    </OnboardingCard>
   );
 }

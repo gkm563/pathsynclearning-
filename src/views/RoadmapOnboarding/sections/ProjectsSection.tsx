@@ -2,6 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Briefcase, Plus, Trash2 } from 'lucide-react';
+import { OnboardingCard, StepHeader } from '../onboarding-ui';
 
 const EXPERIENCE_LEVELS = [
   "None", "Personal projects", "College projects", "Open source", 
@@ -10,7 +11,7 @@ const EXPERIENCE_LEVELS = [
 
 const DIFFICULTIES = ["Beginner", "Intermediate", "Advanced"];
 
-export default function ProjectsSection({ data, onChange }: { data: any, onChange: (data: any) => void }) {
+export default function ProjectsSection({ data, onChange }: { data: any, onChange: (data: any) => void; hideRole?: boolean }) {
   const hasProjects = data.hasProjects || false;
   const projects = data.projects || [];
   const realWorldExperience = data.realWorldExperience || '';
@@ -61,11 +62,8 @@ export default function ProjectsSection({ data, onChange }: { data: any, onChang
   const selectStyle: React.CSSProperties = { ...inputStyle, cursor: 'pointer', appearance: 'none' };
 
   return (
-    <motion.div style={containerStyle} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-      <div style={titleStyle}>
-        <Briefcase size={28} color="#00c9a7" />
-        💼 Projects & Experience
-      </div>
+    <OnboardingCard accent="#00c9a7">
+      <StepHeader icon={<Briefcase size={22} color="#00c9a7" />} kicker="Proof" title="Projects and experience" subtitle="Existing work lets us skip beginner project nodes." />
       
       <div>
         <label style={labelStyle}>Have you built any projects?</label>
@@ -141,6 +139,6 @@ export default function ProjectsSection({ data, onChange }: { data: any, onChang
           ))}
         </div>
       </div>
-    </motion.div>
+    </OnboardingCard>
   );
 }

@@ -2,6 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Calendar } from 'lucide-react';
+import { OnboardingCard, StepHeader } from '../onboarding-ui';
 
 const TIMELINES = ["1 month", "3 months", "6 months", "9 months", "1 year", "No fixed deadline"];
 const PRIORITIES = [
@@ -10,7 +11,7 @@ const PRIORITIES = [
   "Earn through freelancing", "Contribute to open source"
 ];
 
-export default function TimelineSection({ data, onChange }: { data: any, onChange: (data: any) => void }) {
+export default function TimelineSection({ data, onChange }: { data: any, onChange: (data: any) => void; hideRole?: boolean }) {
   const timeline = data.timeline || '';
   const priority = data.priority || '';
 
@@ -46,11 +47,8 @@ export default function TimelineSection({ data, onChange }: { data: any, onChang
   });
 
   return (
-    <motion.div style={containerStyle} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-      <div style={titleStyle}>
-        <Calendar size={28} color="#6c63ff" />
-        📅 Timeline & Priority
-      </div>
+    <OnboardingCard accent="#6c63ff">
+      <StepHeader icon={<Calendar size={22} color="#6c63ff" />} kicker="Deadline" title="Timeline and priority" subtitle="This sets estimated weeks and which nodes are marked critical." />
       
       <div>
         <label style={labelStyle}>When do you want to achieve your goal?</label>
@@ -73,6 +71,6 @@ export default function TimelineSection({ data, onChange }: { data: any, onChang
           ))}
         </div>
       </div>
-    </motion.div>
+    </OnboardingCard>
   );
 }

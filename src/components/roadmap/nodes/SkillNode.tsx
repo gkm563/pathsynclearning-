@@ -7,6 +7,9 @@ import { Lock, BookOpen, Check, Play, SkipForward } from 'lucide-react';
 export default function SkillNode({ data }: { data: any }) {
   const { status, estimatedHours, onClick } = data;
   const label = data.label ?? data.title;
+  const blurb = typeof data.description === 'string' ? data.description : '';
+  const outcomes = Array.isArray(data.learningOutcomes) ? data.learningOutcomes.length : 0;
+  const resources = Array.isArray(data.resources) ? data.resources.length : 0;
   
   let borderColor = 'var(--border-light)';
   let bg = 'var(--bg-card)';
@@ -39,15 +42,15 @@ export default function SkillNode({ data }: { data: any }) {
     <div 
       onClick={() => onClick && onClick()}
       style={{
-        width: 220,
-        height: 80,
+        width: 260,
+        minHeight: 118,
         background: bg,
         borderRadius: 16,
         border: `2px solid ${borderColor}`,
         padding: 12,
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'space-between',
+        gap: 6,
         cursor: 'pointer',
         opacity,
         boxShadow: status === 'in_progress' ? '0 0 16px rgba(108, 99, 255, 0.3)' : '0 4px 12px rgba(0,0,0,0.05)',
@@ -71,12 +74,31 @@ export default function SkillNode({ data }: { data: any }) {
           {label}
         </span>
       </div>
+
+      {blurb ? (
+        <div style={{
+          fontFamily: 'Inter',
+          fontSize: 11,
+          lineHeight: 1.4,
+          color: 'var(--text-muted)',
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+        }}>
+          {blurb}
+        </div>
+      ) : null}
       
-      {estimatedHours && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+        <span style={{ fontFamily: 'Inter', fontSize: 10, color: 'var(--text-muted)' }}>
+          {resources ? `${resources} resources` : ''}
+          {outcomes ? ` · ${outcomes} outcomes` : ''}
+        </span>
+        {estimatedHours ? (
           <span style={{ 
             fontFamily: 'Fira Code', 
-            fontSize: 10, 
+            fontSize: 10,
             background: 'var(--bg-alt)',
             color: 'var(--text-muted)',
             padding: '2px 6px',
@@ -84,8 +106,8 @@ export default function SkillNode({ data }: { data: any }) {
           }}>
             {estimatedHours}h
           </span>
-        </div>
-      )}
+        ) : null}
+      </div>
 
       <Handle type="source" position={Position.Bottom} style={{ visibility: 'hidden' }} />
     </div>

@@ -4,6 +4,7 @@ import {
   buildProjectSpecForNode,
   nodeAssessmentFromProjectSpec,
 } from "@/lib/projects/specs";
+import { curatedResourcesForNode } from "@/lib/roadmap/resource-library";
 
 type TopicPack = {
   id: string;
@@ -510,16 +511,19 @@ export function ensureNodeAssessments(nodes: RoadmapNode[]): RoadmapNode[] {
     if (!ASSESSABLE_NODE_TYPES.includes(node.type)) return node;
 
     const yt = pickYt(node);
-    const resources = [...(node.resources || [])];
-    const hasYt = resources.some(
-      (r) => r.type === "video" && /youtube\.com|youtu\.be/i.test(r.url || ""),
+    const extras = curatedResourcesForNode(
+      `${node.title} ${node.skills?.join(" ") || ""} ${node.topics?.join(" ") || ""}`,
     );
-    if (!hasYt) {
-      resources.unshift({
-        title: yt.title,
-        url: yt.url,
-        type: "video",
-      });
+    const resources = [...(node.resources || [])];
+    const seen = new Set(resources.map((r) => r.url));
+    if (!resources.some((r) => r.type === "video" && /youtube\.com|youtu\.be/i.test(r.url || ""))) {
+      resources.unshift({ title: yt.title, url: yt.url, type: "video", suggested: false });
+      seen.add(yt.url);
+    }
+    for (const extra of extras) {
+      if (seen.has(extra.url) || resources.length >= 8) continue;
+      seen.add(extra.url);
+      resources.push({ ...extra, suggested: true });
     }
 
     let assessment = node.assessment;
