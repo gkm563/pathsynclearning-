@@ -312,6 +312,15 @@ export const noteUpdateSchema = z
     message: "Provide at least one field to update",
   });
 
+export const noteEnhanceSchema = z
+  .object({
+    title: z.string().trim().max(200).optional().default(""),
+    content: z.string().trim().min(8).max(12000),
+    contextLabel: z.string().trim().max(240).optional(),
+    sourceType: z.string().trim().max(64).optional(),
+  })
+  .strict();
+
 export const memorySettingsUpdateSchema = z
   .object({
     includeLearning: z.boolean().optional(),

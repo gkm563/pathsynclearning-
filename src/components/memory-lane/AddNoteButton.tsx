@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { Lock, StickyNote, X } from "lucide-react";
+import { Lock, Sparkles, StickyNote, Undo2, X, Loader2 } from "lucide-react";
 import { apiGet, apiSend } from "@/lib/api";
 import { Button } from "@/components/ui/primitives";
 
@@ -131,7 +131,55 @@ export function NoteEditor({
     initialVisibility,
   );
   const [saving, setSaving] = useState(false);
+  const [enhancing, setEnhancing] = useState(false);
   const [error, setError] = useState("");
+  const [undoSnapshot, setUndoSnapshot] = useState<{
+    title: string;
+    content: string;
+  } | null>(null);
+
+  const enhance = async () => {
+    if (enhancing || saving) return;
+    if (content.trim().length < 8) {
+      setError("Write a bit more first — AI needs at least a short note to enhance.");
+      return;
+    }
+    setEnhancing(true);
+    setError("");
+    const snapshot = { title, content };
+    try {
+      const res = await apiSend<{ title?: string; content?: string }>(
+        "/api/ai/notes/enhance",
+        "POST",
+        {
+          title,
+          content,
+          contextLabel,
+          sourceType,
+        },
+      );
+      const nextTitle = typeof res.title === "string" ? res.title.trim() : "";
+      const nextContent = typeof res.content === "string" ? res.content.trim() : "";
+      if (!nextContent) {
+        setError("Could not enhance that note. Try again.");
+        return;
+      }
+      setUndoSnapshot(snapshot);
+      if (nextTitle) setTitle(nextTitle.slice(0, 200));
+      setContent(nextContent.slice(0, 12000));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not enhance note");
+    } finally {
+      setEnhancing(false);
+    }
+  };
+
+  const undoEnhance = () => {
+    if (!undoSnapshot) return;
+    setTitle(undoSnapshot.title);
+    setContent(undoSnapshot.content);
+    setUndoSnapshot(null);
+  };
 
   const save = async () => {
     if (!title.trim() || !content.trim()) {
@@ -235,11 +283,12 @@ export function NoteEditor({
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="I finally understood how recursion works..."
-        rows={inline ? 4 : 5}
+        rows={inline ? 5 : 6}
+        disabled={enhancing}
         style={{
           width: "100%",
           marginTop: 6,
-          marginBottom: 12,
+          marginBottom: 8,
           padding: "10px 12px",
           borderRadius: 10,
           border: "1.5px solid var(--border-light)",
@@ -247,10 +296,71 @@ export function NoteEditor({
           color: "var(--text-main)",
           fontFamily: "Inter, sans-serif",
           fontSize: 14,
+          lineHeight: 1.6,
           resize: "vertical",
           boxSizing: "border-box",
         }}
       />
+
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 8,
+          marginBottom: 12,
+          alignItems: "center",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => void enhance()}
+          disabled={enhancing || saving || content.trim().length < 8}
+          title="Clean up and structure this note with AI"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            borderRadius: 999,
+            border: "1.5px solid rgba(108,99,255,0.35)",
+            background: "rgba(108,99,255,0.08)",
+            color: "#6c63ff",
+            padding: "7px 12px",
+            fontFamily: "Outfit, sans-serif",
+            fontWeight: 700,
+            fontSize: 12,
+            cursor: enhancing || saving || content.trim().length < 8 ? "not-allowed" : "pointer",
+            opacity: enhancing || saving || content.trim().length < 8 ? 0.55 : 1,
+          }}
+        >
+          {enhancing ? <Loader2 size={14} className="spin-note-ai" /> : <Sparkles size={14} />}
+          {enhancing ? "Enhancing…" : "Enhance with AI"}
+        </button>
+        {undoSnapshot ? (
+          <button
+            type="button"
+            onClick={undoEnhance}
+            disabled={enhancing}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              border: "none",
+              background: "transparent",
+              color: "var(--text-muted)",
+              fontFamily: "Outfit, sans-serif",
+              fontWeight: 700,
+              fontSize: 12,
+              cursor: "pointer",
+            }}
+          >
+            <Undo2 size={14} /> Undo
+          </button>
+        ) : (
+          <span style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "Inter, sans-serif" }}>
+            Cleans up messy notes. You can edit before saving.
+          </span>
+        )}
+      </div>
 
       {contextLabel ? (
         <div
@@ -300,13 +410,17 @@ export function NoteEditor({
       ) : null}
 
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-        <Button variant="ghost" onClick={onClose} disabled={saving}>
+        <Button variant="ghost" onClick={onClose} disabled={saving || enhancing}>
           Cancel
         </Button>
-        <Button onClick={() => void save()} disabled={saving}>
+        <Button onClick={() => void save()} disabled={saving || enhancing}>
           {saving ? "Saving…" : "Save Note"}
         </Button>
       </div>
+      <style>{`
+        .spin-note-ai { animation: spin-note-ai 0.9s linear infinite; }
+        @keyframes spin-note-ai { to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 
