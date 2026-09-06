@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import dynamic from "next/dynamic";
 import {
   Braces,
   CheckCircle2,
@@ -37,6 +36,7 @@ import {
 import { apiSend } from "@/lib/api";
 import { AddNoteButton } from "@/components/memory-lane/AddNoteButton";
 import { RichStudyText } from "@/components/ai/RichStudyText";
+import LazyCodeEditor from "@/components/roadmap/assessment/LazyCodeEditor";
 
 /** LeetCode-inspired dark palette for the coding workspace */
 const LC = {
@@ -59,30 +59,6 @@ const LC = {
   chipActive: "#3e3e3e",
   inputBg: "#2a2a2a",
 };
-
-const CodeEditor = dynamic(
-  () => import("@/components/roadmap/assessment/CodeEditor"),
-  {
-    ssr: false,
-    loading: () => (
-      <div
-        style={{
-          flex: 1,
-          minHeight: 200,
-          background: LC.editorBg,
-          color: "#9ca3af",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontFamily: "Outfit",
-          fontSize: 13,
-        }}
-      >
-        Loading editor…
-      </div>
-    ),
-  },
-);
 
 async function formatWithPrettier(code: string): Promise<string> {
   const prettierMod = await import("prettier/standalone");
@@ -796,7 +772,7 @@ export default function CodingAssessment({
 
         {/* Monaco */}
         <div style={{ flex: 1, minHeight: 120, display: "flex", flexDirection: "column" }}>
-          <CodeEditor
+          <LazyCodeEditor
             value={code}
             language={language}
             onChange={setCode}

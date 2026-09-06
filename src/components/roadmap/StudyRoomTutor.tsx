@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { History, Loader2, Plus, Send, Sparkles, Trash2 } from "lucide-react";
-import { apiSend, ApiClientError } from "@/lib/api";
+import { apiSend } from "@/lib/api";
 import type { RoadmapNode } from "@/types/roadmap";
 import {
   archiveThenNewThread,
@@ -17,10 +17,17 @@ import {
   type TutorThread,
 } from "@/lib/memory/tutor-history";
 import { RichStudyText, normalizeStudyText } from "@/components/ai/RichStudyText";
+import {
+  classifyTutorMessage,
+  lessonLexicon,
+  localTutorReply,
+  scopeRefusal,
+} from "@/lib/ai/tutor-scope";
 
 type TutorApiResponse = {
   reply?: string;
   fallback?: boolean;
+  refused?: boolean;
 };
 
 const PROMPTS = [
@@ -60,7 +67,7 @@ function formatDay(iso?: string) {
 function greetingMsg(title: string): TutorChatMsg {
   return {
     role: "assistant",
-    text: `I am your AI tutor for **${title}**. Ask me to ==explain a concept==, quiz you, or prep interview questions while you watch.`,
+    text: `I tutor this lesson only: **${title}**. Ask me to ==explain it==, quiz you, or prep interview questions. I will not answer general chat or topics outside this node and your roadmap.`,
     at: isoNow(),
   };
 }
@@ -198,6 +205,20 @@ export default function StudyRoomTutor({
     setInput("");
     const userMsg: TutorChatMsg = { role: "user", text, at: isoNow() };
     persistMessages([...messagesRef.current, userMsg]);
+
+    const scope = classifyTutorMessage(text, lessonLexicon(node));
+    if (!scope.ok) {
+      persistMessages([
+        ...messagesRef.current,
+        {
+          role: "assistant",
+          text: normalizeStudyText(scopeRefusal(node.title, scope.reason)),
+          at: isoNow(),
+        },
+      ]);
+      return;
+    }
+
     setBusy(true);
 
     try {
@@ -229,22 +250,17 @@ export default function StudyRoomTutor({
       const reply =
         typeof data.reply === "string" && data.reply.trim()
           ? data.reply.trim()
-          : "I could not form a reply. Try asking in a shorter way.";
+          : localTutorReply(text, node.title, node.description);
       persistMessages([
         ...messagesRef.current,
         { role: "assistant", text: normalizeStudyText(reply), at: isoNow() },
       ]);
-    } catch (e) {
-      const msg =
-        e instanceof ApiClientError
-          ? e.message
-          : "Tutor is unavailable right now. Try again in a moment.";
-      setError(msg);
+    } catch {
       persistMessages([
         ...messagesRef.current,
         {
           role: "assistant",
-          text: "I hit a snag answering that. Try again, or rephrase the question.",
+          text: normalizeStudyText(localTutorReply(text, node.title, node.description)),
           at: isoNow(),
         },
       ]);
@@ -303,8 +319,8 @@ export default function StudyRoomTutor({
               {showHistory
                 ? `${historyThreads.length} saved chat${historyThreads.length === 1 ? "" : "s"}`
                 : videoTitle
-                  ? `Lesson · ${videoTitle}`
-                  : node.title}
+                  ? `This lesson · ${videoTitle}`
+                  : `This node · ${node.title}`}
             </div>
           </div>
           <button
@@ -567,7 +583,7 @@ export default function StudyRoomTutor({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={busy}
-          placeholder="Ask about this topic…"
+          placeholder="Ask about this lesson only…"
           maxLength={2000}
           style={{
             flex: 1,
