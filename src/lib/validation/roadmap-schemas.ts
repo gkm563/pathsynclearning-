@@ -24,12 +24,24 @@ export const codingAssessmentSchema = z.object({
   prompt: z.string(),
   starterCode: z.string(),
   functionName: z.string(),
-  examples: z.array(z.object({ input: z.string(), output: z.string() })).max(5),
+  examples: z.array(z.object({
+    input: z.string(),
+    output: z.string(),
+    explanation: z.string().max(800).optional(),
+  })).max(5),
   publicTests: z.array(codingTestCaseSchema).min(1).max(10),
   hiddenTests: z.array(codingTestCaseSchema).max(10).optional(),
+  title: z.string().max(120).optional(),
+  difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
+  statement: z.string().max(6000).optional(),
+  constraints: z.array(z.string().max(240)).max(12).optional(),
+  hints: z.array(z.string().max(400)).max(6).optional(),
+  followUp: z.string().max(400).optional(),
 });
 
 export const nodeAssessmentSchema = z.object({
+  id: z.string().max(120).optional(),
+  title: z.string().max(160).optional(),
   type: z.enum(['mcq', 'coding', 'project']),
   passScore: z.number().min(0).max(100),
   timeLimitMinutes: z.number().min(5).max(180),
@@ -92,6 +104,7 @@ export const roadmapNodeSchema = z.object({
   learningOutcomes: z.array(z.string().max(240)).max(8).optional(),
   interviewFocus: z.string().max(500).optional(),
   assessment: nodeAssessmentSchema.optional(),
+  assessments: z.array(nodeAssessmentSchema).max(4).optional(),
 });
 
 export const roadmapEdgeSchema = z.object({
@@ -167,6 +180,7 @@ export const roadmapProgressUpdateSchema = z.object({
 
 export const assessmentSubmitSchema = z.object({
   nodeId: z.string().min(1),
+  assessmentId: z.string().min(1).max(120).optional(),
   type: z.enum(['mcq', 'coding', 'project']),
   answers: z.record(z.string(), z.number().int()).optional(),
   code: z.string().max(50000).optional(),

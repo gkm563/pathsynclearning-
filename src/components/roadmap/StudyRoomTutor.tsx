@@ -16,6 +16,7 @@ import {
   type TutorChatStore,
   type TutorThread,
 } from "@/lib/memory/tutor-history";
+import { RichStudyText, normalizeStudyText } from "@/components/ai/RichStudyText";
 
 type TutorApiResponse = {
   reply?: string;
@@ -54,95 +55,6 @@ function formatDay(iso?: string) {
   } catch {
     return "";
   }
-}
-
-const INLINE_TOKEN =
-  /```[\s\S]*?```|`[^`\n]+`|\*\*[^*\n]+?\*\*|__[^_\n]+?__|==[^=\n]+==|\*[^*\n]+?\*/g;
-
-function normalizeTutorText(text: string) {
-  let t = text.replace(/\r\n/g, "\n").replace(/\\n/g, "\n").replace(/\\t/g, "  ");
-  t = t.replace(/([.!?])\s+(?=\d+\.\s)/g, "$1\n");
-  t = t.replace(/([^\n])\s+(?=[-•]\s)/g, "$1\n");
-  t = t.replace(/\n{3,}/g, "\n\n");
-  return t.trim();
-}
-
-function TutorMessageBody({ text, isUser }: { text: string; isUser: boolean }) {
-  const blocks = normalizeTutorText(text).split(/\n\n+/).filter(Boolean);
-  return (
-    <div className="tutor-prose">
-      {blocks.map((block, i) => {
-        const lines = block.split("\n").filter((l) => l.trim().length > 0);
-        const listish =
-          lines.length > 1 &&
-          lines.filter((l) => /^\s*(\d+\.|[-•])\s+/.test(l)).length >= Math.ceil(lines.length * 0.6);
-        if (listish) {
-          return (
-            <ul key={i} className="tutor-list">
-              {lines.map((line, j) => (
-                <li key={j}>
-                  <TutorRichText
-                    text={line.replace(/^\s*(\d+\.|[-•])\s+/, "")}
-                    isUser={isUser}
-                  />
-                </li>
-              ))}
-            </ul>
-          );
-        }
-        return (
-          <p key={i}>
-            {lines.map((line, j) => (
-              <React.Fragment key={j}>
-                {j > 0 ? <br /> : null}
-                <TutorRichText text={line} isUser={isUser} />
-              </React.Fragment>
-            ))}
-          </p>
-        );
-      })}
-    </div>
-  );
-}
-
-function TutorRichText({ text, isUser }: { text: string; isUser: boolean }) {
-  const src = text.replace(/\r\n/g, "\n");
-  const nodes: React.ReactNode[] = [];
-  let last = 0;
-  let key = 0;
-
-  for (const match of src.matchAll(INLINE_TOKEN)) {
-    const idx = match.index ?? 0;
-    if (idx > last) nodes.push(src.slice(last, idx));
-    const token = match[0];
-    if (token.startsWith("```")) {
-      const inner = token.replace(/^```[a-zA-Z0-9_-]*\n?/, "").replace(/```$/, "");
-      nodes.push(
-        <pre key={key++} className="tutor-pre">
-          {inner}
-        </pre>,
-      );
-    } else if (token.startsWith("`")) {
-      nodes.push(
-        <code key={key++} className="tutor-code">
-          {token.slice(1, -1)}
-        </code>,
-      );
-    } else if (token.startsWith("**") || token.startsWith("__")) {
-      nodes.push(<strong key={key++}>{token.slice(2, -2)}</strong>);
-    } else if (token.startsWith("==")) {
-      nodes.push(
-        <mark key={key++} className={isUser ? "tutor-mark-user" : "tutor-mark"}>
-          {token.slice(2, -2)}
-        </mark>,
-      );
-    } else {
-      nodes.push(<em key={key++}>{token.slice(1, -1)}</em>);
-    }
-    last = idx + token.length;
-  }
-  if (last < src.length) nodes.push(src.slice(last));
-  return <>{nodes}</>;
 }
 
 function greetingMsg(title: string): TutorChatMsg {
@@ -320,7 +232,7 @@ export default function StudyRoomTutor({
           : "I could not form a reply. Try asking in a shorter way.";
       persistMessages([
         ...messagesRef.current,
-        { role: "assistant", text: normalizeTutorText(reply), at: isoNow() },
+        { role: "assistant", text: normalizeStudyText(reply), at: isoNow() },
       ]);
     } catch (e) {
       const msg =
@@ -613,7 +525,7 @@ export default function StudyRoomTutor({
                   border: msg.role === "user" ? "none" : "1px solid var(--border-light)",
                 }}
               >
-                <TutorMessageBody text={msg.text} isUser={msg.role === "user"} />
+                <RichStudyText text={msg.text} invert={msg.role === "user"} />
               </div>
             </div>
           ))}
@@ -691,50 +603,6 @@ export default function StudyRoomTutor({
       </form>
       <style>{`
         .tutor-scroll { overflow-anchor: none; }
-        .tutor-prose p { margin: 0 0 0.7em; line-height: 1.65; }
-        .tutor-prose p:last-child { margin-bottom: 0; }
-        .tutor-list {
-          margin: 0 0 0.7em;
-          padding-left: 1.15em;
-          line-height: 1.65;
-        }
-        .tutor-list:last-child { margin-bottom: 0; }
-        .tutor-list li { margin: 0 0 0.35em; }
-        .tutor-list li:last-child { margin-bottom: 0; }
-        .tutor-bubble strong { font-weight: 800; }
-        .tutor-bubble em { font-style: italic; }
-        .tutor-code {
-          font-family: "Fira Code", ui-monospace, monospace;
-          font-size: 12px;
-          padding: 1px 5px;
-          border-radius: 5px;
-          background: rgba(15, 23, 42, 0.08);
-        }
-        .tutor-bubble-user .tutor-code { background: rgba(255,255,255,0.22); color: #fff; }
-        .tutor-pre {
-          margin: 8px 0 0;
-          padding: 8px 10px;
-          border-radius: 8px;
-          background: rgba(15, 23, 42, 0.08);
-          font-family: "Fira Code", ui-monospace, monospace;
-          font-size: 12px;
-          white-space: pre-wrap;
-        }
-        .tutor-bubble-user .tutor-pre { background: rgba(255,255,255,0.16); color: #fff; }
-        .tutor-mark {
-          background: #fde68a;
-          color: #1e293b;
-          padding: 0 4px;
-          border-radius: 4px;
-          font-weight: 700;
-        }
-        .tutor-mark-user {
-          background: rgba(253, 230, 138, 0.95);
-          color: #1e293b;
-          padding: 0 4px;
-          border-radius: 4px;
-          font-weight: 700;
-        }
         .spin-tutor { animation: spin-tutor 0.9s linear infinite; }
         @keyframes spin-tutor { to { transform: rotate(360deg); } }
       `}</style>

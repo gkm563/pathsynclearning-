@@ -34,7 +34,7 @@ import type {
   ProgressPayload,
   ProgressRange,
 } from "@/lib/progress/types";
-import { isAssessableNode } from "@/lib/roadmap/assessment";
+import { getNodeAssessments, isAssessableNode } from "@/lib/roadmap/assessment";
 import { routes } from "@/lib/routes";
 import type { RoadmapNode } from "@/types/roadmap";
 
@@ -383,13 +383,16 @@ export async function getProgressPayload(
     if (!completed && latest && !latest.passed) status = "failed";
     if (!completed && inProg && status === "not_started") status = "in_progress";
 
+    const examCount = Math.max(1, getNodeAssessments(node).length);
     assessments.push({
       id: `roadmap_${node.id}`,
       name: node.title,
       description:
         node.description ||
         (isAssessableNode(node)
-          ? `${node.type} assessment on your roadmap`
+          ? examCount > 1
+            ? `${examCount} assessments on this roadmap node`
+            : `${node.type} assessment on your roadmap`
           : `Roadmap ${node.type}`),
       kind: node.type === "project" ? "project" : "roadmap_node",
       completion: completed ? 100 : attempted || inProg ? 40 : 0,
@@ -399,8 +402,8 @@ export async function getProgressPayload(
           ? latest.score
           : null,
       status,
-      completedTasks: completed ? 1 : 0,
-      totalTasks: 1,
+      completedTasks: completed ? examCount : 0,
+      totalTasks: examCount,
       lastAttemptAt:
         latest?.createdAt.toISOString() ??
         prog?.completedAt?.toISOString() ??

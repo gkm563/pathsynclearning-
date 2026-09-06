@@ -13,7 +13,6 @@ import { MemoryDetail } from "@/components/memory-lane/MemoryDetail";
 import { MemorySettingsPanel } from "@/components/memory-lane/MemorySettingsPanel";
 import {
   AddNoteButton,
-  NoteEditor,
 } from "@/components/memory-lane/AddNoteButton";
 import { EmptyState, PageSpinner } from "@/components/ui/primitives";
 import { apiGet } from "@/lib/api";
@@ -22,6 +21,7 @@ import {
   MEMORY_SECTION_META,
   SECTION_FILTERS,
 } from "@/lib/memory/sections";
+import { noteIdFromTimelineItem } from "@/lib/memory/note-id";
 import type {
   MemoryFilter,
   MemorySection,
@@ -95,7 +95,6 @@ export default function PlatformMemoryLane() {
   const [selected, setSelected] = useState<TimelineItem | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settings, setSettings] = useState<MemorySettingsDto>(DEFAULT_SETTINGS);
-  const [editingNote, setEditingNote] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -150,6 +149,21 @@ export default function PlatformMemoryLane() {
   }, [load]);
 
   useEffect(() => {
+    if (!items.length) return;
+    const noteParam = new URLSearchParams(window.location.search).get("note");
+    if (!noteParam) return;
+    const match = items.find((item) => {
+      if (item.kind !== "note" && item.type !== "PERSONAL_NOTE") return false;
+      return (
+        noteIdFromTimelineItem(item) === noteParam ||
+        item.id === noteParam ||
+        item.sourceId === noteParam
+      );
+    });
+    if (match) setSelected(match);
+  }, [items]);
+
+  useEffect(() => {
     void (async () => {
       try {
         const res = await apiGet<{ settings: MemorySettingsDto }>(
@@ -183,11 +197,7 @@ export default function PlatformMemoryLane() {
 
   const deleteSelectedNote = async () => {
     if (!selected) return;
-    const noteId =
-      (typeof selected.metadata?.noteId === "string" &&
-        selected.metadata.noteId) ||
-      selected.sourceId ||
-      (selected.metadata?.memorySourceId as string | undefined);
+    const noteId = noteIdFromTimelineItem(selected);
     if (!noteId) return;
     await fetch(`/api/me/notes/${noteId}`, {
       method: "DELETE",
@@ -334,46 +344,23 @@ export default function PlatformMemoryLane() {
         <MemoryDetail
           item={selected}
           onClose={() => setSelected(null)}
-          onEditNote={
-            selected.kind === "note" || selected.type === "PERSONAL_NOTE"
-              ? () => setEditingNote(true)
-              : undefined
-          }
           onDeleteNote={
             selected.kind === "note" || selected.type === "PERSONAL_NOTE"
               ? () => void deleteSelectedNote()
               : undefined
           }
-        />
-      ) : null}
-
-      {editingNote && selected ? (
-        <NoteEditor
-          sourceType={
-            (selected.metadata?.sourceType as string) ||
-            selected.sourceType ||
-            "career"
-          }
-          sourceId={
-            (selected.metadata?.sourceId as string) ||
-            selected.sourceId ||
-            "personal"
-          }
-          noteId={
-            (selected.metadata?.noteId as string) ||
-            (selected.metadata?.memorySourceId as string) ||
-            selected.sourceId ||
-            undefined
-          }
-          initialTitle={selected.title}
-          initialContent={selected.description || ""}
-          initialVisibility={
-            selected.visibility === "public" ? "public" : "private"
-          }
-          onClose={() => setEditingNote(false)}
-          onSaved={() => {
-            setEditingNote(false);
-            setSelected(null);
+          onNoteSaved={(note) => {
+            setSelected((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    title: note.title,
+                    description: note.content.slice(0, 280),
+                    visibility:
+                      note.visibility === "public" ? "public" : prev.visibility,
+                  }
+                : prev,
+            );
             void load(null, false);
           }}
         />

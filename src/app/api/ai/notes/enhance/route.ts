@@ -6,7 +6,17 @@ import { noteEnhanceSchema } from "@/lib/validation/schemas";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-type EnhanceJson = { title?: unknown; content?: unknown };
+export type NoteCorrection = {
+  wrong: string;
+  correct: string;
+  explain: string;
+};
+
+type EnhanceJson = {
+  title?: unknown;
+  content?: unknown;
+  corrections?: unknown;
+};
 
 function asText(value: unknown, max: number): string | null {
   if (typeof value !== "string") return null;
@@ -19,7 +29,39 @@ function asText(value: unknown, max: number): string | null {
   return t.slice(0, max);
 }
 
-function localEnhance(title: string, content: string): { title: string; content: string } {
+function parseCorrections(raw: unknown): NoteCorrection[] {
+  if (!Array.isArray(raw)) return [];
+  const out: NoteCorrection[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const rec = item as Record<string, unknown>;
+    const wrong = asText(rec.wrong ?? rec.mistake ?? rec.original, 400);
+    const correct = asText(rec.correct ?? rec.fixed ?? rec.instead, 400);
+    const explain = asText(rec.explain ?? rec.explanation ?? rec.why, 800);
+    if (!wrong || !correct || !explain) continue;
+    out.push({ wrong, correct, explain });
+    if (out.length >= 8) break;
+  }
+  return out;
+}
+
+function appendCorrections(content: string, corrections: NoteCorrection[]): string {
+  if (!corrections.length) return content;
+  const block = [
+    "What was wrong",
+    ...corrections.map(
+      (c, i) =>
+        `${i + 1}. You wrote: ${c.wrong}\n   Correct: ${c.correct}\n   Why: ${c.explain}`,
+    ),
+  ].join("\n\n");
+  return `${content.trim()}\n\n${block}`.slice(0, 12000);
+}
+
+function localEnhance(title: string, content: string): {
+  title: string;
+  content: string;
+  corrections: NoteCorrection[];
+} {
   const lines = content
     .split(/\n+/)
     .map((l) => l.replace(/^[-*•]\s+/, "").trim())
@@ -39,6 +81,7 @@ function localEnhance(title: string, content: string): { title: string; content:
     ]
       .join("\n")
       .slice(0, 12000),
+    corrections: [],
   };
 }
 
@@ -48,17 +91,23 @@ export async function POST(request: Request) {
     const body = await parseJson(request, noteEnhanceSchema);
 
     const prompt = [
-      "Rewrite the student's rough notes into a clearer study note.",
-      body.contextLabel ? `Context: ${body.contextLabel}` : "",
+      "Enhance the student's rough notes.",
+      body.contextLabel ? `Lesson context: ${body.contextLabel}` : "",
       body.sourceType ? `Source: ${body.sourceType}` : "",
       `Current title: ${body.title || "(none)"}`,
       "Current notes:",
       body.content,
       "",
-      'Return JSON only: {"title":"...","content":"..."}.',
-      "Keep the student's meaning. Do not invent facts they did not write.",
-      "Use a short title (max 80 chars). Structure content with short paragraphs and numbered takeaways.",
-      "Separate paragraphs with a blank line. Put each numbered point on its own line.",
+      "Tasks:",
+      "1. Rewrite a clear study note in content (short paragraphs, numbered takeaways, blank lines between paragraphs).",
+      "2. Fact-check against well-known CS / engineering knowledge for this lesson.",
+      "3. If the student wrote something incorrect, fix it in content AND list each mistake in corrections.",
+      "4. If nothing is factually wrong, corrections must be [].",
+      "5. Do not invent extra topics they did not mention, except to correct an error.",
+      "6. In content, use **bold** for key terms and ==highlight== for the one phrase to remember (same as PathED tutor chat). Also bold/highlight the Correct line in corrections when useful.",
+      "",
+      'Return JSON only: {"title":"...","content":"...","corrections":[{"wrong":"...","correct":"...","explain":"..."}]}',
+      "title max 80 chars. Each wrong/correct/explain must be plain sentences. explain should be 1-3 sentences.",
     ]
       .filter(Boolean)
       .join("\n");
@@ -67,7 +116,7 @@ export async function POST(request: Request) {
       const raw = await callAIWithFallback<EnhanceJson>({
         prompt,
         systemInstruction:
-          "You are PathED Notes Enhancer. You clean up a student's own notes for later review. Preserve their ideas, fix clarity, and add light structure. Never add secrets, exam answers, or topics they did not mention.",
+          "You are PathED Notes Enhancer, a careful tutor. Clean up notes, correct factual or conceptual mistakes, and teach why. Be kind and specific. Format like PathED chat: **bold** key terms and ==highlight== the core takeaway. Never invent exam answers. If unsure a claim is wrong, leave it and do not invent a correction.",
         userId: user.id,
         groqModel: "openai/gpt-oss-120b",
         geminiSchema: {
@@ -75,19 +124,36 @@ export async function POST(request: Request) {
           properties: {
             title: { type: "string" },
             content: { type: "string" },
+            corrections: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  wrong: { type: "string" },
+                  correct: { type: "string" },
+                  explain: { type: "string" },
+                },
+                required: ["wrong", "correct", "explain"],
+              },
+            },
           },
-          required: ["title", "content"],
+          required: ["title", "content", "corrections"],
         },
-        maxTokens: 900,
-        timeoutMs: 25000,
-        temperature: 0.35,
+        maxTokens: 1400,
+        timeoutMs: 30000,
+        temperature: 0.3,
         reasoningEffort: "low",
       });
 
       const title = asText(raw?.title, 200);
-      const content = asText(raw?.content, 12000);
+      const content = asText(raw?.content, 10000);
+      const corrections = parseCorrections(raw?.corrections);
       if (title && content) {
-        return jsonResponse({ title, content });
+        return jsonResponse({
+          title,
+          content: appendCorrections(content, corrections),
+          corrections,
+        });
       }
     } catch {
       // local cleanup

@@ -1,18 +1,35 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Clock, ExternalLink, Book, Video, Code, CheckCircle, SkipForward, Play, Lock, ClipboardCheck,
   Maximize2, ChevronLeft, ChevronRight, StickyNote, ListChecks, GraduationCap, Sparkles,
 } from 'lucide-react';
 import type { RoadmapNode, RoadmapNodeResource } from '@/types/roadmap';
-import { isAssessableNode, nodeRequiresAssessment } from '@/lib/roadmap/assessment';
+import { getNodeAssessments, isAssessableNode, nodeRequiresAssessment } from '@/lib/roadmap/assessment';
 import { AddNoteButton, NotesForSource } from '@/components/memory-lane/AddNoteButton';
 import StudyRoomTutor from '@/components/roadmap/StudyRoomTutor';
 
 type PanelTab = 'overview' | 'resources' | 'notes';
 type SideRail = 'playlist' | 'notes' | 'tutor';
+
+const STUDY_RAIL_KEY = 'pathed:study-rail-width';
+const STUDY_RAIL_DEFAULT = 402;
+const STUDY_RAIL_MIN = 280;
+const STUDY_RAIL_MAX = 760;
+
+function clampStudyRail(width: number, viewport = 1200) {
+  const max = Math.min(STUDY_RAIL_MAX, Math.max(STUDY_RAIL_MIN, Math.floor(viewport * 0.58)));
+  return Math.min(max, Math.max(STUDY_RAIL_MIN, Math.round(width)));
+}
+
+function loadStudyRailWidth() {
+  if (typeof window === 'undefined') return STUDY_RAIL_DEFAULT;
+  const n = Number(window.localStorage.getItem(STUDY_RAIL_KEY));
+  if (!Number.isFinite(n)) return STUDY_RAIL_DEFAULT;
+  return clampStudyRail(n, window.innerWidth);
+}
 
 function youtubeId(url: string): string | null {
   try {
@@ -77,6 +94,14 @@ export default function RoadmapDetailPanel({
   const [tab, setTab] = useState<PanelTab>('overview');
   const [sideRail, setSideRail] = useState<SideRail>('playlist');
   const [activeVideo, setActiveVideo] = useState(0);
+  const [railWidth, setRailWidth] = useState(STUDY_RAIL_DEFAULT);
+  const [narrowStudy, setNarrowStudy] = useState(false);
+  const [railDragging, setRailDragging] = useState(false);
+  const draggingRail = useRef(false);
+  const railDrag = useRef({ x: 0, w: STUDY_RAIL_DEFAULT });
+  const railWidthRef = useRef(STUDY_RAIL_DEFAULT);
+  const railRaf = useRef(0);
+  railWidthRef.current = railWidth;
 
   useEffect(() => {
     setExpanded(false);
@@ -102,12 +127,66 @@ export default function RoadmapDetailPanel({
     return () => window.removeEventListener('keydown', onKey);
   }, [expanded]);
 
+  useEffect(() => {
+    setRailWidth(loadStudyRailWidth());
+    const mq = window.matchMedia('(max-width: 980px)');
+    const sync = () => setNarrowStudy(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+
+  const stopRailDrag = () => {
+    if (!draggingRail.current) return;
+    draggingRail.current = false;
+    setRailDragging(false);
+    if (railRaf.current) {
+      cancelAnimationFrame(railRaf.current);
+      railRaf.current = 0;
+    }
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    try {
+      window.localStorage.setItem(STUDY_RAIL_KEY, String(railWidthRef.current));
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const moveRailDrag = (clientX: number) => {
+    if (!draggingRail.current) return;
+    const next = clampStudyRail(railDrag.current.w + (railDrag.current.x - clientX), window.innerWidth);
+    railWidthRef.current = next;
+    if (railRaf.current) return;
+    railRaf.current = requestAnimationFrame(() => {
+      railRaf.current = 0;
+      setRailWidth(railWidthRef.current);
+    });
+  };
+
+  useEffect(() => {
+    const onUp = () => stopRailDrag();
+    window.addEventListener('pointerup', onUp, true);
+    window.addEventListener('pointercancel', onUp, true);
+    window.addEventListener('blur', onUp);
+    document.addEventListener('visibilitychange', onUp);
+    return () => {
+      window.removeEventListener('pointerup', onUp, true);
+      window.removeEventListener('pointercancel', onUp, true);
+      window.removeEventListener('blur', onUp);
+      document.removeEventListener('visibilitychange', onUp);
+      if (railRaf.current) cancelAnimationFrame(railRaf.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const status = node?.status ?? 'locked';
   const isLocked = status === 'locked';
   const isCompleted = status === 'completed';
   const isInProgress = status === 'in_progress';
   const isSkipped = status === 'skipped';
   const depCount = node?.dependencies?.length ?? 0;
+  const examList = node ? getNodeAssessments(node) : [];
   const needsExam = node ? nodeRequiresAssessment(node) : false;
   const hasExam = node ? isAssessableNode(node) : false;
 
@@ -238,7 +317,11 @@ export default function RoadmapDetailPanel({
                 }}
               >
                 {node.type} · {status.replace('_', ' ')}
-                {hasExam ? ` · ${node.assessment?.type}` : ''}
+                {hasExam
+                  ? examList.length > 1
+                    ? ` · ${examList.length} assessments`
+                    : ` · ${examList[0]?.type}`
+                  : ''}
               </span>
               <h2
                 style={{
@@ -496,9 +579,10 @@ export default function RoadmapDetailPanel({
           >
             <div
               style={{
-                display: 'grid',
-                gridTemplateColumns: 'minmax(0, 1fr) 402px',
-                gap: 24,
+                display: 'flex',
+                flexDirection: narrowStudy ? 'column' : 'row',
+                alignItems: narrowStudy ? 'stretch' : 'flex-start',
+                gap: narrowStudy ? 16 : 0,
                 padding: '20px 24px 32px',
                 maxWidth: 1600,
                 margin: '0 auto',
@@ -507,7 +591,7 @@ export default function RoadmapDetailPanel({
               }}
               className="roadmap-study-grid"
             >
-              <div style={{ minWidth: 0 }}>
+              <div style={{ minWidth: 0, flex: 1 }}>
                 <div
                   style={{
                     position: 'relative',
@@ -516,6 +600,7 @@ export default function RoadmapDetailPanel({
                     background: '#0f172a',
                     borderRadius: 14,
                     overflow: 'hidden',
+                    pointerEvents: railDragging ? 'none' : undefined,
                     boxShadow: '0 8px 28px rgba(15,23,42,0.12)',
                     border: '1px solid var(--border-light)',
                   }}
@@ -739,9 +824,80 @@ export default function RoadmapDetailPanel({
                 </div>
               </div>
 
+              {!narrowStudy ? (
+                <div
+                  role="separator"
+                  aria-orientation="vertical"
+                  aria-valuenow={railWidth}
+                  aria-label="Resize study sidebar"
+                  title="Drag to resize · double-click to reset"
+                  onPointerDown={(e) => {
+                    if (e.button !== 0) return;
+                    e.preventDefault();
+                    e.currentTarget.setPointerCapture(e.pointerId);
+                    draggingRail.current = true;
+                    setRailDragging(true);
+                    railDrag.current = { x: e.clientX, w: railWidthRef.current };
+                    document.body.style.cursor = 'col-resize';
+                    document.body.style.userSelect = 'none';
+                  }}
+                  onPointerMove={(e) => {
+                    if (!draggingRail.current) return;
+                    moveRailDrag(e.clientX);
+                  }}
+                  onPointerUp={(e) => {
+                    try {
+                      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+                        e.currentTarget.releasePointerCapture(e.pointerId);
+                      }
+                    } catch {
+                      /* already released */
+                    }
+                    stopRailDrag();
+                  }}
+                  onPointerCancel={() => stopRailDrag()}
+                  onLostPointerCapture={() => stopRailDrag()}
+                  onDoubleClick={() => {
+                    stopRailDrag();
+                    const next = clampStudyRail(STUDY_RAIL_DEFAULT, window.innerWidth);
+                    railWidthRef.current = next;
+                    setRailWidth(next);
+                    try {
+                      window.localStorage.setItem(STUDY_RAIL_KEY, String(next));
+                    } catch {
+                      /* ignore */
+                    }
+                  }}
+                  style={{
+                    width: 10,
+                    flexShrink: 0,
+                    alignSelf: 'stretch',
+                    cursor: 'col-resize',
+                    touchAction: 'none',
+                    position: 'relative',
+                    margin: '0 2px',
+                    zIndex: 2,
+                  }}
+                >
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 12,
+                      bottom: 12,
+                      left: '50%',
+                      width: 3,
+                      marginLeft: -1.5,
+                      borderRadius: 99,
+                      background: railDragging ? '#6c63ff' : 'var(--border-light)',
+                    }}
+                  />
+                </div>
+              ) : null}
+
               <aside
                 style={{
-                  minWidth: 0,
+                  width: narrowStudy ? '100%' : railWidth,
+                  flexShrink: 0,
                   minHeight: 0,
                   height: 'calc(100vh - 120px)',
                   maxHeight: 'calc(100vh - 120px)',
@@ -884,7 +1040,7 @@ export default function RoadmapDetailPanel({
           <style>{`
             @media (max-width: 980px) {
               .roadmap-study-grid {
-                grid-template-columns: 1fr !important;
+                flex-direction: column !important;
               }
             }
           `}</style>
@@ -1331,8 +1487,13 @@ function CompactOverview({
         >
           <ListChecks size={16} color="#6c63ff" style={{ marginTop: 2, flexShrink: 0 }} />
           <span>
-            Pass a proctored {node.assessment?.type === 'coding' ? 'coding' : 'MCQ'} assessment to
-            unlock the next nodes.
+            Pass {(() => {
+              const exams = getNodeAssessments(node);
+              return exams.length > 1
+                ? `all ${exams.length} assessments (${exams.map((a) => a.type).join(', ')})`
+                : `a proctored ${node.assessment?.type === 'coding' ? 'coding' : 'MCQ'} assessment`;
+            })()}{' '}
+            to unlock the next nodes.
           </span>
         </div>
       )}
@@ -1414,7 +1575,9 @@ function StudyOverview({
       ) : null}
       {needsExam ? (
         <p style={{ ...bodyText, color: muted }}>
-          Assessment required after this topic to unlock the next nodes.
+          {getNodeAssessments(node).length > 1
+            ? `Pass all ${getNodeAssessments(node).length} assessments on this node to unlock what comes next.`
+            : 'Assessment required after this topic to unlock the next nodes.'}
         </p>
       ) : null}
     </div>

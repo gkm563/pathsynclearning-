@@ -27,6 +27,7 @@ export type PreviousAttempt = {
   passed: boolean;
   score: number;
   type?: string;
+  assessmentId?: string | null;
   createdAt?: string | Date;
 };
 
@@ -432,7 +433,7 @@ export default function AssessmentShell({
                     marginBottom: 8,
                   }}
                 >
-                  Previous scores
+                  Previous scores for this assessment
                 </div>
                 {previousAttempts.slice(0, 5).map((a, i) => {
                   const when = a.createdAt

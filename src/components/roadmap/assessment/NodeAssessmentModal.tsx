@@ -10,6 +10,7 @@ import CodingAssessment from "./CodingAssessment";
 import ProjectAssessment from "./ProjectAssessment";
 import AnswerReview, { type AnswerReviewPayload } from "./AnswerReview";
 import type { NodeAssessment } from "@/types/roadmap";
+import { assessmentLabel, attemptsForAssessment } from "@/lib/roadmap/assessment";
 import { apiGet, apiSend } from "@/lib/api";
 import type { ProjectEvidenceInput } from "@/lib/projects/types";
 import { AddNoteButton } from "@/components/memory-lane/AddNoteButton";
@@ -17,6 +18,8 @@ import { AddNoteButton } from "@/components/memory-lane/AddNoteButton";
 type LoadState = {
   title: string;
   assessment: NodeAssessment;
+  assessments: NodeAssessment[];
+  passedAssessmentIds: string[];
   hasPassed: boolean;
   attempts: PreviousAttempt[];
   answerReview?: AnswerReviewPayload | null;
@@ -51,6 +54,8 @@ export default function NodeAssessmentModal({
   const [showResult, setShowResult] = useState(false);
   const [answerReview, setAnswerReview] = useState<AnswerReviewPayload | null>(null);
   const [autoAdvanceIn, setAutoAdvanceIn] = useState<number | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [nodeComplete, setNodeComplete] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,10 +65,24 @@ export default function NodeAssessmentModal({
           `/api/roadmap/assessment?nodeId=${encodeURIComponent(nodeId)}`,
         );
         if (!cancelled) {
+          const assessments =
+            Array.isArray(res.assessments) && res.assessments.length
+              ? res.assessments
+              : res.assessment
+                ? [res.assessment]
+                : [];
+          const passedIds = Array.isArray(res.passedAssessmentIds)
+            ? res.passedAssessmentIds
+            : [];
           setData({
             ...res,
+            assessments,
+            passedAssessmentIds: passedIds,
             attempts: Array.isArray(res.attempts) ? res.attempts : [],
           });
+          if (assessments.length === 1 && assessments[0].id) {
+            setActiveId(assessments[0].id);
+          }
           if (res.hasPassed && isAnswerReview(res.answerReview)) {
             setAnswerReview(res.answerReview);
           }
@@ -91,6 +110,8 @@ export default function NodeAssessmentModal({
       violations?: ProctorViolation[];
     }) => {
       if (!data) return;
+      const active =
+        data.assessments.find((a) => a.id === activeId) || data.assessment;
       setSubmitting(true);
       setResultMsg("");
       try {
@@ -98,12 +119,15 @@ export default function NodeAssessmentModal({
           passed: boolean;
           score: number;
           message?: string;
+          nodeComplete?: boolean;
+          remaining?: number;
           allProgress?: unknown[];
           unlockedNodeIds?: string[];
           answerReview?: unknown;
         }>("/api/roadmap/assessment/submit", "POST", {
           nodeId,
-          type: data.assessment.type,
+          assessmentId: active.id,
+          type: active.type,
           answers: payload.answers,
           code: payload.code,
           language: payload.language,
@@ -115,6 +139,7 @@ export default function NodeAssessmentModal({
         });
         setResultScore(res.score ?? 0);
         setResultPassed(Boolean(res.passed));
+        setNodeComplete(Boolean(res.nodeComplete));
         setResultMsg(res.message || (res.passed ? "Passed!" : "Not passed"));
         setPendingProgress(res.allProgress);
         setUnlockedNodeIds(
@@ -124,22 +149,28 @@ export default function NodeAssessmentModal({
           setAnswerReview(res.answerReview);
         }
         setShowResult(true);
-        setAutoAdvanceIn(res.passed && res.answerReview ? 4 : 2);
+        const finishedNode = Boolean(res.nodeComplete);
+        setAutoAdvanceIn(res.passed && res.answerReview && finishedNode ? 4 : res.passed && !finishedNode ? null : 2);
         setData((prev) =>
           prev
             ? {
                 ...prev,
+                passedAssessmentIds:
+                  res.passed && active.id
+                    ? Array.from(new Set([...prev.passedAssessmentIds, active.id]))
+                    : prev.passedAssessmentIds,
                 attempts: [
                   {
                     id: `latest-${Date.now()}`,
                     passed: Boolean(res.passed),
                     score: res.score ?? 0,
-                    type: prev.assessment.type,
+                    type: active.type,
+                    assessmentId: active.id || null,
                     createdAt: new Date().toISOString(),
                   },
                   ...prev.attempts,
                 ],
-                hasPassed: prev.hasPassed || Boolean(res.passed),
+                hasPassed: prev.hasPassed || Boolean(res.nodeComplete),
               }
             : prev,
         );
@@ -154,14 +185,14 @@ export default function NodeAssessmentModal({
         setSubmitting(false);
       }
     },
-    [data, nodeId],
+    [data, nodeId, activeId],
   );
 
   const onFailProctor = useCallback(
     (violations: ProctorViolation[]) => {
       void submit({
         answers: data?.assessment.type === "mcq" ? {} : undefined,
-        code: data?.assessment.type === "coding" ? "" : undefined,
+        code: (data?.assessments.find((a) => a.id === activeId) || data?.assessment)?.type === "coding" ? "" : undefined,
         violations,
       });
     },
@@ -169,15 +200,21 @@ export default function NodeAssessmentModal({
   );
 
   const finishResult = useCallback(() => {
-    if (resultPassed) {
+    if (resultPassed && nodeComplete) {
       onCompleted({
         allProgress: pendingProgress,
         unlockedNodeIds,
       });
-    } else {
-      onClose();
+      return;
     }
-  }, [resultPassed, onCompleted, pendingProgress, unlockedNodeIds, onClose]);
+    if (resultPassed && !nodeComplete) {
+      setShowResult(false);
+      setAutoAdvanceIn(null);
+      setActiveId(null);
+      return;
+    }
+    onClose();
+  }, [resultPassed, nodeComplete, onCompleted, pendingProgress, unlockedNodeIds, onClose]);
 
   // After any result (pass or fail), return to the roadmap view
   useEffect(() => {
@@ -242,8 +279,15 @@ export default function NodeAssessmentModal({
     );
   }
 
+  const list = data.assessments.length ? data.assessments : [data.assessment];
+  const active =
+    list.find((a) => a.id === activeId) || (list.length === 1 ? list[0] : null);
+  const historyForActive = active
+    ? attemptsForAssessment(data.attempts, active, list)
+    : [];
+
   if (showResult) {
-    const passMark = data.assessment.passScore ?? 70;
+    const passMark = active?.passScore ?? data.assessment.passScore ?? 70;
     const score = resultScore ?? 0;
     return (
       <div
@@ -309,15 +353,17 @@ export default function NodeAssessmentModal({
           </h2>
           <p style={{ color: "var(--text-muted)", fontFamily: "Inter", fontSize: 14 }}>
             {resultPassed
-              ? unlockedNodeIds.length
-                ? "Great work — new nodes unlocked on your roadmap."
-                : "Great work — returning to your roadmap."
+              ? nodeComplete
+                ? unlockedNodeIds.length
+                  ? "Great work — new nodes unlocked on your roadmap."
+                  : "Great work — returning to your roadmap."
+                : "This part is done. Continue with the remaining assessments on this node."
               : "Review the module resources (including YouTube videos) and try again from the roadmap."}
           </p>
 
           {resultPassed && answerReview && <AnswerReview review={answerReview} />}
 
-          {data.attempts.length > 1 && (
+          {historyForActive.length > 0 && (
             <div
               style={{
                 marginTop: 20,
@@ -335,9 +381,9 @@ export default function NodeAssessmentModal({
                   marginBottom: 8,
                 }}
               >
-                Attempt history
+                {active ? `${assessmentLabel(active)} · attempt history` : "Attempt history"}
               </div>
-              {data.attempts.slice(0, 5).map((a, i) => (
+              {historyForActive.slice(0, 5).map((a, i) => (
                 <div
                   key={a.id || i}
                   style={{
@@ -351,7 +397,7 @@ export default function NodeAssessmentModal({
                   }}
                 >
                   <span>
-                    {i === 0 ? "This attempt" : `Attempt ${data.attempts.length - i}`}
+                    {i === 0 ? "This attempt" : `Attempt ${historyForActive.length - i}`}
                     {a.passed ? " · passed" : ""}
                   </span>
                   <strong style={{ color: a.passed ? "#059669" : "var(--text-main)" }}>
@@ -362,17 +408,21 @@ export default function NodeAssessmentModal({
             </div>
           )}
 
-          <p
-            style={{
-              marginTop: 20,
-              fontFamily: "Outfit",
-              fontWeight: 600,
-              fontSize: 14,
-              color: "var(--text-muted)",
-            }}
-          >
-            Returning to roadmap in {autoAdvanceIn ?? 0}s…
-          </p>
+          {autoAdvanceIn !== null ? (
+            <p
+              style={{
+                marginTop: 20,
+                fontFamily: "Outfit",
+                fontWeight: 600,
+                fontSize: 14,
+                color: "var(--text-muted)",
+              }}
+            >
+              {nodeComplete || !resultPassed
+                ? `Returning to roadmap in ${autoAdvanceIn}s…`
+                : null}
+            </p>
+          ) : null}
           <button
             type="button"
             onClick={finishResult}
@@ -389,6 +439,131 @@ export default function NodeAssessmentModal({
               cursor: "pointer",
             }}
           >
+            {resultPassed && !nodeComplete ? "Next assessment" : "Back to roadmap"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const passedSet = new Set(data.passedAssessmentIds);
+  const showPicker = list.length > 1 && !active;
+
+  if (showPicker) {
+    const done = list.filter((a) => a.id && passedSet.has(a.id)).length;
+    return (
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 9999,
+          background: "var(--bg-main)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 24,
+        }}
+      >
+        <div
+          style={{
+            background: "var(--bg-card)",
+            border: "1px solid var(--border-light)",
+            borderRadius: 16,
+            padding: 28,
+            maxWidth: 520,
+            width: "100%",
+          }}
+        >
+          <h2 style={{ fontFamily: "Outfit", fontSize: 22, margin: "0 0 8px" }}>
+            {data.title}
+          </h2>
+          <p
+            style={{
+              color: "var(--text-muted)",
+              fontFamily: "Inter",
+              fontSize: 14,
+              margin: "0 0 20px",
+            }}
+          >
+            This node has {list.length} assessments. Pass all of them to unlock the next nodes ({done}/{list.length} done).
+          </p>
+          <div style={{ display: "grid", gap: 10 }}>
+            {list.map((item, i) => {
+              const passed = Boolean(item.id && passedSet.has(item.id));
+              const ownAttempts = attemptsForAssessment(data.attempts, item, list);
+              const best = ownAttempts.reduce(
+                (m, a) => Math.max(m, a.score),
+                0,
+              );
+              const last = ownAttempts[0];
+              return (
+                <button
+                  key={item.id || i}
+                  type="button"
+                  disabled={passed}
+                  onClick={() => item.id && setActiveId(item.id)}
+                  style={{
+                    textAlign: "left",
+                    padding: "14px 16px",
+                    borderRadius: 12,
+                    border: "1px solid var(--border-light)",
+                    background: passed ? "rgba(0,201,167,0.08)" : "var(--bg-alt)",
+                    cursor: passed ? "default" : "pointer",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 12,
+                  }}
+                >
+                  <span>
+                    <strong style={{ fontFamily: "Outfit", fontSize: 15 }}>
+                      {i + 1}. {assessmentLabel(item)}
+                    </strong>
+                    <span
+                      style={{
+                        display: "block",
+                        marginTop: 4,
+                        fontSize: 12,
+                        color: "var(--text-muted)",
+                        textTransform: "uppercase",
+                        letterSpacing: 0.4,
+                      }}
+                    >
+                      {item.type} · {item.timeLimitMinutes} min · pass {item.passScore}%
+                      {last
+                        ? ` · last ${last.score}%${best !== last.score ? ` · best ${best}%` : ""}`
+                        : ""}
+                    </span>
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: "Outfit",
+                      fontWeight: 700,
+                      fontSize: 12,
+                      color: passed ? "#059669" : "#6c63ff",
+                    }}
+                  >
+                    {passed ? "Passed" : "Start"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              marginTop: 16,
+              width: "100%",
+              padding: "10px 16px",
+              borderRadius: 10,
+              border: "1px solid var(--border-light)",
+              background: "transparent",
+              cursor: "pointer",
+              fontFamily: "Outfit",
+              fontWeight: 600,
+            }}
+          >
             Back to roadmap
           </button>
         </div>
@@ -396,9 +571,13 @@ export default function NodeAssessmentModal({
     );
   }
 
+  if (!active) {
+    return null;
+  }
+
   return (
     <>
-      {data.assessment.type !== "coding" ? (
+      {active.type !== "coding" ? (
         <div style={{ position: "fixed", top: 16, right: 72, zIndex: 1300 }}>
           <AddNoteButton
             sourceType="roadmap_node"
@@ -409,9 +588,9 @@ export default function NodeAssessmentModal({
           />
         </div>
       ) : null}
-      {data.assessment.type === "project" ? (
+      {active.type === "project" ? (
         <ProjectAssessment
-          assessment={data.assessment}
+          assessment={active}
           title={data.title}
           submitting={submitting}
           onClose={onClose}
@@ -419,26 +598,35 @@ export default function NodeAssessmentModal({
         />
       ) : (
         <AssessmentShell
-          title={data.title}
-          timeLimitMinutes={data.assessment.timeLimitMinutes}
-          assessmentType={data.assessment.type}
-          passScore={data.assessment.passScore}
-          previousAttempts={data.attempts}
-          answerReview={data.hasPassed ? answerReview : null}
+          title={
+            list.length > 1
+              ? `${data.title} · ${assessmentLabel(active)}`
+              : data.title
+          }
+          timeLimitMinutes={active.timeLimitMinutes}
+          assessmentType={active.type}
+          passScore={active.passScore}
+          previousAttempts={historyForActive}
+          answerReview={
+            active?.id && data.passedAssessmentIds.includes(active.id)
+              ? answerReview
+              : null
+          }
           onClose={onClose}
           onFailProctor={onFailProctor}
         >
           {({ violations, secondsLeft }) =>
-            data.assessment.type === "mcq" ? (
+            active.type === "mcq" ? (
               <McqAssessment
-                assessment={data.assessment}
+                assessment={active}
                 submitting={submitting}
                 secondsLeft={secondsLeft}
                 onSubmit={(answers) => submit({ answers, violations })}
               />
             ) : (
               <CodingAssessment
-                assessment={data.assessment}
+                key={active.id}
+                assessment={active}
                 nodeId={nodeId}
                 noteTitle={data.title}
                 submitting={submitting}

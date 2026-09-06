@@ -5,6 +5,19 @@ import {
   nodeAssessmentFromProjectSpec,
 } from "@/lib/projects/specs";
 import { curatedResourcesForNode } from "@/lib/roadmap/resource-library";
+import {
+  BINARY_SEARCH,
+  CLIMB_STAIRS,
+  CONTAINS_DUPLICATE,
+  hydrateCodingAssessment,
+  IS_ANAGRAM,
+  IS_PALINDROME,
+  MAX_DEPTH,
+  MAX_SUB_ARRAY,
+  SUM_UNIQUE,
+  TWO_SUM,
+} from "@/lib/roadmap/coding-problems";
+import type { CodingAssessment } from "@/types/roadmap";
 
 type TopicPack = {
   id: string;
@@ -12,7 +25,8 @@ type TopicPack = {
   youtube: { title: string; url: string };
   preferCoding: boolean;
   mcq: (node: RoadmapNode) => NodeAssessment["mcq"];
-  coding?: (node: RoadmapNode) => NonNullable<NodeAssessment["coding"]>;
+  coding?: (node: RoadmapNode) => CodingAssessment;
+  extraCoding?: (node: RoadmapNode) => CodingAssessment;
 };
 
 function ctx(node: RoadmapNode): string {
@@ -60,24 +74,8 @@ const PACKS: TopicPack[] = [
         q(node, 4, "A prefix sum array helps you…", ["Find range sums in O(1) after O(n) prep", "Sort faster", "Hash strings", "Traverse trees"], 0),
       ],
     }),
-    coding: () => ({
-      prompt:
-        "Implement `twoSum(nums, target)` that returns indices of two numbers that add up to `target`. Exactly one solution exists. Use a hash map for O(n) time.",
-      starterCode: `function twoSum(nums, target) {\n  // return [i, j]\n  \n}\n`,
-      functionName: "twoSum",
-      examples: [
-        { input: "nums = [2,7,11,15], target = 9", output: "[0,1]" },
-        { input: "nums = [3,2,4], target = 6", output: "[1,2]" },
-      ],
-      publicTests: [
-        { args: [[2, 7, 11, 15], 9], expected: [0, 1] },
-        { args: [[3, 2, 4], 6], expected: [1, 2] },
-      ],
-      hiddenTests: [
-        { args: [[3, 3], 6], expected: [0, 1] },
-        { args: [[1, 5, 3, 7], 8], expected: [1, 2] },
-      ],
-    }),
+    coding: () => TWO_SUM,
+    extraCoding: () => CONTAINS_DUPLICATE,
   },
   {
     id: "strings",
@@ -95,24 +93,8 @@ const PACKS: TopicPack[] = [
         q(node, 4, "Time complexity of building a frequency map of a string of length n is…", ["O(1)", "O(log n)", "O(n)", "O(n²) always"], 2),
       ],
     }),
-    coding: () => ({
-      prompt:
-        "Implement `isPalindrome(s)` that returns true if `s` reads the same forwards and backwards. Ignore case; consider only alphanumeric characters.",
-      starterCode: `function isPalindrome(s) {\n  // return true/false\n  \n}\n`,
-      functionName: "isPalindrome",
-      examples: [
-        { input: 's = "A man, a plan, a canal: Panama"', output: "true" },
-        { input: 's = "race a car"', output: "false" },
-      ],
-      publicTests: [
-        { args: ["A man, a plan, a canal: Panama"], expected: true },
-        { args: ["race a car"], expected: false },
-      ],
-      hiddenTests: [
-        { args: [" "], expected: true },
-        { args: ["0P"], expected: false },
-      ],
-    }),
+    coding: () => IS_PALINDROME,
+    extraCoding: () => IS_ANAGRAM,
   },
   {
     id: "sorting-search",
@@ -130,24 +112,7 @@ const PACKS: TopicPack[] = [
         q(node, 4, "Stable sorting means…", ["Fastest algorithm", "Equal keys keep relative order", "Uses no memory", "Only works on integers"], 1),
       ],
     }),
-    coding: () => ({
-      prompt:
-        "Implement `binarySearch(nums, target)` on a sorted ascending array. Return the index of `target`, or -1 if missing.",
-      starterCode: `function binarySearch(nums, target) {\n  // return index or -1\n  \n}\n`,
-      functionName: "binarySearch",
-      examples: [
-        { input: "nums = [-1,0,3,5,9,12], target = 9", output: "4" },
-        { input: "nums = [-1,0,3,5,9,12], target = 2", output: "-1" },
-      ],
-      publicTests: [
-        { args: [[-1, 0, 3, 5, 9, 12], 9], expected: 4 },
-        { args: [[-1, 0, 3, 5, 9, 12], 2], expected: -1 },
-      ],
-      hiddenTests: [
-        { args: [[5], 5], expected: 0 },
-        { args: [[1, 2, 3], 1], expected: 0 },
-      ],
-    }),
+    coding: () => BINARY_SEARCH,
   },
   {
     id: "trees-graphs",
@@ -156,7 +121,7 @@ const PACKS: TopicPack[] = [
       title: "Tree & Graph Algorithms — freeCodeCamp",
       url: "https://www.youtube.com/watch?v=tWVWeAqas0k",
     },
-    preferCoding: false,
+    preferCoding: true,
     mcq: (node) => ({
       questions: [
         q(node, 1, `In ${node.title}, BFS typically uses which structure?`, ["Stack", "Queue", "Only recursion", "Hash set only"], 1),
@@ -165,6 +130,7 @@ const PACKS: TopicPack[] = [
         q(node, 4, "Detecting a cycle in a directed graph often uses…", ["Counting sort", "DFS colors / recursion stack", "Binary search", "Two pointers on an array"], 1),
       ],
     }),
+    coding: () => MAX_DEPTH,
   },
   {
     id: "javascript",
@@ -182,24 +148,7 @@ const PACKS: TopicPack[] = [
         q(node, 4, "`const` means the binding…", ["Is immutable for objects deeply", "Cannot be reassigned", "Makes values frozen", "Is function-scoped like var"], 1),
       ],
     }),
-    coding: () => ({
-      prompt:
-        "Implement `sumUnique(nums)` that returns the sum of elements that appear exactly once in `nums`.",
-      starterCode: `function sumUnique(nums) {\n  // return number\n  \n}\n`,
-      functionName: "sumUnique",
-      examples: [
-        { input: "nums = [1,2,3,2]", output: "4" },
-        { input: "nums = [1,1,1,1]", output: "0" },
-      ],
-      publicTests: [
-        { args: [[1, 2, 3, 2]], expected: 4 },
-        { args: [[1, 1, 1, 1]], expected: 0 },
-      ],
-      hiddenTests: [
-        { args: [[1, 2, 3, 4]], expected: 10 },
-        { args: [[5, 5, 6]], expected: 6 },
-      ],
-    }),
+    coding: () => SUM_UNIQUE,
   },
   {
     id: "sql-db",
@@ -319,24 +268,8 @@ const PACKS: TopicPack[] = [
         q(node, 4, "Space complexity measures…", ["Extra memory vs input size", "Only CPU cores", "Network latency", "Bundle size"], 0),
       ],
     }),
-    coding: () => ({
-      prompt:
-        "Implement `maxSubArray(nums)` (Kadane) returning the largest sum of any contiguous subarray.",
-      starterCode: `function maxSubArray(nums) {\n  // return max sum\n  \n}\n`,
-      functionName: "maxSubArray",
-      examples: [
-        { input: "nums = [-2,1,-3,4,-1,2,1,-5,4]", output: "6" },
-        { input: "nums = [1]", output: "1" },
-      ],
-      publicTests: [
-        { args: [[-2, 1, -3, 4, -1, 2, 1, -5, 4]], expected: 6 },
-        { args: [[1]], expected: 1 },
-      ],
-      hiddenTests: [
-        { args: [[5, 4, -1, 7, 8]], expected: 23 },
-        { args: [[-1]], expected: -1 },
-      ],
-    }),
+    coding: () => MAX_SUB_ARRAY,
+    extraCoding: () => CLIMB_STAIRS,
   },
 ];
 
@@ -407,7 +340,7 @@ function pickPack(node: RoadmapNode): TopicPack | null {
   for (const pack of PACKS) {
     const m = hay.match(pack.match);
     if (!m) continue;
-    const score = m[0].length + (hay.includes(pack.id.split("-")[0]) ? 2 : 0);
+    const score = m[0].length + (hay.includes((pack.id || "").split("-")[0]) ? 2 : 0);
     if (score > bestScore) {
       best = pack;
       bestScore = score;
@@ -427,28 +360,90 @@ function wantsCoding(node: RoadmapNode, pack: TopicPack | null): boolean {
 }
 
 export function buildAssessmentForNode(node: RoadmapNode): NodeAssessment {
-  if (node.type === "project") {
-    return nodeAssessmentFromProjectSpec(buildProjectSpecForNode(node));
-  }
+  return buildAssessmentsForNode(node)[0];
+}
 
-  const pack = pickPack(node);
-  const coding = wantsCoding(node, pack);
-
-  if (coding && pack?.coding) {
+function withIds(node: RoadmapNode, list: NodeAssessment[]): NodeAssessment[] {
+  return list.map((a, i) => {
+    const coding = a.coding ? hydrateCodingAssessment(a.coding) : a.coding;
     return {
-      type: "coding",
-      passScore: 100,
-      timeLimitMinutes: 45,
-      coding: pack.coding(node),
+      ...a,
+      id: a.id || `${node.id}-${a.type}-${i}`,
+      title:
+        a.title ||
+        coding?.title ||
+        (a.type === "mcq"
+          ? "Concept quiz"
+          : a.type === "project"
+            ? "Project submission"
+            : coding?.functionName || "Assessment"),
+      coding,
     };
-  }
+  });
+}
 
+function codingPart(
+  node: RoadmapNode,
+  coding: CodingAssessment,
+  index: number,
+): NodeAssessment {
+  const hydrated = hydrateCodingAssessment(coding);
   return {
+    id: `${node.id}-coding-${index}`,
+    title: hydrated.title || hydrated.functionName,
+    type: "coding",
+    passScore: 100,
+    timeLimitMinutes: 45,
+    coding: hydrated,
+  };
+}
+
+function mcqPart(node: RoadmapNode, mcq: NodeAssessment["mcq"]): NodeAssessment {
+  return {
+    id: `${node.id}-mcq-0`,
+    title: "Concept quiz",
     type: "mcq",
     passScore: 70,
     timeLimitMinutes: 20,
-    mcq: pack?.mcq(node) || fallbackMcq(node),
+    mcq,
   };
+}
+
+function wantsMultiple(node: RoadmapNode): boolean {
+  if (node.type === "checkpoint") return true;
+  if (node.priority === "high" || node.priority === "critical") return true;
+  if (node.type === "skill" && /\b(interview|oa|dsa|leet)\b/i.test(ctx(node))) return true;
+  return false;
+}
+
+export function buildAssessmentsForNode(node: RoadmapNode): NodeAssessment[] {
+  if (node.type === "project") {
+    const project = nodeAssessmentFromProjectSpec(buildProjectSpecForNode(node));
+    return withIds(node, [{ ...project, title: project.title || "Project submission" }]);
+  }
+
+  const pack = pickPack(node);
+  const codingWanted = wantsCoding(node, pack);
+  const list: NodeAssessment[] = [];
+
+  if (codingWanted && pack?.coding) {
+    list.push(codingPart(node, pack.coding(node), 0));
+  }
+
+  const addMcq = !codingWanted || wantsMultiple(node);
+  if (addMcq) {
+    list.push(mcqPart(node, pack?.mcq(node) || fallbackMcq(node)));
+  }
+
+  if (
+    codingWanted &&
+    pack?.extraCoding &&
+    (node.type === "checkpoint" || node.priority === "critical")
+  ) {
+    list.push(codingPart(node, pack.extraCoding(node), 1));
+  }
+
+  return withIds(node, list);
 }
 
 function isMisalignedAssessment(node: RoadmapNode, assessment: NodeAssessment): boolean {
@@ -526,11 +521,26 @@ export function ensureNodeAssessments(nodes: RoadmapNode[]): RoadmapNode[] {
       resources.push({ ...extra, suggested: true });
     }
 
-    let assessment = node.assessment;
-    if (!assessment || isMisalignedAssessment(node, assessment)) {
-      assessment = buildAssessmentForNode(node);
-    }
+    const existing = [
+      ...(Array.isArray(node.assessments) ? node.assessments : []),
+    ];
+    if (existing.length === 0 && node.assessment) existing.push(node.assessment);
 
-    return { ...node, resources, assessment };
+    const misaligned =
+      existing.length === 0 ||
+      existing.some((a) => isMisalignedAssessment(node, a));
+    const tooFew = wantsMultiple(node) && existing.length < 2 && node.type !== "project";
+
+    const assessments = misaligned || tooFew
+      ? buildAssessmentsForNode(node)
+      : withIds(
+          node,
+          existing.map((a) =>
+            a.coding ? { ...a, coding: hydrateCodingAssessment(a.coding) } : a,
+          ),
+        );
+
+    return { ...node, resources, assessment: assessments[0], assessments };
   });
 }
+

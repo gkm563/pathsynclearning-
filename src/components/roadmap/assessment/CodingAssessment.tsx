@@ -36,6 +36,7 @@ import {
 } from "@/lib/roadmap/coding-languages";
 import { apiSend } from "@/lib/api";
 import { AddNoteButton } from "@/components/memory-lane/AddNoteButton";
+import { RichStudyText } from "@/components/ai/RichStudyText";
 
 /** LeetCode-inspired dark palette for the coding workspace */
 const LC = {
@@ -176,9 +177,23 @@ export default function CodingAssessment({
   noteTitle?: string;
 }) {
   const coding = assessment.coding!;
+  const assessmentId = assessment.id;
+  const draftKey = assessmentId ? `${nodeId}:${assessmentId}` : nodeId;
+  const problemTitle = coding.title || coding.functionName;
+  const difficulty = coding.difficulty || "easy";
+  const statement = coding.statement || coding.prompt;
+  const constraints =
+    coding.constraints && coding.constraints.length
+      ? coding.constraints
+      : [
+          "Pass all public test cases before submit",
+          "Hidden tests are graded on submit",
+          "Time limit applies to the full attempt",
+        ];
+  const [hintsOpen, setHintsOpen] = useState(false);
   const [language, setLanguage] = useState<CodingLanguageId>("javascript");
   const [code, setCode] = useState(() => {
-    const saved = loadDraft(nodeId, "javascript");
+    const saved = loadDraft(draftKey, "javascript");
     return saved ?? coding.starterCode;
   });
   const [results, setResults] = useState<CodingTestResult[] | null>(null);
@@ -217,16 +232,16 @@ export default function CodingAssessment({
 
   useEffect(() => {
     const t = setTimeout(() => {
-      saveDraft(nodeId, language, code);
+      saveDraft(draftKey, language, code);
       setSavedFlash(true);
       window.setTimeout(() => setSavedFlash(false), 900);
     }, 500);
     return () => clearTimeout(t);
-  }, [code, language, nodeId]);
+  }, [code, language, draftKey]);
 
   useEffect(() => {
-    setHistory(loadCodeHistory(nodeId));
-  }, [nodeId, historyOpen]);
+    setHistory(loadCodeHistory(draftKey));
+  }, [draftKey, historyOpen]);
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
@@ -261,9 +276,9 @@ export default function CodingAssessment({
 
   const switchLanguage = (next: CodingLanguageId) => {
     if (next === language) return;
-    saveDraft(nodeId, language, code);
-    pushCodeHistory(nodeId, language, code);
-    const draft = loadDraft(nodeId, next);
+    saveDraft(draftKey, language, code);
+    pushCodeHistory(draftKey, language, code);
+    const draft = loadDraft(draftKey, next);
     setLanguage(next);
     setCode(
       draft ??
@@ -308,9 +323,9 @@ export default function CodingAssessment({
   };
 
   const handleSave = () => {
-    saveDraft(nodeId, language, code);
-    pushCodeHistory(nodeId, language, code);
-    setHistory(loadCodeHistory(nodeId));
+    saveDraft(draftKey, language, code);
+    pushCodeHistory(draftKey, language, code);
+    setHistory(loadCodeHistory(draftKey));
     setSavedFlash(true);
     window.setTimeout(() => setSavedFlash(false), 1200);
   };
@@ -323,7 +338,7 @@ export default function CodingAssessment({
   };
 
   const restoreHistory = (entry: CodeHistoryEntry) => {
-    saveDraft(nodeId, language, code);
+    saveDraft(draftKey, language, code);
     setLanguage(entry.language);
     setCode(entry.code);
     setHistoryOpen(false);
@@ -371,6 +386,7 @@ export default function CodingAssessment({
         results: CodingTestResult[];
       }>("/api/roadmap/assessment/run", "POST", {
         nodeId,
+        assessmentId,
         code,
         language,
       });
@@ -386,7 +402,7 @@ export default function CodingAssessment({
     } finally {
       setRunning(false);
     }
-  }, [code, coding, language, nodeId, runSource]);
+  }, [code, coding, language, nodeId, assessmentId, runSource]);
 
   const activeTest = coding.publicTests[activeCase];
   const activeResult = results?.find((r) => r.index === activeCase);
@@ -433,7 +449,7 @@ export default function CodingAssessment({
             </div>
 
             <div style={{ flex: 1, overflow: "auto", padding: "18px 22px 28px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
                 <h2
                   style={{
                     margin: 0,
@@ -443,33 +459,36 @@ export default function CodingAssessment({
                     letterSpacing: "-0.02em",
                   }}
                 >
-                  {coding.functionName}
+                  {problemTitle}
                 </h2>
                 <span
                   style={{
                     fontSize: 12,
                     fontWeight: 600,
-                    color: LC.green,
-                    background: LC.greenDim,
+                    color:
+                      difficulty === "hard"
+                        ? LC.red
+                        : difficulty === "medium"
+                          ? LC.accent
+                          : LC.green,
+                    background:
+                      difficulty === "hard"
+                        ? LC.redDim
+                        : difficulty === "medium"
+                          ? "rgba(255,161,22,0.16)"
+                          : LC.greenDim,
                     padding: "2px 10px",
                     borderRadius: 999,
+                    textTransform: "capitalize",
                   }}
                 >
-                  Easy
+                  {difficulty}
                 </span>
               </div>
 
-              <p
-                style={{
-                  fontSize: 14,
-                  lineHeight: 1.7,
-                  color: LC.muted,
-                  whiteSpace: "pre-wrap",
-                  margin: "0 0 22px",
-                }}
-              >
-                {coding.prompt}
-              </p>
+              <div style={{ color: LC.muted, marginBottom: 22 }}>
+                <RichStudyText text={statement} invert />
+              </div>
 
               {coding.examples.map((ex, i) => (
                 <div key={i} style={{ marginBottom: 22 }}>
@@ -502,6 +521,12 @@ export default function CodingAssessment({
                       <span style={{ color: LC.muted2, fontWeight: 600 }}>Output: </span>
                       <span style={{ color: LC.text }}>{ex.output}</span>
                     </div>
+                    {ex.explanation ? (
+                      <div style={{ marginTop: 8, color: LC.muted, fontFamily: "Inter, sans-serif", fontSize: 13, lineHeight: 1.6 }}>
+                        <span style={{ color: LC.muted2, fontWeight: 600 }}>Explanation: </span>
+                        {ex.explanation}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               ))}
@@ -519,11 +544,49 @@ export default function CodingAssessment({
                     lineHeight: 1.7,
                   }}
                 >
-                  <li>Pass all public test cases before submit</li>
-                  <li>Hidden tests are graded on submit</li>
-                  <li>Time limit applies to the full attempt</li>
+                  {constraints.map((c) => (
+                    <li key={c}>{c}</li>
+                  ))}
                 </ul>
               </div>
+
+              {coding.followUp ? (
+                <div style={{ marginTop: 22 }}>
+                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>
+                    Follow-up:
+                  </div>
+                  <p style={{ margin: 0, color: LC.muted, fontSize: 13, lineHeight: 1.7 }}>
+                    {coding.followUp}
+                  </p>
+                </div>
+              ) : null}
+
+              {coding.hints && coding.hints.length > 0 ? (
+                <div style={{ marginTop: 22 }}>
+                  <button
+                    type="button"
+                    onClick={() => setHintsOpen((v) => !v)}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: LC.blue,
+                      fontWeight: 700,
+                      fontSize: 14,
+                      padding: 0,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {hintsOpen ? "Hide hints" : `Show ${coding.hints.length} hint${coding.hints.length === 1 ? "" : "s"}`}
+                  </button>
+                  {hintsOpen
+                    ? coding.hints.map((h, i) => (
+                        <p key={i} style={{ margin: "10px 0 0", color: LC.muted, fontSize: 13, lineHeight: 1.7 }}>
+                          Hint {i + 1}: {h}
+                        </p>
+                      ))
+                    : null}
+                </div>
+              ) : null}
             </div>
           </aside>
 
@@ -887,7 +950,7 @@ export default function CodingAssessment({
                 disabled={submitting || running}
                 onClick={() => {
                   void (async () => {
-                    pushCodeHistory(nodeId, language, code);
+                    pushCodeHistory(draftKey, language, code);
                     setBottomTab("result");
                     setSummary("Submitting…");
                     try {

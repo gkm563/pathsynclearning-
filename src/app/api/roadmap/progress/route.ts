@@ -10,7 +10,7 @@ import {
   findNodesToUnlock,
   isProgressSatisfied,
 } from '@/lib/roadmap/progress';
-import { isAssessableNode, nodeRequiresAssessment } from '@/lib/roadmap/assessment';
+import { allAssessmentsPassed, getNodeAssessments, isAssessableNode, nodeRequiresAssessment } from '@/lib/roadmap/assessment';
 import type { RoadmapEdge, RoadmapNode } from '@/types/roadmap';
 import crypto from 'crypto';
 
@@ -75,8 +75,12 @@ export async function PUT(request: Request) {
           'This node requires an assessment. Open Take Assessment to complete it.',
         );
       }
-      const [passed] = await db
-        .select({ id: roadmapAssessmentAttempts.id })
+      const passedRows = await db
+        .select({
+          id: roadmapAssessmentAttempts.id,
+          passed: roadmapAssessmentAttempts.passed,
+          answers: roadmapAssessmentAttempts.answers,
+        })
         .from(roadmapAssessmentAttempts)
         .where(
           and(
@@ -85,12 +89,14 @@ export async function PUT(request: Request) {
             eq(roadmapAssessmentAttempts.nodeId, nodeId),
             eq(roadmapAssessmentAttempts.passed, true),
           ),
-        )
-        .limit(1);
-      if (!passed) {
+        );
+      const assessments = getNodeAssessments(node);
+      if (!allAssessmentsPassed(passedRows, assessments)) {
         throw new AppError(
           'BAD_REQUEST',
-          'Pass the node assessment before marking complete.',
+          assessments.length > 1
+            ? 'Pass every assessment on this node before marking complete.'
+            : 'Pass the node assessment before marking complete.',
         );
       }
     }

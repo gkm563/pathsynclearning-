@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { Lock, Sparkles, StickyNote, Undo2, X, Loader2 } from "lucide-react";
+import { CircleAlert, Lock, Sparkles, StickyNote, Undo2, X, Loader2 } from "lucide-react";
 import { apiGet, apiSend } from "@/lib/api";
 import { Button } from "@/components/ui/primitives";
+import { RichStudyText } from "@/components/ai/RichStudyText";
 
 export type NoteSourceProps = {
   sourceType: string;
@@ -17,6 +18,12 @@ export type NoteSourceProps = {
   titleAttr?: string;
   className?: string;
   style?: React.CSSProperties;
+};
+
+type NoteCorrection = {
+  wrong: string;
+  correct: string;
+  explain: string;
 };
 
 type NoteRow = {
@@ -115,6 +122,7 @@ export function NoteEditor({
   onClose,
   onSaved,
   inline = false,
+  bare = false,
 }: NoteSourceProps & {
   noteId?: string;
   initialTitle?: string;
@@ -124,6 +132,8 @@ export function NoteEditor({
   onSaved?: (note: NoteRow) => void;
   /** Render form in-place instead of a centered modal overlay. */
   inline?: boolean;
+  /** Flatten chrome so the form can sit inside an existing modal. */
+  bare?: boolean;
 }) {
   const [title, setTitle] = useState(initialTitle ?? defaultTitle);
   const [content, setContent] = useState(initialContent ?? "");
@@ -137,6 +147,30 @@ export function NoteEditor({
     title: string;
     content: string;
   } | null>(null);
+  const [corrections, setCorrections] = useState<NoteCorrection[]>([]);
+
+  useEffect(() => {
+    if (!noteId) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await apiGet<{ note?: NoteRow }>(
+          `/api/me/notes?id=${encodeURIComponent(noteId)}`,
+        );
+        if (cancelled || !res.note) return;
+        setTitle(res.note.title);
+        setContent(res.note.content);
+        if (res.note.visibility === "public" || res.note.visibility === "private") {
+          setVisibility(res.note.visibility);
+        }
+      } catch {
+        /* keep initialContent */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [noteId]);
 
   const enhance = async () => {
     if (enhancing || saving) return;
@@ -148,16 +182,16 @@ export function NoteEditor({
     setError("");
     const snapshot = { title, content };
     try {
-      const res = await apiSend<{ title?: string; content?: string }>(
-        "/api/ai/notes/enhance",
-        "POST",
-        {
-          title,
-          content,
-          contextLabel,
-          sourceType,
-        },
-      );
+      const res = await apiSend<{
+        title?: string;
+        content?: string;
+        corrections?: NoteCorrection[];
+      }>("/api/ai/notes/enhance", "POST", {
+        title,
+        content,
+        contextLabel,
+        sourceType,
+      });
       const nextTitle = typeof res.title === "string" ? res.title.trim() : "";
       const nextContent = typeof res.content === "string" ? res.content.trim() : "";
       if (!nextContent) {
@@ -167,6 +201,13 @@ export function NoteEditor({
       setUndoSnapshot(snapshot);
       if (nextTitle) setTitle(nextTitle.slice(0, 200));
       setContent(nextContent.slice(0, 12000));
+      setCorrections(
+        Array.isArray(res.corrections)
+          ? res.corrections.filter(
+              (c) => c && c.wrong && c.correct && c.explain,
+            )
+          : [],
+      );
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not enhance note");
     } finally {
@@ -179,6 +220,7 @@ export function NoteEditor({
     setTitle(undoSnapshot.title);
     setContent(undoSnapshot.content);
     setUndoSnapshot(null);
+    setCorrections([]);
   };
 
   const save = async () => {
@@ -217,42 +259,44 @@ export function NoteEditor({
 
   const form = (
     <div
-      onClick={inline ? undefined : (e) => e.stopPropagation()}
+      onClick={inline || bare ? undefined : (e) => e.stopPropagation()}
       style={{
-        width: inline ? "100%" : "min(480px, 100%)",
-        background: "var(--bg-card)",
-        borderRadius: inline ? 12 : 18,
-        border: "1.5px solid var(--border-light)",
-        boxShadow: inline ? "none" : "0 24px 60px rgba(15,23,42,0.25)",
-        padding: inline ? 14 : 20,
+        width: inline || bare ? "100%" : "min(480px, 100%)",
+        background: bare ? "transparent" : "var(--bg-card)",
+        borderRadius: inline || bare ? 12 : 18,
+        border: bare ? "none" : "1.5px solid var(--border-light)",
+        boxShadow: inline || bare ? "none" : "0 24px 60px rgba(15,23,42,0.25)",
+        padding: bare ? 0 : inline ? 14 : 20,
         fontFamily: "Outfit, sans-serif",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 14,
-        }}
-      >
-        <h3 style={{ margin: 0, fontSize: inline ? 15 : 18, fontWeight: 800, color: "var(--text-main)" }}>
-          {noteId ? "Edit note" : "Add note"}
-        </h3>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
+      {bare ? null : (
+        <div
           style={{
-            border: "none",
-            background: "transparent",
-            cursor: "pointer",
-            color: "var(--text-muted)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 14,
           }}
         >
-          <X size={18} />
-        </button>
-      </div>
+          <h3 style={{ margin: 0, fontSize: inline ? 15 : 18, fontWeight: 800, color: "var(--text-main)" }}>
+            {noteId ? "Edit note" : "Add note"}
+          </h3>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            style={{
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              color: "var(--text-muted)",
+            }}
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
 
       <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--text-muted)" }}>
         Title
@@ -283,7 +327,7 @@ export function NoteEditor({
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="I finally understood how recursion works..."
-        rows={inline ? 5 : 6}
+        rows={bare ? 10 : inline ? 5 : 6}
         disabled={enhancing}
         style={{
           width: "100%",
@@ -357,10 +401,97 @@ export function NoteEditor({
           </button>
         ) : (
           <span style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "Inter, sans-serif" }}>
-            Cleans up messy notes. You can edit before saving.
+            Cleans up notes, fixes mistakes, and explains what was wrong.
           </span>
         )}
       </div>
+
+      {content.trim() ? (
+        <div
+          style={{
+            marginBottom: 12,
+            padding: 12,
+            borderRadius: 12,
+            border: "1px solid var(--border-light)",
+            background: "var(--bg-alt)",
+          }}
+        >
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 800,
+              color: "var(--text-muted)",
+              marginBottom: 8,
+            }}
+          >
+            Preview
+          </div>
+          <RichStudyText text={content} />
+        </div>
+      ) : null}
+
+      {corrections.length > 0 ? (
+        <div
+          style={{
+            marginBottom: 12,
+            padding: 12,
+            borderRadius: 12,
+            border: "1.5px solid rgba(245,158,11,0.35)",
+            background: "rgba(245,158,11,0.08)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              fontWeight: 800,
+              fontSize: 13,
+              color: "#b45309",
+              marginBottom: 8,
+            }}
+          >
+            <CircleAlert size={15} /> What was wrong
+          </div>
+          <div style={{ display: "grid", gap: 10 }}>
+            {corrections.map((c, i) => (
+              <div
+                key={`${c.wrong}-${i}`}
+                style={{
+                  fontFamily: "Inter, sans-serif",
+                  fontSize: 13,
+                  lineHeight: 1.55,
+                  color: "var(--text-main)",
+                }}
+              >
+                <div>
+                  <strong style={{ color: "#b91c1c" }}>You wrote:</strong>{" "}
+                  <RichStudyText text={c.wrong} />
+                </div>
+                <div style={{ marginTop: 4 }}>
+                  <strong style={{ color: "#047857" }}>Correct:</strong>{" "}
+                  <RichStudyText text={c.correct} />
+                </div>
+                <div style={{ marginTop: 4, color: "var(--text-muted)" }}>
+                  <strong style={{ color: "var(--text-main)" }}>Why:</strong>{" "}
+                  <RichStudyText text={c.explain} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : undoSnapshot ? (
+        <p
+          style={{
+            margin: "0 0 12px",
+            fontSize: 12,
+            color: "#047857",
+            fontFamily: "Inter, sans-serif",
+          }}
+        >
+          No factual mistakes found — notes were cleaned up.
+        </p>
+      ) : null}
 
       {contextLabel ? (
         <div
@@ -424,7 +555,7 @@ export function NoteEditor({
     </div>
   );
 
-  if (inline) {
+  if (inline || bare) {
     return (
       <div role="form" aria-label={noteId ? "Edit note" : "Add note"}>
         {form}
@@ -490,18 +621,14 @@ export function NoteCard({
       <h4 style={{ margin: 0, fontFamily: "Outfit, sans-serif", fontSize: 16, fontWeight: 800 }}>
         {note.title}
       </h4>
-      <p
+      <div
         style={{
           margin: "8px 0 0",
-          fontSize: 14,
-          color: "var(--text-muted)",
-          lineHeight: 1.5,
-          fontStyle: "italic",
+          color: "var(--text-main)",
         }}
       >
-        “{note.content.slice(0, 220)}
-        {note.content.length > 220 ? "…" : ""}”
-      </p>
+        <RichStudyText text={note.content} />
+      </div>
       <div
         style={{
           marginTop: 12,

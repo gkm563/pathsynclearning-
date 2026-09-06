@@ -47,14 +47,24 @@ export interface CodingTestCase {
   expected: unknown;
 }
 
+export type CodingDifficulty = "easy" | "medium" | "hard";
+
 export interface CodingAssessment {
   prompt: string;
   starterCode: string;
   functionName: string;
-  examples: { input: string; output: string }[];
+  examples: { input: string; output: string; explanation?: string }[];
   publicTests: CodingTestCase[];
   /** Server-only — stripped from public GET */
   hiddenTests?: CodingTestCase[];
+  /** LeetCode-style problem title (defaults to functionName). */
+  title?: string;
+  difficulty?: CodingDifficulty;
+  /** Full problem statement; falls back to prompt. */
+  statement?: string;
+  constraints?: string[];
+  hints?: string[];
+  followUp?: string;
 }
 
 export interface ProjectStepSpec {
@@ -94,6 +104,10 @@ export interface ProjectAssessment {
 }
 
 export interface NodeAssessment {
+  /** Stable id within the node — required when a node has multiple assessments. */
+  id?: string;
+  /** Short label for the picker (e.g. "Two Sum", "Concept quiz"). */
+  title?: string;
   type: "mcq" | "coding" | "project";
   passScore: number;
   timeLimitMinutes: number;
@@ -118,7 +132,10 @@ export interface RoadmapNode {
   whyLearn: string;
   learningOutcomes?: string[];
   interviewFocus?: string;
+  /** Primary / first assessment (kept for older roadmaps). */
   assessment?: NodeAssessment;
+  /** Extra assessments on the same node. Pass all to complete the node. */
+  assessments?: NodeAssessment[];
   /** Position — set by auto-layout, not by AI */
   position?: { x: number; y: number };
 }

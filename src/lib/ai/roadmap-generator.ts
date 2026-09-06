@@ -76,9 +76,11 @@ Hiring brief: ${JSON.stringify(hiring)}
 
 Assessments for skill/topic/project/checkpoint:
 - Grounded in THIS node only.
+- You MAY attach 1–3 assessments on the same node when the topic is interview-heavy (checkpoint, OA/DSA, high priority). Mix a coding problem with a short concept MCQ when both matter.
 - Conceptual: type "mcq" with 3-5 questions.
-- Coding-heavy: type "coding" with JS starterCode, functionName, examples, publicTests, hiddenTests.
+- Coding-heavy: type "coding" with a LeetCode-style statement (problem story, input/output, what to return), JS starterCode, functionName, 2–3 examples with explanations, constraints[], optional hints[], publicTests, hiddenTests. Do not write a one-line prompt — write a full problem description.
 - passScore: 70 mcq / 100 coding; timeLimitMinutes 15-45.
+- Put the primary assessment in "assessment" and the full list in "assessments" (including the primary). Each item needs a unique "id" and "title".
 
 Return ONLY JSON:
 {
@@ -102,12 +104,15 @@ Return ONLY JSON:
     "project": "string|null",
     "whyLearn": "string",
     "assessment": {
+      "id": "string",
+      "title": "string",
       "type": "mcq|coding",
       "passScore": number,
       "timeLimitMinutes": number,
       "mcq": {"questions":[{"id":"string","prompt":"string","options":["string"],"correctIndex":0}]},
-      "coding": {"prompt":"string","starterCode":"string","functionName":"string","examples":[{"input":"string","output":"string"}],"publicTests":[{"args":[],"expected":null}],"hiddenTests":[{"args":[],"expected":null}]}
-    }
+      "coding": {"title":"string","difficulty":"easy|medium|hard","prompt":"string","statement":"string","starterCode":"string","functionName":"string","constraints":["string"],"hints":["string"],"followUp":"string","examples":[{"input":"string","output":"string","explanation":"string"}],"publicTests":[{"args":[],"expected":null}],"hiddenTests":[{"args":[],"expected":null}]}
+    },
+    "assessments": []
   }],
   "edges": [{"id":"string","source":"string","target":"string","label":"string"}]
 }`;
@@ -132,7 +137,7 @@ Return ONLY JSON:
       : (() => {
           const nodes = Array.isArray(result?.nodes)
             ? result.nodes.map((n: any) => {
-                const { assessment: _a, ...rest } = n || {};
+                const { assessment: _a, assessments: _b, ...rest } = n || {};
                 return rest;
               })
             : [];

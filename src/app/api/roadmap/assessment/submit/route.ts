@@ -11,9 +11,14 @@ import {
 } from "@/lib/db/schema";
 import { requireDbUser } from "@/lib/db/users";
 import {
+  allAssessmentsPassed,
+  ASSESSMENT_ID_KEY,
   buildMcqAnswerReview,
+  getNodeAssessments,
   gradeMcq,
   isAssessableNode,
+  passedAssessmentIds,
+  resolveNodeAssessment,
 } from "@/lib/roadmap/assessment";
 import { gradeCoding } from "@/lib/roadmap/coding-judge";
 import { gradeProject } from "@/lib/projects/grader";
@@ -63,12 +68,22 @@ export async function POST(request: Request) {
       : []) as RoadmapEdge[];
 
     const node = nodes.find((n) => n.id === body.nodeId);
-    if (!node?.assessment || !isAssessableNode(node)) {
+    if (!node || !isAssessableNode(node)) {
       throw AppError.badRequest("Node assessment not found");
     }
-    if (node.assessment.type !== body.type) {
+    const assessments = getNodeAssessments(node);
+    const assessment = resolveNodeAssessment(node, body.assessmentId);
+    if (!assessment) {
+      throw AppError.badRequest(
+        assessments.length > 1
+          ? "assessmentId is required when this node has multiple assessments"
+          : "Node assessment not found",
+      );
+    }
+    if (assessment.type !== body.type) {
       throw AppError.badRequest("Assessment type mismatch");
     }
+    const assessmentId = assessment.id || `${body.nodeId}-${assessment.type}-0`;
 
     const violations = body.violations || [];
     if (PROCTORING_ENABLED && violations.length >= MAX_VIOLATIONS) {
@@ -83,7 +98,7 @@ export async function POST(request: Request) {
           passed: false,
           score: 0,
           violations,
-          answers: body.answers || {},
+          answers: { ...(body.answers || {}), [ASSESSMENT_ID_KEY]: assessmentId },
           code: body.code || null,
         })
         .returning();
@@ -117,23 +132,23 @@ export async function POST(request: Request) {
     let answerReview: unknown = null;
 
     if (body.type === "mcq") {
-      const graded = gradeMcq(node.assessment, body.answers || {});
+      const graded = gradeMcq(assessment, body.answers || {});
       score = graded.score;
       passed = graded.passed;
       details = { correct: graded.correct, total: graded.total };
       if (passed) {
         answerReview = {
           type: "mcq",
-          questions: buildMcqAnswerReview(node.assessment, body.answers || {}),
+          questions: buildMcqAnswerReview(assessment, body.answers || {}),
         };
       }
     } else if (body.type === "project") {
-      const projectPart = node.assessment.project;
+      const projectPart = assessment.project;
       const spec: ProjectAssessmentSpec = projectPart
         ? {
             type: "project",
-            passScore: node.assessment.passScore,
-            timeLimitMinutes: node.assessment.timeLimitMinutes,
+            passScore: assessment.passScore,
+            timeLimitMinutes: assessment.timeLimitMinutes,
             overview: projectPart.overview,
             steps: projectPart.steps,
             rubric: projectPart.rubric,
@@ -199,7 +214,7 @@ export async function POST(request: Request) {
         | "c"
         | "cpp";
       const graded = await gradeCoding(
-        node.assessment,
+        assessment,
         body.code || "",
         language,
       );
@@ -218,8 +233,8 @@ export async function POST(request: Request) {
           actual: r.actual,
         })),
       };
-      if (passed && node.assessment.coding) {
-        const coding = node.assessment.coding;
+      if (passed && assessment.coding) {
+        const coding = assessment.coding;
         answerReview = {
           type: "coding",
           functionName: coding.functionName,
@@ -241,8 +256,8 @@ export async function POST(request: Request) {
         passed,
         score,
         violations,
-        answers:
-          body.type === "project"
+        answers: {
+          ...(body.type === "project"
             ? {
                 stepsDone: body.stepsDone || [],
                 evidence: body.evidence || [],
@@ -250,7 +265,9 @@ export async function POST(request: Request) {
                 reflection: body.reflection,
                 ...(details && typeof details === "object" ? details : {}),
               }
-            : body.answers || {},
+            : body.answers || {}),
+          [ASSESSMENT_ID_KEY]: assessmentId,
+        },
         code: body.code || null,
       })
       .returning();
@@ -267,7 +284,52 @@ export async function POST(request: Request) {
         passed: false,
         score,
         details,
+        assessmentId,
+        nodeComplete: false,
         message: "Assessment not passed. Review resources and try again.",
+        attempt,
+      });
+    }
+
+    const priorAttempts = await db
+      .select({
+        passed: roadmapAssessmentAttempts.passed,
+        answers: roadmapAssessmentAttempts.answers,
+      })
+      .from(roadmapAssessmentAttempts)
+      .where(
+        and(
+          eq(roadmapAssessmentAttempts.userId, user.id),
+          eq(roadmapAssessmentAttempts.roadmapId, activeRoadmap.id),
+          eq(roadmapAssessmentAttempts.nodeId, body.nodeId),
+        ),
+      );
+
+    const nodeComplete = allAssessmentsPassed(priorAttempts, assessments);
+    const remaining = assessments.filter(
+      (a) => a.id && !passedAssessmentIds(priorAttempts, assessments).has(a.id),
+    ).length;
+
+    if (!nodeComplete) {
+      const current = progressMap.get(body.nodeId);
+      if (current && current.status === "available") {
+        await db
+          .update(roadmapProgress)
+          .set({ status: "in_progress", updatedAt: new Date() })
+          .where(eq(roadmapProgress.id, current.id));
+      }
+      return jsonResponse({
+        passed: true,
+        score,
+        details,
+        answerReview,
+        assessmentId,
+        nodeComplete: false,
+        remaining,
+        message:
+          remaining > 0
+            ? `Passed this part. ${remaining} assessment${remaining === 1 ? "" : "s"} left on this node.`
+            : "Passed this part. Continue with the remaining assessments.",
         attempt,
       });
     }
@@ -355,10 +417,13 @@ export async function POST(request: Request) {
       score,
       details,
       answerReview,
+      assessmentId,
+      nodeComplete: true,
+      remaining: 0,
       unlockedNodeIds,
       message: unlockedNodeIds.length
-        ? "Assessment passed. Starting next learning…"
-        : "Assessment passed. Roadmap complete for this path.",
+        ? "All assessments passed. Starting next learning…"
+        : "All assessments passed. Roadmap complete for this path.",
       attempt,
       allProgress: Array.from(progressMap.values()),
     });

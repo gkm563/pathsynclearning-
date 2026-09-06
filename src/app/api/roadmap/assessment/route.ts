@@ -9,8 +9,12 @@ import {
 } from "@/lib/db/schema";
 import { requireDbUser } from "@/lib/db/users";
 import {
+  allAssessmentsPassed,
   buildMcqAnswerReview,
+  getNodeAssessments,
   isAssessableNode,
+  passedAssessmentIds,
+  resolveAttemptAssessmentId,
   stripAssessmentSecrets,
 } from "@/lib/roadmap/assessment";
 import type { RoadmapNode } from "@/types/roadmap";
@@ -37,9 +41,11 @@ export async function GET(request: Request) {
       : []) as RoadmapNode[];
     const node = nodes.find((n) => n.id === nodeId);
     if (!node) throw AppError.notFound("Node not found");
-    if (!node.assessment || !isAssessableNode(node)) {
+    if (!isAssessableNode(node)) {
       throw AppError.badRequest("This node has no assessment");
     }
+
+    const assessments = getNodeAssessments(node);
 
     const attempts = await db
       .select({
@@ -59,7 +65,7 @@ export async function GET(request: Request) {
         ),
       )
       .orderBy(desc(roadmapAssessmentAttempts.createdAt))
-      .limit(10);
+      .limit(30);
 
     const [progress] = await db
       .select()
@@ -73,37 +79,55 @@ export async function GET(request: Request) {
       )
       .limit(1);
 
-    const hasPassed = attempts.some((a) => a.passed);
-    const passedAttempt = attempts.find((a) => a.passed);
+    const passedIds = [...passedAssessmentIds(attempts, assessments)];
+    const hasPassed = allAssessmentsPassed(attempts, assessments);
+    const requestedId = searchParams.get("assessmentId");
+    const focus =
+      assessments.find((a) => a.id === requestedId) ||
+      assessments.find((a) => a.id && !passedIds.includes(a.id)) ||
+      assessments[0];
+
     let answerReview: unknown = null;
-    if (hasPassed && node.assessment.type === "mcq") {
-      const answers =
-        passedAttempt?.answers &&
-        typeof passedAttempt.answers === "object" &&
-        !Array.isArray(passedAttempt.answers)
-          ? (passedAttempt.answers as Record<string, number>)
-          : {};
-      answerReview = {
-        type: "mcq",
-        questions: buildMcqAnswerReview(node.assessment, answers),
-      };
-    } else if (hasPassed && node.assessment.type === "coding" && node.assessment.coding) {
-      const coding = node.assessment.coding;
-      answerReview = {
-        type: "coding",
-        functionName: coding.functionName,
-        examples: coding.examples,
-        publicTests: coding.publicTests,
-        hiddenTests: coding.hiddenTests || [],
-      };
+    if (hasPassed || (focus.id && passedIds.includes(focus.id))) {
+      const passedAttempt = attempts.find(
+        (a) =>
+          a.passed &&
+          resolveAttemptAssessmentId(a, assessments) === focus.id,
+      );
+      if (focus.type === "mcq") {
+        const answers =
+          passedAttempt?.answers &&
+          typeof passedAttempt.answers === "object" &&
+          !Array.isArray(passedAttempt.answers)
+            ? (passedAttempt.answers as Record<string, number>)
+            : {};
+        answerReview = {
+          type: "mcq",
+          questions: buildMcqAnswerReview(focus, answers),
+        };
+      } else if (focus.type === "coding" && focus.coding) {
+        const coding = focus.coding;
+        answerReview = {
+          type: "coding",
+          functionName: coding.functionName,
+          examples: coding.examples,
+          publicTests: coding.publicTests,
+          hiddenTests: coding.hiddenTests || [],
+        };
+      }
     }
 
     return jsonResponse({
       nodeId,
       title: node.title,
       status: progress?.status || node.status,
-      assessment: stripAssessmentSecrets(node.assessment),
-      attempts: attempts.map(({ answers: _a, ...rest }) => rest),
+      assessment: stripAssessmentSecrets(focus),
+      assessments: assessments.map(stripAssessmentSecrets),
+      passedAssessmentIds: passedIds,
+      attempts: attempts.map(({ answers, ...rest }) => ({
+        ...rest,
+        assessmentId: resolveAttemptAssessmentId({ ...rest, answers }, assessments),
+      })),
       hasPassed,
       answerReview,
     });

@@ -1,9 +1,10 @@
 "use client";
 
 import React from "react";
-import { ArrowRight, Lock } from "lucide-react";
+import { ArrowRight, Lock, Maximize2 } from "lucide-react";
 import { MEMORY_TYPE_META } from "@/lib/memory/constants";
 import type { TimelineItem } from "@/lib/memory/types";
+import { RichStudyText } from "@/components/ai/RichStudyText";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString(undefined, {
@@ -90,17 +91,15 @@ export function MemoryCard({
         {item.title}
       </h3>
       {item.description ? (
-        <p
+        <div
           style={{
             margin: "8px 0 0",
             fontSize: 13,
             color: "var(--text-muted)",
-            lineHeight: 1.5,
-            fontStyle: isNote ? "italic" : "normal",
           }}
         >
-          {isNote ? `“${item.description}”` : item.description}
-        </p>
+          <RichStudyText text={item.description} compact />
+        </div>
       ) : null}
       <div
         style={{
@@ -116,7 +115,12 @@ export function MemoryCard({
           <span key={l}>{l}</span>
         ))}
       </div>
-      <div
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onOpen(item);
+        }}
         style={{
           marginTop: 12,
           display: "inline-flex",
@@ -126,10 +130,15 @@ export function MemoryCard({
           fontSize: 12,
           fontWeight: 700,
           fontFamily: "Outfit, sans-serif",
+          background: "none",
+          border: "none",
+          padding: 0,
+          cursor: "pointer",
         }}
       >
-        View Details <ArrowRight size={13} />
-      </div>
+        {isNote ? <Maximize2 size={13} /> : null}
+        {isNote ? "Open full note" : "View Details"} <ArrowRight size={13} />
+      </button>
     </article>
   );
 }

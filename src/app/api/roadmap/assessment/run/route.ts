@@ -4,7 +4,7 @@ import { AppError } from "@/lib/api/errors";
 import { getDb } from "@/lib/db/client";
 import { roadmaps } from "@/lib/db/schema";
 import { requireDbUser } from "@/lib/db/users";
-import { isAssessableNode } from "@/lib/roadmap/assessment";
+import { isAssessableNode, resolveNodeAssessment } from "@/lib/roadmap/assessment";
 import { gradeCodingMulti } from "@/lib/roadmap/code-runner";
 import { runPublicTestsInBrowser } from "@/lib/roadmap/coding-client";
 import type { CodingLanguageId } from "@/lib/roadmap/coding-languages";
@@ -13,6 +13,7 @@ import { z } from "zod";
 
 const bodySchema = z.object({
   nodeId: z.string().min(1),
+  assessmentId: z.string().min(1).max(120).optional(),
   code: z.string().max(50000),
   language: z.enum(["javascript", "python", "java", "c", "cpp"]),
 });
@@ -36,11 +37,12 @@ export async function POST(request: Request) {
       ? activeRoadmap.nodes
       : []) as RoadmapNode[];
     const node = nodes.find((n) => n.id === body.nodeId);
-    if (!node?.assessment || !isAssessableNode(node) || node.assessment.type !== "coding") {
+    const assessment = node ? resolveNodeAssessment(node, body.assessmentId) : null;
+    if (!node || !assessment || !isAssessableNode(node) || assessment.type !== "coding") {
       throw AppError.badRequest("Coding assessment not found");
     }
 
-    const coding = node.assessment.coding!;
+    const coding = assessment.coding!;
     const language = body.language as CodingLanguageId;
     const publicTests = coding.publicTests || [];
 
@@ -63,7 +65,7 @@ export async function POST(request: Request) {
       body.code,
       coding.functionName,
       publicTests,
-      node.assessment.passScore ?? 100,
+      assessment.passScore ?? 100,
     );
 
     return jsonResponse({
