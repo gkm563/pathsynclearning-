@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { type ReactNode } from "react";
 import ProjectWorkspace from "@/components/projects/ProjectWorkspace";
 import type { NodeAssessment } from "@/types/roadmap";
 import type {
@@ -15,10 +15,12 @@ export default function ProjectAssessment({
   onClose,
   onSaveProgress,
   onSubmit,
+  notes,
 }: {
   assessment: NodeAssessment;
   title: string;
   submitting: boolean;
+  notes?: ReactNode;
   onClose: () => void;
   onSaveProgress?: (payload: {
     stepsDone: string[];
@@ -58,6 +60,7 @@ export default function ProjectAssessment({
       coins={0}
       spec={spec}
       submitting={submitting}
+      notes={notes}
       onClose={onClose}
       onSaveProgress={onSaveProgress || (() => undefined)}
       onSubmit={onSubmit}

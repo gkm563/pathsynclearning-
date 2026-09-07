@@ -52,6 +52,11 @@ import { apiSend } from "@/lib/api";
 import { AddNoteButton } from "@/components/memory-lane/AddNoteButton";
 import { RichStudyText } from "@/components/ai/RichStudyText";
 import LazyCodeEditor from "@/components/roadmap/assessment/LazyCodeEditor";
+import IdeSymbolBar, {
+  type IdeKeyAction,
+} from "@/components/roadmap/assessment/IdeSymbolBar";
+import type { CodeEditorApi } from "@/components/roadmap/assessment/CodeEditor";
+import { useVirtualKeyboard } from "@/hooks/useVirtualKeyboard";
 
 /** Coding workspace chrome — same semantic tokens as the rest of PathED. */
 const LC = {
@@ -80,7 +85,6 @@ const LC = {
 const WIDE_MQ = "(min-width: 900px)";
 
 type DescTab = "description" | "editorial" | "submissions";
-type EditorApi = { undo: () => void; redo: () => void };
 
 function useWideLayout() {
   const [wide, setWide] = useState<boolean | null>(null);
@@ -407,7 +411,11 @@ export default function CodingAssessment({
   const [bottomCollapsed, setBottomCollapsed] = useState(false);
   const dragMode = useRef<"none" | "left" | "bottom">("none");
   const rightPaneRef = useRef<HTMLElement | null>(null);
-  const editorApiRef = useRef<EditorApi | null>(null);
+  const editorApiRef = useRef<CodeEditorApi | null>(null);
+  const [editorFocused, setEditorFocused] = useState(false);
+  const editorBlurTimer = useRef(0);
+  const kb = useVirtualKeyboard(editorFocused);
+  const showKeybar = editorFocused && kb.open;
 
   const langMeta = useMemo(() => getLanguageOption(language), [language]);
   const paramNames = useMemo(
@@ -448,6 +456,38 @@ export default function CodingAssessment({
         (dense ? IDE_FONT_COMPACT_DEFAULT : IDE_FONT_DEFAULT),
     );
   }, [wide, dense]);
+
+  useEffect(() => {
+    if (showKeybar) {
+      setConsoleOpen(false);
+      setBottomCollapsed(true);
+    }
+  }, [showKeybar]);
+
+  useEffect(() => {
+    return () => window.clearTimeout(editorBlurTimer.current);
+  }, []);
+
+  const handleIdeKey = useCallback((action: IdeKeyAction) => {
+    const api = editorApiRef.current;
+    if (!api) return;
+    if (action.type === "insert") api.insert(action.text);
+    else if (action.type === "tab") api.tab();
+    else if (action.type === "outdent") api.outdent();
+    else if (action.type === "left") api.cursorLeft();
+    else if (action.type === "right") api.cursorRight();
+  }, []);
+
+  const handleEditorFocus = useCallback((focused: boolean) => {
+    window.clearTimeout(editorBlurTimer.current);
+    if (focused) {
+      setEditorFocused(true);
+      return;
+    }
+    editorBlurTimer.current = window.setTimeout(() => {
+      setEditorFocused(false);
+    }, 280);
+  }, []);
 
   const bumpFont = (delta: number) => {
     setFontSize((n) => {
@@ -1111,6 +1151,7 @@ export default function CodingAssessment({
         onSave={handleSave}
         onFormat={() => void handleFormat()}
         onCursorChange={setCursor}
+        onFocusChange={handleEditorFocus}
         onReady={(api) => {
           editorApiRef.current = api;
         }}
@@ -1409,6 +1450,12 @@ export default function CodingAssessment({
     overflow: "hidden",
     WebkitTextSizeAdjust: "100%",
     textSizeAdjust: "100%",
+    ...(kb.open
+      ? {
+          height: `calc(100% - ${kb.inset}px)`,
+          maxHeight: `calc(100% - ${kb.inset}px)`,
+        }
+      : null),
   };
 
   if (wide === null) {
@@ -1592,6 +1639,7 @@ export default function CodingAssessment({
         </div>
         {historyList}
         {editor}
+        {showKeybar && <IdeSymbolBar onAction={handleIdeKey} />}
         {consoleOpen && (
           <div
             style={{
@@ -1643,6 +1691,7 @@ export default function CodingAssessment({
             {testBody}
           </div>
         )}
+        {!showKeybar && (
         <div
           style={{
             display: "flex",
@@ -1699,6 +1748,7 @@ export default function CodingAssessment({
           </button>
           {submitBtn}
         </div>
+        )}
       </div>
     );
   }
@@ -1830,7 +1880,10 @@ export default function CodingAssessment({
 
         {historyList}
         {editor}
+        {showKeybar && <IdeSymbolBar onAction={handleIdeKey} />}
 
+        {!showKeybar && (
+        <>
         <div
           style={{
             display: "flex",
@@ -1954,6 +2007,8 @@ export default function CodingAssessment({
 
           {!bottomCollapsed && testBody}
         </div>
+        </>
+        )}
       </section>
     </div>
   );

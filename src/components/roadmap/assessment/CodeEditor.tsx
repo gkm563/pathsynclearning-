@@ -16,6 +16,12 @@ const MONACO_LANG: Record<CodingLanguageId, string> = {
 export type CodeEditorApi = {
   undo: () => void;
   redo: () => void;
+  insert: (text: string) => void;
+  tab: () => void;
+  outdent: () => void;
+  cursorLeft: () => void;
+  cursorRight: () => void;
+  focus: () => void;
 };
 
 type CodeEditorProps = {
@@ -25,6 +31,7 @@ type CodeEditorProps = {
   onSave?: () => void;
   onFormat?: () => void;
   onCursorChange?: (pos: { line: number; col: number }) => void;
+  onFocusChange?: (focused: boolean) => void;
   onReady?: (api: CodeEditorApi) => void;
   readOnly?: boolean;
   minHeight?: number;
@@ -42,6 +49,7 @@ export default function CodeEditor({
   onSave,
   onFormat,
   onCursorChange,
+  onFocusChange,
   onReady,
   readOnly = false,
   minHeight = 280,
@@ -55,6 +63,8 @@ export default function CodeEditor({
   formatRef.current = onFormat;
   const cursorRef = useRef(onCursorChange);
   cursorRef.current = onCursorChange;
+  const focusRef = useRef(onFocusChange);
+  focusRef.current = onFocusChange;
   const readyRef = useRef(onReady);
   readyRef.current = onReady;
   const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
@@ -238,9 +248,27 @@ export default function CodeEditor({
       cursorRef.current?.({ line: pos.lineNumber, col: pos.column });
     }
 
+    ed.onDidFocusEditorText(() => focusRef.current?.(true));
+    ed.onDidBlurEditorText(() => focusRef.current?.(false));
+    if (ed.hasTextFocus()) focusRef.current?.(true);
+
+    const run = (handler: string, payload: unknown = null) => {
+      ed.focus();
+      ed.trigger("keyboard", handler, payload);
+    };
+
     readyRef.current?.({
-      undo: () => ed.trigger("keyboard", "undo", null),
-      redo: () => ed.trigger("keyboard", "redo", null),
+      undo: () => run("undo"),
+      redo: () => run("redo"),
+      insert: (text) => run("type", { text }),
+      tab: () => run("tab"),
+      outdent: () => {
+        ed.focus();
+        ed.trigger("editor", "editor.action.outdentLines", null);
+      },
+      cursorLeft: () => run("cursorLeft"),
+      cursorRight: () => run("cursorRight"),
+      focus: () => ed.focus(),
     });
 
     ed.focus();
@@ -277,6 +305,19 @@ export default function CodeEditor({
       padding: { top: compact ? 4 : 10, bottom: compact ? 4 : 10 },
     });
   }, [compact]);
+
+  useEffect(() => {
+    const vv = window.visualViewport;
+    const layout = () => editorRef.current?.layout();
+    window.addEventListener("resize", layout);
+    vv?.addEventListener("resize", layout);
+    vv?.addEventListener("scroll", layout);
+    return () => {
+      window.removeEventListener("resize", layout);
+      vv?.removeEventListener("resize", layout);
+      vv?.removeEventListener("scroll", layout);
+    };
+  }, []);
 
   return (
     <div

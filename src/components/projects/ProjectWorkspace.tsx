@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, type ReactNode } from "react";
 import type {
   ProjectAssessmentSpec,
   ProjectEvidenceInput,
@@ -13,12 +13,14 @@ import {
   Card,
   Checkbox,
   FormField,
+  IconButton,
   Input,
   Progress,
   Segmented,
   Textarea,
 } from "@/components/ui";
 import { cn } from "@/lib/cn";
+import { useScrollLock } from "@/hooks/useOverlay";
 import { Check, X } from "lucide-react";
 
 type Phase = "overview" | "steps" | "submit";
@@ -34,6 +36,7 @@ export default function ProjectWorkspace({
   initialReflection,
   submitting,
   embedded,
+  notes,
   onSaveProgress,
   onSubmit,
   onClose,
@@ -49,6 +52,7 @@ export default function ProjectWorkspace({
   submitting?: boolean;
   /** When true, fills parent instead of fixed fullscreen (roadmap shell). */
   embedded?: boolean;
+  notes?: ReactNode;
   onSaveProgress: (payload: {
     stepsDone: string[];
     evidence: ProjectEvidenceInput[];
@@ -137,6 +141,8 @@ export default function ProjectWorkspace({
       })
       .filter((e): e is ProjectEvidenceInput => Boolean(e));
 
+  useScrollLock(!embedded);
+
   const persist = async () => {
     setSaving(true);
     try {
@@ -153,43 +159,69 @@ export default function ProjectWorkspace({
 
   return (
     <div
+      {...(!embedded ? { "data-app-overlay": "" } : {})}
       className={cn(
-        "flex flex-col bg-canvas",
-        embedded ? "relative min-h-0 flex-1" : "fixed inset-0",
+        "flex min-h-0 flex-col bg-canvas",
+        embedded ? "relative flex-1" : "fixed inset-0",
       )}
       style={embedded ? undefined : { zIndex: "var(--z-modal)" }}
     >
-      <header className="flex items-center justify-between gap-3 border-b border-line bg-surface px-5 py-3.5">
-        <div className="min-w-0">
-          <p className="type-caption m-0 font-semibold text-muted">
-            Project assessment · +{xp} XP · {coins} coins
-          </p>
-          <h1 className="type-h3 m-0 mt-0.5 truncate text-ink">{title}</h1>
-        </div>
-        <div className="flex shrink-0 items-center gap-3">
-          <div className="w-28">
-            <Progress value={donePct} label="Steps" showValue size="sm" />
+      <header className="shrink-0 border-b border-line bg-surface pt-[max(0.5rem,env(safe-area-inset-top))]">
+        <div className="flex items-start gap-2 px-3 py-2.5 sm:items-center sm:gap-3 sm:px-5 sm:py-3">
+          <IconButton
+            label="Close"
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="-ml-1 mt-0.5 sm:hidden"
+          >
+            <X size={18} />
+          </IconButton>
+          <div className="min-w-0 flex-1">
+            <p className="type-caption m-0 font-semibold text-muted">
+              Project assessment
+              {xp > 0 || coins > 0 ? ` · +${xp} XP · ${coins} coins` : ""}
+            </p>
+            <h1 className="type-h4 m-0 mt-0.5 line-clamp-2 text-ink">
+              {title}
+            </h1>
           </div>
-          <Button variant="secondary" onClick={onClose}>
-            Close
-          </Button>
+          <div className="flex shrink-0 items-center gap-2">
+            {notes}
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onClose}
+              className="hidden sm:inline-flex"
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+        <div className="px-3 pb-2.5 sm:px-5 sm:pb-3">
+          <Progress value={donePct} label="Steps" showValue size="sm" />
         </div>
       </header>
 
-      <nav className="border-b border-line bg-surface px-5 py-3">
+      <nav className="shrink-0 overflow-x-auto border-b border-line bg-surface px-3 py-2 sm:px-5 sm:py-3">
         <Segmented
+          fullWidth
+          size="sm"
           ariaLabel="Project phases"
           value={phase}
           onChange={(id) => setPhase(id as Phase)}
           items={[
             { id: "overview", label: "Overview" },
-            { id: "steps", label: "Step-by-step" },
+            { id: "steps", label: "Steps" },
             { id: "submit", label: "Submit" },
           ]}
         />
       </nav>
 
-      <div className="flex-1 overflow-auto p-5">
+      <div
+        data-overlay-scroll
+        className="min-h-0 flex-1 overflow-auto px-3 py-4 sm:p-5"
+      >
         {phase === "overview" && (
           <div className="mx-auto grid w-full max-w-[820px] gap-4">
             <Card>
@@ -229,9 +261,6 @@ export default function ProjectWorkspace({
                 ))}
               </ul>
             </Card>
-            <Button onClick={() => setPhase("steps")}>
-              Start step-by-step guide
-            </Button>
           </div>
         )}
 
@@ -296,35 +325,6 @@ export default function ProjectWorkspace({
                 />
               </div>
             </Card>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="secondary"
-                disabled={stepIndex === 0}
-                onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="secondary"
-                disabled={stepIndex >= spec.steps.length - 1}
-                onClick={() =>
-                  setStepIndex((i) => Math.min(spec.steps.length - 1, i + 1))
-                }
-              >
-                Next
-              </Button>
-              <Button
-                variant="secondary"
-                disabled={saving}
-                loading={saving}
-                onClick={() => void persist()}
-              >
-                {saving ? "Saving…" : "Save progress"}
-              </Button>
-              <Button onClick={() => setPhase("submit")}>
-                Continue to submit
-              </Button>
-            </div>
           </div>
         )}
 
@@ -396,38 +396,86 @@ export default function ProjectWorkspace({
                 ))}
               </ul>
             </Card>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="secondary"
-                disabled={saving}
-                loading={saving}
-                onClick={() => void persist()}
-              >
-                {saving ? "Saving…" : "Save draft"}
-              </Button>
-              <Button
-                disabled={submitting}
-                loading={submitting}
-                onClick={() =>
-                  void onSubmit({
-                    stepsDone,
-                    evidence: sanitizeEvidence([
-                      ...evidence,
-                      ...(reflection.trim()
-                        ? [{ kind: "notes" as const, text: reflection.trim() }]
-                        : []),
-                      ...(repoUrl.trim()
-                        ? [{ kind: "repo_url" as const, url: repoUrl.trim() }]
-                        : []),
-                    ]),
-                    repoUrl: repoUrl.trim() || undefined,
-                    reflection: reflection.trim() || undefined,
-                  })
-                }
-              >
-                {submitting ? "Submitting…" : "Submit for check"}
-              </Button>
-            </div>
+          </div>
+        )}
+      </div>
+
+      <div
+        className="shrink-0 border-t border-line bg-surface px-3 py-3 sm:px-5"
+        style={{
+          paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))",
+        }}
+      >
+        {phase === "overview" && (
+          <Button className="w-full sm:w-auto" onClick={() => setPhase("steps")}>
+            Start step-by-step guide
+          </Button>
+        )}
+        {phase === "steps" && (
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="secondary"
+              disabled={stepIndex === 0}
+              onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="secondary"
+              disabled={stepIndex >= spec.steps.length - 1}
+              onClick={() =>
+                setStepIndex((i) => Math.min(spec.steps.length - 1, i + 1))
+              }
+            >
+              Next
+            </Button>
+            <Button
+              variant="secondary"
+              disabled={saving}
+              loading={saving}
+              onClick={() => void persist()}
+            >
+              {saving ? "Saving…" : "Save progress"}
+            </Button>
+            <Button className="ml-auto" onClick={() => setPhase("submit")}>
+              Continue to submit
+            </Button>
+          </div>
+        )}
+        {phase === "submit" && (
+          <div className="grid gap-2 sm:flex sm:flex-wrap">
+            <Button
+              variant="secondary"
+              className="w-full sm:w-auto"
+              disabled={saving}
+              loading={saving}
+              onClick={() => void persist()}
+            >
+              {saving ? "Saving…" : "Save draft"}
+            </Button>
+            <Button
+              className="w-full sm:ml-auto sm:w-auto"
+              disabled={submitting}
+              loading={submitting}
+              onClick={() =>
+                void onSubmit({
+                  stepsDone,
+                  evidence: sanitizeEvidence([
+                    ...evidence,
+                    ...(reflection.trim()
+                      ? [{ kind: "notes" as const, text: reflection.trim() }]
+                      : []),
+                    ...(repoUrl.trim()
+                      ? [{ kind: "repo_url" as const, url: repoUrl.trim() }]
+                      : []),
+                  ]),
+                  repoUrl: repoUrl.trim() || undefined,
+                  reflection: reflection.trim() || undefined,
+                })
+              }
+            >
+              {submitting ? "Submitting…" : "Submit for check"}
+            </Button>
           </div>
         )}
       </div>

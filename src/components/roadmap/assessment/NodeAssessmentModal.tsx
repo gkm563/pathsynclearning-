@@ -394,7 +394,7 @@ export default function NodeAssessmentModal({
 
   return (
     <>
-      {active.type !== "coding" ? (
+      {active.type === "mcq" ? (
         <div className="fixed top-4 right-[72px] z-[1300] hidden sm:block">
           <AddNoteButton
             sourceType="roadmap_node"
@@ -410,6 +410,15 @@ export default function NodeAssessmentModal({
           assessment={active}
           title={data.title}
           submitting={submitting}
+          notes={
+            <AddNoteButton
+              compact
+              sourceType="roadmap_node"
+              sourceId={nodeId}
+              defaultTitle={data.title}
+              contextLabel={`Learning · ${data.title}`}
+            />
+          }
           onClose={onClose}
           onSubmit={(payload) => void submit(payload)}
         />

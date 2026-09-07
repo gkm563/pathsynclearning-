@@ -143,20 +143,7 @@ export default function ChallengeProjectIde({
   }
 
   return (
-    <>
-      <div
-        className="fixed top-4 right-[72px]"
-        style={{ zIndex: "var(--z-popover)" }}
-      >
-        <AddNoteButton
-          sourceType="project"
-          sourceId={item.id}
-          defaultTitle={`${data.title} notes`}
-          contextLabel={`Project · ${data.title}`}
-          links={[{ entityType: "project_run", entityId: data.run.id }]}
-        />
-      </div>
-      <ProjectWorkspace
+    <ProjectWorkspace
       title={data.title}
       xp={data.xp}
       coins={data.coins}
@@ -166,6 +153,16 @@ export default function ChallengeProjectIde({
       initialRepoUrl={data.run.repoUrl || ""}
       initialReflection={data.run.reflection || ""}
       submitting={submitting}
+      notes={
+        <AddNoteButton
+          compact
+          sourceType="project"
+          sourceId={item.id}
+          defaultTitle={`${data.title} notes`}
+          contextLabel={`Project · ${data.title}`}
+          links={[{ entityType: "project_run", entityId: data.run.id }]}
+        />
+      }
       onClose={onClose}
       onSaveProgress={async (payload) => {
         await apiSend("/api/me/challenges/project/progress", "PUT", {
@@ -205,6 +202,5 @@ export default function ChallengeProjectIde({
         }
       }}
     />
-    </>
   );
 }
