@@ -1,257 +1,224 @@
 "use client";
 
-import React, { useState } from "react";
-import { 
-  Bell, Trash2, CheckCircle2, Sparkles
+import { useMemo, useState } from "react";
+import {
+  Bell,
+  CheckCheck,
+  Trash2,
+  UserRound,
+  Users,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  Badge,
+  Button,
+  Card,
+  ConfirmDialog,
+  EmptyState,
+  IconButton,
+  ListSkeleton,
+  PageHeader,
+  Tabs,
+  useToast,
+} from "@/components/ui";
 import { useNotifications } from "@/hooks/useNotifications";
 import { relativeNotificationTime } from "@/lib/notifications/client";
+import { cn } from "@/lib/cn";
+
+type FilterId = "all" | "unread" | "invites" | "mentor";
 
 export default function PlatformNotifications() {
+  const toast = useToast();
   const {
     notifications,
+    unreadCount,
+    loadingList,
     markAsRead,
     markAllAsRead,
     deleteItem,
     clearAll,
   } = useNotifications({ load: "list" });
 
-  const [filter, setFilter] = useState("all");
-  const [toastMessage, setToastMessage] = useState("");
+  const [filter, setFilter] = useState<FilterId>("all");
+  const [confirmClear, setConfirmClear] = useState(false);
 
-  const triggerToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(""), 4000);
-  };
+  const filtered = useMemo(
+    () =>
+      notifications.filter((n) => {
+        if (filter === "unread") return !n.read;
+        if (filter === "invites") return n.type === "invite";
+        if (filter === "mentor") return n.type === "mentor";
+        return true;
+      }),
+    [notifications, filter],
+  );
 
   const handleMarkAllRead = async () => {
     await markAllAsRead();
-    triggerToast("✅ Marked all notifications as read!");
+    toast.success("Marked all notifications as read");
   };
 
   const handleClearAll = async () => {
     await clearAll();
-    triggerToast("🗑️ Notifications cleared.");
-  };
-
-  const handleDeleteItem = (id: string) => {
-    void deleteItem(id);
+    setConfirmClear(false);
+    toast.info("Notifications cleared");
   };
 
   const handleAcceptInvite = (id: string, teamName?: string) => {
     void markAsRead(id);
-    triggerToast(`⚔️ Successfully joined team '${teamName ?? "the team"}'!`);
+    toast.success({
+      title: "Invite accepted",
+      description: `You joined ${teamName ?? "the team"}.`,
+    });
   };
 
   const handleDeclineInvite = (id: string) => {
     void markAsRead(id);
-    triggerToast("Declined invitation.");
+    toast.info("Invitation declined");
   };
 
-  const filteredList = notifications.filter(n => {
-    if (filter === "unread") return !n.read;
-    if (filter === "invites") return n.type === "invite";
-    if (filter === "mentor") return n.type === "mentor";
-    return true;
-  });
-
   return (
-    <>{/* ==================== TOAST ALERT ==================== */}
-      <AnimatePresence>
-        {toastMessage && (
-          <motion.div 
-            initial={{ opacity: 0, y: -20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.9 }}
-            style={{
-              position: "fixed", top: 24, left: "50%", x: "-50%",
-              background: "rgba(15, 23, 42, 0.95)", border: "1.5px solid rgba(108,99,255,0.4)",
-              borderRadius: 16, padding: "12px 24px", zIndex: 1400, color: "#fff",
-              boxShadow: "0 10px 40px rgba(0,0,0,0.3)", display: "flex", alignItems: "center", gap: 10,
-              fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 14.5
-            }}
-          >
-            <Sparkles size={16} color="#6c63ff" />
-            <span>{toastMessage}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 60 }}>
-
-        {/* ==================== HEADER CARD ==================== */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          flexWrap: "wrap", gap: 16, padding: "20px 24px",
-          background: "var(--bg-card)", borderRadius: 24,
-          border: "1.5px solid var(--border-light)",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.06)"
-        }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4, flexWrap: "wrap" }}>
-              <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 28, fontWeight: 900, color: "var(--text-main)", margin: 0, display: "flex", alignItems: "center", gap: 10 }}>
-                <Bell size={26} color="#6c63ff" />
-                Notification <span style={{ color: "#6c63ff" }}>Center</span>
-              </h1>
-              <span style={{
-                padding: "4px 12px", borderRadius: 14,
-                background: "rgba(108, 99, 255, 0.12)", border: "1px solid #6c63ff50",
-                color: "#6c63ff", fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 900
-              }}>
-                ✦ PLATFORM DISPATCHES
-              </span>
-            </div>
-            <p style={{ margin: 0, fontSize: 16, color: "var(--text-muted)", fontFamily: "'Outfit', sans-serif", lineHeight: 1.6 }}>
-              Review SDE challenges updates, hackathon team requests, and direct mentor codespace revisions.
-            </p>
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <button
-              onClick={handleMarkAllRead}
-              disabled={notifications.length === 0}
-              style={{
-                padding: "10px 16px", borderRadius: 12, border: "1.5px solid var(--border-light)",
-                background: "var(--bg-alt)", color: "var(--text-main)", fontFamily: "'Outfit', sans-serif",
-                fontSize: 13.5, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
-                opacity: notifications.length === 0 ? 0.5 : 1
-              }}
+    <>
+      <PageHeader
+        eyebrow="Account"
+        title="Notifications"
+        description="Challenge updates, collaboration invites and mentor feedback — in one place."
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="secondary"
+              disabled={notifications.length === 0 || unreadCount === 0}
+              onClick={() => void handleMarkAllRead()}
             >
-              <CheckCircle2 size={14} color="#00c9a7" /> Mark all read
-            </button>
-            <button
-              onClick={handleClearAll}
+              <CheckCheck size={15} aria-hidden />
+              Mark all read
+            </Button>
+            <Button
+              variant="danger"
               disabled={notifications.length === 0}
-              style={{
-                padding: "10px 16px", borderRadius: 12, border: "none",
-                background: "rgba(255, 68, 68, 0.1)", color: "#ff6b6b", fontFamily: "'Outfit', sans-serif",
-                fontSize: 13.5, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
-                opacity: notifications.length === 0 ? 0.5 : 1
-              }}
+              onClick={() => setConfirmClear(true)}
             >
-              <Trash2 size={14} /> Clear all
-            </button>
+              <Trash2 size={15} aria-hidden />
+              Clear all
+            </Button>
           </div>
-        </div>
+        }
+      />
 
-        {/* ==================== FILTERS & LIST VIEW ==================== */}
-        <div style={{ background: "var(--bg-card)", borderRadius: 24, border: "1.5px solid var(--border-light)", padding: 24 }}>
-          
-          {/* Sub Filters */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 24, overflowX: "auto", paddingBottom: 6 }} className="hide-scrollbar">
-            {[
-              { id: "all", label: "All Logs" },
-              { id: "unread", label: `Unread (${notifications.filter(n=>!n.read).length})` },
-              { id: "invites", label: "Collab Invites" },
-              { id: "mentor", label: "Mentor Feedback" }
-            ].map(f => (
-              <button
-                key={f.id}
-                onClick={() => setFilter(f.id)}
-                style={{
-                  padding: "8px 16px", borderRadius: 10, border: "none", cursor: "pointer",
-                  fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 700,
-                  background: filter === f.id ? "rgba(108,99,255,0.12)" : "var(--bg-alt)",
-                  color: filter === f.id ? "#6c63ff" : "var(--text-muted)"
-                }}
+      <Tabs<FilterId>
+        items={[
+          { id: "all", label: "All", badge: notifications.length || undefined },
+          { id: "unread", label: "Unread", badge: unreadCount || undefined },
+          { id: "invites", label: "Invites" },
+          { id: "mentor", label: "Mentor" },
+        ]}
+        value={filter}
+        onChange={setFilter}
+        ariaLabel="Notification filters"
+        className="mb-5"
+      />
+
+      {loadingList && notifications.length === 0 ? (
+        <ListSkeleton count={5} />
+      ) : filtered.length === 0 ? (
+        <EmptyState
+          icon={<Bell size={20} aria-hidden />}
+          title={
+            filter === "all"
+              ? "You're all caught up"
+              : "Nothing matches this filter"
+          }
+          description={
+            filter === "all"
+              ? "New challenge updates, team invites and mentor notes will appear here."
+              : "Try another filter, or clear it to see everything."
+          }
+          action={
+            filter !== "all" ? (
+              <Button variant="secondary" onClick={() => setFilter("all")}>
+                Show all
+              </Button>
+            ) : undefined
+          }
+        />
+      ) : (
+        <ul className="m-0 flex list-none flex-col gap-2 p-0">
+          {filtered.map((n) => (
+            <li key={n.id}>
+              <Card
+                className={cn(
+                  "flex gap-4",
+                  !n.read && "border-primary-border bg-primary-soft/40",
+                )}
               >
-                {f.label}
-              </button>
-            ))}
-          </div>
-
-          {/* List Section */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <AnimatePresence initial={false}>
-              {filteredList.map((n) => (
-                <motion.div
-                  key={n.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: 30 }}
-                  style={{
-                    padding: 20, borderRadius: 18, background: n.read ? "var(--bg-alt)" : "var(--bg-card)",
-                    border: `1.5px solid ${n.read ? "var(--border-light)" : n.bdr}`,
-                    display: "flex", gap: 16, alignItems: "flex-start", position: "relative"
-                  }}
+                <span
+                  className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-sunken text-primary"
+                  aria-hidden
                 >
-                  {/* Read/Unread dot indicator */}
-                  {!n.read && (
-                    <span style={{ position: "absolute", top: 12, left: 12, width: 7, height: 7, borderRadius: "50%", background: "#6c63ff" }} />
+                  {n.type === "invite" ? (
+                    <Users size={18} />
+                  ) : n.type === "mentor" ? (
+                    <UserRound size={18} />
+                  ) : (
+                    <Bell size={18} />
                   )}
+                </span>
 
-                  {/* Icon Frame */}
-                  <div style={{
-                    width: 44, height: 44, borderRadius: 12, background: n.bg, border: `1px solid ${n.bdr}`,
-                    display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0
-                  }}>
-                    {n.icon}
-                  </div>
-
-                  {/* Body Content */}
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", justify: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
-                      <h4 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 15.5, fontWeight: 900, color: "var(--text-main)" }}>
-                        {n.title}
-                      </h4>
-                      <span style={{ fontSize: 11, fontFamily: "'Fira Code', monospace", color: "var(--text-light)" }}>{relativeNotificationTime(n.time)}</span>
-                    </div>
-
-                    <p style={{ margin: "6px 0 0", fontSize: 13.5, color: "var(--text-muted)", lineHeight: 1.5 }}>
-                      {n.desc}
-                    </p>
-
-                    {/* Actionable buttons (HackSquad invite accept/decline) */}
-                    {n.actionable && (
-                      <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
-                        <button
-                          onClick={() => handleAcceptInvite(n.id, n.teamName)}
-                          style={{
-                            padding: "6px 14px", borderRadius: 8, border: "none",
-                            background: "linear-gradient(135deg, #6c63ff, #00c9a7)", color: "#fff",
-                            fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 900, cursor: "pointer"
-                          }}
-                        >
-                          Accept Invite
-                        </button>
-                        <button
-                          onClick={() => handleDeclineInvite(n.id)}
-                          style={{
-                            padding: "6px 14px", borderRadius: 8, border: "1px solid var(--border-light)",
-                            background: "var(--bg-alt)", color: "var(--text-muted)",
-                            fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 700, cursor: "pointer"
-                          }}
-                        >
-                          Decline
-                        </button>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="type-h4 m-0 text-ink">{n.title}</h3>
+                        {!n.read ? <Badge tone="accent">New</Badge> : null}
                       </div>
-                    )}
+                      <p className="type-caption mt-1 mb-0 text-faint">
+                        {relativeNotificationTime(n.time)}
+                      </p>
+                    </div>
+                    <IconButton
+                      label="Remove notification"
+                      onClick={() => void deleteItem(n.id)}
+                    >
+                      <Trash2 size={15} />
+                    </IconButton>
                   </div>
 
-                  {/* Remove specific item */}
-                  <button
-                    onClick={() => handleDeleteItem(n.id)}
-                    style={{ background: "transparent", border: "none", cursor: "pointer", color: "var(--text-light)", padding: 4 }}
-                    title="Remove item"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                  <p className="type-small mt-2 mb-0 text-muted">
+                    {n.desc || n.message}
+                  </p>
 
-                </motion.div>
-              ))}
-
-              {filteredList.length === 0 && (
-                <div style={{ textAlign: "center", padding: "40px 20px", color: "var(--text-muted)" }}>
-                  <Bell size={32} color="var(--text-light)" style={{ margin: "0 auto 10px", opacity: 0.5 }} />
-                  <p style={{ margin: 0, fontSize: 14 }}>No notifications found matching filter.</p>
+                  {n.actionable ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => handleAcceptInvite(n.id, n.teamName)}
+                      >
+                        Accept invite
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handleDeclineInvite(n.id)}
+                      >
+                        Decline
+                      </Button>
+                    </div>
+                  ) : null}
                 </div>
-              )}
-            </AnimatePresence>
-          </div>
+              </Card>
+            </li>
+          ))}
+        </ul>
+      )}
 
-        </div>
-
-      </div></>
+      <ConfirmDialog
+        open={confirmClear}
+        tone="danger"
+        title="Clear all notifications?"
+        description="This removes every item from your inbox. Unread items will be gone too."
+        confirmLabel="Clear all"
+        onClose={() => setConfirmClear(false)}
+        onConfirm={() => void handleClearAll()}
+      />
+    </>
   );
 }

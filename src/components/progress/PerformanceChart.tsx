@@ -71,36 +71,13 @@ export function PerformanceChart({ points }: { points: PerformancePoint[] }) {
         />
       ) : (
         <div>
-          <div
-            style={{
-              display: "flex",
-              gap: 16,
-              marginBottom: 12,
-              fontSize: 12,
-              color: "var(--text-muted)",
-              fontWeight: 600,
-            }}
-          >
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-              <span
-                style={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: 999,
-                  background: PROGRESS_COLS.primary,
-                }}
-              />
+          <div className="mb-3 flex gap-4 type-caption text-muted">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-primary" />
               Score
             </span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-              <span
-                style={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: 999,
-                  background: PROGRESS_COLS.success,
-                }}
-              />
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-success" />
               Completion trend
             </span>
           </div>
@@ -111,7 +88,8 @@ export function PerformanceChart({ points }: { points: PerformancePoint[] }) {
             height="220"
             role="img"
             aria-label="Performance over time chart"
-            style={{ opacity: ready ? 1 : 0, transition: "opacity 0.4s ease" }}
+            className="h-[220px] w-full motion-safe:transition-opacity motion-safe:duration-300"
+            style={{ opacity: ready ? 1 : 0 }}
           >
             {[0, 25, 50, 75, 100].map((tick) => {
               const y = 24 + (176 - 24) * (1 - tick / 100);
@@ -130,7 +108,7 @@ export function PerformanceChart({ points }: { points: PerformancePoint[] }) {
                     y={y + 4}
                     fill="var(--text-muted)"
                     fontSize="10"
-                    fontFamily="Outfit, sans-serif"
+                    fontFamily="var(--font-body)"
                   >
                     {tick}
                   </text>
@@ -191,7 +169,7 @@ export function PerformanceChart({ points }: { points: PerformancePoint[] }) {
                   textAnchor="middle"
                   fill="var(--text-muted)"
                   fontSize="11"
-                  fontFamily="Outfit, sans-serif"
+                  fontFamily="var(--font-body)"
                 >
                   {p.label}
                 </text>
@@ -199,7 +177,7 @@ export function PerformanceChart({ points }: { points: PerformancePoint[] }) {
             })}
           </svg>
 
-          <p style={{ margin: "8px 0 0", fontSize: 12, color: "var(--text-muted)" }}>
+          <p className="type-caption mt-2 mb-0 text-muted">
             {points.reduce((s, p) => s + p.attempts, 0)} assessment attempts in this range
           </p>
         </div>

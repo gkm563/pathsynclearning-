@@ -1,37 +1,29 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Eye,
-  EyeOff,
-  KeyRound,
-  Loader2,
-  LogOut,
-  MonitorSmartphone,
-  Trash2,
-} from "lucide-react";
+import { KeyRound, LogOut, MonitorSmartphone, Trash2 } from "lucide-react";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { ApiClientError, apiGet, apiSend } from "@/lib/api";
-import { passwordStrength, type ProfileSession } from "@/lib/profile/types";
-import { Button } from "@/components/ui/primitives";
+import type { ProfileSession } from "@/lib/profile/types";
 import {
+  Badge,
+  Button,
+  Card,
   ConfirmDialog,
-  FieldError,
-  PROFILE_COLS,
-  SectionHeading,
-  TextField,
-  fieldInput,
-  fieldLabel,
-  sectionCard,
-} from "./shared";
+  EmptyState,
+  ErrorState,
+  FormField,
+  IconButton,
+  Input,
+  PasswordInput,
+  useToast,
+} from "@/components/ui";
+import { PasswordStrengthMeter } from "./PasswordStrengthMeter";
 
-export function SecuritySection({
-  onToast,
-}: {
-  onToast: (message: string, tone?: "success" | "error") => void;
-}) {
+export function SecuritySection() {
   const router = useRouter();
+  const toast = useToast();
   const { signOut } = useClerk();
   const { user, isLoaded } = useUser();
   const passwordEnabled = Boolean(user?.passwordEnabled);
@@ -39,9 +31,6 @@ export function SecuritySection({
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showCurrent, setShowCurrent] = useState(false);
-  const [showNew, setShowNew] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const [pwdErrors, setPwdErrors] = useState<Record<string, string>>({});
   const [pwdSaving, setPwdSaving] = useState(false);
 
@@ -53,8 +42,6 @@ export function SecuritySection({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
-
-  const strength = passwordStrength(newPassword);
 
   const loadSessions = async () => {
     setSessionsLoading(true);
@@ -105,14 +92,13 @@ export function SecuritySection({
           newPassword,
         });
       } else if (user) {
-        // First-time password for social accounts
         await user.updatePassword({ newPassword });
       }
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
       setPwdErrors({});
-      onToast("Password updated successfully", "success");
+      toast.success("Password updated");
       await user?.reload();
     } catch (e) {
       const message =
@@ -126,7 +112,7 @@ export function SecuritySection({
       } else {
         setPwdErrors({ newPassword: message });
       }
-      onToast(message, "error");
+      toast.error(message);
     } finally {
       setPwdSaving(false);
     }
@@ -137,12 +123,9 @@ export function SecuritySection({
     try {
       await apiSend("/api/me/sessions", "POST", { revokeOthers: true });
       await loadSessions();
-      onToast("Signed out of other sessions", "success");
+      toast.success("Signed out of other sessions");
     } catch (e) {
-      onToast(
-        e instanceof Error ? e.message : "Unable to revoke sessions",
-        "error",
-      );
+      toast.error(e instanceof Error ? e.message : "Unable to revoke sessions");
     } finally {
       setRevoking(false);
     }
@@ -153,12 +136,9 @@ export function SecuritySection({
     try {
       await apiSend("/api/me/sessions", "POST", { sessionId });
       await loadSessions();
-      onToast("Session revoked", "success");
+      toast.success("Session revoked");
     } catch (e) {
-      onToast(
-        e instanceof Error ? e.message : "Unable to revoke session",
-        "error",
-      );
+      toast.error(e instanceof Error ? e.message : "Unable to revoke session");
     } finally {
       setRevoking(false);
     }
@@ -169,328 +149,213 @@ export function SecuritySection({
     setDeleting(true);
     try {
       await apiSend("/api/me/account", "POST", { confirmation: "DELETE" });
-      onToast("Account deleted", "success");
+      toast.success("Account deleted");
       await signOut({ redirectUrl: "/" });
       router.replace("/");
     } catch (e) {
-      onToast(
-        e instanceof Error ? e.message : "Unable to delete account",
-        "error",
-      );
+      toast.error(e instanceof Error ? e.message : "Unable to delete account");
       setDeleting(false);
     }
   };
 
   return (
-    <section id="security" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <div style={sectionCard}>
-        <SectionHeading
-          title={passwordEnabled ? "Change password" : "Set a password"}
-          description={
-            passwordEnabled
-              ? "Choose a strong password you don’t reuse elsewhere."
-              : "You signed in with a social provider. Optionally add a password for email sign-in."
-          }
-        />
+    <section id="security" className="flex min-w-0 flex-col gap-4">
+      <Card className="min-w-0 overflow-hidden">
+        <h3 className="type-h4 m-0 text-ink">
+          {passwordEnabled ? "Change password" : "Set a password"}
+        </h3>
+        <p className="type-small mt-1 mb-5 text-muted">
+          {passwordEnabled
+            ? "Choose a strong password you don’t reuse elsewhere."
+            : "You signed in with a social provider. Optionally add a password for email sign-in."}
+        </p>
 
         {!isLoaded ? (
-          <p style={{ margin: 0, color: "var(--text-muted)", fontSize: 13.5 }}>
-            Checking sign-in methods…
-          </p>
+          <p className="type-small m-0 text-muted">Checking sign-in methods…</p>
         ) : (
-          <>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                gap: 16,
-              }}
-            >
+          <div className="flex flex-col gap-4">
+            <div className="grid gap-4 md:grid-cols-2">
               {passwordEnabled ? (
-                <PasswordField
-                  id="currentPassword"
+                <FormField
                   label="Current password"
-                  value={currentPassword}
-                  show={showCurrent}
-                  onToggle={() => setShowCurrent((v) => !v)}
-                  onChange={setCurrentPassword}
                   error={pwdErrors.currentPassword}
-                  autoComplete="current-password"
-                />
+                >
+                  {(a) => (
+                    <PasswordInput
+                      {...a}
+                      value={currentPassword}
+                      autoComplete="current-password"
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                    />
+                  )}
+                </FormField>
               ) : null}
-              <PasswordField
-                id="newPassword"
+              <FormField
                 label={passwordEnabled ? "New password" : "Password"}
-                value={newPassword}
-                show={showNew}
-                onToggle={() => setShowNew((v) => !v)}
-                onChange={setNewPassword}
                 error={pwdErrors.newPassword}
-                autoComplete="new-password"
-              />
-              <PasswordField
-                id="confirmPassword"
+              >
+                {(a) => (
+                  <PasswordInput
+                    {...a}
+                    value={newPassword}
+                    autoComplete="new-password"
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
+                )}
+              </FormField>
+              <FormField
                 label="Confirm password"
-                value={confirmPassword}
-                show={showConfirm}
-                onToggle={() => setShowConfirm((v) => !v)}
-                onChange={setConfirmPassword}
                 error={pwdErrors.confirmPassword}
-                autoComplete="new-password"
-              />
+              >
+                {(a) => (
+                  <PasswordInput
+                    {...a}
+                    value={confirmPassword}
+                    autoComplete="new-password"
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                )}
+              </FormField>
             </div>
 
-            {newPassword ? (
-              <div style={{ marginTop: 14 }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontSize: 12,
-                    fontWeight: 700,
-                    color: strength.color,
-                    marginBottom: 6,
-                    fontFamily: "Outfit, sans-serif",
-                  }}
-                >
-                  <span>Password strength</span>
-                  <span>{strength.label}</span>
-                </div>
-                <div
-                  style={{
-                    height: 8,
-                    borderRadius: 999,
-                    background: "var(--border-light)",
-                    overflow: "hidden",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: `${(strength.score / 5) * 100}%`,
-                      height: "100%",
-                      background: strength.color,
-                      transition: "width 0.2s ease",
-                    }}
-                  />
-                </div>
-              </div>
-            ) : null}
+            <PasswordStrengthMeter password={newPassword} />
 
-            <div style={{ marginTop: 18, display: "flex", justifyContent: "flex-end" }}>
-              <Button disabled={pwdSaving} onClick={() => void changePassword()}>
-                {pwdSaving ? <Loader2 size={15} /> : <KeyRound size={15} />}
-                {pwdSaving
-                  ? "Updating…"
-                  : passwordEnabled
-                    ? "Update password"
-                    : "Set password"}
+            <div className="flex justify-end">
+              <Button
+                loading={pwdSaving}
+                onClick={() => void changePassword()}
+              >
+                <KeyRound size={15} aria-hidden />
+                {passwordEnabled ? "Update password" : "Set password"}
               </Button>
             </div>
-          </>
-        )}
-      </div>
-
-      <div style={sectionCard}>
-        <SectionHeading
-          title="Active sessions"
-          description="Devices currently signed in to your PathEd account."
-          action={
-            <Button
-              variant="secondary"
-              disabled={revoking || sessionsLoading}
-              onClick={() => void revokeOthers()}
-            >
-              <LogOut size={15} />
-              Log out others
-            </Button>
-          }
-        />
-        {sessionsLoading ? (
-          <p style={{ margin: 0, color: "var(--text-muted)", fontSize: 13.5 }}>
-            Loading sessions…
-          </p>
-        ) : sessionsError ? (
-          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-            <p style={{ margin: 0, color: PROFILE_COLS.danger, fontSize: 13.5 }}>
-              {sessionsError}
-            </p>
-            <Button variant="secondary" onClick={() => void loadSessions()}>
-              Retry
-            </Button>
           </div>
+        )}
+      </Card>
+
+      <Card className="min-w-0 overflow-hidden">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <h3 className="type-h4 m-0 text-ink">Active sessions</h3>
+            <p className="type-small mt-1 mb-0 text-muted">
+              Devices currently signed in to your PathEd account.
+            </p>
+          </div>
+          <Button
+            variant="secondary"
+            disabled={revoking || sessionsLoading}
+            onClick={() => void revokeOthers()}
+          >
+            <LogOut size={15} aria-hidden />
+            Log out others
+          </Button>
+        </div>
+
+        {sessionsLoading ? (
+          <p className="type-small m-0 text-muted">Loading sessions…</p>
+        ) : sessionsError ? (
+          <ErrorState
+            compact
+            title="Couldn't load sessions"
+            description="Retry to refresh the list of signed-in devices."
+            detail={sessionsError}
+            action={
+              <Button variant="secondary" onClick={() => void loadSessions()}>
+                Retry
+              </Button>
+            }
+          />
         ) : sessions.length === 0 ? (
-          <p style={{ margin: 0, color: "var(--text-muted)", fontSize: 13.5 }}>
-            No active sessions found.
-          </p>
+          <EmptyState
+            compact
+            icon={<MonitorSmartphone size={18} aria-hidden />}
+            title="No active sessions found"
+            description="If you just signed in, try refreshing this list."
+          />
         ) : (
-          <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 10 }}>
-            {sessions.map((s) => (
+          <ul className="m-0 flex list-none flex-col gap-2 p-0">
+            {sessions.map((session) => (
               <li
-                key={s.id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 12,
-                  padding: "12px 14px",
-                  borderRadius: 14,
-                  border: "1.5px solid var(--border-light)",
-                  background: "var(--bg-alt)",
-                }}
+                key={session.id}
+                className="flex items-center justify-between gap-3 rounded-[var(--radius-md)] border border-line bg-sunken px-3.5 py-3"
               >
-                <div style={{ display: "flex", gap: 12, alignItems: "center", minWidth: 0 }}>
-                  <MonitorSmartphone size={18} color={PROFILE_COLS.primary} />
-                  <div style={{ minWidth: 0 }}>
-                    <div
-                      style={{
-                        fontFamily: "Outfit, sans-serif",
-                        fontWeight: 700,
-                        fontSize: 13.5,
-                        color: "var(--text-main)",
-                      }}
-                    >
-                      {s.is_current ? "This device" : "Other device"}
-                      {s.is_current ? (
-                        <span
-                          style={{
-                            marginLeft: 8,
-                            fontSize: 11,
-                            color: PROFILE_COLS.success,
-                            fontWeight: 800,
-                          }}
-                        >
-                          CURRENT
-                        </span>
+                <div className="flex min-w-0 items-center gap-3">
+                  <MonitorSmartphone
+                    size={18}
+                    aria-hidden
+                    className="shrink-0 text-primary"
+                  />
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="type-label m-0 text-ink">
+                        {session.is_current ? "This device" : "Other device"}
+                      </p>
+                      {session.is_current ? (
+                        <Badge tone="success">Current</Badge>
                       ) : null}
                     </div>
-                    <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
+                    <p className="type-caption mt-0.5 mb-0 text-muted">
                       Last active{" "}
-                      {s.last_active_at
-                        ? new Date(s.last_active_at).toLocaleString()
+                      {session.last_active_at
+                        ? new Date(session.last_active_at).toLocaleString()
                         : "unknown"}
-                    </div>
+                    </p>
                   </div>
                 </div>
-                {!s.is_current ? (
-                  <Button
+                {!session.is_current ? (
+                  <IconButton
+                    label="Revoke session"
                     variant="ghost"
                     disabled={revoking}
-                    onClick={() => void revokeOne(s.id)}
-                    style={{ color: PROFILE_COLS.danger }}
+                    onClick={() => void revokeOne(session.id)}
                   >
-                    Revoke
-                  </Button>
+                    <LogOut size={16} />
+                  </IconButton>
                 ) : null}
               </li>
             ))}
           </ul>
         )}
-      </div>
+      </Card>
 
-      <div
-        style={{
-          ...sectionCard,
-          borderColor: "rgba(239,68,68,0.25)",
-          background: "rgba(239,68,68,0.04)",
-        }}
-      >
-        <SectionHeading
-          title="Delete account"
-          description="Permanently remove your PathEd data, progress, and wallet. This cannot be undone."
-        />
+      <Card className="min-w-0 overflow-hidden border-[color-mix(in_srgb,var(--error)_28%,var(--line))] bg-[var(--error-soft)]">
+        <h3 className="type-h4 m-0 text-ink">Delete account</h3>
+        <p className="type-small mt-1 mb-4 text-muted">
+          Permanently remove your PathEd data, progress, and wallet. This cannot
+          be undone.
+        </p>
         <Button variant="danger" onClick={() => setDeleteOpen(true)}>
-          <Trash2 size={15} /> Delete account
+          <Trash2 size={15} aria-hidden />
+          Delete account
         </Button>
-      </div>
+      </Card>
 
       <ConfirmDialog
         open={deleteOpen}
+        tone="danger"
         title="Delete your account?"
-        description='Type DELETE to confirm. All profile data, progress, and sessions will be removed.'
+        description="Type DELETE to confirm. All profile data, progress, and sessions will be removed."
         confirmLabel="Delete forever"
         loading={deleting}
         confirmDisabled={deleteConfirm !== "DELETE"}
-        onCancel={() => {
-          if (!deleting) {
-            setDeleteOpen(false);
-            setDeleteConfirm("");
-          }
+        onClose={() => {
+          if (deleting) return;
+          setDeleteOpen(false);
+          setDeleteConfirm("");
         }}
         onConfirm={() => void deleteAccount()}
       >
-        <div style={{ marginTop: 16 }}>
-          <TextField
-            id="deleteConfirm"
-            label='Type "DELETE" to confirm'
-            value={deleteConfirm}
-            onChange={(e) => setDeleteConfirm(e.target.value)}
-            autoComplete="off"
-          />
-        </div>
+        <FormField label='Type "DELETE" to confirm'>
+          {(a) => (
+            <Input
+              {...a}
+              value={deleteConfirm}
+              autoComplete="off"
+              onChange={(e) => setDeleteConfirm(e.target.value)}
+            />
+          )}
+        </FormField>
       </ConfirmDialog>
     </section>
-  );
-}
-
-function PasswordField({
-  id,
-  label,
-  value,
-  show,
-  onToggle,
-  onChange,
-  error,
-  autoComplete,
-}: {
-  id: string;
-  label: string;
-  value: string;
-  show: boolean;
-  onToggle: () => void;
-  onChange: (v: string) => void;
-  error?: string;
-  autoComplete?: string;
-}) {
-  return (
-    <div>
-      <label htmlFor={id} style={fieldLabel}>
-        {label}
-      </label>
-      <div style={{ position: "relative" }}>
-        <input
-          id={id}
-          type={show ? "text" : "password"}
-          value={value}
-          autoComplete={autoComplete}
-          aria-invalid={Boolean(error)}
-          onChange={(e) => onChange(e.target.value)}
-          style={{
-            ...fieldInput,
-            paddingRight: 44,
-            borderColor: error ? "rgba(239,68,68,0.55)" : "var(--border-light)",
-          }}
-        />
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-label={show ? "Hide password" : "Show password"}
-          style={{
-            position: "absolute",
-            right: 10,
-            top: "50%",
-            transform: "translateY(-50%)",
-            border: "none",
-            background: "transparent",
-            color: "var(--text-muted)",
-            cursor: "pointer",
-            padding: 4,
-            display: "flex",
-          }}
-        >
-          {show ? <EyeOff size={16} /> : <Eye size={16} />}
-        </button>
-      </div>
-      <FieldError message={error} />
-    </div>
   );
 }

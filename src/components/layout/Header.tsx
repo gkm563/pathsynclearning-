@@ -1,38 +1,44 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { Search, Globe, Sun, Moon } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Menu, Moon, Sun, X } from "lucide-react";
 import { useAuth, useClerk } from "@clerk/nextjs";
 import { apiGet, apiSend } from "@/lib/api";
+import { BrandMark } from "@/components/ui/BrandMark";
+import { Button, IconButton } from "@/components/ui/primitives";
+import { cn } from "@/lib/cn";
 import type { NavLink } from "@/types";
 import { routes } from "@/lib/routes";
 
-export default function Header() {
-  const links: NavLink[] = [
-    { label: "Home", path: routes.home },
-    { label: "Platform", path: routes.marketing.platform },
-    { label: "Methodology", path: routes.marketing.methodology },
-    { label: "Mission", path: routes.marketing.mission },
-    { label: "Company", path: routes.marketing.company },
-    { label: "Blog", path: routes.marketing.blog },
-    { label: "Community", path: routes.marketing.community },
-  ];
+const LINKS: NavLink[] = [
+  { label: "Platform", path: routes.marketing.platform },
+  { label: "Methodology", path: routes.marketing.methodology },
+  { label: "Mission", path: routes.marketing.mission },
+  { label: "Pricing", path: routes.marketing.pricing },
+  { label: "Company", path: routes.marketing.company },
+  { label: "Blog", path: routes.marketing.blog },
+  { label: "Community", path: routes.marketing.community },
+];
 
+export default function Header() {
+  const pathname = usePathname();
   const { isSignedIn } = useAuth();
   const { signOut } = useClerk();
   const [isDark, setIsDark] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       if (!isSignedIn) return;
       try {
-        const data = await apiGet<{ settings?: { theme?: string } }>("/api/me/settings");
+        const data = await apiGet<{ settings?: { theme?: string } }>(
+          "/api/me/settings",
+        );
         if (cancelled) return;
-        const theme = data.settings?.theme === "dark";
-        setIsDark(theme);
+        setIsDark(data.settings?.theme === "dark");
       } catch {
         // keep light default
       }
@@ -51,103 +57,147 @@ export default function Header() {
     }
   }, [isDark, isSignedIn]);
 
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
+
   const isAuthenticated = Boolean(isSignedIn);
 
   return (
-    <div className="pointer-events-none fixed top-6 right-0 left-0 z-[100] flex justify-center">
-      <header className="pointer-events-auto flex w-[calc(100%-64px)] max-w-[1280px] items-center justify-between rounded-3xl border border-white bg-[var(--overlay-bg)] px-6 py-2 pr-3 shadow-[0_12px_40px_rgba(108,99,255,0.08),0_1px_3px_rgba(0,0,0,0.02)] backdrop-blur-3xl">
-        <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-linear-to-br from-[#6c63ff] to-[#00c9a7] font-display text-lg font-extrabold text-[var(--text-inverse)] shadow-[0_4px_14px_rgba(108,99,255,0.25)]">
-              P
-            </div>
-            <span className="font-display text-[22px] font-extrabold text-[var(--text-main)]">
-              Path<span className="text-[#6c63ff]">Ed</span>
-            </span>
-            <div className="ml-1.5 inline-flex items-center gap-1.5 rounded-xl bg-[var(--bg-alt)] px-2.5 py-1 font-mono text-[10px] font-semibold text-[#6c63ff]">
-              BETA
-            </div>
-          </Link>
+    <header className="sticky top-0 z-[var(--z-header)] border-b border-line bg-[var(--overlay-bg)] backdrop-blur-xl">
+      <div className="mx-auto flex h-16 w-full max-w-[var(--measure-content)] items-center justify-between gap-4 px-4 sm:px-6">
+        <BrandMark href={routes.home} size="sm" />
 
-          <nav className="hidden items-center gap-1 lg:flex">
-            {links.map((link) => (
+        <nav aria-label="Primary" className="hidden items-center gap-0.5 lg:flex">
+          {LINKS.map((link) => {
+            const active =
+              pathname === link.path || pathname?.startsWith(`${link.path}/`);
+            return (
               <Link
                 key={link.path}
                 href={link.path}
-                className="rounded-xl px-3.5 py-2 font-sans text-[13.5px] font-semibold text-[var(--text-main)] no-underline transition-colors hover:bg-[var(--bg-alt)]"
+                className={cn(
+                  "type-label rounded-[var(--radius-sm)] px-3 py-2 no-underline transition-colors duration-[var(--duration-fast)]",
+                  active
+                    ? "bg-sunken text-ink"
+                    : "text-muted hover:bg-sunken hover:text-ink",
+                )}
               >
                 {link.label}
               </Link>
-            ))}
-          </nav>
-        </div>
+            );
+          })}
+        </nav>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border-none bg-transparent text-[var(--text-muted)] hover:bg-[var(--bg-alt)]"
-            aria-label="Search"
-          >
-            <Search size={18} />
-          </button>
-          <button
-            type="button"
-            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border-none bg-transparent text-[var(--text-muted)] hover:bg-[var(--bg-alt)]"
-            aria-label="Language"
-          >
-            <Globe size={18} />
-          </button>
-          <button
-            type="button"
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <IconButton
+            label={isDark ? "Switch to light theme" : "Switch to dark theme"}
             onClick={() => setIsDark((v) => !v)}
-            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border-none bg-transparent text-[var(--text-muted)] hover:bg-[var(--bg-alt)]"
-            aria-label="Toggle theme"
           >
             {isDark ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
+          </IconButton>
 
-          <div className="ml-2 flex items-center gap-2">
+          <div className="hidden items-center gap-2 sm:flex">
             {isAuthenticated ? (
               <>
-                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                  <Link
-                    href={routes.auth.continue}
-                    className="inline-block rounded-[14px] bg-linear-to-br from-[#6c63ff] to-[#00c9a7] px-[22px] py-2.5 font-display text-sm font-bold text-white no-underline shadow-[0_6px_20px_rgba(108,99,255,0.25)]"
-                  >
-                    Dashboard →
-                  </Link>
-                </motion.div>
                 <button
                   type="button"
-                  onClick={async () => {
-                    await signOut({ redirectUrl: "/" });
-                  }}
-                  className="cursor-pointer rounded-[10px] border-none bg-transparent px-3 py-2 font-sans text-[13px] font-semibold text-[var(--text-muted)] hover:bg-[var(--bg-alt)]"
+                  onClick={() => void signOut({ redirectUrl: "/" })}
+                  className="type-label rounded-[var(--radius-sm)] px-3 py-2 text-muted transition-colors duration-[var(--duration-fast)] hover:bg-sunken hover:text-ink"
                 >
-                  Sign Out
+                  Sign out
                 </button>
+                <Link
+                  href={routes.auth.continue}
+                  className="type-label inline-flex h-9 items-center rounded-[var(--radius-md)] bg-primary px-4 text-on-primary no-underline hover:bg-primary-hover"
+                >
+                  Open dashboard
+                </Link>
               </>
             ) : (
               <>
                 <Link
                   href={routes.auth.signIn}
-                  className="inline-block rounded-xl px-4 py-2.5 font-display text-sm font-bold text-[#6c63ff] no-underline transition-all hover:bg-[var(--bg-alt)]"
+                  className="type-label rounded-[var(--radius-sm)] px-3 py-2 text-muted no-underline transition-colors duration-[var(--duration-fast)] hover:bg-sunken hover:text-ink"
                 >
-                  Sign In
+                  Sign in
                 </Link>
-                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                  <Link
-                    href={routes.auth.signUp}
-                    className="inline-block rounded-[14px] bg-[var(--bg-inverse)] px-6 py-3 font-display text-sm font-bold text-[var(--text-inverse)] no-underline shadow-[0_6px_16px_rgba(26,26,46,0.15)]"
-                  >
-                    Get Started
-                  </Link>
-                </motion.div>
+                <Link
+                  href={routes.auth.signUp}
+                  className="type-label inline-flex h-9 items-center rounded-[var(--radius-md)] bg-primary px-4 text-on-primary no-underline hover:bg-primary-hover"
+                >
+                  Get started
+                </Link>
+              </>
+            )}
+          </div>
+
+          <IconButton
+            className="border border-line lg:hidden"
+            label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((v) => !v)}
+          >
+            {menuOpen ? <X size={18} /> : <Menu size={18} />}
+          </IconButton>
+        </div>
+      </div>
+
+      {menuOpen ? (
+        <div className="border-t border-line bg-surface px-4 py-4 lg:hidden">
+          <nav aria-label="Mobile" className="flex flex-col gap-1">
+            {LINKS.map((link) => (
+              <Link
+                key={link.path}
+                href={link.path}
+                className="type-label rounded-[var(--radius-sm)] px-3 py-3 text-ink no-underline hover:bg-sunken"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="mt-4 flex flex-col gap-2 border-t border-line pt-4">
+            {isAuthenticated ? (
+              <>
+                <Link
+                  href={routes.auth.continue}
+                  className="type-label inline-flex h-10 w-full items-center justify-center rounded-[var(--radius-md)] bg-primary px-4 text-on-primary no-underline"
+                >
+                  Open dashboard
+                </Link>
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  onClick={() => void signOut({ redirectUrl: "/" })}
+                >
+                  Sign out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href={routes.auth.signUp}
+                  className="type-label inline-flex h-10 w-full items-center justify-center rounded-[var(--radius-md)] bg-primary px-4 text-on-primary no-underline"
+                >
+                  Get started
+                </Link>
+                <Link href={routes.auth.signIn}>
+                  <Button variant="secondary" className="w-full">
+                    Sign in
+                  </Button>
+                </Link>
               </>
             )}
           </div>
         </div>
-      </header>
-    </div>
+      ) : null}
+    </header>
   );
 }

@@ -4,61 +4,195 @@
   --font-display: var(--font-sans), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-body: var(--font-sans), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-code: var(--font-mono), "IBM Plex Mono", ui-monospace, monospace;
-  --primary: #1677ff;
-  --secondary: #00c9a7;
-  --accent: #f7971e;
-  --purple: #6c63ff;
-  --magenta: #9c27b0;
-  --bg-main: #fcfdff;
-  --bg-alt: #f0f4ff;
-  --bg-card: #ffffff;
-  --text-main: #1a1a2e;
-  --text-muted: #666666;
-  --text-light: #9ca3af;
-  --border-light: #eaecff;
-  --border-strong: #bae0ff;
-  --roadmap-edge: #9aa0d8;
-  --overlay-bg: rgba(255, 255, 255, 0.9);
-  --bg-inverse: #0f172a;
-  --text-inverse: #f8fafc;
-  --hero-card-gradient-c: linear-gradient(135deg, #f0f0ff 0%, #e8faf5 60%, #fff9ee 100%);
-  --hero-card-gradient-a: linear-gradient(135deg, #fff9ee 0%, #fdf0ff 60%, #f0f0ff 100%);
-  --role-card-active: linear-gradient(145deg, #f0f0ff, #e8f9f5);
+
+  --bg: #f4f1ea;
+  --bg-elevated: #fffcf6;
+  --surface: #fffcf6;
+  --primary: #1b4540;
+  --primary-hover: #143632;
+  --primary-soft: rgba(27, 69, 64, 0.1);
+  --primary-border: rgba(27, 69, 64, 0.22);
+  --secondary: #3d5a56;
+  --accent: #c45c26;
+  --accent-soft: rgba(196, 92, 38, 0.12);
+  --info: #2a5478;
+  --info-soft: rgba(42, 84, 120, 0.1);
+  --success: #1f6b48;
+  --success-soft: rgba(31, 107, 72, 0.12);
+  --warning: #b45309;
+  --warning-soft: rgba(180, 83, 9, 0.12);
+  --error: #b42318;
+  --error-soft: rgba(180, 35, 24, 0.1);
+  --text-on-primary: #f6f3ec;
+  --ink: #16181d;
+  --muted: #5d616a;
+  --subtle: #8a8e97;
+  --line: #e4dfd4;
+  --line-strong: #cfc8ba;
+  --ring: #1b4540;
+  --ring-soft: rgba(27, 69, 64, 0.16);
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-xs: 0 1px 1px rgba(22, 24, 29, 0.04);
+  --shadow-sm: 0 1px 2px rgba(22, 24, 29, 0.05);
+  --shadow-md: 0 10px 28px rgba(22, 24, 29, 0.07);
+  --shadow-lg: 0 18px 44px rgba(22, 24, 29, 0.1);
+  --shadow-xl: 0 28px 70px rgba(22, 24, 29, 0.14);
+  --space: 4px;
+
+  /* Layout rhythm — one source of truth for content measure and section gaps. */
+  --measure-prose: 68ch;
+  --measure-content: 1280px;
+  --measure-wide: 1440px;
+
+  /* Motion — durations and easings. Every transition should pick from these. */
+  --duration-instant: 90ms;
+  --duration-fast: 150ms;
+  --duration-normal: 220ms;
+  --duration-slow: 320ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0.13, 1);
+  --ease-entrance: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --ease-exit: cubic-bezier(0.3, 0, 0.8, 0.15);
+
+  /* Stacking order — avoids the ad-hoc z-[100]/z-[200] arms race. */
+  --z-base: 0;
+  --z-sticky: 20;
+  --z-header: 100;
+  --z-dropdown: 200;
+  --z-overlay: 300;
+  --z-modal: 310;
+  --z-popover: 400;
+  --z-toast: 500;
+
+  /* Fixed mobile tab bar: row (~3.5rem) + safe-area is applied at use sites. */
+  --mobile-tabbar-height: 3.75rem;
+
+  --purple: var(--primary);
+  --magenta: #8a3d2a;
+  --bg-main: var(--bg);
+  --bg-alt: #ebe6dc;
+  --bg-card: var(--surface);
+  --text-main: var(--ink);
+  --text-muted: var(--muted);
+  --text-light: var(--subtle);
+  --border-light: var(--line);
+  --border-strong: var(--line-strong);
+  --roadmap-edge: #8a9a96;
+  --overlay-bg: color-mix(in srgb, var(--surface) 88%, transparent);
+  --bg-inverse: #121614;
+  --text-inverse: #f4f1ea;
+  --hero-card-gradient-c: linear-gradient(160deg, #efeae0 0%, #f7f3ea 55%, #f3ece2 100%);
+  --hero-card-gradient-a: linear-gradient(160deg, #f4eee4 0%, #efe8dc 100%);
+  --role-card-active: linear-gradient(180deg, #f3eee4, #ebe6dc);
   --scrollbar-size: 10px;
   --scrollbar-track: transparent;
-  --scrollbar-thumb: rgba(108, 99, 255, 0.28);
-  --scrollbar-thumb-hover: rgba(108, 99, 255, 0.52);
-  --scrollbar-thumb-active: rgba(0, 201, 167, 0.55);
+  --scrollbar-thumb: rgba(27, 69, 64, 0.28);
+  --scrollbar-thumb-hover: rgba(27, 69, 64, 0.48);
+  --scrollbar-thumb-active: rgba(196, 92, 38, 0.5);
 }
 
 [data-theme="dark"] {
-  --bg-main: #0b0f19;
-  --bg-alt: #0f1523;
-  --bg-card: #151b2b;
-  --text-main: #e2e8f0;
-  --text-muted: #94a3b8;
-  --text-light: #64748b;
-  --border-light: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.15);
-  --roadmap-edge: rgba(165, 180, 252, 0.65);
-  --overlay-bg: rgba(11, 15, 25, 0.85);
-  --bg-inverse: #020617;
-  --text-inverse: #f8fafc;
-  --primary: #3b82f6;
-  --secondary: #14b8a6;
-  --purple: #818cf8;
-  --magenta: #c026d3;
-  --accent: #f59e0b;
-  --hero-card-gradient-c: linear-gradient(135deg, #f0f0ff 0%, #e8faf5 60%, #fff9ee 100%);
-  --hero-card-gradient-a: linear-gradient(135deg, #fff9ee 0%, #fdf0ff 60%, #f0f0ff 100%);
-  --role-card-active: linear-gradient(
-    145deg,
-    rgba(108, 99, 255, 0.1),
-    rgba(0, 201, 167, 0.1)
-  );
-  --scrollbar-thumb: rgba(129, 140, 248, 0.34);
-  --scrollbar-thumb-hover: rgba(129, 140, 248, 0.62);
-  --scrollbar-thumb-active: rgba(20, 184, 166, 0.6);
+  --bg: #101412;
+  --bg-elevated: #171c1a;
+  --surface: #171c1a;
+  --primary: #8fb8b1;
+  --primary-hover: #a4c7c1;
+  --primary-soft: rgba(143, 184, 177, 0.14);
+  --primary-border: rgba(143, 184, 177, 0.28);
+  --secondary: #9eb0ac;
+  --accent: #e08a52;
+  --accent-soft: rgba(224, 138, 82, 0.14);
+  --info: #8fb4d4;
+  --info-soft: rgba(143, 180, 212, 0.12);
+  --success: #6dba94;
+  --success-soft: rgba(109, 186, 148, 0.14);
+  --warning: #e0a15a;
+  --warning-soft: rgba(224, 161, 90, 0.14);
+  --error: #e07a72;
+  --error-soft: rgba(224, 122, 114, 0.12);
+  --text-on-primary: #101412;
+  --ink: #eeeae2;
+  --muted: #a8ada8;
+  --subtle: #7d847f;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --ring: #8fb8b1;
+  --ring-soft: rgba(143, 184, 177, 0.22);
+  --shadow-xs: 0 1px 1px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 14px 36px rgba(0, 0, 0, 0.38);
+  --shadow-lg: 0 22px 54px rgba(0, 0, 0, 0.46);
+  --shadow-xl: 0 32px 80px rgba(0, 0, 0, 0.55);
+
+  --bg-main: var(--bg);
+  --bg-alt: #1c2220;
+  --bg-card: var(--surface);
+  --text-main: var(--ink);
+  --text-muted: var(--muted);
+  --text-light: var(--subtle);
+  --border-light: var(--line);
+  --border-strong: var(--line-strong);
+  --roadmap-edge: rgba(143, 184, 177, 0.55);
+  --overlay-bg: color-mix(in srgb, var(--surface) 86%, transparent);
+  --bg-inverse: #070908;
+  --text-inverse: #f4f1ea;
+  --hero-card-gradient-c: linear-gradient(160deg, #1c2220, #171c1a);
+  --hero-card-gradient-a: linear-gradient(160deg, #1a201e, #171c1a);
+  --role-card-active: linear-gradient(180deg, rgba(143, 184, 177, 0.12), rgba(224, 138, 82, 0.08));
+  --scrollbar-thumb: rgba(143, 184, 177, 0.34);
+  --scrollbar-thumb-hover: rgba(143, 184, 177, 0.55);
+  --scrollbar-thumb-active: rgba(224, 138, 82, 0.55);
+}
+
+/* ---------------------------------------------------------------------------
+   Tailwind theme bridge
+
+   Maps the semantic variables above into Tailwind's `--color-*` namespace so
+   utilities read as `bg-surface` / `text-muted` / `border-line` instead of
+   `bg-[var(--surface)]`. `inline` is required: it keeps generated utilities
+   pointing at `var(--*)` rather than baking in the light-theme value, so the
+   `[data-theme="dark"]` overrides still apply at runtime.
+
+   Radius/shadow/font are deliberately NOT bridged — Tailwind ships defaults
+   under those same keys and remapping them would silently restyle every
+   existing `rounded-lg` / `shadow-sm` in the codebase.
+--------------------------------------------------------------------------- */
+@theme inline {
+  --color-canvas: var(--bg);
+  --color-surface: var(--surface);
+  --color-raised: var(--bg-elevated);
+  --color-sunken: var(--bg-alt);
+  --color-inverse: var(--bg-inverse);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-border: var(--primary-border);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--error);
+  --color-danger-soft: var(--error-soft);
+
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--subtle);
+  --color-on-primary: var(--text-on-primary);
+  --color-on-inverse: var(--text-inverse);
+
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ring: var(--ring);
 }
 
 @layer base {
@@ -75,10 +209,25 @@
     scrollbar-gutter: stable;
   }
 
+  /*
+   * No `overflow-x: hidden` here. It masks broken layouts instead of fixing
+   * them and silently breaks `position: sticky` descendants. Horizontal
+   * overflow is fixed at the source (min-w-0 on flex/grid children, wrapping
+   * toolbars, scroll containers scoped to the element that actually scrolls).
+   */
   html,
   body {
     width: 100%;
-    overflow-x: hidden;
+    max-width: 100%;
+  }
+
+  /* Long unbroken strings (URLs, IDs, code) must wrap rather than widen a row. */
+  p,
+  li,
+  dd,
+  figcaption,
+  blockquote {
+    overflow-wrap: break-word;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -95,17 +244,11 @@
     letter-spacing: -0.014em;
     background-color: var(--bg-main);
     color: var(--text-main);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background-color 0.25s ease, color 0.25s ease;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     font-optical-sizing: auto;
-    font-feature-settings: "ss01" on, "ss02" on, "cv01" on;
-  }
-
-  /* One typeface across the product, including screens that still hardcode Outfit/Inter/Syne. */
-  body * {
-    font-family: inherit !important;
   }
 
   h1,
@@ -115,10 +258,15 @@
   h5,
   h6 {
     font-family: var(--font-display);
-    letter-spacing: -0.04em;
-    line-height: 1.15;
-    font-weight: 700;
+    letter-spacing: -0.038em;
+    line-height: 1.18;
+    font-weight: 650;
     text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
   }
 
   a {
@@ -141,6 +289,27 @@
     letter-spacing: -0.011em;
   }
 
+  /* Media never overflows its container. */
+  img,
+  svg,
+  video,
+  canvas,
+  iframe {
+    max-width: 100%;
+  }
+
+  /*
+   * React Flow draws edges in an SVG whose width/height are graph coordinates
+   * (often thousands of px). `max-width: 100%` scales that SVG down while the
+   * HTML nodes stay in place — so the cards remain and the connectors vanish.
+   */
+  .react-flow svg,
+  .react-flow__edges svg,
+  .react-flow__connectionline svg {
+    max-width: none;
+    overflow: visible;
+  }
+
   code,
   kbd,
   samp,
@@ -152,6 +321,175 @@
     font-family: var(--font-code) !important;
     letter-spacing: 0;
     font-feature-settings: normal;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Typography scale
+
+   One canonical ramp for the whole product. Each class sets family, size,
+   weight, line-height and tracking together, because those four are what make
+   type feel deliberate — setting only `font-size` is how the old code drifted
+   into dozens of one-off `text-[15.5px]` values.
+
+   Sizes are fluid where the element is a page-level headline and fixed where
+   it appears inside dense UI (cards, tables, forms), so body copy stays at a
+   predictable reading size on every viewport.
+
+   Lives in the `components` layer so Tailwind utilities still win — e.g.
+   `class="type-h2 text-primary"` overrides colour, `type-h2 !leading-tight`
+   overrides line-height.
+--------------------------------------------------------------------------- */
+@layer components {
+  .type-display {
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 1.35rem + 3.6vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.04;
+    letter-spacing: -0.045em;
+    text-wrap: balance;
+  }
+
+  .type-h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 1.2rem + 2.2vw, 2.5rem);
+    font-weight: 680;
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+    text-wrap: balance;
+  }
+
+  .type-h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.375rem, 1.1rem + 1.1vw, 1.75rem);
+    font-weight: 660;
+    line-height: 1.18;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+
+  .type-h3 {
+    font-family: var(--font-display);
+    font-size: 1.1875rem;
+    font-weight: 650;
+    line-height: 1.26;
+    letter-spacing: -0.03em;
+  }
+
+  .type-h4 {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 650;
+    line-height: 1.35;
+    letter-spacing: -0.024em;
+  }
+
+  .type-body-lg {
+    font-size: 1.0625rem;
+    font-weight: 450;
+    line-height: 1.65;
+    letter-spacing: -0.014em;
+  }
+
+  .type-body {
+    font-size: 0.9375rem;
+    font-weight: 450;
+    line-height: 1.62;
+    letter-spacing: -0.012em;
+  }
+
+  .type-small {
+    font-size: 0.8125rem;
+    font-weight: 450;
+    line-height: 1.52;
+    letter-spacing: -0.008em;
+  }
+
+  .type-caption {
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.45;
+    letter-spacing: 0;
+  }
+
+  .type-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+  }
+
+  /* Section kickers / eyebrows. Uppercase needs positive tracking to read. */
+  .type-overline {
+    font-size: 0.6875rem;
+    font-weight: 650;
+    line-height: 1.3;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .type-code {
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
+    font-weight: 450;
+    line-height: 1.6;
+    letter-spacing: 0;
+  }
+
+  /* Phones: one step smaller so cards, sheets, and tab chrome don't crowd. */
+  @media (max-width: 1023px) {
+    .type-h1 {
+      font-size: clamp(1.5rem, 1.15rem + 1.6vw, 2rem);
+    }
+
+    .type-h2 {
+      font-size: clamp(1.2rem, 1.05rem + 0.7vw, 1.5rem);
+    }
+
+    .type-h3 {
+      font-size: 1.0625rem;
+      line-height: 1.28;
+    }
+
+    .type-h4 {
+      font-size: 0.9375rem;
+    }
+
+    .type-body-lg {
+      font-size: 0.9375rem;
+    }
+
+    .type-body {
+      font-size: 0.875rem;
+      line-height: 1.55;
+    }
+
+    .type-small {
+      font-size: 0.75rem;
+    }
+
+    .type-caption {
+      font-size: 0.6875rem;
+    }
+
+    .type-label {
+      font-size: 0.75rem;
+    }
+
+    .type-overline {
+      font-size: 0.625rem;
+    }
+  }
+
+  /* Tabular figures keep metrics and money from jittering as values change. */
+  .type-numeric {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* Constrains long-form copy to a comfortable measure. */
+  .type-prose {
+    max-width: var(--measure-prose);
   }
 }
 
@@ -219,10 +557,10 @@
 @keyframes nodeGlow {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(108, 99, 255, 0.4);
+    box-shadow: 0 0 0 0 var(--primary-border);
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(108, 99, 255, 0);
+    box-shadow: 0 0 0 8px transparent;
   }
 }
 
@@ -255,12 +593,7 @@
 }
 
 .shimmer-text {
-  background: linear-gradient(90deg, #6c63ff, #00c9a7, #f7971e, #6c63ff);
-  background-size: 300% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: shimmer 5s linear infinite;
+  color: var(--primary);
 }
 
 .f1 {
@@ -434,7 +767,7 @@
   height: 56px;
   object-fit: contain;
   border-radius: 14px;
-  box-shadow: 0 8px 20px rgba(108, 99, 255, 0.22);
+  box-shadow: var(--shadow-md);
 }
 
 .news-cover-fallback span {
@@ -653,9 +986,9 @@
 }
 
 .news-chip.is-active {
-  background: var(--purple);
-  border-color: var(--purple);
-  color: #fff;
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--text-on-primary);
 }
 
 .news-chip.is-active:hover {

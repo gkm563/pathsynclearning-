@@ -1,42 +1,40 @@
 "use client";
 
-import { Bookmark, Search, Settings2 } from "lucide-react";
+import type { ReactNode } from "react";
+import { Bookmark, Settings2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { NEWS_CATEGORIES, type NewsSort } from "@/lib/news/constants";
 import { routes } from "@/lib/routes";
-import { Button } from "@/components/ui/primitives";
+import { Button, SearchInput, Segmented, Toolbar } from "@/components/ui";
+import { cn } from "@/lib/cn";
 
-export function TechNewsHeader() {
+export function TechNewsHeader({
+  actions,
+}: {
+  actions?: ReactNode;
+}) {
   const router = useRouter();
   return (
-    <header
-      style={{
-        display: "flex",
-        flexWrap: "wrap",
-        alignItems: "flex-end",
-        justifyContent: "space-between",
-        gap: 16,
-        marginBottom: 24,
-      }}
-    >
-      <div>
-        <p className="tech-news-kicker">Developer briefing</p>
-        <h1 className="tech-news-title">Tech News</h1>
-        <p className="tech-news-lead">
-          Engineering, AI, and startup stories that matter for your career — without
-          the noise.
+    <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="min-w-0">
+        <p className="type-overline m-0 text-primary">Developer briefing</p>
+        <h1 className="type-h2 mt-1.5 mb-0 text-ink">Tech News</h1>
+        <p className="type-small mt-1.5 mb-0 max-w-xl text-muted">
+          Engineering, AI, and startup stories that matter for your career —
+          without the noise.
         </p>
       </div>
-      <Button
-        variant="secondary"
-        className="news-toolbar-btn"
-        onClick={() => router.push(routes.app.techNewsSaved)}
-        aria-label="Open saved news"
-        style={{ minHeight: 40 }}
-      >
-        <Bookmark size={16} aria-hidden /> Saved
-      </Button>
-    </header>
+      <div className="flex shrink-0 flex-wrap items-center gap-2">
+        {actions}
+        <Button
+          variant="secondary"
+          onClick={() => router.push(routes.app.techNewsSaved)}
+          aria-label="Open saved news"
+        >
+          <Bookmark size={16} aria-hidden /> Saved
+        </Button>
+      </div>
+    </div>
   );
 }
 
@@ -56,18 +54,13 @@ export function CategoryNav({
   ];
 
   return (
-    <nav aria-label="News categories" style={{ marginBottom: 14 }}>
-      <div
-        className="hide-scrollbar"
-        style={{
-          display: "flex",
-          gap: 8,
-          overflowX: "auto",
-          paddingBottom: 4,
-          WebkitOverflowScrolling: "touch",
-        }}
-      >
-        <Chip label="All" active={active === "all"} onClick={() => onChange("all")} />
+    <nav aria-label="News categories" className="mb-4">
+      <div className="hide-scrollbar flex gap-2 overflow-x-auto pb-1">
+        <Chip
+          label="All"
+          active={active === "all"}
+          onClick={() => onChange("all")}
+        />
         {ordered.map((cat) => (
           <Chip
             key={cat}
@@ -98,7 +91,15 @@ function Chip({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`news-chip${active ? " is-active" : ""}${preferred ? " is-preferred" : ""}`}
+      className={cn(
+        "type-label inline-flex h-9 shrink-0 items-center rounded-full border px-3 transition-colors",
+        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+        active
+          ? "border-primary-border bg-primary-soft text-primary"
+          : preferred
+            ? "border-line bg-sunken text-ink"
+            : "border-line bg-surface text-muted hover:bg-sunken hover:text-ink",
+      )}
     >
       {label}
     </button>
@@ -121,73 +122,26 @@ export function NewsControls({
   onOpenPrefs: () => void;
 }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        flexWrap: "wrap",
-        gap: 10,
-        alignItems: "center",
-        marginBottom: 22,
-      }}
-    >
-      <label className="news-search">
-        {busy ? <span className="news-spin" aria-hidden /> : <Search size={16} color="var(--text-muted)" aria-hidden />}
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Search headlines, sources…"
-          aria-label="Search news"
-          aria-busy={busy || undefined}
-          style={{
-            flex: 1,
-            border: "none",
-            outline: "none",
-            background: "transparent",
-            color: "var(--text-main)",
-            fontSize: 14,
-            minHeight: 42,
-          }}
-        />
-      </label>
-
-      <div className="news-sort" role="group" aria-label="Sort news">
-        {(["latest", "popular"] as const).map((s) => (
-          <button
-            key={s}
-            type="button"
-            aria-pressed={sort === s}
-            onClick={() => onSortChange(s)}
-            className={`news-sort-btn${sort === s ? " is-on" : ""}`}
-          >
-            {s === "latest" ? "Latest" : "Popular"}
-          </button>
-        ))}
-      </div>
-
-      <button
-        type="button"
-        onClick={onOpenPrefs}
-        className="news-toolbar-btn"
-        aria-label="Category preferences"
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 6,
-          minHeight: 44,
-          minWidth: 44,
-          borderRadius: 12,
-          border: "1px solid var(--border-light)",
-          background: "var(--bg-card)",
-          color: "var(--text-muted)",
-          padding: "0 12px",
-          fontWeight: 650,
-          fontSize: 13,
-          cursor: "pointer",
-        }}
-      >
+    <Toolbar className="mb-6">
+      <SearchInput
+        value={search}
+        onValueChange={onSearchChange}
+        placeholder="Search headlines, sources…"
+        aria-label="Search news"
+        busy={busy}
+      />
+      <Segmented
+        items={[
+          { id: "latest", label: "Latest" },
+          { id: "popular", label: "Popular" },
+        ]}
+        value={sort}
+        onChange={onSortChange}
+        ariaLabel="Sort news"
+      />
+      <Button variant="secondary" onClick={onOpenPrefs} aria-label="Category preferences">
         <Settings2 size={15} aria-hidden /> Preferences
-      </button>
-    </div>
+      </Button>
+    </Toolbar>
   );
 }

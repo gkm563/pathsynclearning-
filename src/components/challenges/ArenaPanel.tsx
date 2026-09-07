@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
-import { Timer, Play, Square } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Play, Square, Timer } from "lucide-react";
 import type { ChallengeSummary } from "@/lib/challenges/types";
 import { ARENA_DURATION_SEC } from "@/lib/challenges/progress";
+import { Button, Card } from "@/components/ui";
+import { cn } from "@/lib/cn";
 import ChallengeCard from "./ChallengeCard";
 
 export default function ArenaPanel({
@@ -18,7 +20,6 @@ export default function ArenaPanel({
   pack: ChallengeSummary[];
   bestScore: number;
   lastPlayedAt?: string;
-  /** Challenge IDs solved during the active arena session (from real passes). */
   sessionSolvedIds: string[];
   onOpen: (item: ChallengeSummary) => void;
   onComplete: (score: number) => void;
@@ -50,7 +51,7 @@ export default function ArenaPanel({
       );
       onComplete(score);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [left, running]);
 
   const mm = String(Math.floor(left / 60)).padStart(2, "0");
@@ -77,69 +78,45 @@ export default function ArenaPanel({
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-      <div
-        style={{
-          padding: 22,
-          borderRadius: 18,
-          background:
-            "linear-gradient(135deg, rgba(236,72,153,0.1), rgba(108,99,255,0.12))",
-          border: "1.5px solid rgba(236,72,153,0.3)",
-        }}
-      >
-        <h3 style={{ margin: "0 0 6px", fontFamily: "Outfit", fontWeight: 800 }}>
-          Timed Arena · 25 minutes
-        </h3>
-        <p style={{ margin: 0, color: "var(--text-muted)", fontFamily: "Outfit", fontSize: 13.5 }}>
-          Mixed MCQ + coding pack. Score counts challenges you actually pass before the clock ends.
+    <div className="flex flex-col gap-5">
+      <Card>
+        <h3 className="type-h4 m-0 text-ink">Timed Arena · 25 minutes</h3>
+        <p className="type-small mt-1.5 mb-0 text-muted">
+          Mixed MCQ + coding pack. Score counts challenges you actually pass
+          before the clock ends.
         </p>
-        <div
-          style={{
-            display: "flex",
-            gap: 12,
-            flexWrap: "wrap",
-            marginTop: 14,
-            alignItems: "center",
-          }}
-        >
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              fontFamily: "Fira Code",
-              fontWeight: 800,
-              fontSize: 18,
-              color: left < 60 ? "#ec4899" : "var(--text-main)",
-            }}
+            className={cn(
+              "type-numeric inline-flex items-center gap-1.5 text-lg font-semibold",
+              left < 60 ? "text-danger" : "text-ink",
+            )}
           >
-            <Timer size={18} /> {mm}:{ss}
+            <Timer size={18} aria-hidden /> {mm}:{ss}
           </span>
-          <span style={{ fontFamily: "Outfit", fontSize: 13, color: "var(--text-muted)" }}>
+          <span className="type-small text-muted">
             Best {bestScore}% · Session {progress}%
             {lastPlayedAt
               ? ` · Last ${new Date(lastPlayedAt).toLocaleString()}`
               : ""}
           </span>
           {!running ? (
-            <button type="button" onClick={start} style={primaryBtn}>
-              <Play size={14} /> Start arena
-            </button>
+            <Button onClick={start}>
+              <Play size={14} aria-hidden /> Start arena
+            </Button>
           ) : (
-            <button type="button" onClick={stop} style={ghostBtn}>
-              <Square size={14} /> Finish early
-            </button>
+            <Button variant="secondary" onClick={stop}>
+              <Square size={14} aria-hidden /> Finish early
+            </Button>
           )}
         </div>
-      </div>
+      </Card>
 
       <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-          gap: 16,
-          opacity: running ? 1 : 0.72,
-        }}
+        className={cn(
+          "grid grid-cols-1 gap-4 md:grid-cols-2",
+          !running && "opacity-70",
+        )}
       >
         {pack.map((item) => (
           <ChallengeCard
@@ -160,33 +137,3 @@ export default function ArenaPanel({
     </div>
   );
 }
-
-const primaryBtn: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 6,
-  padding: "10px 14px",
-  borderRadius: 12,
-  border: "none",
-  background: "linear-gradient(135deg, #ec4899, #6c63ff)",
-  color: "#fff",
-  fontWeight: 800,
-  fontFamily: "Outfit",
-  fontSize: 13,
-  cursor: "pointer",
-};
-
-const ghostBtn: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 6,
-  padding: "10px 14px",
-  borderRadius: 12,
-  border: "1.5px solid var(--border-light)",
-  background: "var(--bg-card)",
-  color: "var(--text-main)",
-  fontWeight: 700,
-  fontFamily: "Outfit",
-  fontSize: 13,
-  cursor: "pointer",
-};

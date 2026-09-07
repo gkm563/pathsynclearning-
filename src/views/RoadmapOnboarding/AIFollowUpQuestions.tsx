@@ -1,120 +1,154 @@
 "use client";
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Brain, Check } from 'lucide-react';
 
-import { OnboardingCard, StepHeader } from './onboarding-ui';
+import { Brain, Check } from "lucide-react";
+import { Input } from "@/components/ui";
+import { cn } from "@/lib/cn";
+import { OnboardingCard, StepHeader } from "./onboarding-ui";
 
 export type FollowUpQuestion = {
   id: string;
-  type: 'single_choice' | 'multi_choice' | 'text' | 'rating';
+  type: "single_choice" | "multi_choice" | "text" | "rating";
   question: string;
   options?: string[];
   reason?: string;
 };
 
-interface AIFollowUpQuestionsProps {
+export default function AIFollowUpQuestions({
+  questions,
+  answers,
+  onChange,
+  mode,
+}: {
   questions: FollowUpQuestion[];
-  answers: Record<string, any>;
-  onChange: (answers: Record<string, any>) => void;
-  mode?: 'targeted' | 'general' | null;
-}
-
-export default function AIFollowUpQuestions({ questions, answers, onChange, mode }: AIFollowUpQuestionsProps) {
-  
-  const handleUpdate = (id: string, value: any) => {
+  answers: Record<string, unknown>;
+  onChange: (answers: Record<string, unknown>) => void;
+  mode?: "targeted" | "general" | null;
+}) {
+  const handleUpdate = (id: string, value: unknown) => {
     onChange({ ...answers, [id]: value });
   };
 
   return (
-    <OnboardingCard accent={mode === 'targeted' ? '#6c63ff' : '#00c9a7'}>
+    <OnboardingCard>
       <StepHeader
-        icon={<Brain size={22} color="#6c63ff" />}
-        kicker={mode === 'targeted' ? 'Company-only questions' : 'Role-only questions'}
-        title={mode === 'targeted' ? 'Hiring-loop details' : 'Role-path details'}
+        icon={<Brain size={22} aria-hidden />}
+        kicker={mode === "targeted" ? "Company-only questions" : "Role-only questions"}
+        title={mode === "targeted" ? "Hiring-loop details" : "Role-path details"}
         subtitle={
-          mode === 'targeted'
-            ? 'These are not the same as the role-path questions. We only fill gaps that change this company’s interview plan.'
-            : 'These are not company questions. We only fill gaps that change this role’s curriculum.'
+          mode === "targeted"
+            ? "These are not the same as the role-path questions. We only fill gaps that change this company’s interview plan."
+            : "These are not company questions. We only fill gaps that change this role’s curriculum."
         }
       />
 
-      {questions.map((q, i) => (
-        <motion.div key={q.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} style={{ padding: '24px', backgroundColor: 'var(--bg-alt)', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
-          <div style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-main)', fontFamily: 'Outfit', marginBottom: '8px' }}>
-            {q.question}
+      {questions.map((q) => {
+        const rawAnswer = answers[q.id];
+        const textValue = typeof rawAnswer === "string" ? rawAnswer : "";
+        const multiValue = Array.isArray(answers[q.id])
+          ? (answers[q.id] as unknown[]).filter((x): x is string => typeof x === "string")
+          : [];
+
+        return (
+          <div
+            key={q.id}
+            className="rounded-[var(--radius-md)] border border-line bg-sunken p-5"
+          >
+            <p className="type-h4 m-0 mb-2 text-ink">{q.question}</p>
+            {q.reason ? (
+              <p className="type-caption mt-0 mb-4 text-muted">Why we ask: {q.reason}</p>
+            ) : null}
+
+            {q.type === "text" && (
+              <Input
+                value={textValue}
+                onChange={(e) => handleUpdate(q.id, e.target.value)}
+                placeholder="Type your answer here..."
+              />
+            )}
+
+            {q.type === "single_choice" && q.options && (
+              <div className="flex flex-wrap gap-2">
+                {q.options.map((opt) => {
+                  const selected = answers[q.id] === opt;
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => handleUpdate(q.id, opt)}
+                      className={cn(
+                        "type-label rounded-full border px-3.5 py-2 transition-colors",
+                        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                        selected
+                          ? "border-primary-border bg-primary text-[var(--text-on-primary)]"
+                          : "border-line bg-surface text-ink hover:bg-sunken",
+                      )}
+                    >
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {q.type === "multi_choice" && q.options && (
+              <div className="flex flex-wrap gap-2">
+                {q.options.map((opt) => {
+                  const selected = multiValue.includes(opt);
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => {
+                        if (selected) {
+                          handleUpdate(
+                            q.id,
+                            multiValue.filter((x) => x !== opt),
+                          );
+                        } else {
+                          handleUpdate(q.id, [...multiValue, opt]);
+                        }
+                      }}
+                      className={cn(
+                        "type-label inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 transition-colors",
+                        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                        selected
+                          ? "border-primary-border bg-primary text-[var(--text-on-primary)]"
+                          : "border-line bg-surface text-ink hover:bg-sunken",
+                      )}
+                    >
+                      {selected ? <Check size={14} aria-hidden /> : null} {opt}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {q.type === "rating" && (
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((val) => {
+                  const selected = answers[q.id] === val;
+                  return (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => handleUpdate(q.id, val)}
+                      className={cn(
+                        "grid h-11 w-11 place-items-center rounded-full border font-semibold",
+                        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                        selected
+                          ? "border-primary-border bg-primary text-[var(--text-on-primary)]"
+                          : "border-line bg-surface text-ink hover:bg-sunken",
+                      )}
+                    >
+                      {val}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
-          {q.reason && (
-            <div style={{ fontSize: '13px', color: 'var(--text-muted)', fontFamily: 'Outfit', marginBottom: '16px', fontStyle: 'italic' }}>
-              Why we ask: {q.reason}
-            </div>
-          )}
-
-          {q.type === 'text' && (
-            <input 
-              style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-main)', color: 'var(--text-main)', fontFamily: 'Outfit', fontSize: '16px', outline: 'none' }}
-              value={answers[q.id] || ''}
-              onChange={e => handleUpdate(q.id, e.target.value)}
-              placeholder="Type your answer here..."
-            />
-          )}
-
-          {q.type === 'single_choice' && q.options && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-              {q.options.map(opt => {
-                const selected = answers[q.id] === opt;
-                return (
-                  <div 
-                    key={opt}
-                    onClick={() => handleUpdate(q.id, opt)}
-                    style={{ padding: '10px 16px', borderRadius: '24px', border: `1px solid ${selected ? '#00c9a7' : 'var(--border-light)'}`, backgroundColor: selected ? '#00c9a7' : 'var(--bg-main)', color: selected ? '#fff' : 'var(--text-main)', cursor: 'pointer', fontFamily: 'Outfit', fontSize: '14px', transition: 'all 0.2s' }}
-                  >
-                    {opt}
-                  </div>
-                )
-              })}
-            </div>
-          )}
-
-          {q.type === 'multi_choice' && q.options && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-              {q.options.map(opt => {
-                const current = answers[q.id] || [];
-                const selected = current.includes(opt);
-                return (
-                  <div 
-                    key={opt}
-                    onClick={() => {
-                      if (selected) {
-                        handleUpdate(q.id, current.filter((x: string) => x !== opt));
-                      } else {
-                        handleUpdate(q.id, [...current, opt]);
-                      }
-                    }}
-                    style={{ padding: '10px 16px', borderRadius: '24px', border: `1px solid ${selected ? '#f7971e' : 'var(--border-light)'}`, backgroundColor: selected ? '#f7971e' : 'var(--bg-main)', color: selected ? '#fff' : 'var(--text-main)', cursor: 'pointer', fontFamily: 'Outfit', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}
-                  >
-                    {selected && <Check size={14} />} {opt}
-                  </div>
-                )
-              })}
-            </div>
-          )}
-
-          {q.type === 'rating' && (
-            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto' }}>
-              {[1, 2, 3, 4, 5].map(val => (
-                <div 
-                  key={val}
-                  onClick={() => handleUpdate(q.id, val)}
-                  style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', border: `1px solid ${answers[q.id] === val ? '#6c63ff' : 'var(--border-light)'}`, backgroundColor: answers[q.id] === val ? '#6c63ff' : 'var(--bg-main)', color: answers[q.id] === val ? '#fff' : 'var(--text-main)', cursor: 'pointer', fontFamily: 'Outfit', fontWeight: 600, transition: 'all 0.2s' }}
-                >
-                  {val}
-                </div>
-              ))}
-            </div>
-          )}
-        </motion.div>
-      ))}
+        );
+      })}
     </OnboardingCard>
   );
 }

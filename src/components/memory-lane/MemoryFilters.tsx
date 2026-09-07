@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
-import { Search } from "lucide-react";
 import type { MemoryFilter } from "@/lib/memory/types";
 import { MEMORY_FILTERS } from "@/lib/memory/types";
+import { SearchInput } from "@/components/ui";
+import { cn } from "@/lib/cn";
 
 const FILTER_LABELS: Record<MemoryFilter, string> = {
   all: "All",
@@ -29,34 +29,12 @@ export function MemorySearch({
   onChange: (v: string) => void;
 }) {
   return (
-    <div style={{ position: "relative", flex: 1, minWidth: 200 }}>
-      <Search
-        size={16}
-        style={{
-          position: "absolute",
-          left: 12,
-          top: "50%",
-          transform: "translateY(-50%)",
-          color: "var(--text-light)",
-        }}
-      />
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Search memories..."
-        aria-label="Search memories"
-        style={{
-          width: "100%",
-          padding: "11px 12px 11px 36px",
-          borderRadius: 12,
-          border: "1.5px solid var(--border-light)",
-          background: "var(--bg-card)",
-          color: "var(--text-main)",
-          fontFamily: "Outfit, sans-serif",
-          fontSize: 14,
-        }}
-      />
-    </div>
+    <SearchInput
+      value={value}
+      onValueChange={onChange}
+      placeholder="Search memories…"
+      aria-label="Search memories"
+    />
   );
 }
 
@@ -71,12 +49,7 @@ export function MemoryFilters({
 }) {
   return (
     <div
-      style={{
-        display: "flex",
-        flexWrap: "wrap",
-        gap: 8,
-        marginTop: 12,
-      }}
+      className="mt-3 flex flex-wrap gap-2"
       role="tablist"
       aria-label="Memory filters"
     >
@@ -89,19 +62,13 @@ export function MemoryFilters({
             role="tab"
             aria-selected={active}
             onClick={() => onChange(f)}
-            style={{
-              borderRadius: 999,
-              border: active
-                ? "1.5px solid var(--purple)"
-                : "1.5px solid var(--border-light)",
-              background: active ? "rgba(108,99,255,0.1)" : "var(--bg-card)",
-              color: active ? "var(--purple)" : "var(--text-muted)",
-              padding: "7px 12px",
-              fontFamily: "Outfit, sans-serif",
-              fontWeight: 700,
-              fontSize: 12,
-              cursor: "pointer",
-            }}
+            className={cn(
+              "type-label inline-flex h-8 items-center rounded-full border px-3 transition-colors",
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+              active
+                ? "border-primary-border bg-primary-soft text-primary"
+                : "border-line bg-surface text-muted hover:bg-sunken hover:text-ink",
+            )}
           >
             {FILTER_LABELS[f]}
           </button>

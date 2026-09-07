@@ -9,6 +9,8 @@ import {
   X,
 } from "lucide-react";
 import AnswerReview, { type AnswerReviewPayload } from "./AnswerReview";
+import { Alert, Button, Card, Checkbox, IconButton } from "@/components/ui";
+import { cn } from "@/lib/cn";
 
 const MAX_VIOLATIONS = 3;
 const GRACE_MS = 2500;
@@ -232,209 +234,101 @@ export default function AssessmentShell({
   return (
     <div
       ref={shellRef}
-      className="nokey"
+      className={cn(
+        "nokey fixed inset-0 z-[9999] flex flex-col",
+        assessmentType === "coding" && phase === "active"
+          ? "bg-inverse text-on-inverse"
+          : "bg-canvas text-ink",
+      )}
       style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 9999,
-        background:
-          assessmentType === "coding" && phase === "active"
-            ? "#1a1a1a"
-            : "var(--bg-main)",
-        color:
-          assessmentType === "coding" && phase === "active"
-            ? "#eff1f6"
-            : "var(--text-main)",
-        display: "flex",
-        flexDirection: "column",
-        userSelect:
-          phase === "active" && PROCTORING_ENABLED ? "none" : "auto",
+        userSelect: phase === "active" && PROCTORING_ENABLED ? "none" : "auto",
       }}
     >
-      {/* Darker chrome for coding workspace */}
       <header
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "10px 16px",
-          borderBottom: "1px solid var(--border-light)",
-          background:
-            assessmentType === "coding" && phase === "active"
-              ? "#1a1a1a"
-              : "var(--bg-card)",
-          color:
-            assessmentType === "coding" && phase === "active"
-              ? "#eff1f6"
-              : undefined,
-          flexShrink: 0,
-        }}
+        className={cn(
+          "flex shrink-0 items-center justify-between border-b border-line px-4 py-2.5",
+          assessmentType === "coding" && phase === "active"
+            ? "bg-inverse text-on-inverse"
+            : "bg-surface",
+        )}
       >
         <div>
           <div
-            style={{
-              fontFamily: "Fira Code",
-              fontSize: 11,
-              color: phase === "active"
+            className={cn(
+              "type-overline",
+              phase === "active"
                 ? PROCTORING_ENABLED
-                  ? "#ef4444"
-                  : "#2cbb5d"
-                : "#6c63ff",
-              fontWeight: 700,
-              letterSpacing: 1,
-            }}
+                  ? "text-danger"
+                  : "text-success"
+                : "text-primary",
+            )}
           >
             {phase === "active"
               ? PROCTORING_ENABLED
-                ? "PROCTORED ASSESSMENT"
-                : "PRACTICE MODE"
-              : "ASSESSMENT SETUP"}
+                ? "Proctored assessment"
+                : "Practice mode"
+              : "Assessment setup"}
           </div>
-          <h1 style={{ margin: 0, fontFamily: "Outfit", fontSize: 18 }}>{title}</h1>
+          <h1 className="type-h4 m-0">{title}</h1>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div className="flex items-center gap-4">
           {phase === "active" && (
             <>
               <div
-                style={{
-                  fontFamily: "Fira Code",
-                  fontWeight: 700,
-                  color: secondsLeft < 60 ? "#ef4444" : "var(--text-main)",
-                }}
+                className={cn(
+                  "type-numeric font-bold",
+                  secondsLeft < 60 ? "text-danger" : "text-ink",
+                )}
               >
                 {mm}:{ss}
               </div>
               {PROCTORING_ENABLED && (
                 <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    color: violations.length ? "#ef4444" : "var(--text-muted)",
-                    fontSize: 13,
-                    fontFamily: "Outfit",
-                  }}
+                  className={cn(
+                    "flex items-center gap-1.5 type-small",
+                    violations.length ? "text-danger" : "text-muted",
+                  )}
                 >
                   <ShieldAlert size={16} />
                   Violations {violations.length}/{MAX_VIOLATIONS}
                 </div>
               )}
               {!PROCTORING_ENABLED && (
-                <div
-                  style={{
-                    fontSize: 12,
-                    fontFamily: "Outfit",
-                    color: "#2cbb5d",
-                    fontWeight: 600,
-                  }}
-                >
+                <div className="type-caption font-semibold text-success">
                   Copy/paste enabled · no violations
                 </div>
               )}
             </>
           )}
-          <button
-            type="button"
-            onClick={handleClose}
-            style={{
-              background: "var(--bg-alt)",
-              border: "1px solid var(--border-light)",
-              borderRadius: 8,
-              padding: 8,
-              cursor: "pointer",
-              color: "var(--text-main)",
-            }}
-            title="Exit"
-          >
+          <IconButton label="Exit" variant="secondary" size="sm" onClick={handleClose}>
             <X size={18} />
-          </button>
+          </IconButton>
         </div>
       </header>
 
       {phase === "active" && violations.length > 0 && (
-        <div
-          style={{
-            background: "rgba(239,68,68,0.12)",
-            color: "#ef4444",
-            padding: "8px 20px",
-            fontSize: 13,
-            fontFamily: "Inter",
-          }}
-        >
-          Proctoring alert: {violations[violations.length - 1]?.kind.replace(/_/g, " ")}.{" "}
-          {Math.max(0, MAX_VIOLATIONS - violations.length)} warning(s) left before
-          auto-fail.
-        </div>
+        <Alert tone="error" title="Proctoring alert">
+          {violations[violations.length - 1]?.kind.replace(/_/g, " ")}.{" "}
+          {Math.max(0, MAX_VIOLATIONS - violations.length)} warning(s) left before auto-fail.
+        </Alert>
       )}
 
       {phase === "guidelines" && (
-        <div
-          style={{
-            flex: 1,
-            overflow: "auto",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 24,
-          }}
-        >
-          <div
-            style={{
-              width: "100%",
-              maxWidth: 560,
-              background: "var(--bg-card)",
-              border: "1.5px solid var(--border-light)",
-              borderRadius: 16,
-              padding: 28,
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                marginBottom: 16,
-              }}
-            >
-              <Monitor size={22} color="#6c63ff" />
-              <h2 style={{ margin: 0, fontFamily: "Outfit", fontSize: 22 }}>
-                Before you start
-              </h2>
+        <div className="flex flex-1 items-center justify-center overflow-auto p-6">
+          <Card className="w-full max-w-[560px]">
+            <div className="mb-4 flex items-center gap-2.5">
+              <Monitor size={22} className="text-primary" />
+              <h2 className="type-h3 m-0">Before you start</h2>
             </div>
-            <p
-              style={{
-                color: "var(--text-muted)",
-                fontFamily: "Inter",
-                fontSize: 14,
-                lineHeight: 1.55,
-                marginTop: 0,
-              }}
-            >
+            <p className="type-small mt-0 text-muted">
               This is a {assessmentType === "coding" ? "coding" : "MCQ"} assessment (
-              {timeLimitMinutes} min, pass mark {passScore}%). Proctoring starts only after
-              you confirm the environment is ready.
+              {timeLimitMinutes} min, pass mark {passScore}%). Proctoring starts only after you
+              confirm the environment is ready.
             </p>
 
             {previousAttempts.length > 0 && (
-              <div
-                style={{
-                  marginBottom: 18,
-                  padding: 14,
-                  borderRadius: 12,
-                  background: "var(--bg-alt)",
-                  border: "1px solid var(--border-light)",
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: "Outfit",
-                    fontWeight: 700,
-                    fontSize: 14,
-                    marginBottom: 8,
-                  }}
-                >
-                  Previous scores for this assessment
-                </div>
+              <div className="mb-[18px] rounded-[var(--radius-md)] border border-line bg-sunken p-3.5">
+                <div className="type-label mb-2">Previous scores for this assessment</div>
                 {previousAttempts.slice(0, 5).map((a, i) => {
                   const when = a.createdAt
                     ? new Date(a.createdAt).toLocaleString(undefined, {
@@ -445,43 +339,29 @@ export default function AssessmentShell({
                   return (
                     <div
                       key={a.id || i}
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        fontSize: 13,
-                        fontFamily: "Inter",
-                        color: "var(--text-muted)",
-                        padding: "6px 0",
-                        borderTop: i ? "1px solid var(--border-light)" : "none",
-                      }}
+                      className={cn(
+                        "flex items-center justify-between py-1.5 type-small text-muted",
+                        i ? "border-t border-line" : "",
+                      )}
                     >
                       <span>
                         {when}
                         {a.passed ? " · passed" : " · failed"}
                       </span>
                       <strong
-                        style={{
-                          fontFamily: "Outfit",
-                          fontSize: 16,
-                          color: a.passed ? "#059669" : "#ef4444",
-                        }}
+                        className={cn(
+                          "type-h4",
+                          a.passed ? "text-success" : "text-danger",
+                        )}
                       >
                         {a.score}%
                       </strong>
                     </div>
                   );
                 })}
-                <div
-                  style={{
-                    marginTop: 8,
-                    fontSize: 12,
-                    color: "var(--text-muted)",
-                    fontFamily: "Inter",
-                  }}
-                >
+                <div className="type-caption mt-2 text-muted">
                   Best so far:{" "}
-                  <strong style={{ color: "var(--text-main)" }}>
+                  <strong className="text-ink">
                     {Math.max(...previousAttempts.map((a) => a.score), 0)}%
                   </strong>
                 </div>
@@ -490,16 +370,7 @@ export default function AssessmentShell({
 
             {answerReview && <AnswerReview review={answerReview} />}
 
-            <ul
-              style={{
-                margin: "0 0 20px",
-                paddingLeft: 18,
-                color: "var(--text-main)",
-                fontFamily: "Inter",
-                fontSize: 14,
-                lineHeight: 1.7,
-              }}
-            >
+            <ul className="type-body mb-5 list-disc pl-[18px] text-ink">
               {PROCTORING_ENABLED ? (
                 <>
                   <li>Stay in fullscreen for the whole attempt</li>
@@ -521,64 +392,39 @@ export default function AssessmentShell({
             </ul>
 
             {PROCTORING_ENABLED && (
-              <button
+              <Button
                 type="button"
+                variant={fsReady ? "secondary" : "outline"}
+                className="mb-3 w-full"
                 onClick={enterFullscreen}
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  padding: 14,
-                  borderRadius: 10,
-                  border: fsReady ? "1.5px solid #10b981" : "1.5px solid #6c63ff",
-                  background: fsReady ? "rgba(16,185,129,0.12)" : "rgba(108,99,255,0.1)",
-                  color: fsReady ? "#059669" : "#6c63ff",
-                  fontFamily: "Outfit",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  marginBottom: 12,
-                }}
               >
                 {fsReady ? <CheckCircle2 size={18} /> : <Maximize size={18} />}
                 {fsReady ? "Fullscreen ready" : "Enter fullscreen"}
-              </button>
+              </Button>
             )}
 
             {PROCTORING_ENABLED && fsError && (
-              <p style={{ color: "#ef4444", fontSize: 13, marginTop: 0 }}>{fsError}</p>
+              <p className="type-small m-0 text-danger">{fsError}</p>
             )}
 
-            <label
-              style={{
-                display: "flex",
-                gap: 10,
-                alignItems: "flex-start",
-                fontSize: 13,
-                color: "var(--text-muted)",
-                fontFamily: "Inter",
-                marginBottom: 16,
-                cursor: "pointer",
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={ack}
-                onChange={(e) => setAck(e.target.checked)}
-                style={{ marginTop: 3 }}
-              />
-              <span>
-                I have read the guidelines and my environment is ready
-                {PROCTORING_ENABLED
-                  ? " (fullscreen on, no other tabs needed)."
-                  : " (practice mode — copy/paste allowed)."}
-              </span>
-            </label>
+            <Checkbox
+              checked={ack}
+              onChange={setAck}
+              label={
+                <>
+                  I have read the guidelines and my environment is ready
+                  {PROCTORING_ENABLED
+                    ? " (fullscreen on, no other tabs needed)."
+                    : " (practice mode — copy/paste allowed)."}
+                </>
+              }
+              className="mb-4"
+            />
 
-            <button
+            <Button
               type="button"
               disabled={!canStart}
+              className="w-full"
               onClick={() => {
                 if (PROCTORING_ENABLED && !document.fullscreenElement) {
                   void enterFullscreen().then(() => {
@@ -588,62 +434,24 @@ export default function AssessmentShell({
                 }
                 setPhase("starting");
               }}
-              style={{
-                width: "100%",
-                padding: 14,
-                borderRadius: 10,
-                border: "none",
-                background: canStart ? "#6c63ff" : "var(--bg-alt)",
-                color: canStart ? "#fff" : "var(--text-muted)",
-                fontFamily: "Outfit",
-                fontWeight: 700,
-                cursor: canStart ? "pointer" : "not-allowed",
-              }}
             >
               Start assessment
-            </button>
-          </div>
+            </Button>
+          </Card>
         </div>
       )}
 
       {phase === "starting" && (
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 12,
-          }}
-        >
-          <div
-            style={{
-              fontFamily: "Outfit",
-              fontSize: 72,
-              fontWeight: 800,
-              color: "#6c63ff",
-            }}
-          >
+        <div className="flex flex-1 flex-col items-center justify-center gap-3">
+          <div className="type-numeric text-[72px] font-extrabold text-primary">
             {countdown || "Go"}
           </div>
-          <p style={{ color: "var(--text-muted)", fontFamily: "Inter" }}>
-            Proctoring begins now — stay focused
-          </p>
+          <p className="type-body text-muted">Proctoring begins now — stay focused</p>
         </div>
       )}
 
       {phase === "active" && (
-        <div
-          style={{
-            flex: 1,
-            overflow: "hidden",
-            padding: 0,
-            minHeight: 0,
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-0">
           {children({ violations, secondsLeft })}
         </div>
       )}

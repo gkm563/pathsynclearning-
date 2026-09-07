@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { AuthStatusScreen } from "@/components/auth/AuthStatusScreen";
 import { resolvePostAuthPath } from "@/lib/auth-routing";
 import { routes } from "@/lib/routes";
 
@@ -111,13 +112,5 @@ export default function ContinuePending({ role }: { role: string }) {
     };
   }, [isLoaded, isSignedIn, getToken, role]);
 
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[var(--bg-main)]">
-      <div
-        className="h-10 w-10 animate-spin rounded-full border-2 border-[#6c63ff] border-t-transparent"
-        aria-hidden
-      />
-      <p className="font-sans text-sm text-[var(--text-muted)]">{message}</p>
-    </div>
-  );
+  return <AuthStatusScreen message={message} />;
 }

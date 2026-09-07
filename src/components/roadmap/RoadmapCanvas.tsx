@@ -28,6 +28,9 @@ import RoadmapDetailPanel from './RoadmapDetailPanel';
 import RoadmapOverview from './RoadmapOverview';
 import NodeAssessmentModal from './assessment/NodeAssessmentModal';
 import { isAssessableNode } from '@/lib/roadmap/assessment';
+import { Focus } from 'lucide-react';
+import { Alert, IconButton } from '@/components/ui';
+import { RoadmapSpinner } from './RoadmapSpinner';
 
 const nodeTypes = {
   goal: GoalNode,
@@ -126,35 +129,46 @@ export default function RoadmapCanvas({
   const deepLinkAppliedRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showMinimap, setShowMinimap] = useState(true);
+  const [showMinimap, setShowMinimap] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [switching, setSwitching] = useState(false);
 
-  const focusNode = useCallback((nodeId: string, opts?: { zoom?: number; duration?: number }) => {
+  const isNarrowViewport = () =>
+    typeof window !== "undefined" && window.innerWidth < 1024;
+
+  const focusNode = useCallback((nodeId: string, opts?: { zoom?: number; duration?: number; lift?: boolean }) => {
     const instance = rfRef.current;
     if (!instance || !nodeId) return;
 
-    const zoom = opts?.zoom ?? 1.05;
+    const narrow = isNarrowViewport();
+    const zoom = opts?.zoom ?? (narrow ? 0.92 : 1.05);
     const duration = opts?.duration ?? 500;
+    const lift = Boolean(opts?.lift && narrow);
 
-    // Prefer fitView on the single node so size/padding stay correct
     requestAnimationFrame(() => {
-      try {
-        instance.fitView({
-          nodes: [{ id: nodeId }],
-          padding: 0.45,
-          duration,
-          maxZoom: zoom,
-          minZoom: zoom,
-        });
-      } catch {
-        const n = instance.getNode?.(nodeId);
-        if (!n) return;
-        const w = n.measured?.width ?? n.width ?? 200;
-        const h = n.measured?.height ?? n.height ?? 80;
-        instance.setCenter(n.position.x + w / 2, n.position.y + h / 2, {
-          zoom,
-          duration,
-        });
+      const n = instance.getNode?.(nodeId);
+      if (!n) {
+        try {
+          instance.fitView({
+            nodes: [{ id: nodeId }],
+            padding: narrow ? 0.28 : 0.45,
+            duration,
+            maxZoom: zoom,
+            minZoom: zoom,
+          });
+        } catch {
+          // node not mounted yet
+        }
+        return;
       }
+      const w = n.measured?.width ?? n.width ?? 200;
+      const h = n.measured?.height ?? n.height ?? 80;
+      // Keep the node in the upper half when the mobile sheet is open.
+      const yNudge = lift ? 110 : 0;
+      instance.setCenter(n.position.x + w / 2, n.position.y + h / 2 + yNudge, {
+        zoom,
+        duration,
+      });
     });
   }, []);
 
@@ -175,6 +189,17 @@ export default function RoadmapCanvas({
       }
       setIsFullscreen(false);
     }
+  }, []);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const sync = () => {
+      setIsDesktop(mq.matches);
+      setShowMinimap(mq.matches);
+    };
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
   }, []);
 
   useEffect(() => {
@@ -257,6 +282,41 @@ export default function RoadmapCanvas({
     return pool[0]?.node.id ?? null;
   }, [roadmap.nodes, roadmap.edges, progressMap]);
 
+  const applyInitialCamera = useCallback(
+    (instance?: {
+      fitView: (opts: Record<string, unknown>) => void;
+      getNodes?: () => { id: string }[];
+    }) => {
+      const rf = instance ?? rfRef.current;
+      if (!rf || didFitRef.current) return;
+      const mounted = rf.getNodes?.() ?? [];
+      if (!mounted.length) return;
+
+      const narrow = isNarrowViewport();
+      const targetId = initialFocusNodeId || currentLearningNodeId;
+
+      if (narrow && targetId) {
+        lastFocusedLearningIdRef.current = targetId;
+        try {
+          rf.fitView({
+            nodes: [{ id: targetId }],
+            padding: 0.28,
+            maxZoom: 0.92,
+            minZoom: 0.78,
+          });
+        } catch {
+          rf.fitView({ padding: 0.4, maxZoom: 0.9, minZoom: 0.7 });
+        }
+      } else if (narrow) {
+        rf.fitView({ padding: 0.4, maxZoom: 0.9, minZoom: 0.7 });
+      } else {
+        rf.fitView({ padding: 0.15 });
+      }
+      didFitRef.current = true;
+    },
+    [initialFocusNodeId, currentLearningNodeId],
+  );
+
   const handleNodeClick = useCallback(
     (node: RTNode) => {
       const status = (progressMap.get(node.id) || node.status || 'locked') as RTNode['status'];
@@ -266,8 +326,16 @@ export default function RoadmapCanvas({
       });
       // Always center — including goal / locked nodes
       focusNode(node.id, {
-        zoom: node.type === 'goal' || node.type === 'career' ? 1.1 : 1.05,
+        zoom:
+          node.type === 'goal' || node.type === 'career'
+            ? isNarrowViewport()
+              ? 0.95
+              : 1.1
+            : isNarrowViewport()
+              ? 0.92
+              : 1.05,
         duration: 600,
+        lift: true,
       });
     },
     [progressMap, focusNode],
@@ -306,16 +374,23 @@ export default function RoadmapCanvas({
     if (lastFocusedLearningIdRef.current === currentLearningNodeId) return;
     lastFocusedLearningIdRef.current = currentLearningNodeId;
 
-    const node = roadmap.nodes.find((n) => n.id === currentLearningNodeId);
-    if (node) {
-      setSelectedNode({
-        ...node,
-        status: (progressMap.get(node.id) || node.status || 'available') as RTNode['status'],
-      });
+    // Keep the canvas visible on phones — opening the sheet would cover it.
+    if (!isNarrowViewport()) {
+      const node = roadmap.nodes.find((n) => n.id === currentLearningNodeId);
+      if (node) {
+        setSelectedNode({
+          ...node,
+          status: (progressMap.get(node.id) || node.status || 'available') as RTNode['status'],
+        });
+      }
     }
 
     const t = setTimeout(
-      () => focusNode(currentLearningNodeId, { zoom: 1.05, duration: 650 }),
+      () =>
+        focusNode(currentLearningNodeId, {
+          zoom: isNarrowViewport() ? 0.92 : 1.05,
+          duration: 650,
+        }),
       didFitRef.current ? 120 : 350,
     );
     return () => clearTimeout(t);
@@ -374,9 +449,9 @@ export default function RoadmapCanvas({
           height: 20,
           color:
             sourceStatus === 'completed'
-              ? '#00c9a7'
+              ? 'var(--success)'
               : sourceStatus === 'in_progress'
-                ? '#6c63ff'
+                ? 'var(--primary)'
                 : 'var(--roadmap-edge)',
         },
       };
@@ -391,12 +466,9 @@ export default function RoadmapCanvas({
 
     // Fit once after first layout (not on every progress update)
     requestAnimationFrame(() => {
-      if (!didFitRef.current && rfRef.current) {
-        rfRef.current.fitView({ padding: 0.15 });
-        didFitRef.current = true;
-      }
+      applyInitialCamera();
     });
-  }, [roadmap, progressMap, handleNodeClick, setNodes, setEdges]);
+  }, [roadmap, progressMap, handleNodeClick, setNodes, setEdges, applyInitialCamera]);
 
   useEffect(() => {
     setNodes((nds) =>
@@ -428,17 +500,14 @@ export default function RoadmapCanvas({
   return (
     <div
       ref={containerRef}
+      className="h-full w-full overflow-hidden overscroll-none bg-canvas"
       style={{
-        width: '100%',
-        height: '100%',
         position: isFullscreen && !document.fullscreenElement ? 'fixed' : 'relative',
         top: isFullscreen && !document.fullscreenElement ? 0 : undefined,
         left: isFullscreen && !document.fullscreenElement ? 0 : undefined,
         right: isFullscreen && !document.fullscreenElement ? 0 : undefined,
         bottom: isFullscreen && !document.fullscreenElement ? 0 : undefined,
         zIndex: isFullscreen && !document.fullscreenElement ? 9999 : 'auto',
-        background: 'var(--bg-main, #ffffff)',
-        overflow: 'hidden',
       }}
     >
       <RoadmapOverview
@@ -449,10 +518,14 @@ export default function RoadmapCanvas({
         nodes={roadmap.nodes}
         progress={progressMap}
         onSwitched={async () => {
+          didFitRef.current = false;
           await onRefresh?.();
         }}
+        onBusyChange={setSwitching}
         onCreateNew={() => onCreateNew?.()}
       />
+
+      {switching ? <RoadmapSpinner overlay label="Switching roadmap…" /> : null}
 
       <ReactFlow
         nodes={nodes}
@@ -463,24 +536,27 @@ export default function RoadmapCanvas({
         edgeTypes={edgeTypes}
         onInit={(instance) => {
           rfRef.current = instance;
-          if (!didFitRef.current) {
-            instance.fitView({ padding: 0.15 });
-            didFitRef.current = true;
-          }
+          applyInitialCamera(instance);
         }}
         proOptions={{ hideAttribution: true }}
-        minZoom={0.2}
-        maxZoom={1.5}
+        minZoom={0.45}
+        maxZoom={1.75}
         preventScrolling
+        zoomOnPinch
         zoomOnScroll
         panOnScroll={false}
+        panOnDrag
         // Disable Space-to-pan so coding assessments can type spaces
         panActivationKeyCode={assessmentNodeId ? null : "Space"}
         deleteKeyCode={assessmentNodeId ? null : "Backspace"}
-        style={{ width: '100%', height: '100%', overflow: 'hidden' }}
+        defaultEdgeOptions={{
+          type: "dependency",
+          interactionWidth: 24,
+        }}
+        style={{ width: "100%", height: "100%" }}
       >
         <Background color="var(--border-strong)" gap={24} size={2} />
-        {showMinimap && (
+        {showMinimap ? (
           <MiniMap
             position="bottom-right"
             pannable
@@ -489,87 +565,89 @@ export default function RoadmapCanvas({
             nodeStrokeWidth={1.5}
             nodeStrokeColor={(n: any) => {
               const status = n.data?.status;
-              if (status === 'completed') return '#00a386';
-              if (status === 'in_progress') return '#584ee4';
-              if (n.type === 'goal' || n.type === 'career') return '#d97706';
-              if (n.type === 'milestone' || n.type === 'checkpoint') return '#9333ea';
-              if (n.type === 'project') return '#db2777';
-              return 'rgba(148, 163, 184, 0.4)';
+              if (status === 'completed') return 'var(--success)';
+              if (status === 'in_progress') return 'var(--primary)';
+              if (n.type === 'goal' || n.type === 'career') return 'var(--warning)';
+              if (n.type === 'milestone' || n.type === 'checkpoint') return 'var(--info)';
+              if (n.type === 'project') return 'var(--accent)';
+              return 'var(--border-strong)';
             }}
             nodeColor={(n: any) => {
               const status = n.data?.status;
-              if (status === 'completed') return '#00c9a7';
-              if (status === 'in_progress') return '#6c63ff';
-              if (status === 'available') return '#3b82f6';
-              if (n.type === 'goal' || n.type === 'career') return '#f7971e';
-              if (n.type === 'milestone' || n.type === 'checkpoint') return '#a855f7';
-              if (n.type === 'project') return '#ec4899';
-              return '#94a3b8';
+              if (status === 'completed') return 'var(--success)';
+              if (status === 'in_progress') return 'var(--primary)';
+              if (status === 'available') return 'var(--info)';
+              if (n.type === 'goal' || n.type === 'career') return 'var(--warning)';
+              if (n.type === 'milestone' || n.type === 'checkpoint') return 'var(--info)';
+              if (n.type === 'project') return 'var(--accent)';
+              return 'var(--text-muted)';
             }}
-            maskColor="rgba(108, 99, 255, 0.12)"
-            maskStrokeColor="#6c63ff"
+            maskColor="var(--primary-soft)"
+            maskStrokeColor="var(--primary)"
             maskStrokeWidth={1.5}
             style={{
-              background: 'rgba(var(--bg-card-rgb, 255, 255, 255), 0.9)',
+              background: 'color-mix(in srgb, var(--bg-card) 90%, transparent)',
               backdropFilter: 'blur(16px)',
               WebkitBackdropFilter: 'blur(16px)',
               border: '1.5px solid var(--border-light)',
               borderRadius: 16,
-              boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+              boxShadow: 'var(--shadow-lg)',
               marginBottom: 24,
               marginRight: selectedNode && !panelExpanded ? 424 : 24,
               transition: 'margin-right 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
               overflow: 'hidden',
-              width: 190,
-              height: 130,
+            width: 190,
+            height: 130,
             }}
           />
-        )}
+        ) : null}
       </ReactFlow>
 
-      <RoadmapToolbar
-        onSearch={setSearchQuery}
-        onFilter={setActiveFilter}
-        onRegenerate={onRegenerate}
-        activeFilter={activeFilter}
-        isFullscreen={isFullscreen}
-        onToggleFullscreen={toggleFullscreen}
-        showMinimap={showMinimap}
-        onToggleMinimap={() => setShowMinimap((prev) => !prev)}
-        onFocusGoal={() => {
-          const goal =
-            roadmap.nodes.find((n) => n.type === 'goal') ||
-            roadmap.nodes.find((n) => n.type === 'career');
-          if (!goal) return;
-          setSelectedNode({
-            ...goal,
-            status: (progressMap.get(goal.id) || goal.status || 'available') as RTNode['status'],
-          });
-          focusNode(goal.id, { zoom: 1.1, duration: 700 });
-        }}
-      />
+      <div className="hidden lg:contents">
+        <RoadmapToolbar
+          onSearch={setSearchQuery}
+          onFilter={setActiveFilter}
+          onRegenerate={onRegenerate}
+          activeFilter={activeFilter}
+          isFullscreen={isFullscreen}
+          onToggleFullscreen={isDesktop ? toggleFullscreen : undefined}
+          showMinimap={showMinimap}
+          onToggleMinimap={() => setShowMinimap((prev) => !prev)}
+          onFocusGoal={() => {
+            const goal =
+              roadmap.nodes.find((n) => n.type === 'goal') ||
+              roadmap.nodes.find((n) => n.type === 'career');
+            if (!goal) return;
+            setSelectedNode({
+              ...goal,
+              status: (progressMap.get(goal.id) || goal.status || 'available') as RTNode['status'],
+            });
+            focusNode(goal.id, { zoom: 1.1, duration: 700 });
+          }}
+        />
+      </div>
+
+      {!selectedNode ? (
+        <div className="absolute right-3 bottom-3 z-10 lg:hidden">
+          <IconButton
+            label="Fit view"
+            className="rounded-full border border-line bg-surface/94 shadow-[var(--shadow-md)] backdrop-blur-md"
+            onClick={() =>
+              rfRef.current?.fitView({
+                duration: 600,
+                padding: 0.4,
+                maxZoom: 0.95,
+              })
+            }
+          >
+            <Focus size={18} />
+          </IconButton>
+        </div>
+      ) : null}
 
       {statusError && (
-        <div
-          role="alert"
-          style={{
-            position: 'absolute',
-            bottom: 24,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 30,
-            background: '#c0392b',
-            color: '#fff',
-            padding: '10px 16px',
-            borderRadius: 10,
-            fontFamily: 'Outfit',
-            fontSize: 13,
-            maxWidth: 420,
-            textAlign: 'center',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-          }}
-        >
-          {statusError}
+        <div className="absolute bottom-6 left-1/2 z-30 w-[min(420px,calc(100%-32px))] -translate-x-1/2">
+          <Alert tone="error">{statusError}</Alert>
         </div>
       )}
 

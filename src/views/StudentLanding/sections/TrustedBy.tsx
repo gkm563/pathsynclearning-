@@ -1,56 +1,52 @@
-"use client";
+import { routes } from "@/lib/routes";
+import Link from "next/link";
 
-import React from "react";
-import { motion } from "framer-motion";
-import { Chip } from "../../../components/ui/Shared";
+/**
+ * Static logo wall — no state, no motion, so it stays a server component and
+ * ships zero client JS.
+ */
+const COMPANIES: readonly string[] = [
+  "TechCorp",
+  "Innovate AI",
+  "DataFlow",
+  "CloudSync",
+  "CyberDefend",
+  "NextGen",
+];
 
 export default function TrustedBy() {
-  const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
-
-  // Generate some placeholder company boxes
-  const companies = [
-    { name: "TechCorp", color: "#6c63ff" },
-    { name: "Innovate AI", color: "#00c9a7" },
-    { name: "DataFlow", color: "#f7971e" },
-    { name: "CloudSync", color: "#e040fb" },
-    { name: "CyberDefend", color: "#6c63ff" },
-    { name: "NextGen", color: "#00c9a7" },
-  ];
-
   return (
-    <section style={{ padding: "80px 32px", background: "var(--bg-alt)", borderTop: "1px solid var(--border-light)", borderBottom: "1px solid var(--border-light)" }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto", textAlign: "center" }}>
-        <motion.div {...fadeInUp}>
-          <Chip bg="#e8faf5" border="#b2eed9" color="#00a67e">▸ HIRING NETWORK</Chip>
-          <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(28px, 3vw, 40px)", fontWeight: 800, color: "var(--text-main)", marginTop: 24, marginBottom: 48 }}>
-            Top Companies Hire PathEd Graduates
-          </h2>
-        </motion.div>
+    <section
+      aria-labelledby="trusted-heading"
+      className="px-4 py-16 sm:px-6 sm:py-20"
+    >
+      <div className="mx-auto max-w-[var(--measure-content)] text-center">
+        <p className="type-overline text-accent">Hiring network</p>
+        <h2 id="trusted-heading" className="type-h2 mt-3 text-ink">
+          Top companies hire PathEd graduates
+        </h2>
+        <p className="type-body mx-auto mt-3 max-w-[36rem] text-muted">
+          Verified skill profiles go straight to the teams that are hiring — no
+          resume screen in between.
+        </p>
 
-        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 24 }}>
-          {companies.map((company, i) => (
-            <motion.div 
-              key={i} 
-              {...fadeInUp} 
-              transition={{ delay: i * 0.1 }}
-              style={{ 
-                background: "var(--bg-card)", 
-                border: "1px solid var(--border-light)", 
-                borderRadius: 16, 
-                padding: "24px 40px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                minWidth: 160,
-                boxShadow: "0 10px 30px rgba(0,0,0,0.02)"
-              }}
+        <ul className="mt-10 grid list-none grid-cols-2 gap-3 p-0 sm:grid-cols-3 lg:grid-cols-6">
+          {COMPANIES.map((name) => (
+            <li
+              key={name}
+              className="type-h4 flex min-h-16 min-w-0 items-center justify-center rounded-[var(--radius-md)] border border-line bg-surface px-4 text-center text-muted transition-colors duration-[var(--duration-normal)] hover:border-line-strong hover:text-ink motion-reduce:transition-none"
             >
-              <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 800, color: company.color }}>
-                {company.name}
-              </div>
-            </motion.div>
+              <span className="min-w-0 truncate">{name}</span>
+            </li>
           ))}
-        </div>
+        </ul>
+
+        <Link
+          href={routes.marketing.company}
+          className="type-label mt-8 inline-flex min-h-11 items-center rounded-[var(--radius-sm)] px-1 text-primary underline decoration-primary/40 underline-offset-4 transition-colors duration-[var(--duration-fast)] hover:decoration-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none"
+        >
+          See the full hiring network
+        </Link>
       </div>
     </section>
   );

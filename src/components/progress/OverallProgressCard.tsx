@@ -2,12 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { Clock, Focus } from "lucide-react";
-import {
-  formatRelativeTime,
-  statusLabel,
-} from "@/lib/progress/calculate";
+import { formatRelativeTime, statusLabel } from "@/lib/progress/calculate";
 import type { ProgressSummary } from "@/lib/progress/types";
-import { PROGRESS_COLS, cardStyle } from "@/components/progress/shared";
+import { Badge, Card } from "@/components/ui";
+import { PROGRESS_COLS } from "@/components/progress/shared";
 
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -27,7 +25,8 @@ function AnimatedCircle({ pct, reduced }: { pct: number; reduced: boolean }) {
   const [offset, setOffset] = useState(circumference);
 
   useEffect(() => {
-    const target = circumference - (Math.min(100, Math.max(0, pct)) / 100) * circumference;
+    const target =
+      circumference - (Math.min(100, Math.max(0, pct)) / 100) * circumference;
     if (reduced) {
       setOffset(target);
       return;
@@ -49,7 +48,7 @@ function AnimatedCircle({ pct, reduced }: { pct: number; reduced: boolean }) {
         cy="90"
         r={r}
         fill="none"
-        stroke="var(--border-light)"
+        stroke="var(--line)"
         strokeWidth="14"
       />
       <circle
@@ -62,27 +61,25 @@ function AnimatedCircle({ pct, reduced }: { pct: number; reduced: boolean }) {
         strokeLinecap="round"
         strokeDasharray={circumference}
         strokeDashoffset={offset}
-        style={{
-          transform: "rotate(-90deg)",
-          transformOrigin: "90px 90px",
-          transition: reduced ? undefined : "stroke-dashoffset 1.1s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-        }}
+        className="origin-[90px_90px] -rotate-90 motion-safe:transition-[stroke-dashoffset] motion-safe:duration-1000"
       />
     </svg>
   );
 }
 
-function statusColor(status: ProgressSummary["status"]) {
+function statusTone(
+  status: ProgressSummary["status"],
+): "success" | "error" | "accent" | "warning" {
   switch (status) {
     case "on-track":
     case "completed":
-      return PROGRESS_COLS.success;
+      return "success";
     case "needs-attention":
-      return PROGRESS_COLS.danger;
+      return "error";
     case "in-progress":
-      return PROGRESS_COLS.primary;
+      return "accent";
     default:
-      return PROGRESS_COLS.warning;
+      return "warning";
   }
 }
 
@@ -110,121 +107,44 @@ export function OverallProgressCard({ summary }: { summary: ProgressSummary }) {
   }, [summary.completion, reduced]);
 
   return (
-    <article
-      style={{
-        ...cardStyle,
-        display: "grid",
-        gridTemplateColumns: "auto 1fr",
-        gap: 24,
-        alignItems: "center",
-        background:
-          "linear-gradient(135deg, rgba(108,99,255,0.08), rgba(0,201,167,0.06))",
-      }}
-      className="progress-overall-card"
-    >
-      <div style={{ position: "relative", width: 180, height: 180 }}>
+    <Card className="grid items-center gap-6 sm:grid-cols-[auto_minmax(0,1fr)]">
+      <div className="relative mx-auto h-[180px] w-[180px]">
         <AnimatedCircle pct={summary.completion} reduced={reduced} />
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            display: "grid",
-            placeItems: "center",
-            textAlign: "center",
-          }}
-        >
+        <div className="absolute inset-0 grid place-items-center text-center">
           <div>
-            <div
-              style={{
-                fontFamily: "Outfit, sans-serif",
-                fontSize: 40,
-                fontWeight: 800,
-                color: "var(--text-main)",
-                lineHeight: 1,
-              }}
-            >
-              {displayPct}%
-            </div>
-            <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
-              complete
-            </div>
+            <p className="type-h1 m-0 tabular-nums text-ink">{displayPct}%</p>
+            <p className="type-caption mt-1 mb-0 text-muted">complete</p>
           </div>
         </div>
       </div>
 
-      <div style={{ minWidth: 0 }}>
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-            padding: "6px 12px",
-            borderRadius: 999,
-            background: `${statusColor(summary.status)}18`,
-            color: statusColor(summary.status),
-            fontWeight: 700,
-            fontSize: 13,
-            fontFamily: "Outfit, sans-serif",
-            marginBottom: 12,
-          }}
-        >
+      <div className="min-w-0 text-center sm:text-left">
+        <Badge tone={statusTone(summary.status)}>
           {statusLabel(summary.status)}
-        </div>
-
-        <p
-          style={{
-            margin: "0 0 8px",
-            fontSize: 16,
-            fontWeight: 700,
-            color: "var(--text-main)",
-            fontFamily: "Outfit, sans-serif",
-          }}
-        >
+        </Badge>
+        <p className="type-h4 mt-3 mb-1 text-ink">
           {summary.completedTasks} / {summary.totalTasks} tasks completed
         </p>
-
-        <p style={{ margin: "0 0 14px", color: "var(--text-muted)", fontSize: 14 }}>
+        <p className="type-small mt-0 mb-4 text-muted">
           {summary.averageScore !== null
-            ? `${summary.averageScore}% Average Score`
+            ? `${summary.averageScore}% average score`
             : "No scores yet"}
         </p>
-
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 14,
-            fontSize: 13,
-            color: "var(--text-muted)",
-          }}
-        >
+        <div className="type-small flex flex-wrap justify-center gap-x-4 gap-y-2 text-muted sm:justify-start">
           {summary.currentFocus ? (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-              <Focus size={14} />
+            <span className="inline-flex items-center gap-1.5">
+              <Focus size={14} aria-hidden />
               {summary.currentFocus}
             </span>
           ) : null}
           {summary.lastActivityAt ? (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-              <Clock size={14} />
+            <span className="inline-flex items-center gap-1.5">
+              <Clock size={14} aria-hidden />
               Last activity {formatRelativeTime(summary.lastActivityAt)}
             </span>
           ) : null}
         </div>
       </div>
-
-      <style>{`
-        @media (max-width: 640px) {
-          .progress-overall-card {
-            grid-template-columns: 1fr !important;
-            justify-items: center;
-            text-align: center;
-          }
-          .progress-overall-card > div:last-child > div:last-child {
-            justify-content: center;
-          }
-        }
-      `}</style>
-    </article>
+    </Card>
   );
 }

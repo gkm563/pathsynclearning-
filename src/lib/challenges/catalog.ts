@@ -857,17 +857,17 @@ export function toLegacyRunnerPayload(q: ChallengeQuestion) {
 }
 
 export const DIFF_STYLES = {
-  easy: { bg: "rgba(0, 201, 167, 0.12)", bdr: "#00c9a7", col: "#00c9a7", label: "Easy" },
+  easy: { bg: "rgba(31, 107, 72, 0.12)", bdr: "#1f6b48", col: "#1f6b48", label: "Easy" },
   medium: { bg: "rgba(245, 158, 11, 0.12)", bdr: "#f59e0b", col: "#f59e0b", label: "Medium" },
   hard: { bg: "rgba(236, 72, 153, 0.12)", bdr: "#ec4899", col: "#ec4899", label: "Hard" },
 } as const;
 
 export const CAT_COLORS: Record<string, string> = {
-  DSA: "#6c63ff",
+  DSA: "#1b4540",
   "SYSTEM DESIGN": "#38bdf8",
-  "WEB DEV": "#00c9a7",
+  "WEB DEV": "#1f6b48",
   OS: "#ec4899",
   DBMS: "#10b981",
-  THEORY: "#8b5cf6",
+  THEORY: "#c45c26",
   PROJECT: "#f59e0b",
 };

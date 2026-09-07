@@ -1,151 +1,272 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import React, { useState } from "react";
-import { motion } from "framer-motion";
+import Link from "next/link";
+import { useState, type KeyboardEvent } from "react";
+import {
+  ArrowRight,
+  GraduationCap,
+  Presentation,
+  Search,
+  type LucideIcon,
+} from "lucide-react";
 import { Chip, RoleCard, SkillBar } from "../../../components/ui/Shared";
+import { routes } from "@/lib/routes";
+
+type RoleId = "s" | "t" | "r";
+type ModeId = "c" | "a";
+type BarTone = "primary" | "accent" | "info";
+
+const ROLES: ReadonlyArray<{
+  id: RoleId;
+  icon: LucideIcon;
+  title: string;
+  tagline: string;
+  desc: string;
+}> = [
+  {
+    id: "s",
+    icon: GraduationCap,
+    title: "Student",
+    tagline: "Learn. Build. Grow.",
+    desc: "Roadmaps, CRI tracking, daily challenges, and peer community.",
+  },
+  {
+    id: "t",
+    icon: Presentation,
+    title: "Teacher",
+    tagline: "Guide. Mentor. Empower.",
+    desc: "Classroom tools, analytics, and student progress monitoring.",
+  },
+  {
+    id: "r",
+    icon: Search,
+    title: "Recruiter",
+    tagline: "Discover. Hire. Lead.",
+    desc: "Talent filters, CRI scores, and verified skill resumes.",
+  },
+];
+
+const PROOF_POINTS: readonly string[] = [
+  "40,000+ students",
+  "95% placement rate",
+  "500+ companies",
+  "1M+ XP daily",
+];
+
+const MODES: ReadonlyArray<{
+  id: ModeId;
+  label: string;
+  headline: string;
+  body: string;
+  features: readonly string[];
+  cta: string;
+  href: string;
+}> = [
+  {
+    id: "c",
+    label: "Career mode",
+    headline: "Turn a B.Tech degree into a career-ready roadmap.",
+    body: "AI-powered skill paths calibrated to Google, Microsoft, Razorpay, and 500+ companies. Build what the industry demands.",
+    features: ["AI-fication", "CRI tracker", "XP + coins", "Memory Lane"],
+    cta: "Start career mode",
+    href: routes.auth.signUp,
+  },
+  {
+    id: "a",
+    label: "Academic mode",
+    headline: "Master the university curriculum with structured precision.",
+    body: "Week-by-week syllabus breakdowns with live exam countdowns. Structured mastery from day one.",
+    features: ["Session classes", "Ranker board", "PYQ banks", "Teacher live"],
+    cta: "Start academic mode",
+    href: routes.auth.signUp,
+  },
+];
+
+const SKILLS: ReadonlyArray<{ label: string; pct: number; tone: BarTone }> = [
+  { label: "DSA", pct: 72, tone: "primary" },
+  { label: "System Design", pct: 45, tone: "accent" },
+  { label: "Web Dev", pct: 88, tone: "info" },
+];
+
+const ROLE_IDS: readonly RoleId[] = ROLES.map((role) => role.id);
+const MODE_IDS: readonly ModeId[] = MODES.map((mode) => mode.id);
+
+const ARROW_KEYS = [
+  "ArrowRight",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowUp",
+  "Home",
+  "End",
+];
+
+/**
+ * Arrow-key navigation for a `radiogroup` of roving-tabindex radios: moves the
+ * selection and follows it with focus, which is what screen reader users
+ * expect from a radio group.
+ */
+function radioKeys<T extends string>(
+  values: readonly T[],
+  current: T,
+  onChange: (next: T) => void,
+) {
+  return (event: KeyboardEvent<HTMLDivElement>) => {
+    if (!ARROW_KEYS.includes(event.key)) return;
+    event.preventDefault();
+
+    const from = values.indexOf(current);
+    const to =
+      event.key === "Home"
+        ? 0
+        : event.key === "End"
+          ? values.length - 1
+          : event.key === "ArrowRight" || event.key === "ArrowDown"
+            ? (from + 1) % values.length
+            : (from - 1 + values.length) % values.length;
+
+    onChange(values[to]);
+    event.currentTarget
+      .querySelectorAll<HTMLElement>('[role="radio"]')
+      [to]?.focus();
+  };
+}
 
 export default function HeroRegion() {
-  const [activeRole, setActiveRole] = useState("s");
-  const [mode, setMode] = useState("c");
-  const isC = mode === "c";
-  const router = useRouter();
+  const [role, setRole] = useState<RoleId>("s");
+  const [mode, setMode] = useState<ModeId>("c");
 
-  const skills = [
-    { label: "DSA", pct: 72, c: "#6c63ff" },
-    { label: "System Design", pct: 45, c: "#00c9a7" },
-    { label: "Web Dev", pct: 88, c: "#f7971e" },
-  ];
+  const active = MODES.find((m) => m.id === mode) ?? MODES[0];
 
   return (
     <>
-      {/* S1 ROLE SELECTOR */}
-      <section style={{ padding: "80px 0 56px", textAlign: "center", position: "relative", zIndex: 2 }}>
-        <div className="f1" style={{ marginBottom: 20 }}>
-          <Chip bg="#f0f0ff" border="#d8d4ff" color="#6c63ff">▸ PLATFORM ENTRY — SELECT YOUR ROLE</Chip>
-        </div>
-        
-        <h1 className="f2" style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(48px,7vw,84px)", fontWeight: 800, lineHeight: 1.05, marginBottom: 16, color: "var(--text-main)", maxWidth: "900px", margin: "0 auto 16px" }}>
-          How do you want to<br /> <span className="shimmer-text">join PathEd?</span>
-        </h1>
-        
-        <p className="f3" style={{ color: "var(--text-muted)", fontSize: 18, maxWidth: 540, margin: "0 auto 48px", lineHeight: 1.7, fontFamily: "'Inter', sans-serif" }}>
-          One platform. Three powerful perspectives. Your journey begins with a single choice.
-        </p>
-
-        <div className="f4" style={{ display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap", maxWidth: "1080px", margin: "0 auto" }}>
-          <RoleCard 
-            icon="◈" title="Student" tagline="Learn. Build. Grow." 
-            desc="Roadmaps, CRI tracking, daily challenges & peer community." 
-            active={activeRole === "s"} 
-            onClick={() => { setActiveRole("s"); router.push("/"); }} 
-          />
-          <RoleCard 
-            icon="⬡" title="Teacher" tagline="Guide. Mentor. Empower." 
-            desc="Classroom tools, analytics & student progress monitoring." 
-            active={activeRole === "t"} 
-            onClick={() => { setActiveRole("t"); }} 
-          />
-          <RoleCard 
-            icon="◎" title="Recruiter" tagline="Discover. Hire. Lead." 
-            desc="Smart talent filters, CRI scores & verified skill resumes." 
-            active={activeRole === "r"} 
-            onClick={() => { setActiveRole("r"); }} 
-          />
-        </div>
-
-        <div className="f5" style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginTop: 36 }}>
-          {[
-            ["🎓 40,000+ Students", "#f0f0ff", "#d8d4ff", "#6c63ff"],
-            ["✓ 95% Placement Rate", "#e8faf5", "#b2eed9", "#00a67e"],
-            ["⚡ 500+ Companies", "#fff8ee", "#ffe0a0", "#c67c00"],
-            ["🏆 1M+ XP Daily", "#fdf0ff", "#e8b3ff", "#9c27b0"]
-          ].map(([text, bg, border, color]) => (
-            <motion.div key={text} whileHover={{ scale: 1.05, boxShadow: `0 0 0 2px ${color}, 0 4px 15px ${color}40`, borderRadius: 100 }} style={{ borderRadius: 100, transition: "box-shadow 0.2s" }}>
-              <Chip bg={bg} border={border} color={color}>{text}</Chip>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* S2 MODE TOGGLE */}
-      <section style={{ paddingBottom: 52, textAlign: "center", position: "relative", zIndex: 2 }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "linear-gradient(90deg,#f0f0ff,#e8faf5)", border: "1.5px solid #d8d4ff", borderRadius: 24, padding: "9px 22px 9px 12px", marginBottom: 26 }}>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: "linear-gradient(135deg,#6c63ff,#00c9a7)", animation: "pulse 2s ease infinite" }} />
-          <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 600, color: "#6c63ff", letterSpacing: "1.5px" }}>TEACHER GUIDANCE ACTIVE — ALL MODES</span>
-        </div>
-        <div style={{ display: "flex", gap: 0, background: "var(--bg-card)", borderRadius: 14, padding: 5, border: "1.5px solid var(--border-light)", width: "fit-content", margin: "0 auto", boxShadow: "0 4px 20px rgba(108,99,255,.08)" }}>
-          {[["c","🚀 Career Mode"],["a","📚 Academic Mode"]].map(([m,lbl]) => (
-            <button key={m} onClick={() => setMode(m)} style={{ 
-              padding: "10px 28px", borderRadius: 10, border: "none", cursor: "pointer", 
-              fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 13, transition: "all .3s ease", 
-              background: mode === m ? (m === "c" ? "linear-gradient(135deg,#6c63ff,#00c9a7)" : "linear-gradient(135deg,#f7971e,#e040fb)") : "transparent", 
-              color: mode === m ? "var(--bg-card)" : "#888", 
-              boxShadow: mode === m ? (m === "c" ? "0 6px 24px rgba(108,99,255,.35)" : "0 6px 24px rgba(247,151,30,.3)") : "none" 
-            }}>
-              {lbl}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* S3 HERO */}
-      <section style={{ paddingBottom: 80, position: "relative", zIndex: 2, maxWidth: 1360, margin: "0 auto", padding: "0 32px 80px" }}>
-        <div style={{ 
-          background: isC ? "var(--hero-card-gradient-c)" : "var(--hero-card-gradient-a)", 
-          border: `2px solid ${isC ? "#d8d4ff" : "#ffe0a0"}`, borderRadius: 24, padding: "56px 64px", marginBottom: 40, 
-          position: "relative", overflow: "hidden", boxShadow: "0 8px 40px rgba(108,99,255,.1)" 
-        }}>
-          <div style={{ position: "absolute", right: -60, top: -60, width: 320, height: 320, opacity: .12, animation: "spinSlow 30s linear infinite" }}>
-            <svg viewBox="0 0 320 320"><circle cx="160" cy="160" r="130" stroke="#6c63ff" strokeWidth="40" strokeDasharray="10 6" fill="none"/></svg>
+      <section
+        aria-labelledby="hero-heading"
+        className="px-4 pt-12 pb-14 sm:px-6 sm:pt-16 lg:pt-20"
+      >
+        <div className="mx-auto max-w-[var(--measure-content)]">
+          <div className="mx-auto max-w-[44rem] text-center">
+            <Chip>Select your role</Chip>
+            <h1 id="hero-heading" className="type-display mt-5 text-ink">
+              How do you want to join PathEd?
+            </h1>
+            <p className="type-body-lg mx-auto mt-5 max-w-[34rem] text-muted">
+              One platform. Three perspectives. Start as a student, educator, or
+              recruiter.
+            </p>
           </div>
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 50, flexWrap: "wrap" }}>
-            
-            <div style={{ flex: 1, minWidth: 320 }}>
-              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 600, color: isC ? "#6c63ff" : "#c68a00", letterSpacing: 2, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ width: 6, height: 6, borderRadius: "50%", background: isC ? "#6c63ff" : "#f7971e", animation: "pulse 1.5s ease infinite" }} />▸ {isC ? "CAREER" : "ACADEMIC"} MODE ACTIVE
-              </div>
-              <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(24px,3.5vw,42px)", fontWeight: 800, lineHeight: 1.15, marginBottom: 16, color: "#1a1a2e" }}>
-                {isC ? <>Turn your B.Tech degree into a<br/><span style={{ color: "#6c63ff" }}>career-ready roadmap.</span></> : <>Master your University Curriculum<br/><span style={{ color: "#f7971e" }}>with structured precision.</span></>}
-              </h2>
-              <p style={{ color: "#666666", fontSize: 17, lineHeight: 1.8, maxWidth: 480, marginBottom: 12, fontFamily: "'Inter', sans-serif" }}>
-                {isC ? "AI-powered skill paths calibrated to Google, Microsoft, Razorpay & 500+ companies. Build what the industry demands — skip what it doesn't." : "Week-by-week syllabus breakdowns with live exam countdowns. No more last-minute cramming. Structured mastery from Day 1."}
-              </p>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
-                {(isC ? [["#f0f0ff","#d8d4ff","#6c63ff","✦ AI-fication"],["#e8faf5","#b2eed9","#00a67e","✦ CRI Tracker"],["#fff8ee","#ffe0a0","#c67c00","✦ XP + Coins"],["#fdf0ff","#e8b3ff","#9c27b0","✦ Memory Lane"]] : [["#fff8ee","#ffe0a0","#c67c00","✦ Session Classes"],["#fdf0ff","#e8b3ff","#9c27b0","✦ Ranker Board"],["#e8faf5","#b2eed9","#00a67e","✦ PYQ Banks"],["#f0f0ff","#d8d4ff","#6c63ff","✦ Teacher Live"]]).map(([bg,bdr,c,lbl]) => <Chip key={lbl} bg={bg} border={bdr} color={c}>{lbl}</Chip>)}
-              </div>
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                <button onClick={() => router.push("/sign-up")} style={{ 
-                  background: isC ? "linear-gradient(135deg,#6c63ff,#00c9a7)" : "linear-gradient(135deg,#f7971e,#e040fb)", 
-                  border: "none", color: "var(--text-inverse)", fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 14, 
-                  padding: "14px 36px", borderRadius: 12, cursor: "pointer", 
-                  boxShadow: isC ? "0 8px 28px rgba(108,99,255,.35)" : "0 8px 28px rgba(247,151,30,.3)" 
-                }}>
-                  Start {isC ? "Career" : "Academic"} Mode →
-                </button>
-                <button style={{ background: "transparent", border: "1.5px solid #d0d4ff", color: "#6c63ff", fontFamily: "'Outfit', sans-serif", fontWeight: 600, fontSize: 13, padding: "14px 28px", borderRadius: 12, cursor: "pointer" }}>
-                  ▶ Watch Demo
-                </button>
-              </div>
+
+          <div
+            role="radiogroup"
+            aria-label="Select your role"
+            onKeyDown={radioKeys<RoleId>(ROLE_IDS, role, setRole)}
+            className="mt-10 grid gap-4 sm:grid-cols-2 lg:mt-12 lg:grid-cols-3"
+          >
+            {ROLES.map((item) => (
+              <RoleCard
+                key={item.id}
+                icon={<item.icon size={20} strokeWidth={1.75} />}
+                title={item.title}
+                tagline={item.tagline}
+                desc={item.desc}
+                active={role === item.id}
+                onClick={() => setRole(item.id)}
+              />
+            ))}
+          </div>
+
+          <ul className="mt-8 flex list-none flex-wrap justify-center gap-2 p-0">
+            {PROOF_POINTS.map((point) => (
+              <li key={point} className="min-w-0">
+                <Chip tone="neutral">{point}</Chip>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section
+        aria-labelledby="hero-mode-heading"
+        className="px-4 pb-16 sm:px-6 sm:pb-20 lg:pb-24"
+      >
+        <div className="mx-auto max-w-[var(--measure-content)]">
+          <div className="flex justify-center">
+            <div
+              role="radiogroup"
+              aria-label="Learning mode"
+              onKeyDown={radioKeys<ModeId>(MODE_IDS, mode, setMode)}
+              className="inline-flex gap-1 rounded-[var(--radius-md)] border border-line bg-surface p-1 shadow-[var(--shadow-xs)]"
+            >
+              {MODES.map((item) => {
+                const on = mode === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={on}
+                    tabIndex={on ? 0 : -1}
+                    onClick={() => setMode(item.id)}
+                    className={`type-label min-h-11 rounded-[var(--radius-sm)] px-4 transition-colors duration-[var(--duration-fast)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none sm:px-6 ${
+                      on
+                        ? "bg-primary text-on-primary"
+                        : "text-muted hover:text-ink"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                );
+              })}
             </div>
-            
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
-              <div style={{ animation: "floatY 4s ease-in-out infinite", background: "var(--bg-card)", borderRadius: 20, padding: 20, boxShadow: "0 8px 32px rgba(108,99,255,.12)", border: "1.5px solid var(--border-light)" }}>
-                <svg width="130" height="130" viewBox="0 0 130 130">
-                  <circle cx="65" cy="65" r="54" fill="none" stroke="#f0f2ff" strokeWidth="9"/>
-                  <circle cx="65" cy="65" r="54" fill="none" stroke="url(#cg)" strokeWidth="9" strokeDasharray="339" strokeDashoffset="74" strokeLinecap="round" transform="rotate(-90 65 65)" style={{ animation: "criDraw 2s .5s cubic-bezier(.22,1,.36,1) both" }}/>
-                  <defs><linearGradient id="cg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#6c63ff"/><stop offset="100%" stopColor="#00c9a7"/></linearGradient></defs>
-                  <text x="65" y="59" textAnchor="middle" fill="var(--text-main)" fontFamily="'Outfit', sans-serif" fontSize="22" fontWeight="800">78%</text>
-                  <text x="65" y="76" textAnchor="middle" fill="#6c63ff" fontFamily="'Fira Code', monospace" fontSize="8" letterSpacing="1.5">CRI SCORE</text>
-                </svg>
-                <div style={{ textAlign: "center", fontFamily: "'Inter', sans-serif", fontSize: 13, color: "#999", marginTop: 6 }}>Career Readiness Index</div>
-              </div>
-              <div style={{ background: "var(--bg-card)", borderRadius: 16, padding: "20px 24px", boxShadow: "0 4px 20px rgba(108,99,255,.08)", border: "1.5px solid var(--border-light)", minWidth: 220 }}>
-                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 600, color: "#6c63ff", letterSpacing: 2, marginBottom: 14 }}>SKILL SNAPSHOT</div>
-                {skills.map((s,i) => <SkillBar key={s.label} {...s} delay={i*150} />)}
-              </div>
+          </div>
+
+          <div className="mt-8 grid gap-10 rounded-[var(--radius-xl)] border border-line bg-surface p-6 shadow-[var(--shadow-sm)] sm:p-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,17rem)] lg:items-start lg:gap-14 lg:p-12">
+            <div className="min-w-0">
+              <p className="type-overline text-primary">{active.label}</p>
+              <h2 id="hero-mode-heading" className="type-h1 mt-3 text-ink">
+                {active.headline}
+              </h2>
+              <p className="type-body-lg type-prose mt-4 text-muted">
+                {active.body}
+              </p>
+              <ul className="mt-6 flex list-none flex-wrap gap-2 p-0">
+                {active.features.map((feature) => (
+                  <li key={feature} className="min-w-0">
+                    <Chip tone="neutral">{feature}</Chip>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href={active.href}
+                className="type-label mt-8 inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-md)] bg-primary px-5 text-on-primary transition-colors duration-[var(--duration-fast)] hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none"
+              >
+                {active.cta}
+                <ArrowRight size={16} aria-hidden />
+              </Link>
             </div>
 
+            <div className="grid min-w-0 gap-4">
+              <div className="rounded-[var(--radius-lg)] border border-line bg-canvas p-5 text-center">
+                <p className="type-h1 type-numeric m-0 text-ink">78%</p>
+                <p className="type-overline mt-2 text-primary">CRI score</p>
+                <p className="type-small mt-1 text-muted">
+                  Career Readiness Index
+                </p>
+              </div>
+              <div className="rounded-[var(--radius-lg)] border border-line bg-canvas p-5">
+                <p className="type-overline text-faint">Skill snapshot</p>
+                <div className="mt-4 [&>*:last-child]:mb-0">
+                  {SKILLS.map((skill, i) => (
+                    <SkillBar
+                      key={skill.label}
+                      label={skill.label}
+                      pct={skill.pct}
+                      tone={skill.tone}
+                      delay={i * 140}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

@@ -1,9 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { Lock, ShoppingBag, X, ArrowRight, ShieldAlert, CheckCircle2 } from "lucide-react";
+import {
+  Lock,
+  ShoppingBag,
+  ArrowRight,
+  ShieldAlert,
+  CheckCircle2,
+} from "lucide-react";
 import type { ReactNode } from "react";
+import { Badge, Button, Dialog } from "@/components/ui";
 import { routes } from "@/lib/routes";
 
 export interface LockedFeature {
@@ -21,83 +27,76 @@ interface LockedFeatureModalProps {
   onClose: () => void;
 }
 
-export default function LockedFeatureModal({ feature, isOpen, onClose }: LockedFeatureModalProps) {
+export default function LockedFeatureModal({
+  feature,
+  isOpen,
+  onClose,
+}: LockedFeatureModalProps) {
   const router = useRouter();
-  if (!isOpen || !feature) return null;
+  const open = isOpen && feature !== null;
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-[999] flex items-center justify-center p-5">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="absolute inset-0 bg-black/65 backdrop-blur-sm"
-        />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="relative w-full max-w-[500px] overflow-hidden rounded-3xl border-[1.5px] border-[var(--border-light)] bg-[var(--bg-card)] p-8 text-center shadow-[0_25px_60px_rgba(0,0,0,0.3)]"
-        >
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-[10px] border border-[var(--border-light)] bg-[var(--bg-alt)] text-[var(--text-main)]"
+    <Dialog
+      open={open}
+      onClose={onClose}
+      title={feature?.label ?? "Feature locked"}
+      size="md"
+      footer={
+        <>
+          <Button variant="secondary" className="sm:flex-1" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            className="sm:flex-[1.5]"
+            onClick={() => {
+              onClose();
+              router.push(routes.app.store);
+            }}
           >
-            <X size={16} />
-          </button>
-          <div className="mx-auto mb-5 flex h-[72px] w-[72px] items-center justify-center rounded-3xl border-[1.5px] border-red-500 bg-red-500/12 text-[32px] text-red-500">
-            {feature.icon || <Lock size={32} />}
+            <ShoppingBag size={16} aria-hidden />
+            Go to Store
+            <ArrowRight size={16} aria-hidden />
+          </Button>
+        </>
+      }
+    >
+      {feature ? (
+        <div className="flex flex-col items-center text-center">
+          <div className="mb-5 flex h-[72px] w-[72px] items-center justify-center rounded-[var(--radius-lg)] border border-danger/30 bg-danger-soft text-3xl text-danger">
+            {feature.icon || <Lock size={32} aria-hidden />}
           </div>
-          <h3 className="mb-1.5 font-display text-2xl font-extrabold text-[var(--text-main)]">{feature.label}</h3>
-          <div className="mb-4 inline-flex items-center gap-1.5 rounded-xl border border-red-500/25 bg-red-500/10 px-3 py-1 font-mono text-[11px] font-bold text-red-500">
-            <Lock size={12} /> FEATURE CURRENTLY LOCKED
-          </div>
-          <div className="mb-5 rounded-2xl border border-[var(--border-light)] bg-[var(--bg-alt)] p-4 text-left">
-            <div className="mb-1.5 font-mono text-[10px] font-bold tracking-wide" style={{ color: feature.accent || "#6c63ff" }}>
-              FEATURE DESCRIPTION & BENEFITS
-            </div>
-            <p className="mb-3 text-[13px] leading-relaxed text-[var(--text-muted)]">
-              {feature.desc || "Unlock access to senior engineering mentors, collaborative project teams, referral networks, and institutional summits."}
+          <Badge tone="error" className="mb-4 gap-1.5">
+            <Lock size={12} aria-hidden />
+            Feature currently locked
+          </Badge>
+          <div className="mb-5 w-full rounded-[var(--radius-md)] border border-line bg-sunken p-4 text-left">
+            <p className="type-overline m-0 text-primary">
+              Feature description & benefits
+            </p>
+            <p className="type-small mt-1.5 mb-3 text-muted">
+              {feature.desc ||
+                "Unlock access to senior engineering mentors, collaborative project teams, referral networks, and institutional summits."}
             </p>
             <div className="flex flex-col gap-1.5">
-              <div className="flex items-center gap-2 text-xs font-semibold text-[var(--text-main)]">
-                <CheckCircle2 size={14} color="#00c9a7" /> Verified peer & recruiter connections
+              <div className="type-small flex items-center gap-2 font-semibold text-ink">
+                <CheckCircle2 size={14} className="text-success" aria-hidden />
+                Verified peer & recruiter connections
               </div>
-              <div className="flex items-center gap-2 text-xs font-semibold text-[var(--text-main)]">
-                <CheckCircle2 size={14} color="#00c9a7" /> Real-time collaborative workspace access
+              <div className="type-small flex items-center gap-2 font-semibold text-ink">
+                <CheckCircle2 size={14} className="text-success" aria-hidden />
+                Real-time collaborative workspace access
               </div>
             </div>
           </div>
-          <div className="mb-6 rounded-[14px] border border-[#6c63ff]/30 bg-[#6c63ff]/8 px-4 py-3 text-left">
-            <div className="mb-0.5 font-mono text-[10px] font-bold tracking-wide text-[#6c63ff]">HOW TO UNLOCK</div>
-            <div className="flex items-center gap-2 font-display text-sm font-extrabold text-[var(--text-main)]">
-              <ShieldAlert size={16} color="#f7971e" /> {feature.req || "2,000 XP or PathEd Store Pass"}
+          <div className="mb-1 w-full rounded-[var(--radius-md)] border border-primary-border bg-primary-soft px-4 py-3 text-left">
+            <p className="type-overline m-0 text-primary">How to unlock</p>
+            <div className="type-label mt-1 flex items-center gap-2 text-ink">
+              <ShieldAlert size={16} className="text-warning" aria-hidden />
+              {feature.req || "2,000 XP or PathEd Store Pass"}
             </div>
           </div>
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 rounded-xl border border-[var(--border-light)] bg-[var(--bg-alt)] py-3 font-display text-sm font-bold text-[var(--text-main)]"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                router.push(routes.app.store);
-              }}
-              className="flex flex-[1.5] items-center justify-center gap-2 rounded-xl bg-linear-to-br from-[#6c63ff] to-[#00c9a7] py-3 font-display text-sm font-extrabold text-white shadow-[0_8px_20px_rgba(108,99,255,0.3)]"
-            >
-              <ShoppingBag size={16} /> Go to Store <ArrowRight size={16} />
-            </button>
-          </div>
-        </motion.div>
-      </div>
-    </AnimatePresence>
+        </div>
+      ) : null}
+    </Dialog>
   );
 }

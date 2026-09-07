@@ -5,21 +5,23 @@ import { ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { assessmentStatusLabel } from "@/lib/progress/calculate";
 import type { ProgressAssessment } from "@/lib/progress/types";
-import { Button, EmptyState } from "@/components/ui/primitives";
-import { ProgressSection, PROGRESS_COLS } from "@/components/progress/shared";
+import { Badge, Button, EmptyState, Progress } from "@/components/ui";
+import { ProgressSection } from "@/components/progress/shared";
 import { routes } from "@/lib/routes";
 
-function statusTone(status: ProgressAssessment["status"]) {
+function statusTone(
+  status: ProgressAssessment["status"],
+): "success" | "error" | "accent" | "neutral" {
   switch (status) {
     case "passed":
     case "completed":
-      return PROGRESS_COLS.success;
+      return "success";
     case "failed":
-      return PROGRESS_COLS.danger;
+      return "error";
     case "in_progress":
-      return PROGRESS_COLS.primary;
+      return "accent";
     default:
-      return PROGRESS_COLS.muted;
+      return "neutral";
   }
 }
 
@@ -36,28 +38,12 @@ function ProgressBar({ pct }: { pct: number }) {
   }, [pct]);
 
   return (
-    <div
-      style={{
-        height: 10,
-        borderRadius: 5,
-        background: "var(--border-light)",
-        overflow: "hidden",
-      }}
-      role="progressbar"
-      aria-valuenow={pct}
-      aria-valuemin={0}
-      aria-valuemax={100}
-    >
-      <div
-        style={{
-          height: "100%",
-          width: `${w}%`,
-          borderRadius: 5,
-          background: `linear-gradient(90deg, ${PROGRESS_COLS.primary}, ${PROGRESS_COLS.success})`,
-          transition: "width 1s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-        }}
-      />
-    </div>
+    <Progress
+      value={w}
+      max={100}
+      size="sm"
+      label={`${pct}% complete`}
+    />
   );
 }
 
@@ -67,7 +53,6 @@ export function AssessmentProgressCard({
   assessment: ProgressAssessment;
 }) {
   const router = useRouter();
-  const tone = statusTone(assessment.status);
   const cta =
     assessment.status === "not_started"
       ? "Start"
@@ -76,90 +61,40 @@ export function AssessmentProgressCard({
         : "Continue";
 
   return (
-    <article
-      style={{
-        border: "1.5px solid var(--border-light)",
-        borderRadius: 16,
-        padding: 16,
-        background: "var(--bg-alt)",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 12,
-          alignItems: "flex-start",
-          marginBottom: 10,
-        }}
-      >
-        <div style={{ minWidth: 0 }}>
-          <h3
-            style={{
-              margin: 0,
-              fontFamily: "Outfit, sans-serif",
-              fontSize: 16,
-              fontWeight: 800,
-              color: "var(--text-main)",
-            }}
-          >
-            {assessment.name}
-          </h3>
-          <p
-            style={{
-              margin: "6px 0 0",
-              color: "var(--text-muted)",
-              fontSize: 13,
-              lineHeight: 1.45,
-            }}
-          >
+    <article className="rounded-[var(--radius-md)] border border-line bg-sunken p-4">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="type-h4 m-0 text-ink">{assessment.name}</h3>
+          <p className="type-small mt-1 mb-0 text-muted">
             {assessment.description}
           </p>
         </div>
-        <span
-          style={{
-            flexShrink: 0,
-            fontSize: 12,
-            fontWeight: 700,
-            color: tone,
-            background: `${tone === PROGRESS_COLS.muted ? "var(--border-light)" : tone + "18"}`,
-            padding: "4px 10px",
-            borderRadius: 999,
-          }}
-        >
+        <Badge tone={statusTone(assessment.status)}>
           {assessmentStatusLabel(assessment.status)}
-        </span>
+        </Badge>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-        <div style={{ flex: 1 }}>
+      <div className="mb-3 flex items-center gap-3">
+        <div className="min-w-0 flex-1">
           <ProgressBar pct={assessment.completion} />
         </div>
-        <strong style={{ fontSize: 13, color: "var(--text-main)" }}>
+        <strong className="type-small tabular-nums text-ink">
           {assessment.completion}%
         </strong>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 12,
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginTop: 12,
-        }}
-      >
-        <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="type-small m-0 text-muted">
           {assessment.score !== null ? `Score: ${assessment.score}% · ` : null}
           {assessment.completedTasks} / {assessment.totalTasks} completed
-        </div>
+        </p>
         <Button
+          size="sm"
           variant="secondary"
           onClick={() => router.push(assessment.href)}
-          style={{ padding: "8px 12px", fontSize: 13 }}
         >
-          {cta} <ArrowRight size={14} />
+          {cta}
+          <ArrowRight size={14} aria-hidden />
         </Button>
       </div>
     </article>
@@ -174,19 +109,20 @@ export function AssessmentProgress({
   const router = useRouter();
 
   return (
-    <ProgressSection title="Assessment Progress">
+    <ProgressSection title="Assessment progress">
       {assessments.length === 0 ? (
         <EmptyState
+          compact
           title="No assessments yet"
           description="Start a challenge or generate a roadmap to track assessment progress."
           action={
             <Button onClick={() => router.push(routes.app.challenges)}>
-              Start Assessment →
+              Start an assessment
             </Button>
           }
         />
       ) : (
-        <div style={{ display: "grid", gap: 12 }}>
+        <div className="grid gap-3">
           {assessments.slice(0, 12).map((a) => (
             <AssessmentProgressCard key={a.id} assessment={a} />
           ))}

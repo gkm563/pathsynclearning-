@@ -1,115 +1,88 @@
 "use client";
 
-import React from 'react';
-import { Handle, Position } from '@xyflow/react';
-import { Lock, BookOpen, Check, Play, SkipForward } from 'lucide-react';
+import React from "react";
+import { Handle, Position } from "@xyflow/react";
+import { Lock, BookOpen, Check, Play, SkipForward } from "lucide-react";
+import { cn } from "@/lib/cn";
 
 export default function SkillNode({ data }: { data: any }) {
   const { status, estimatedHours, onClick } = data;
   const label = data.label ?? data.title;
-  const blurb = typeof data.description === 'string' ? data.description : '';
+  const blurb = typeof data.description === "string" ? data.description : "";
   const outcomes = Array.isArray(data.learningOutcomes) ? data.learningOutcomes.length : 0;
   const resources = Array.isArray(data.resources) ? data.resources.length : 0;
-  
-  let borderColor = 'var(--border-light)';
-  let bg = 'var(--bg-card)';
+
+  let borderColor = "var(--border-light)";
+  let bg = "var(--surface)";
   let Icon = BookOpen;
-  let iconColor = 'var(--text-muted)';
+  let iconColor = "var(--text-muted)";
   let opacity = 1;
 
-  if (status === 'locked') {
-    bg = 'var(--bg-alt)';
+  if (status === "locked") {
+    bg = "var(--bg-alt)";
     Icon = Lock;
-  } else if (status === 'available') {
-    borderColor = '#6c63ff';
-    iconColor = '#6c63ff';
-  } else if (status === 'in_progress') {
-    borderColor = '#6c63ff';
+  } else if (status === "available") {
+    borderColor = "var(--primary)";
+    iconColor = "var(--primary)";
+  } else if (status === "in_progress") {
+    borderColor = "var(--primary)";
     Icon = Play;
-    iconColor = '#6c63ff';
-    bg = 'var(--bg-card)';
-  } else if (status === 'completed') {
-    bg = 'rgba(0, 201, 167, 0.1)';
-    borderColor = '#00c9a7';
+    iconColor = "var(--primary)";
+    bg = "var(--surface)";
+  } else if (status === "completed") {
+    bg = "var(--success-soft)";
+    borderColor = "var(--success)";
     Icon = Check;
-    iconColor = '#00c9a7';
-  } else if (status === 'skipped') {
+    iconColor = "var(--success)";
+  } else if (status === "skipped") {
     opacity = 0.6;
     Icon = SkipForward;
   }
 
   return (
-    <div 
+    <div
       onClick={() => onClick && onClick()}
+      className={cn(
+        "flex flex-col gap-1.5 rounded-[var(--radius-lg)] border-2 p-3 transition-[box-shadow,opacity] duration-200",
+        status === "skipped" && "line-through",
+      )}
       style={{
         width: 260,
         minHeight: 118,
         background: bg,
-        borderRadius: 16,
-        border: `2px solid ${borderColor}`,
-        padding: 12,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 6,
-        cursor: 'pointer',
+        borderColor,
+        cursor: "pointer",
         opacity,
-        boxShadow: status === 'in_progress' ? '0 0 16px rgba(108, 99, 255, 0.3)' : '0 4px 12px rgba(0,0,0,0.05)',
-        transition: 'all 0.2s ease',
-        textDecoration: status === 'skipped' ? 'line-through' : 'none'
+        boxShadow:
+          status === "in_progress"
+            ? "0 0 16px var(--primary-border)"
+            : "var(--shadow-sm)",
       }}
     >
-      <Handle type="target" position={Position.Top} style={{ visibility: 'hidden' }} />
-      
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <Handle type="target" position={Position.Top} style={{ visibility: "hidden" }} />
+
+      <div className="flex items-center gap-2">
         <Icon size={16} color={iconColor} />
-        <span style={{ 
-          fontFamily: 'Outfit', 
-          fontSize: 14, 
-          fontWeight: 600, 
-          color: 'var(--text-main)',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis'
-        }}>
-          {label}
-        </span>
+        <span className="type-label truncate text-ink">{label}</span>
       </div>
 
       {blurb ? (
-        <div style={{
-          fontFamily: 'Inter',
-          fontSize: 11,
-          lineHeight: 1.4,
-          color: 'var(--text-muted)',
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
-        }}>
-          {blurb}
-        </div>
+        <div className="type-caption line-clamp-2 text-muted">{blurb}</div>
       ) : null}
-      
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
-        <span style={{ fontFamily: 'Inter', fontSize: 10, color: 'var(--text-muted)' }}>
-          {resources ? `${resources} resources` : ''}
-          {outcomes ? ` · ${outcomes} outcomes` : ''}
+
+      <div className="mt-auto flex items-center justify-between">
+        <span className="type-caption text-muted">
+          {resources ? `${resources} resources` : ""}
+          {outcomes ? ` · ${outcomes} outcomes` : ""}
         </span>
         {estimatedHours ? (
-          <span style={{ 
-            fontFamily: 'Fira Code', 
-            fontSize: 10,
-            background: 'var(--bg-alt)',
-            color: 'var(--text-muted)',
-            padding: '2px 6px',
-            borderRadius: 12
-          }}>
+          <span className="type-caption type-numeric rounded-full bg-sunken px-1.5 py-0.5 text-muted">
             {estimatedHours}h
           </span>
         ) : null}
       </div>
 
-      <Handle type="source" position={Position.Bottom} style={{ visibility: 'hidden' }} />
+      <Handle type="source" position={Position.Bottom} style={{ visibility: "hidden" }} />
     </div>
   );
 }

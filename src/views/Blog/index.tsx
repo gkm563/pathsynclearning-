@@ -1,125 +1,43 @@
-"use client";
+import {
+  QuoteSection,
+  RecruiterValidationSection,
+} from "@/components/ui/Shared";
+import ArticleGrid from "./sections/ArticleGrid";
+import BlogCTA from "./sections/BlogCTA";
+import BlogHero from "./sections/BlogHero";
 
-import React from "react";
-import { motion } from "framer-motion";
-import Header from "../../components/layout/Header";
-import Footer from "../../components/layout/Footer";
-import { Chip, HoverCard, RecruiterValidationSection, QuoteSection } from "../../components/ui/Shared";
-
+/**
+ * /blog — the essay index.
+ *
+ * Page furniture (header, `<main>`, footer, page background) belongs to
+ * `app/(marketing)/layout.tsx`; this view only contributes sections.
+ */
 export default function Blog() {
-  const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
-
-  const blogs = [
-    {
-      title: "Why 90% Mastery is the New Passing Grade",
-      desc: "Scraping by with a 40% doesn't work in the real world. Discover why PathEd enforces a strict 90% mastery threshold before unlocking new skills.",
-      img: "https://images.unsplash.com/photo-1522204523234-8729aa6e3d5f?auto=format&fit=crop&w=800&q=80",
-      tag: "PEDAGOGY", color: "#6c63ff", bg: "#f0f0ff", border: "#d8d4ff"
-    },
-    {
-      title: "The End of Syllabus Misalignment in B.Tech",
-      desc: "University syllabi are organized by academic discipline, not by industry job roles. Here is how we are mapping degrees directly to career outcomes.",
-      img: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80",
-      tag: "INDUSTRY", color: "#00c9a7", bg: "#e8faf5", border: "#b2eed9"
-    },
-    {
-      title: "How CRI is Replacing the Traditional CGPA",
-      desc: "Beyond exam scores, there is no reliable metric to measure actual readiness. Enter the Career Readiness Index (CRI)—a holistic 0-100 score.",
-      img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80",
-      tag: "METRICS", color: "#f7971e", bg: "#fff9e6", border: "#ffe08a"
-    },
-    {
-      title: "Understanding Career Fusion Logic",
-      desc: "Changing your target career midway shouldn't mean starting over. Learn how our fusion logic maps previously mastered skills to new paths.",
-      img: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80",
-      tag: "ARCHITECTURE", color: "#9c27b0", bg: "#fdf0ff", border: "#e8b3ff"
-    },
-    {
-      title: "The Importance of Learning Memory in Engineering",
-      desc: "Skills mastered in one semester are often forgotten. PathEd creates a persistent, chronological record of your academic life.",
-      img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80",
-      tag: "RETENTION", color: "#6c63ff", bg: "#f0f0ff", border: "#d8d4ff"
-    },
-    {
-      title: "Building a Career-Centric Degree from Day One",
-      desc: "Meaningful career planning is often postponed until the final year. We are shifting preparation to day one of your B.Tech journey.",
-      img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80",
-      tag: "VISION", color: "#00c9a7", bg: "#e8faf5", border: "#b2eed9"
-    },
-    {
-      title: "Why Continuous Feedback Loops Beat Final Exams",
-      desc: "An exam at the end of a semester tells you what you failed to learn. A continuous feedback loop tells you what to fix right now.",
-      img: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80",
-      tag: "FEEDBACK", color: "#f7971e", bg: "#fff9e6", border: "#ffe08a"
-    },
-    {
-      title: "The Problem with Proxy Metrics in Tech Hiring",
-      desc: "Why are companies still using university pedigree as a proxy for coding skill? We explore the data behind a merit-first approach.",
-      img: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80",
-      tag: "HIRING", color: "#9c27b0", bg: "#fdf0ff", border: "#e8b3ff"
-    },
-    {
-      title: "Gamification vs. True Progress",
-      desc: "Leaderboards are fun, but getting a job is better. How we balance engagement with rigorous, employable skill building.",
-      img: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80",
-      tag: "PRODUCT", color: "#6c63ff", bg: "#f0f0ff", border: "#d8d4ff"
-    }
-  ];
-
   return (
-    <div style={{ background: "var(--bg-main)", minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
-      <Header />
-      
-      {/* 1. Hero Section */}
-      <section style={{ paddingTop: 180, paddingBottom: 80, textAlign: "center", maxWidth: 1200, margin: "0 auto", paddingLeft: 32, paddingRight: 32 }}>
-        <motion.div {...fadeInUp}>
-          <Chip bg="#fdf0ff" border="#e8b3ff" color="#9c27b0">▸ PATHED INSIGHTS</Chip>
-          <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 800, color: "var(--text-main)", lineHeight: 1.1, margin: "24px 0" }}>
-            Thoughts on the future of<br /><span style={{ color: "#9c27b0" }}>engineering education.</span>
-          </h1>
-        </motion.div>
-      </section>
+    <>
+      <BlogHero />
+      <ArticleGrid />
+      <BlogCTA />
 
-      {/* 2. Blog Grid */}
-      <section style={{ padding: "0 32px 120px" }}>
-        <div style={{ maxWidth: 1360, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))", gap: 40 }}>
-          {blogs.map((blog, i) => (
-            <HoverCard key={i} style={{ background: "var(--bg-card)", borderRadius: 24, overflow: "hidden", border: "1.5px solid var(--border-light)", boxShadow: "0 10px 30px rgba(0,0,0,0.04)", cursor: "pointer", display: "flex", flexDirection: "column" }}>
-              
-              <div style={{ height: 240, overflow: "hidden" }}>
-                <img src={blog.img} alt={blog.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s ease" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} />
-              </div>
-              
-              <div style={{ padding: 30, display: "flex", flexDirection: "column", flex: 1 }}>
-                <div style={{ marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <Chip bg={blog.bg} border={blog.border} color={blog.color}>{blog.tag}</Chip>
-                  <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "#999", fontWeight: 500 }}>By Rahul Kushwaha</span>
-                </div>
-                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 26, fontWeight: 700, color: "var(--text-main)", lineHeight: 1.3, marginBottom: 16 }}>{blog.title}</h3>
-                <p style={{ fontSize: 16, color: "var(--text-muted)", lineHeight: 1.7, marginBottom: 24, flex: 1 }}>{blog.desc}</p>
-                <div style={{ color: "var(--text-main)", fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 16, display: "flex", alignItems: "center", gap: 8 }}>
-                  Read Article →
-                </div>
-              </div>
-            </HoverCard>
-          ))}
-        </div>
-      </section>
-
-      <QuoteSection 
+      <QuoteSection
         quote="Knowledge without a clear path to application is just trivia. It's time we engineer the path itself."
         author="Rahul Kushwaha"
         role="CEO & Chief Designer"
       />
 
-      <RecruiterValidationSection 
-        tag="▸ INDUSTRY PERSPECTIVES"
-        title={<>Read by Engineers.<br />Trusted by HR.</>}
+      <RecruiterValidationSection
+        tag="Industry perspectives"
+        title={
+          <>
+            Read by engineers.
+            <br />
+            Trusted by HR.
+          </>
+        }
         desc1="Our blog doesn't just theorize about the future of education. The insights we share are actively consumed and validated by hiring managers across top tech firms."
         desc2="They understand that students learning on our platform are absorbing a curriculum engineered for real-world impact."
         img="https://images.unsplash.com/photo-1515169067868-5387ec356754?auto=format&fit=crop&w=1200&q=80"
       />
-      <Footer />
-    </div>
+    </>
   );
 }

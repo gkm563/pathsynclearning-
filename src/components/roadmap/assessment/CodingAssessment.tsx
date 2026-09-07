@@ -38,26 +38,26 @@ import { AddNoteButton } from "@/components/memory-lane/AddNoteButton";
 import { RichStudyText } from "@/components/ai/RichStudyText";
 import LazyCodeEditor from "@/components/roadmap/assessment/LazyCodeEditor";
 
-/** LeetCode-inspired dark palette for the coding workspace */
+/** Coding workspace chrome — semantic tokens (dark inverse surface). */
 const LC = {
-  bg: "#1a1a1a",
-  panel: "#262626",
-  panelAlt: "#2c2c2c",
-  border: "#3e3e3e",
-  borderSoft: "#333333",
-  text: "#eff1f6",
-  muted: "#eff2f699",
-  muted2: "#8a8a8a",
-  accent: "#ffa116",
-  green: "#2cbb5d",
-  greenDim: "rgba(44,187,93,0.15)",
-  red: "#ef4743",
-  redDim: "rgba(239,71,67,0.12)",
-  blue: "#2db4ff",
-  editorBg: "#1e1e1e",
-  chip: "#373737",
-  chipActive: "#3e3e3e",
-  inputBg: "#2a2a2a",
+  bg: "var(--bg-inverse)",
+  panel: "color-mix(in srgb, var(--bg-inverse) 88%, var(--surface))",
+  panelAlt: "color-mix(in srgb, var(--bg-inverse) 82%, var(--surface))",
+  border: "color-mix(in srgb, var(--text-inverse) 16%, transparent)",
+  borderSoft: "color-mix(in srgb, var(--text-inverse) 12%, transparent)",
+  text: "var(--text-inverse)",
+  muted: "color-mix(in srgb, var(--text-inverse) 62%, transparent)",
+  muted2: "color-mix(in srgb, var(--text-inverse) 45%, transparent)",
+  accent: "var(--accent)",
+  green: "var(--success)",
+  greenDim: "var(--success-soft)",
+  red: "var(--error)",
+  redDim: "var(--error-soft)",
+  blue: "var(--info)",
+  editorBg: "var(--bg-inverse)",
+  chip: "color-mix(in srgb, var(--text-inverse) 12%, transparent)",
+  chipActive: "color-mix(in srgb, var(--text-inverse) 18%, transparent)",
+  inputBg: "color-mix(in srgb, var(--bg-inverse) 70%, var(--surface))",
 };
 
 async function formatWithPrettier(code: string): Promise<string> {
@@ -394,7 +394,7 @@ export default function CodingAssessment({
         minHeight: 0,
         background: LC.bg,
         color: LC.text,
-        fontFamily: "Inter, system-ui, sans-serif",
+        fontFamily: "var(--font-body)",
         overflow: "hidden",
       }}
     >
@@ -431,7 +431,7 @@ export default function CodingAssessment({
                     margin: 0,
                     fontSize: 22,
                     fontWeight: 600,
-                    fontFamily: "Outfit, Inter, sans-serif",
+                    fontFamily: "var(--font-body)",
                     letterSpacing: "-0.02em",
                   }}
                 >
@@ -451,7 +451,7 @@ export default function CodingAssessment({
                       difficulty === "hard"
                         ? LC.redDim
                         : difficulty === "medium"
-                          ? "rgba(255,161,22,0.16)"
+                          ? "var(--accent-soft)"
                           : LC.greenDim,
                     padding: "2px 10px",
                     borderRadius: 999,
@@ -483,7 +483,7 @@ export default function CodingAssessment({
                       background: LC.inputBg,
                       borderRadius: 8,
                       padding: "12px 14px",
-                      fontFamily: "'Fira Code', Consolas, monospace",
+                      fontFamily: "var(--font-code), ui-monospace, monospace",
                       fontSize: 13,
                       lineHeight: 1.65,
                       border: `1px solid ${LC.borderSoft}`,
@@ -498,7 +498,7 @@ export default function CodingAssessment({
                       <span style={{ color: LC.text }}>{ex.output}</span>
                     </div>
                     {ex.explanation ? (
-                      <div style={{ marginTop: 8, color: LC.muted, fontFamily: "Inter, sans-serif", fontSize: 13, lineHeight: 1.6 }}>
+                      <div style={{ marginTop: 8, color: LC.muted, fontSize: 13, lineHeight: 1.6 }}>
                         <span style={{ color: LC.muted2, fontWeight: 600 }}>Explanation: </span>
                         {ex.explanation}
                       </div>
@@ -960,7 +960,7 @@ export default function CodingAssessment({
                   borderRadius: 8,
                   border: "none",
                   background: LC.green,
-                  color: "#fff",
+                  color: "var(--text-on-primary)",
                   fontWeight: 700,
                   fontSize: 13,
                   cursor: submitting || running ? "not-allowed" : "pointer",
@@ -1020,7 +1020,7 @@ export default function CodingAssessment({
                         fontSize: 13,
                         color: LC.muted2,
                         marginBottom: 6,
-                        fontFamily: "'Fira Code', monospace",
+                        fontFamily: "var(--font-code), ui-monospace, monospace",
                       }}
                     >
                       {paramNames[i] || `arg${i + 1}`} =
@@ -1031,7 +1031,7 @@ export default function CodingAssessment({
                         border: `1px solid ${LC.border}`,
                         borderRadius: 8,
                         padding: "10px 12px",
-                        fontFamily: "'Fira Code', monospace",
+                        fontFamily: "var(--font-code), ui-monospace, monospace",
                         fontSize: 13,
                         color: LC.text,
                       }}
@@ -1046,7 +1046,7 @@ export default function CodingAssessment({
                       fontSize: 13,
                       color: LC.muted2,
                       marginBottom: 6,
-                      fontFamily: "'Fira Code', monospace",
+                      fontFamily: "var(--font-code), ui-monospace, monospace",
                     }}
                   >
                     expected =
@@ -1057,7 +1057,7 @@ export default function CodingAssessment({
                       border: `1px solid ${LC.border}`,
                       borderRadius: 8,
                       padding: "10px 12px",
-                      fontFamily: "'Fira Code', monospace",
+                      fontFamily: "var(--font-code), ui-monospace, monospace",
                       fontSize: 13,
                       color: LC.text,
                     }}
@@ -1125,7 +1125,7 @@ export default function CodingAssessment({
                               background: LC.redDim,
                               color: LC.red,
                               fontSize: 12,
-                              fontFamily: "'Fira Code', monospace",
+                              fontFamily: "var(--font-code), ui-monospace, monospace",
                               whiteSpace: "pre-wrap",
                             }}
                           >
@@ -1204,7 +1204,7 @@ function ResultBlock({
           }`,
           borderRadius: 8,
           padding: "10px 12px",
-          fontFamily: "'Fira Code', monospace",
+          fontFamily: "var(--font-code), ui-monospace, monospace",
           fontSize: 13,
           color: tone === "bad" ? LC.red : LC.text,
           whiteSpace: "pre-wrap",

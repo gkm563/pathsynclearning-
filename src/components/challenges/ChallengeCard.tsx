@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { useState } from "react";
 import {
   Play,
   MapPin,
@@ -12,9 +11,22 @@ import {
   RotateCcw,
 } from "lucide-react";
 import type { ChallengeSummary } from "@/lib/challenges/types";
-import { CAT_COLORS, DIFF_STYLES } from "@/lib/challenges/catalog";
 import { HINT_COST } from "@/lib/challenges/progress";
+import { Badge, Button, Card } from "@/components/ui";
+import { cn } from "@/lib/cn";
 import ChallengeIcon from "./ChallengeIcon";
+
+const DIFF_TONE = {
+  easy: "success",
+  medium: "warning",
+  hard: "error",
+} as const;
+
+const DIFF_LABEL = {
+  easy: "Easy",
+  medium: "Medium",
+  hard: "Hard",
+} as const;
 
 export default function ChallengeCard({
   item,
@@ -34,166 +46,75 @@ export default function ChallengeCard({
   hintBusy?: boolean;
 }) {
   const [showSolution, setShowSolution] = useState(false);
-  const ds = DIFF_STYLES[item.difficulty];
-  const catColor = CAT_COLORS[item.category] || "#6c63ff";
   const done = item.status === "solved";
   const attempted = item.status === "attempted" || done;
   const visibleHints = item.hints.slice(0, item.hintsUnlocked);
   const canReview = Boolean(onReview) && (attempted || Boolean(item.lastAttempt));
-  // Solution / answer key only after a real pass
   const canShowSolution =
     done && (Boolean(item.solution) || Boolean(item.questions?.length));
 
   return (
-    <motion.div
-      whileHover={{ y: -3 }}
-      style={{
-        background: featured || boss
-          ? "linear-gradient(145deg, rgba(108,99,255,0.14), rgba(0,201,167,0.08))"
-          : done
-            ? "rgba(0, 201, 167, 0.06)"
-            : "var(--bg-card)",
-        border: featured || boss
-          ? "1.5px solid rgba(108,99,255,0.45)"
-          : `1.5px solid ${done ? "#00c9a7" : "var(--border-light)"}`,
-        borderRadius: 20,
-        padding: featured ? 26 : 20,
-        display: "flex",
-        flexDirection: "column",
-        gap: 12,
-        boxShadow: featured
-          ? "0 12px 36px rgba(108,99,255,0.16)"
-          : "0 8px 24px rgba(0,0,0,0.04)",
-        position: "relative",
-      }}
+    <Card
+      className={cn(
+        "relative flex h-full min-w-0 flex-col gap-3 transition-[border-color,box-shadow] duration-[var(--duration-fast)]",
+        "hover:border-primary-border hover:shadow-[var(--shadow-md)]",
+        featured && "border-primary-border",
+        boss &&
+          "border-[color-mix(in_srgb,var(--warning)_42%,var(--border-light))]",
+        done &&
+          !featured &&
+          !boss &&
+          "border-[color-mix(in_srgb,var(--success)_36%,var(--border-light))]",
+      )}
     >
       {(featured || boss) && (
-        <span
-          style={{
-            position: "absolute",
-            top: 14,
-            right: 14,
-            padding: "4px 10px",
-            borderRadius: 999,
-            background: boss
-              ? "linear-gradient(135deg, #f59e0b, #ec4899)"
-              : "linear-gradient(135deg, #6c63ff, #00c9a7)",
-            color: "#fff",
-            fontSize: 11,
-            fontWeight: 800,
-            fontFamily: "Outfit",
-          }}
+        <Badge
+          tone={boss ? "warning" : "accent"}
+          className="absolute top-4 right-4"
         >
           {boss ? "Weekly Boss" : "Challenge of the Day"}
-        </span>
+        </Badge>
       )}
       {done && !featured && !boss && (
-        <span
-          style={{
-            position: "absolute",
-            top: 14,
-            right: 14,
-            padding: "4px 10px",
-            borderRadius: 999,
-            background: "#00c9a7",
-            color: "#fff",
-            fontSize: 11,
-            fontWeight: 800,
-          }}
-        >
+        <Badge tone="success" className="absolute top-4 right-4">
           Solved
-        </span>
+        </Badge>
       )}
 
-      <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+      <div className="flex flex-wrap items-center gap-2">
         <span
-          style={{
-            width: featured ? 44 : 36,
-            height: featured ? 44 : 36,
-            borderRadius: 12,
-            display: "grid",
-            placeItems: "center",
-            background: `${catColor}18`,
-          }}
+          className={cn(
+            "grid place-items-center rounded-[var(--radius-md)] bg-primary-soft text-primary",
+            featured ? "h-11 w-11" : "h-9 w-9",
+          )}
         >
-          <ChallengeIcon name={item.icon} size={featured ? 22 : 18} color={catColor} />
+          <ChallengeIcon name={item.icon} size={featured ? 22 : 18} />
         </span>
-        <span
-          style={{
-            padding: "3px 10px",
-            borderRadius: 8,
-            background: ds.bg,
-            border: `1px solid ${ds.bdr}`,
-            color: ds.col,
-            fontSize: 11,
-            fontWeight: 800,
-            fontFamily: "Fira Code",
-            textTransform: "capitalize",
-          }}
-        >
-          {ds.label}
-        </span>
-        <span
-          style={{
-            padding: "3px 10px",
-            borderRadius: 8,
-            background: "rgba(108,99,255,0.1)",
-            color: catColor,
-            fontSize: 11,
-            fontWeight: 800,
-            fontFamily: "Fira Code",
-          }}
-        >
-          {item.type.toUpperCase()}
-        </span>
-        <span style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "Fira Code" }}>
-          +{item.xp} XP
-        </span>
+        <Badge tone={DIFF_TONE[item.difficulty]}>
+          {DIFF_LABEL[item.difficulty]}
+        </Badge>
+        <Badge>{item.type}</Badge>
+        <span className="type-caption type-numeric text-muted">+{item.xp} XP</span>
       </div>
 
       <h3
-        style={{
-          margin: 0,
-          fontFamily: "Outfit",
-          fontSize: featured ? 22 : 17,
-          fontWeight: 800,
-          color: "var(--text-main)",
-          lineHeight: 1.3,
-          paddingRight: featured || boss ? 120 : 0,
-        }}
+        className={cn(
+          "m-0 text-ink",
+          featured ? "type-h3 pr-28" : "type-h4",
+          (featured || boss) && "pr-32",
+        )}
       >
         {item.title}
       </h3>
-      <p
-        style={{
-          margin: 0,
-          fontSize: 13.5,
-          color: "var(--text-muted)",
-          lineHeight: 1.55,
-          fontFamily: "Outfit",
-        }}
-      >
-        {item.description}
-      </p>
+      <p className="type-small m-0 text-muted">{item.description}</p>
 
       {item.companyTags.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
-          <Building2 size={12} color="#64748b" />
+        <div className="flex flex-wrap items-center gap-1.5">
+          <Building2 size={12} className="text-faint" aria-hidden />
           {item.companyTags.slice(0, 4).map((c) => (
-            <span
-              key={c}
-              style={{
-                fontSize: 11,
-                fontFamily: "Outfit",
-                fontWeight: 700,
-                color: "#64748b",
-                padding: "2px 8px",
-                borderRadius: 999,
-                background: "var(--bg-alt)",
-              }}
-            >
+            <Badge key={c} className="normal-case tracking-normal">
               {c}
-            </span>
+            </Badge>
           ))}
         </div>
       )}
@@ -201,66 +122,31 @@ export default function ChallengeCard({
       {item.linkedNodeTitle && item.linkedNodeId && (
         <a
           href={`/dashboard/roadmap?node=${encodeURIComponent(item.linkedNodeId)}`}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            fontSize: 12,
-            color: "#6c63ff",
-            fontFamily: "Outfit",
-            fontWeight: 600,
-            textDecoration: "none",
-          }}
+          className="type-small inline-flex items-center gap-1.5 font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
-          <MapPin size={13} /> Practice for: {item.linkedNodeTitle}
+          <MapPin size={13} aria-hidden /> Practice for: {item.linkedNodeTitle}
         </a>
       )}
 
       {visibleHints.length > 0 && (
-        <div
-          style={{
-            padding: 12,
-            borderRadius: 12,
-            background: "rgba(245,158,11,0.08)",
-            border: "1px solid rgba(245,158,11,0.25)",
-          }}
-        >
+        <div className="rounded-[var(--radius-md)] border border-[color-mix(in_srgb,var(--warning)_28%,var(--border-light))] bg-[var(--warning-soft)] px-3 py-2.5">
           {visibleHints.map((h, i) => (
-            <div
+            <p
               key={i}
-              style={{
-                fontSize: 12.5,
-                fontFamily: "Outfit",
-                color: "var(--text-main)",
-                marginBottom: i < visibleHints.length - 1 ? 6 : 0,
-              }}
+              className={cn(
+                "type-small m-0 text-ink",
+                i < visibleHints.length - 1 && "mb-1.5",
+              )}
             >
               Hint {i + 1}: {h}
-            </div>
+            </p>
           ))}
         </div>
       )}
 
-      <div style={{ display: "flex", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
-        <button
-          type="button"
-          onClick={onOpen}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "10px 16px",
-            borderRadius: 12,
-            border: "none",
-            background: "linear-gradient(135deg, #6c63ff, #00c9a7)",
-            color: "#fff",
-            fontWeight: 800,
-            fontFamily: "Outfit",
-            fontSize: 13,
-            cursor: "pointer",
-          }}
-        >
-          {done ? <RotateCcw size={14} /> : <Play size={14} />}{" "}
+      <div className="mt-1 flex flex-wrap gap-2">
+        <Button onClick={onOpen}>
+          {done ? <RotateCcw size={14} aria-hidden /> : <Play size={14} aria-hidden />}
           {done
             ? "Retry"
             : item.type === "mcq"
@@ -268,109 +154,67 @@ export default function ChallengeCard({
               : item.type === "coding"
                 ? "Solve in IDE"
                 : "Open"}
-        </button>
+        </Button>
         {canReview && (
-          <button type="button" onClick={onReview} style={ghostBtn}>
-            <ClipboardList size={14} /> Review
+          <Button variant="secondary" onClick={onReview}>
+            <ClipboardList size={14} aria-hidden /> Review
             {typeof item.score === "number" ? ` ${item.score}%` : ""}
-          </button>
+          </Button>
         )}
         {!done && onUnlockHint && item.hintsUnlocked < item.hints.length && (
-          <button
-            type="button"
+          <Button
+            variant="secondary"
             disabled={hintBusy}
             onClick={onUnlockHint}
-            style={ghostBtn}
           >
-            <Lightbulb size={14} /> Hint ({HINT_COST}c)
-          </button>
+            <Lightbulb size={14} aria-hidden /> Hint ({HINT_COST}c)
+          </Button>
         )}
         {canShowSolution && (
-          <button
-            type="button"
+          <Button
+            variant={showSolution ? "outline" : "ghost"}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               setShowSolution((v) => !v);
             }}
-            style={{
-              ...ghostBtn,
-              borderColor: showSolution ? "#6c63ff" : "var(--border-light)",
-              background: showSolution ? "rgba(108,99,255,0.12)" : "var(--bg-alt)",
-              color: showSolution ? "#6c63ff" : "var(--text-main)",
-            }}
           >
-            <FileText size={14} /> {showSolution ? "Hide solution" : "Solution"}
-          </button>
+            <FileText size={14} aria-hidden />{" "}
+            {showSolution ? "Hide solution" : "Solution"}
+          </Button>
         )}
       </div>
 
       {showSolution && canShowSolution && (
-        <div
-          style={{
-            marginTop: 4,
-            padding: 14,
-            borderRadius: 12,
-            background: "rgba(108,99,255,0.08)",
-            border: "1px solid rgba(108,99,255,0.25)",
-          }}
-        >
-          <div style={{ fontFamily: "Outfit", fontWeight: 800, marginBottom: 8 }}>
+        <div className="rounded-[var(--radius-md)] border border-line bg-sunken p-3.5">
+          <p className="type-label m-0 mb-2 text-ink">
             {item.type === "mcq" ? "Answer key" : "Solution"}
-          </div>
+          </p>
 
           {item.solution?.editorial && (
-            <p style={{ margin: "0 0 10px", fontSize: 13, fontFamily: "Outfit", lineHeight: 1.55 }}>
+            <p className="type-small mt-0 mb-2.5 text-ink">
               {item.solution.editorial}
             </p>
           )}
 
           {item.type === "mcq" && item.questions && item.questions.length > 0 ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div className="flex flex-col gap-2.5">
               {item.questions.map((q, i) => {
                 const letter = String.fromCharCode(65 + q.correct);
                 const answer = q.opts[q.correct] ?? "—";
                 return (
                   <div
                     key={String(q.id)}
-                    style={{
-                      padding: 12,
-                      borderRadius: 10,
-                      background: "var(--bg-card, #fff)",
-                      border: "1px solid rgba(108,99,255,0.18)",
-                    }}
+                    className="rounded-[var(--radius-md)] border border-line bg-surface p-3"
                   >
-                    <div
-                      style={{
-                        fontFamily: "Outfit",
-                        fontWeight: 700,
-                        fontSize: 13,
-                        marginBottom: 6,
-                        color: "var(--text-main)",
-                      }}
-                    >
+                    <p className="type-small m-0 mb-1.5 font-semibold text-ink">
                       {i + 1}. {q.q}
-                    </div>
-                    <div
-                      style={{
-                        fontFamily: "Outfit",
-                        fontSize: 13,
-                        fontWeight: 700,
-                        color: "#059669",
-                      }}
-                    >
+                    </p>
+                    <p className="type-small m-0 font-semibold text-success">
                       Correct: {letter}. {answer}
-                    </div>
+                    </p>
                     {q.explanation && (
-                      <p
-                        style={{
-                          margin: "6px 0 0",
-                          fontSize: 12.5,
-                          fontFamily: "Outfit",
-                          color: "var(--text-muted)",
-                          lineHeight: 1.5,
-                        }}
-                      >
+                      <p className="type-caption mt-1.5 mb-0 text-muted">
                         {q.explanation}
                       </p>
                     )}
@@ -382,17 +226,17 @@ export default function ChallengeCard({
             <>
               {item.solution?.complexity &&
                 item.solution.complexity.toLowerCase() !== "n/a" && (
-                  <div style={{ fontSize: 12, fontFamily: "Fira Code", color: "#6c63ff" }}>
+                  <p className="type-caption type-numeric m-0 text-primary">
                     {item.solution.complexity}
-                  </div>
+                  </p>
                 )}
               {item.solution?.notes && (
-                <p style={{ margin: "8px 0 0", fontSize: 12, color: "var(--text-muted)" }}>
+                <p className="type-caption mt-2 mb-0 text-muted">
                   {item.solution.notes}
                 </p>
               )}
               {!item.solution?.editorial && (
-                <p style={{ margin: 0, fontSize: 13, color: "var(--text-muted)", fontFamily: "Outfit" }}>
+                <p className="type-small m-0 text-muted">
                   No written solution for this challenge yet.
                 </p>
               )}
@@ -400,21 +244,6 @@ export default function ChallengeCard({
           )}
         </div>
       )}
-    </motion.div>
+    </Card>
   );
 }
-
-const ghostBtn: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 6,
-  padding: "10px 14px",
-  borderRadius: 12,
-  border: "1.5px solid var(--border-light)",
-  background: "var(--bg-alt)",
-  color: "var(--text-main)",
-  fontWeight: 700,
-  fontFamily: "Outfit",
-  fontSize: 13,
-  cursor: "pointer",
-};

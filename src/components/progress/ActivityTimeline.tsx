@@ -10,24 +10,25 @@ import {
 } from "lucide-react";
 import { formatRelativeTime } from "@/lib/progress/calculate";
 import type { ProgressActivityItem } from "@/lib/progress/types";
-import { EmptyState } from "@/components/ui/primitives";
-import { ProgressSection, PROGRESS_COLS } from "@/components/progress/shared";
+import { EmptyState } from "@/components/ui";
+import { ProgressSection } from "@/components/progress/shared";
+import { cn } from "@/lib/cn";
 
 function iconFor(type: string) {
   const t = type.toUpperCase();
   if (t.includes("FAIL") || t.includes("REJECT")) {
-    return { Icon: XCircle, color: PROGRESS_COLS.danger };
+    return { Icon: XCircle, className: "bg-danger-soft text-danger" };
   }
   if (t.includes("START") || t.includes("ATTEMPT")) {
-    return { Icon: Play, color: PROGRESS_COLS.primary };
+    return { Icon: Play, className: "bg-primary-soft text-primary" };
   }
   if (t.includes("MILESTONE") || t.includes("ACHIEVEMENT")) {
-    return { Icon: Sparkles, color: PROGRESS_COLS.warning };
+    return { Icon: Sparkles, className: "bg-[var(--warning-soft)] text-warning" };
   }
   if (t.includes("PASS") || t.includes("COMPLETE") || t.includes("SUBMIT")) {
-    return { Icon: CheckCircle2, color: PROGRESS_COLS.success };
+    return { Icon: CheckCircle2, className: "bg-success-soft text-success" };
   }
-  return { Icon: ArrowRight, color: PROGRESS_COLS.info };
+  return { Icon: ArrowRight, className: "bg-info-soft text-info" };
 }
 
 export function ActivityTimeline({
@@ -38,80 +39,56 @@ export function ActivityTimeline({
   const router = useRouter();
 
   return (
-    <ProgressSection title="Recent Activity">
+    <ProgressSection title="Recent activity">
       {activity.length === 0 ? (
         <EmptyState
+          compact
           title="No activity yet"
           description="Your assessment attempts, submissions, and milestones will appear here."
         />
       ) : (
-        <ol style={{ listStyle: "none", margin: 0, padding: 0 }}>
+        <ol className="m-0 flex list-none flex-col p-0">
           {activity.map((item, idx) => {
-            const { Icon, color } = iconFor(item.type);
+            const { Icon, className } = iconFor(item.type);
+            const clickable = Boolean(item.href);
             return (
               <li
                 key={item.id}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "28px 1fr",
-                  gap: 12,
-                  paddingBottom: idx === activity.length - 1 ? 0 : 16,
-                  position: "relative",
-                }}
+                className={cn(
+                  "relative grid grid-cols-[28px_minmax(0,1fr)] gap-3",
+                  idx < activity.length - 1 && "pb-4",
+                )}
               >
                 {idx < activity.length - 1 ? (
                   <span
                     aria-hidden
-                    style={{
-                      position: "absolute",
-                      left: 13,
-                      top: 24,
-                      bottom: 0,
-                      width: 2,
-                      background: "var(--border-light)",
-                    }}
+                    className="absolute top-7 bottom-0 left-[13px] w-px bg-line"
                   />
                 ) : null}
-                <div
-                  style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: 999,
-                    display: "grid",
-                    placeItems: "center",
-                    background: `${color}18`,
-                    color,
-                    zIndex: 1,
-                  }}
+                <span
+                  className={cn(
+                    "relative z-[1] grid h-7 w-7 place-items-center rounded-full",
+                    className,
+                  )}
                 >
-                  <Icon size={14} />
-                </div>
+                  <Icon size={14} aria-hidden />
+                </span>
                 <button
                   type="button"
+                  disabled={!clickable}
                   onClick={() => {
                     if (item.href) router.push(item.href);
                   }}
-                  style={{
-                    textAlign: "left",
-                    border: "none",
-                    background: "transparent",
-                    padding: 0,
-                    cursor: item.href ? "pointer" : "default",
-                  }}
+                  className={cn(
+                    "rounded-[var(--radius-sm)] text-left",
+                    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                    clickable ? "cursor-pointer" : "cursor-default",
+                  )}
                 >
-                  <div
-                    style={{
-                      fontWeight: 700,
-                      color: "var(--text-main)",
-                      fontFamily: "Outfit, sans-serif",
-                      fontSize: 14,
-                    }}
-                  >
-                    {item.title}
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
+                  <p className="type-label m-0 text-ink">{item.title}</p>
+                  <p className="type-caption mt-1 mb-0 text-muted">
                     {formatRelativeTime(item.occurredAt)}
-                  </div>
+                  </p>
                 </button>
               </li>
             );

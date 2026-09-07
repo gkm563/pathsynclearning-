@@ -1,23 +1,24 @@
 "use client";
 
-import React from 'react';
-import { Handle, Position } from '@xyflow/react';
-import { Check, Lock, Play } from 'lucide-react';
+import React from "react";
+import { Handle, Position } from "@xyflow/react";
+import { Check, Lock, Play } from "lucide-react";
+import { cn } from "@/lib/cn";
 
 export default function PhaseNode({ data }: { data: any }) {
   const label = data.label ?? data.title;
   const phaseNumber = data.phaseNumber;
-  const status = data.status || 'locked';
+  const status = data.status || "locked";
   const onClick = data.onClick;
 
-  const isCompleted = status === 'completed' || status === 'skipped';
-  const isLocked = status === 'locked';
-  const isInProgress = status === 'in_progress';
-  const isAvailable = status === 'available';
+  const isCompleted = status === "completed" || status === "skipped";
+  const isLocked = status === "locked";
+  const isInProgress = status === "in_progress";
+  const isAvailable = status === "available";
 
-  let border = '2px dashed var(--border-strong)';
-  if (isCompleted) border = '2px solid #00c9a7';
-  else if (isInProgress || isAvailable) border = '2px solid #6c63ff';
+  let border = "2px dashed var(--border-strong)";
+  if (isCompleted) border = "2px solid var(--success)";
+  else if (isInProgress || isAvailable) border = "2px solid var(--primary)";
 
   return (
     <div
@@ -25,74 +26,49 @@ export default function PhaseNode({ data }: { data: any }) {
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') onClick?.();
+        if (e.key === "Enter" || e.key === " ") onClick?.();
       }}
+      className="flex flex-col items-center rounded-[var(--radius-md)] p-3"
       style={{
         width: 260,
-        background: isCompleted ? 'rgba(0, 201, 167, 0.08)' : 'var(--bg-card)',
-        borderRadius: 12,
+        background: isCompleted ? "var(--success-soft)" : "var(--bg-card)",
         border,
-        padding: 12,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        cursor: 'pointer',
+        cursor: "pointer",
         opacity: isLocked ? 0.75 : 1,
-        boxShadow: isAvailable || isInProgress ? '0 0 0 3px rgba(108, 99, 255, 0.15)' : undefined,
+        boxShadow: isAvailable || isInProgress ? "0 0 0 3px var(--primary-soft)" : undefined,
       }}
     >
-      <Handle type="target" position={Position.Top} style={{ visibility: 'hidden' }} />
+      <Handle type="target" position={Position.Top} style={{ visibility: "hidden" }} />
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+      <div className="mb-1 flex items-center gap-1.5">
         {isCompleted ? (
-          <Check size={12} color="#00c9a7" />
+          <Check size={12} color="var(--success)" />
         ) : isLocked ? (
           <Lock size={12} color="var(--text-muted)" />
         ) : (
-          <Play size={12} color="#6c63ff" />
+          <Play size={12} color="var(--primary)" />
         )}
         <span
-          style={{
-            fontFamily: 'Fira Code',
-            fontSize: 10,
-            color: isCompleted ? '#00c9a7' : isLocked ? 'var(--text-muted)' : '#6c63ff',
-            fontWeight: 600,
-            textTransform: 'uppercase',
-          }}
+          className={cn(
+            "type-overline",
+            isCompleted ? "text-success" : isLocked ? "text-muted" : "text-primary",
+          )}
         >
-          PHASE {phaseNumber || ''} · {String(status).replace('_', ' ')}
+          Phase {phaseNumber || ""} · {String(status).replace("_", " ")}
         </span>
       </div>
 
-      <div
-        style={{
-          fontFamily: 'Outfit',
-          fontSize: 16,
-          fontWeight: 700,
-          color: 'var(--text-main)',
-          textAlign: 'center',
-        }}
-      >
-        {label}
-      </div>
+      <div className="type-h4 text-center text-ink">{label}</div>
 
-      <div
-        style={{
-          fontFamily: 'Outfit',
-          fontSize: 11,
-          color: 'var(--text-muted)',
-          marginTop: 6,
-          textAlign: 'center',
-        }}
-      >
+      <div className="type-caption mt-1.5 text-center text-muted">
         {isLocked
-          ? 'Complete the node above first'
+          ? "Complete the node above first"
           : isCompleted
-            ? 'Completed'
-            : 'Click → Mark Complete to unlock skills'}
+            ? "Completed"
+            : "Click → Mark Complete to unlock skills"}
       </div>
 
-      <Handle type="source" position={Position.Bottom} style={{ visibility: 'hidden' }} />
+      <Handle type="source" position={Position.Bottom} style={{ visibility: "hidden" }} />
     </div>
   );
 }

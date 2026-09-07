@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import Footer from "@/components/layout/Footer";
+import Header from "@/components/layout/Header";
 
 export const metadata: Metadata = {
   title: {
@@ -29,5 +31,14 @@ export const metadata: Metadata = {
 
 /** Public marketing site — URL paths unchanged (group is omitted). */
 export default function MarketingLayout({ children }: { children: ReactNode }) {
-  return children;
+  return (
+    <div className="flex min-h-screen flex-col bg-canvas text-ink">
+      <Header />
+      {/* min-w-0 stops a wide child section from widening the whole column. */}
+      <main id="main" className="min-w-0 flex-1">
+        {children}
+      </main>
+      <Footer />
+    </div>
+  );
 }

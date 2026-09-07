@@ -1,198 +1,220 @@
 "use client";
 
+import { Pencil } from "lucide-react";
 import type { ProfileFormState } from "@/lib/profile/types";
-import { SectionHeading, TextAreaField, TextField, sectionCard } from "./shared";
+import {
+  Alert,
+  Button,
+  Card,
+  FieldGroup,
+  FormField,
+  Input,
+  Textarea,
+} from "@/components/ui";
+import type { ProfileFieldErrors } from "./types";
 
+type FieldKey = keyof ProfileFormState;
+
+type FieldSpec = {
+  key: FieldKey;
+  label: string;
+  hint?: string;
+  placeholder?: string;
+  type?: string;
+  autoComplete?: string;
+  required?: boolean;
+  optional?: boolean;
+  /** Managed elsewhere (e.g. by the auth provider), so never editable here. */
+  locked?: boolean;
+};
+
+const BASICS: FieldSpec[] = [
+  { key: "fullName", label: "Full name", required: true, autoComplete: "name" },
+  {
+    key: "username",
+    label: "Username",
+    hint: "At least 3 characters — letters, numbers and underscores only.",
+    autoComplete: "username",
+    optional: true,
+  },
+  {
+    key: "email",
+    label: "Email",
+    type: "email",
+    hint: "Managed by your sign-in provider. Contact support to change it.",
+    locked: true,
+  },
+  {
+    key: "phone",
+    label: "Phone number",
+    type: "tel",
+    autoComplete: "tel",
+    optional: true,
+  },
+  { key: "dateOfBirth", label: "Date of birth", type: "date", optional: true },
+  {
+    key: "location",
+    label: "Location",
+    autoComplete: "address-level2",
+    optional: true,
+  },
+];
+
+const LINKS: FieldSpec[] = [
+  { key: "website", label: "Website", placeholder: "https://", optional: true },
+  {
+    key: "github",
+    label: "GitHub",
+    placeholder: "https://github.com/…",
+    optional: true,
+  },
+  {
+    key: "linkedin",
+    label: "LinkedIn",
+    placeholder: "https://linkedin.com/in/…",
+    optional: true,
+  },
+  {
+    key: "portfolio",
+    label: "Portfolio",
+    placeholder: "https://",
+    optional: true,
+  },
+];
+
+const ACADEMIC: FieldSpec[] = [
+  { key: "institute", label: "Institute", optional: true },
+  { key: "degree", label: "Degree", optional: true },
+  { key: "branch", label: "Branch", optional: true },
+  { key: "gradYear", label: "Graduation year", optional: true },
+];
+
+type RowProps = {
+  spec: FieldSpec;
+  draft: ProfileFormState;
+  errors: ProfileFieldErrors;
+  disabled?: boolean;
+  onChange: <K extends FieldKey>(key: K, value: ProfileFormState[K]) => void;
+};
+
+function TextRow({ spec, draft, errors, disabled, onChange }: RowProps) {
+  return (
+    <FormField
+      label={spec.label}
+      hint={spec.hint}
+      error={errors[spec.key]}
+      required={spec.required}
+      optional={spec.optional}
+      className="min-w-0"
+    >
+      {(a) => (
+        <Input
+          {...a}
+          data-profile-field={spec.key}
+          type={spec.type ?? "text"}
+          value={draft[spec.key]}
+          placeholder={spec.placeholder}
+          autoComplete={spec.autoComplete}
+          disabled={disabled || spec.locked}
+          onChange={(e) => onChange(spec.key, e.target.value)}
+        />
+      )}
+    </FormField>
+  );
+}
+
+function Grid({
+  specs,
+  ...rest
+}: Omit<RowProps, "spec"> & { specs: FieldSpec[] }) {
+  return (
+    <div className="grid min-w-0 gap-4 md:grid-cols-2">
+      {specs.map((spec) => (
+        <TextRow key={spec.key} spec={spec} {...rest} />
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Every editable profile detail, grouped into fieldsets. Single column on
+ * phones, two columns from `md`.
+ */
 export function PersonalInfoForm({
   draft,
   errors,
   disabled,
   onChange,
+  onRequestEdit,
 }: {
   draft: ProfileFormState;
-  errors: Partial<Record<keyof ProfileFormState, string>>;
+  errors: ProfileFieldErrors;
   disabled?: boolean;
-  onChange: <K extends keyof ProfileFormState>(
-    key: K,
-    value: ProfileFormState[K],
-  ) => void;
+  onChange: <K extends FieldKey>(key: K, value: ProfileFormState[K]) => void;
+  onRequestEdit: () => void;
 }) {
+  const rowProps = { draft, errors, disabled, onChange };
+
   return (
-    <section id="personal" style={sectionCard}>
-      <SectionHeading
-        title="Personal information"
-        description="These details appear across PathEd. Email is managed by your sign-in provider."
-      />
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: 16,
-        }}
-      >
-        <TextField
-          id="fullName"
-          label="Full name"
-          value={draft.fullName}
-          disabled={disabled}
-          error={errors.fullName}
-          onChange={(e) => onChange("fullName", e.target.value)}
-          autoComplete="name"
-        />
-        <TextField
-          id="username"
-          label="Username"
-          value={draft.username}
-          disabled={disabled}
-          error={errors.username}
-          hint="Letters, numbers, and underscores only"
-          onChange={(e) => onChange("username", e.target.value)}
-          autoComplete="username"
-        />
-        <TextField
-          id="email"
-          label="Email"
-          type="email"
-          value={draft.email}
-          disabled
-          hint="Contact support to change your email"
-        />
-        <TextField
-          id="phone"
-          label="Phone number"
-          type="tel"
-          value={draft.phone}
-          disabled={disabled}
-          error={errors.phone}
-          onChange={(e) => onChange("phone", e.target.value)}
-          autoComplete="tel"
-        />
-        <TextField
-          id="dateOfBirth"
-          label="Date of birth"
-          type="date"
-          value={draft.dateOfBirth}
-          disabled={disabled}
-          error={errors.dateOfBirth}
-          onChange={(e) => onChange("dateOfBirth", e.target.value)}
-        />
-        <TextField
-          id="location"
-          label="Location"
-          value={draft.location}
-          disabled={disabled}
-          error={errors.location}
-          onChange={(e) => onChange("location", e.target.value)}
-          autoComplete="address-level2"
-        />
-      </div>
+    <section id="personal" className="flex flex-col gap-4">
+      {disabled ? (
+        <Alert tone="info" title="You're viewing your details">
+          <div className="flex flex-wrap items-center gap-3">
+            <span>Switch to editing to change any of these fields.</span>
+            <Button size="sm" className="min-h-11" onClick={onRequestEdit}>
+              <Pencil size={14} aria-hidden />
+              Edit profile
+            </Button>
+          </div>
+        </Alert>
+      ) : null}
 
-      <div style={{ marginTop: 16 }}>
-        <TextAreaField
-          id="bio"
-          label="Bio / about"
-          value={draft.bio}
-          disabled={disabled}
-          error={errors.bio}
-          hint={`${draft.bio.length}/500`}
-          maxLength={500}
-          onChange={(e) => onChange("bio", e.target.value)}
-        />
-      </div>
+      <Card>
+        <FieldGroup
+          legend="Basics"
+          description="These details appear across PathEd."
+        >
+          <Grid specs={BASICS} {...rowProps} />
 
-      <div style={{ marginTop: 20 }}>
-        <SectionHeading
-          title="Links"
+          <FormField
+            label="Bio / about"
+            hint={`${draft.bio.length}/500 characters`}
+            error={errors.bio}
+            optional
+            className="min-w-0"
+          >
+            {(a) => (
+              <Textarea
+                {...a}
+                data-profile-field="bio"
+                value={draft.bio}
+                maxLength={500}
+                disabled={disabled}
+                placeholder="A couple of lines about what you're building or aiming for."
+                onChange={(e) => onChange("bio", e.target.value)}
+              />
+            )}
+          </FormField>
+        </FieldGroup>
+      </Card>
+
+      <Card>
+        <FieldGroup
+          legend="Links"
           description="Website and social profiles shown on your public presence."
-        />
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-            gap: 16,
-          }}
         >
-          <TextField
-            id="website"
-            label="Website"
-            value={draft.website}
-            disabled={disabled}
-            error={errors.website}
-            placeholder="https://"
-            onChange={(e) => onChange("website", e.target.value)}
-          />
-          <TextField
-            id="github"
-            label="GitHub"
-            value={draft.github}
-            disabled={disabled}
-            error={errors.github}
-            placeholder="https://github.com/…"
-            onChange={(e) => onChange("github", e.target.value)}
-          />
-          <TextField
-            id="linkedin"
-            label="LinkedIn"
-            value={draft.linkedin}
-            disabled={disabled}
-            error={errors.linkedin}
-            placeholder="https://linkedin.com/in/…"
-            onChange={(e) => onChange("linkedin", e.target.value)}
-          />
-          <TextField
-            id="portfolio"
-            label="Portfolio"
-            value={draft.portfolio}
-            disabled={disabled}
-            error={errors.portfolio}
-            placeholder="https://"
-            onChange={(e) => onChange("portfolio", e.target.value)}
-          />
-        </div>
-      </div>
+          <Grid specs={LINKS} {...rowProps} />
+        </FieldGroup>
+      </Card>
 
-      <div style={{ marginTop: 20 }}>
-        <SectionHeading
-          title="Academic"
-          description="Used for ranking, campus context, and recruiter matching."
-        />
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-            gap: 16,
-          }}
+      <Card>
+        <FieldGroup
+          legend="Academic"
+          description="Used for ranking, campus context and recruiter matching."
         >
-          <TextField
-            id="institute"
-            label="Institute"
-            value={draft.institute}
-            disabled={disabled}
-            onChange={(e) => onChange("institute", e.target.value)}
-          />
-          <TextField
-            id="degree"
-            label="Degree"
-            value={draft.degree}
-            disabled={disabled}
-            onChange={(e) => onChange("degree", e.target.value)}
-          />
-          <TextField
-            id="branch"
-            label="Branch"
-            value={draft.branch}
-            disabled={disabled}
-            onChange={(e) => onChange("branch", e.target.value)}
-          />
-          <TextField
-            id="gradYear"
-            label="Graduation year"
-            value={draft.gradYear}
-            disabled={disabled}
-            onChange={(e) => onChange("gradYear", e.target.value)}
-          />
-        </div>
-      </div>
+          <Grid specs={ACADEMIC} {...rowProps} />
+        </FieldGroup>
+      </Card>
     </section>
   );
 }

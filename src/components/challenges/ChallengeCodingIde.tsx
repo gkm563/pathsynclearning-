@@ -9,6 +9,8 @@ import type { ChallengeSummary } from "@/lib/challenges/types";
 import type { CodingGradeResult } from "@/lib/roadmap/coding-client";
 import type { CodingLanguageId } from "@/lib/roadmap/coding-languages";
 import type { NodeAssessment } from "@/types/roadmap";
+import { Button, EmptyState } from "@/components/ui";
+import { Code2 } from "lucide-react";
 
 /**
  * Challenges coding — same IDE + PASSED/score overlay as roadmap.
@@ -65,23 +67,15 @@ export default function ChallengeCodingIde({
   if (!harness || !assessment) {
     return (
       <div
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 1200,
-          background: "#1a1a1a",
-          color: "#eff1f6",
-          display: "grid",
-          placeItems: "center",
-          fontFamily: "Outfit",
-        }}
+        className="fixed inset-0 grid place-items-center bg-canvas p-6"
+        style={{ zIndex: "var(--z-modal)" }}
       >
-        <div style={{ textAlign: "center" }}>
-          <p>No coding harness for this challenge.</p>
-          <button type="button" onClick={onClose}>
-            Close
-          </button>
-        </div>
+        <EmptyState
+          icon={<Code2 size={20} />}
+          title="No coding harness"
+          description="This challenge does not have a coding harness to run."
+          action={<Button onClick={onClose}>Close</Button>}
+        />
       </div>
     );
   }

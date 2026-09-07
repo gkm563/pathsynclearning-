@@ -1,64 +1,43 @@
-"use client";
-
 import Link from "next/link";
-import React from "react";
-import { motion } from "framer-motion";
-import { Rocket } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { routes } from "@/lib/routes";
 
+/** Closing conversion band. Static — no client JS. */
 export default function PreFooterCTA() {
   return (
-    <section style={{ padding: "80px 32px 120px", position: "relative", zIndex: 2, background: "var(--bg-card)" }}>
-      <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          style={{
-            background: "linear-gradient(135deg, #6c63ff 0%, #00c9a7 50%, #f7971e 100%)",
-            borderRadius: "32px", padding: "80px 48px", textAlign: "center",
-            position: "relative", overflow: "hidden",
-            boxShadow: "0 24px 64px rgba(108,99,255,0.25)"
-          }}
-        >
-          {/* Decorative background overlay */}
-          <div style={{ position: "absolute", inset: 0, background: "url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNykiLz48L3N2Zz4=')", opacity: 0.5, pointerEvents: "none" }}></div>
-          
-          <div style={{ position: "relative", zIndex: 1 }}>
-            <div style={{ 
-              display: "inline-flex", alignItems: "center", gap: "8px", 
-              background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", 
-              borderRadius: "20px", padding: "6px 16px", marginBottom: "24px",
-              fontFamily: "'DM Mono', monospace", fontSize: "12px", color: "var(--text-inverse)", letterSpacing: "2px"
-            }}>
-              <Rocket size={14} /> BEGIN YOUR JOURNEY
-            </div>
-            
-            <h2 style={{ 
-              fontFamily: "'Outfit', sans-serif", fontSize: "clamp(44px, 6vw, 72px)", 
-              fontWeight: 800, color: "var(--text-inverse)", lineHeight: 1.1, marginBottom: "24px"
-            }}>
-              Your roadmap starts<br />right now.
-            </h2>
-            
-            <p style={{ color: "rgba(255,255,255,0.9)", fontSize: "18px", maxWidth: "500px", margin: "0 auto 40px", lineHeight: 1.6 }}>
-              Join 40,000+ students building careers they’re proud of. Real skills. Real progress. Real offers.
-            </p>
-            
-            <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
-              <Link href="/sign-up" style={{
-                background: "var(--bg-card)", color: "#6c63ff", 
-                fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: "16px", 
-                padding: "18px 48px", borderRadius: "14px", 
-                boxShadow: "0 12px 30px rgba(0,0,0,0.15)", transition: "transform 0.3s"
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-4px)"}
-              onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}>
-                Create Free Account →
-              </Link>
-            </div>
+    <section
+      aria-labelledby="cta-heading"
+      className="px-4 pb-16 sm:px-6 sm:pb-20 lg:pb-24"
+    >
+      <div className="mx-auto max-w-[var(--measure-content)]">
+        <div className="rounded-[var(--radius-xl)] border border-line bg-surface px-6 py-14 text-center shadow-[var(--shadow-sm)] sm:px-12 sm:py-16 lg:py-20">
+          <p className="type-overline text-primary">
+            Begin your journey
+          </p>
+          <h2 id="cta-heading" className="type-display mt-4 text-ink">
+            Your roadmap starts now.
+          </h2>
+          <p className="type-body-lg mx-auto mt-5 max-w-[32rem] text-muted">
+            Join 40,000+ students building careers they’re proud of. Real
+            skills. Real progress. Real offers.
+          </p>
+
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href={routes.auth.signUp}
+              className="type-label inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-md)] bg-primary px-6 text-on-primary transition-colors duration-[var(--duration-fast)] hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none"
+            >
+              Create free account
+              <ArrowRight size={16} aria-hidden />
+            </Link>
+            <Link
+              href={routes.marketing.pricing}
+              className="type-label inline-flex min-h-11 items-center rounded-[var(--radius-md)] border border-line px-6 text-ink transition-colors duration-[var(--duration-fast)] hover:bg-sunken focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none"
+            >
+              Compare plans
+            </Link>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

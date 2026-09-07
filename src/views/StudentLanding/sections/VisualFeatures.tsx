@@ -1,88 +1,96 @@
-"use client";
+import { Compass, Layers, Target, TrendingUp, type LucideIcon } from "lucide-react";
 
-import React from "react";
-import { motion } from "framer-motion";
-import { InteractiveCard } from "../../../components/ui/Shared";
-import { Target, Layers, Compass, TrendingUp } from "lucide-react";
+type Feature = {
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+  img: string;
+};
 
-const features = [
+const FEATURES: readonly Feature[] = [
   {
     icon: Target,
-    title: "Choose Your Goal",
+    title: "Choose your goal",
     desc: "Pick your dream role—SDE, DevOps, ML Engineer, or Product. Our AI maps it to the exact skills top companies hire for.",
     img: "https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=800&q=80",
-    color: "#6c63ff"
   },
   {
     icon: Compass,
-    title: "Build Your Roadmap",
+    title: "Build your roadmap",
     desc: "AI-generated skill paths built on real hiring data from Google, Microsoft, and 500+ top companies.",
     img: "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80",
-    color: "#00c9a7"
   },
   {
     icon: Layers,
-    title: "Learn & Practice",
+    title: "Learn & practice",
     desc: "Targeted resources, hands-on labs, DSA challenges, and real-world project tracks with peer review.",
     img: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80",
-    color: "#f7971e"
   },
   {
     icon: TrendingUp,
-    title: "Track & Reflect",
+    title: "Track & reflect",
     desc: "Monitor your Career Readiness Index live, archive your Memory Lane, and unlock nodes as you level up.",
     img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
-    color: "#e040fb"
-  }
+  },
 ];
 
+/**
+ * Static feature grid. Hover treatment is pure CSS, so this stays a server
+ * component; the aspect-ratio wrapper reserves the image box up front to keep
+ * the section free of layout shift.
+ */
 export default function VisualFeatures() {
   return (
-    <section style={{ padding: "100px 32px", background: "var(--bg-card)", position: "relative" }}>
-      <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
-        
-        <div style={{ textAlign: "center", marginBottom: "80px", maxWidth: "640px", margin: "0 auto 80px" }}>
-          <div style={{ display: "inline-block", fontFamily: "'Fira Code', monospace", fontSize: "13px", fontWeight: 600, color: "#00c9a7", letterSpacing: "2px", marginBottom: "16px", padding: "8px 18px", background: "#e8faf5", borderRadius: "20px" }}>
-            CORE WORKFLOW
-          </div>
-          <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 800, color: "var(--text-main)", marginBottom: "20px" }}>
-            The blueprint for your <br/>
-            <span style={{ color: "#6c63ff" }}>career launchpad.</span>
+    <section
+      aria-labelledby="workflow-heading"
+      className="px-4 py-16 sm:px-6 sm:py-20 lg:py-24"
+    >
+      <div className="mx-auto max-w-[var(--measure-content)]">
+        <div className="mx-auto max-w-[40rem] text-center">
+          <p className="type-overline text-accent">Core workflow</p>
+          <h2 id="workflow-heading" className="type-h1 mt-3 text-ink">
+            The blueprint for your career launchpad
           </h2>
-          <p style={{ color: "var(--text-muted)", fontSize: "16px", lineHeight: 1.6 }}>
-            Every step is designed to optimize your readiness. No more guessing what to learn next. Just pure, targeted progression.
+          <p className="type-body-lg mt-4 text-muted">
+            Every step is designed to optimize your readiness. No more guessing
+            what to learn next — just targeted progression.
           </p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "32px" }}>
-          {features.map((item, i) => (
-            <InteractiveCard 
-              key={i}
-              hoverColor={item.color}
-              style={{
-                background: "var(--bg-alt)", borderRadius: "24px", padding: "12px",
-                border: "1px solid var(--border-light)", boxShadow: "0 10px 30px rgba(0,0,0,0.03)",
-                cursor: "pointer", display: "flex", flexDirection: "column"
-              }}
+        <ol className="mt-12 grid list-none grid-cols-1 gap-6 p-0 sm:grid-cols-2 lg:mt-16 xl:grid-cols-4">
+          {FEATURES.map((feature, i) => (
+            <li
+              key={feature.title}
+              className="group flex min-w-0 flex-col overflow-hidden rounded-[var(--radius-lg)] border border-line bg-surface shadow-[var(--shadow-xs)] transition-[border-color,box-shadow,transform] duration-[var(--duration-normal)] ease-[var(--ease-standard)] hover:-translate-y-1 hover:border-line-strong hover:shadow-[var(--shadow-md)] motion-reduce:transform-none motion-reduce:transition-none"
             >
-              <div style={{ width: "100%", height: "200px", borderRadius: "16px", overflow: "hidden", marginBottom: "24px", position: "relative" }}>
-                <img src={item.img} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s" }} 
-                     onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
-                     onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"} />
-                <div style={{ position: "absolute", top: "16px", left: "16px", width: "48px", height: "48px", borderRadius: "12px", background: "var(--overlay-bg)", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 20px rgba(0,0,0,0.1)" }}>
-                  <item.icon size={24} color={item.color} />
-                </div>
+              <div className="relative aspect-[16/10] w-full overflow-hidden bg-sunken">
+                <img
+                  src={feature.img}
+                  alt={feature.title}
+                  width={800}
+                  height={500}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover transition-transform duration-[var(--duration-slow)] ease-[var(--ease-standard)] group-hover:scale-[1.04] motion-reduce:transform-none motion-reduce:transition-none"
+                />
+                <span
+                  aria-hidden
+                  className="absolute top-3 left-3 inline-flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] border border-line bg-surface text-primary shadow-[var(--shadow-sm)]"
+                >
+                  <feature.icon size={18} strokeWidth={1.75} />
+                </span>
               </div>
-              
-              <div style={{ padding: "0 16px 20px" }}>
-                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: "10px", color: item.color, fontWeight: 700, letterSpacing: "1px", marginBottom: "8px" }}>STEP 0{i+1}</div>
-                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "20px", fontWeight: 800, color: "var(--text-main)", marginBottom: "12px" }}>{item.title}</h3>
-                <p style={{ color: "var(--text-muted)", fontSize: "14px", lineHeight: 1.6 }}>{item.desc}</p>
-              </div>
-            </InteractiveCard>
-          ))}
-        </div>
 
+              <div className="flex min-w-0 flex-1 flex-col p-5">
+                <p className="type-overline text-faint">
+                  Step {String(i + 1).padStart(2, "0")}
+                </p>
+                <h3 className="type-h3 mt-2 text-ink">{feature.title}</h3>
+                <p className="type-small mt-2 text-muted">{feature.desc}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );

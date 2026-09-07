@@ -15,14 +15,15 @@ import {
   ActivityHeatmap,
   ChallengeQueue,
   CriGauge,
-  FocusAndNews,
-  HomeHero,
   HomeSection,
   HomeSkeleton,
   InsightPanel,
   SkillJourney,
 } from "@/components/dashboard/home";
-import { homeUi } from "@/components/dashboard/home/tokens";
+import { HeadlineStats } from "@/components/dashboard/home/HeadlineStats";
+import { NextMoveCard } from "@/components/dashboard/home/NextMoveCard";
+import { NewsTeaser } from "@/components/dashboard/home/NewsTeaser";
+import { PageHeader } from "@/components/ui";
 
 type Insight = {
   icon: "target" | "zap" | "rocket" | "book" | "code" | "shield";
@@ -44,6 +45,16 @@ const DEFAULT_INSIGHTS: Insight[] = [
   },
 ];
 
+function greetingName(raw: string) {
+  const name = raw.trim();
+  if (!name) return "there";
+  if (name.includes("@")) {
+    const local = name.split("@")[0]?.split(/[._-]/)[0] || "there";
+    return local.charAt(0).toUpperCase() + local.slice(1);
+  }
+  return name.split(/\s+/)[0] || "there";
+}
+
 /** Student home — `/dashboard` */
 export default function StudentHome() {
   const student = useStudent();
@@ -55,6 +66,9 @@ export default function StudentHome() {
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [heatLoading, setHeatLoading] = useState(false);
   const [bootLoading, setBootLoading] = useState(true);
+  const [newsError, setNewsError] = useState<string | null>(null);
+  const [insightsError, setInsightsError] = useState<string | null>(null);
+  const [progressError, setProgressError] = useState<string | null>(null);
 
   const loadProgress = useCallback(async (year: number, soft = false) => {
     if (soft) setHeatLoading(true);
@@ -63,9 +77,13 @@ export default function StudentHome() {
         `/api/me/progress?range=month&year=${year}`,
       );
       setProgress(payload);
+      setProgressError(null);
       if (payload.heatmap?.year) setHeatYear(payload.heatmap.year);
-    } catch {
+    } catch (e) {
       if (!soft) setProgress(null);
+      setProgressError(
+        e instanceof Error ? e.message : "Unable to load progress.",
+      );
     } finally {
       setHeatLoading(false);
     }
@@ -73,13 +91,15 @@ export default function StudentHome() {
 
   const loadNews = useCallback(async () => {
     setNewsLoading(true);
+    setNewsError(null);
     try {
       const data = await apiGet<NewsListResponse>(
         "/api/me/tech-news?limit=3&sort=latest",
       );
       setNews((data.items || []).slice(0, 3));
-    } catch {
+    } catch (e) {
       setNews([]);
+      setNewsError(e instanceof Error ? e.message : "Unable to load news.");
     } finally {
       setNewsLoading(false);
     }
@@ -87,14 +107,17 @@ export default function StudentHome() {
 
   const loadInsights = useCallback(async () => {
     setInsightsLoading(true);
+    setInsightsError(null);
     try {
       const res = await fetch("/api/ai/insights", { method: "POST" });
       const data = (await res.json()) as { insights?: Insight[] };
       if (Array.isArray(data.insights) && data.insights.length >= 3) {
         setInsights(data.insights.slice(0, 3));
       }
-    } catch {
-      // keep current
+    } catch (e) {
+      setInsightsError(
+        e instanceof Error ? e.message : "Unable to refresh insights.",
+      );
     } finally {
       setInsightsLoading(false);
     }
@@ -103,18 +126,14 @@ export default function StudentHome() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      await Promise.all([
-        loadProgress(heatYear),
-        loadNews(),
-        loadInsights(),
-      ]);
+      // Insights can wait on an LLM — never block the home canvas on them.
+      void loadInsights();
+      await Promise.all([loadProgress(heatYear), loadNews()]);
       if (!cancelled) setBootLoading(false);
     })();
     return () => {
       cancelled = true;
     };
-    // initial boot only
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onYearChange = (year: number) => {
@@ -129,6 +148,7 @@ export default function StudentHome() {
   const summary: ProgressSummary | null = progress?.summary ?? null;
   const heatmap: ConsistencyHeatmap | null = progress?.heatmap ?? null;
   const nextAction: ProgressNextAction | null = progress?.nextAction ?? null;
+  const first = greetingName(student.name);
 
   const skills = (student.skillsProgress || []).map((s) => ({
     label: s.label,
@@ -136,24 +156,43 @@ export default function StudentHome() {
   }));
 
   return (
-    <div className={homeUi.page}>
-      <HomeSection delay={0}>
-        <HomeHero
-          name={student.name}
-          degree={student.degree}
-          institute={student.institute}
+    <>
+      <PageHeader
+        eyebrow="Home"
+        title={`Welcome back, ${first}`}
+        description={
+          student.goal.role
+            ? `Working toward ${student.goal.role}${student.institute ? ` · ${student.institute}` : ""}.`
+            : "Your readiness, next move, and today's work — in one place."
+        }
+      />
+
+      <HomeSection title="Where you stand" delay={0}>
+        <HeadlineStats
+          cri={student.cri}
           level={student.level}
           xp={student.xp}
           coins={student.coins}
           streak={student.streak}
-          goalRole={student.goal.role}
-          goalWhy={student.goal.why}
-          skills={student.goal.skills || []}
+          status={summary ? statusLabel(summary.status) : null}
         />
       </HomeSection>
 
-      <HomeSection delay={1}>
-        <div className={homeUi.grid2}>
+      <HomeSection
+        title="Next move"
+        description="The single most useful thing to do next."
+        delay={1}
+      >
+        <NextMoveCard
+          action={nextAction}
+          loading={bootLoading}
+          error={progressError}
+          onRetry={() => void loadProgress(heatYear)}
+        />
+      </HomeSection>
+
+      <HomeSection title="Readiness and coaching" delay={2}>
+        <div className="grid gap-4 lg:grid-cols-2">
           <CriGauge
             cri={student.cri}
             status={summary ? statusLabel(summary.status) : null}
@@ -162,39 +201,45 @@ export default function StudentHome() {
           <InsightPanel
             insights={insights}
             loading={insightsLoading}
+            error={insightsError}
             onRefresh={() => void loadInsights()}
             goalRole={student.goal.role}
           />
         </div>
       </HomeSection>
 
-      <HomeSection delay={2}>
+      <HomeSection
+        title="Skill journey"
+        description="How each focus area is tracking."
+        delay={3}
+      >
         <SkillJourney skills={skills} summary={summary} />
       </HomeSection>
 
-      <HomeSection delay={3}>
-          <ActivityHeatmap
-            heatmap={heatmap}
-            year={heatYear}
-            onYearChange={onYearChange}
-            loading={heatLoading}
-          />
+      <HomeSection title="Consistency" delay={4}>
+        <ActivityHeatmap
+          heatmap={heatmap}
+          year={heatYear}
+          onYearChange={onYearChange}
+          loading={heatLoading}
+        />
       </HomeSection>
 
-      <HomeSection delay={4}>
+      <HomeSection title="Today's queue" delay={5}>
         <ChallengeQueue
           challenges={student.dailyChallenges || []}
           streak={student.streak}
         />
       </HomeSection>
 
-      <HomeSection delay={5}>
-        <FocusAndNews
-          nextAction={nextAction}
+      <HomeSection title="Briefing" delay={6}>
+        <NewsTeaser
           news={news}
-          newsLoading={newsLoading}
+          loading={newsLoading}
+          error={newsError}
+          onRetry={() => void loadNews()}
         />
       </HomeSection>
-    </div>
+    </>
   );
 }

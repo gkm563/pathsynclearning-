@@ -1,23 +1,70 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import {
-  X, Clock, ExternalLink, Book, Video, Code, CheckCircle, SkipForward, Play, Lock, ClipboardCheck,
-  Maximize2, ChevronLeft, ChevronRight, StickyNote, ListChecks, GraduationCap, Sparkles,
-} from 'lucide-react';
-import type { RoadmapNode, RoadmapNodeResource } from '@/types/roadmap';
-import { getNodeAssessments, isAssessableNode, nodeRequiresAssessment } from '@/lib/roadmap/assessment';
-import { AddNoteButton, NotesForSource } from '@/components/memory-lane/AddNoteButton';
-import StudyRoomTutor from '@/components/roadmap/StudyRoomTutor';
+  X,
+  Clock,
+  ExternalLink,
+  Book,
+  Video,
+  Code,
+  CheckCircle,
+  SkipForward,
+  Play,
+  Lock,
+  ClipboardCheck,
+  Maximize2,
+  Minimize2,
+  ChevronLeft,
+  ChevronRight,
+  StickyNote,
+  ListChecks,
+  GraduationCap,
+  Sparkles,
+  History,
+  Plus,
+} from "lucide-react";
+import type { RoadmapNode, RoadmapNodeResource } from "@/types/roadmap";
+import {
+  getNodeAssessments,
+  isAssessableNode,
+  nodeRequiresAssessment,
+} from "@/lib/roadmap/assessment";
+import { AddNoteButton, NotesForSource } from "@/components/memory-lane/AddNoteButton";
+import StudyRoomTutor, { type TutorChrome } from "@/components/roadmap/StudyRoomTutor";
+import { Alert, Badge, Button, Card, IconButton, Tabs } from "@/components/ui";
+import { cn } from "@/lib/cn";
 
-type PanelTab = 'overview' | 'resources' | 'notes';
-type SideRail = 'playlist' | 'notes' | 'tutor';
+type PanelTab = "overview" | "resources";
+type SideRail = "playlist";
+type MobileStudyTab = "playlist" | "overview" | "resources";
+type StudyBubble = "tutor" | "notes";
 
-const STUDY_RAIL_KEY = 'pathed:study-rail-width';
+const STUDY_BUBBLE_H_KEY = "pathed:study-bubble-height";
+const STUDY_BUBBLE_W_KEY = "pathed:study-bubble-width";
+const STUDY_RAIL_KEY = "pathed:study-rail-width";
+const STUDY_FS_KEY = "pathed:study-room-fullscreen";
 const STUDY_RAIL_DEFAULT = 402;
 const STUDY_RAIL_MIN = 280;
 const STUDY_RAIL_MAX = 760;
+
+function loadStudyFullscreenPref() {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem(STUDY_FS_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function saveStudyFullscreenPref(on: boolean) {
+  try {
+    window.localStorage.setItem(STUDY_FS_KEY, on ? "1" : "0");
+  } catch {
+    // private mode
+  }
+}
 
 function clampStudyRail(width: number, viewport = 1200) {
   const max = Math.min(STUDY_RAIL_MAX, Math.max(STUDY_RAIL_MIN, Math.floor(viewport * 0.58)));
@@ -25,20 +72,46 @@ function clampStudyRail(width: number, viewport = 1200) {
 }
 
 function loadStudyRailWidth() {
-  if (typeof window === 'undefined') return STUDY_RAIL_DEFAULT;
+  if (typeof window === "undefined") return STUDY_RAIL_DEFAULT;
   const n = Number(window.localStorage.getItem(STUDY_RAIL_KEY));
   if (!Number.isFinite(n)) return STUDY_RAIL_DEFAULT;
   return clampStudyRail(n, window.innerWidth);
 }
 
+const STUDY_BUBBLE_H_MIN = 0.42;
+const STUDY_BUBBLE_W_MIN = 300;
+const STUDY_BUBBLE_W_MAX = 720;
+
+function loadStudyBubbleHeight() {
+  if (typeof window === "undefined") return 0.72;
+  try {
+    const h = Number(window.localStorage.getItem(STUDY_BUBBLE_H_KEY));
+    if (Number.isFinite(h) && h >= STUDY_BUBBLE_H_MIN && h <= 1) return h;
+  } catch {
+    /* ignore */
+  }
+  return 0.72;
+}
+
+function loadStudyBubbleWidth() {
+  if (typeof window === "undefined") return 420;
+  try {
+    const w = Number(window.localStorage.getItem(STUDY_BUBBLE_W_KEY));
+    if (Number.isFinite(w) && w >= STUDY_BUBBLE_W_MIN && w <= STUDY_BUBBLE_W_MAX) return w;
+  } catch {
+    /* ignore */
+  }
+  return 420;
+}
+
 function youtubeId(url: string): string | null {
   try {
     const u = new URL(url);
-    if (u.hostname.includes('youtu.be')) return u.pathname.split('/').filter(Boolean)[0] || null;
-    if (u.hostname.includes('youtube.com')) {
-      if (u.searchParams.get('v')) return u.searchParams.get('v');
-      const parts = u.pathname.split('/').filter(Boolean);
-      if (parts[0] === 'embed' || parts[0] === 'shorts' || parts[0] === 'live') return parts[1] || null;
+    if (u.hostname.includes("youtu.be")) return u.pathname.split("/").filter(Boolean)[0] || null;
+    if (u.hostname.includes("youtube.com")) {
+      if (u.searchParams.get("v")) return u.searchParams.get("v");
+      const parts = u.pathname.split("/").filter(Boolean);
+      if (parts[0] === "embed" || parts[0] === "shorts" || parts[0] === "live") return parts[1] || null;
     }
   } catch {
     return null;
@@ -57,23 +130,8 @@ function youtubeThumb(url: string): string | null {
 }
 
 function isYoutubeVideo(r: RoadmapNodeResource) {
-  return r.type === 'video' && /youtube\.com|youtu\.be/i.test(r.url);
+  return r.type === "video" && /youtube\.com|youtu\.be/i.test(r.url);
 }
-
-const sectionTitle: React.CSSProperties = {
-  fontFamily: 'Outfit',
-  fontSize: 16,
-  color: 'var(--text-main)',
-  marginBottom: 8,
-};
-
-const bodyText: React.CSSProperties = {
-  fontFamily: 'Inter',
-  fontSize: 14,
-  color: 'var(--text-muted)',
-  lineHeight: 1.6,
-  margin: 0,
-};
 
 export default function RoadmapDetailPanel({
   node,
@@ -91,22 +149,42 @@ export default function RoadmapDetailPanel({
   onExpandedChange?: (expanded: boolean) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const [tab, setTab] = useState<PanelTab>('overview');
-  const [sideRail, setSideRail] = useState<SideRail>('playlist');
+  const [tab, setTab] = useState<PanelTab>("overview");
+  const [sideRail, setSideRail] = useState<SideRail>("playlist");
+  const [studyBubble, setStudyBubble] = useState<StudyBubble | null>(null);
+  const [sheetSnap, setSheetSnap] = useState<"mid" | "full">("mid");
+  const sheetDragControls = useDragControls();
   const [activeVideo, setActiveVideo] = useState(0);
   const [railWidth, setRailWidth] = useState(STUDY_RAIL_DEFAULT);
-  const [narrowStudy, setNarrowStudy] = useState(false);
+  const [narrowStudy, setNarrowStudy] = useState(
+    () => typeof window !== "undefined" && window.innerWidth < 1024,
+  );
+  const [mobileStudyTab, setMobileStudyTab] = useState<MobileStudyTab>("playlist");
   const [railDragging, setRailDragging] = useState(false);
+  const [isStudyFullscreen, setIsStudyFullscreen] = useState(false);
+  const studyRoomRef = useRef<HTMLDivElement>(null);
   const draggingRail = useRef(false);
   const railDrag = useRef({ x: 0, w: STUDY_RAIL_DEFAULT });
   const railWidthRef = useRef(STUDY_RAIL_DEFAULT);
   const railRaf = useRef(0);
   railWidthRef.current = railWidth;
+  const [tutorChrome, setTutorChrome] = useState<TutorChrome | null>(null);
+  const [bubbleHeight, setBubbleHeight] = useState(0.72);
+  const [bubbleWidth, setBubbleWidth] = useState(420);
+  const [bubbleResizing, setBubbleResizing] = useState(false);
+  const bubbleHeightRef = useRef(0.72);
+  const bubbleWidthRef = useRef(420);
+  const bubbleRaf = useRef(0);
+  bubbleHeightRef.current = bubbleHeight;
+  bubbleWidthRef.current = bubbleWidth;
 
   useEffect(() => {
     setExpanded(false);
-    setTab('overview');
-    setSideRail('playlist');
+    setTab("overview");
+    setSideRail("playlist");
+    setStudyBubble(null);
+    setSheetSnap("mid");
+    setMobileStudyTab("playlist");
     setActiveVideo(0);
   }, [node?.id]);
 
@@ -121,19 +199,80 @@ export default function RoadmapDetailPanel({
   useEffect(() => {
     if (!expanded) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setExpanded(false);
+      // Browser exits fullscreen first; don't also close the room.
+      if (e.key !== "Escape" || document.fullscreenElement) return;
+      if (studyBubble) {
+        setStudyBubble(null);
+        return;
+      }
+      setExpanded(false);
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [expanded, studyBubble]);
+
+  useEffect(() => {
+    const sync = () => {
+      setIsStudyFullscreen(document.fullscreenElement === studyRoomRef.current);
+    };
+    document.addEventListener("fullscreenchange", sync);
+    sync();
+    return () => document.removeEventListener("fullscreenchange", sync);
+  }, []);
+
+  const enterStudyFullscreen = async () => {
+    const el = studyRoomRef.current;
+    if (!el || document.fullscreenElement === el) return;
+    try {
+      await el.requestFullscreen();
+    } catch {
+      // permission / policy — stay in the in-canvas study room
+    }
+  };
+
+  const exitStudyFullscreen = async () => {
+    if (document.fullscreenElement !== studyRoomRef.current) return;
+    try {
+      await document.exitFullscreen();
+    } catch {
+      // ignore
+    }
+  };
+
+  const toggleStudyFullscreen = async () => {
+    if (document.fullscreenElement === studyRoomRef.current) {
+      saveStudyFullscreenPref(false);
+      await exitStudyFullscreen();
+      return;
+    }
+    saveStudyFullscreenPref(true);
+    await enterStudyFullscreen();
+  };
+
+  useEffect(() => {
+    if (!expanded) {
+      void exitStudyFullscreen();
+      return;
+    }
+    if (window.matchMedia("(max-width: 1023px)").matches) return;
+    if (loadStudyFullscreenPref()) {
+      void enterStudyFullscreen();
+    }
   }, [expanded]);
 
   useEffect(() => {
     setRailWidth(loadStudyRailWidth());
-    const mq = window.matchMedia('(max-width: 980px)');
+    const h = loadStudyBubbleHeight();
+    const w = loadStudyBubbleWidth();
+    setBubbleHeight(h);
+    bubbleHeightRef.current = h;
+    setBubbleWidth(w);
+    bubbleWidthRef.current = w;
+    const mq = window.matchMedia("(max-width: 1023px)");
     const sync = () => setNarrowStudy(mq.matches);
     sync();
-    mq.addEventListener('change', sync);
-    return () => mq.removeEventListener('change', sync);
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
   }, []);
 
   const stopRailDrag = () => {
@@ -144,8 +283,8 @@ export default function RoadmapDetailPanel({
       cancelAnimationFrame(railRaf.current);
       railRaf.current = 0;
     }
-    document.body.style.cursor = '';
-    document.body.style.userSelect = '';
+    document.body.style.cursor = "";
+    document.body.style.userSelect = "";
     try {
       window.localStorage.setItem(STUDY_RAIL_KEY, String(railWidthRef.current));
     } catch {
@@ -164,27 +303,76 @@ export default function RoadmapDetailPanel({
     });
   };
 
+  function startBubbleResize(e: React.PointerEvent, axis: "height" | "width") {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const startY = e.clientY;
+    const startX = e.clientX;
+    const startH = bubbleHeightRef.current;
+    const startW = bubbleWidthRef.current;
+    setBubbleResizing(true);
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+
+    const onMove = (ev: PointerEvent) => {
+      if (bubbleRaf.current) return;
+      bubbleRaf.current = requestAnimationFrame(() => {
+        bubbleRaf.current = 0;
+        if (axis === "height") {
+          const room = studyRoomRef.current?.getBoundingClientRect();
+          if (!room || room.height <= 0) return;
+          const next = Math.min(1, Math.max(STUDY_BUBBLE_H_MIN, startH + (startY - ev.clientY) / room.height));
+          bubbleHeightRef.current = next;
+          setBubbleHeight(next);
+        } else {
+          const nextW = Math.min(
+            STUDY_BUBBLE_W_MAX,
+            Math.max(STUDY_BUBBLE_W_MIN, startW + (startX - ev.clientX)),
+          );
+          bubbleWidthRef.current = nextW;
+          setBubbleWidth(nextW);
+        }
+      });
+    };
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      if (bubbleRaf.current) cancelAnimationFrame(bubbleRaf.current);
+      bubbleRaf.current = 0;
+      setBubbleResizing(false);
+      try {
+        window.localStorage.setItem(STUDY_BUBBLE_H_KEY, String(bubbleHeightRef.current));
+        window.localStorage.setItem(STUDY_BUBBLE_W_KEY, String(bubbleWidthRef.current));
+      } catch {
+        /* ignore */
+      }
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+  }
+
   useEffect(() => {
     const onUp = () => stopRailDrag();
-    window.addEventListener('pointerup', onUp, true);
-    window.addEventListener('pointercancel', onUp, true);
-    window.addEventListener('blur', onUp);
-    document.addEventListener('visibilitychange', onUp);
+    window.addEventListener("pointerup", onUp, true);
+    window.addEventListener("pointercancel", onUp, true);
+    window.addEventListener("blur", onUp);
+    document.addEventListener("visibilitychange", onUp);
     return () => {
-      window.removeEventListener('pointerup', onUp, true);
-      window.removeEventListener('pointercancel', onUp, true);
-      window.removeEventListener('blur', onUp);
-      document.removeEventListener('visibilitychange', onUp);
+      window.removeEventListener("pointerup", onUp, true);
+      window.removeEventListener("pointercancel", onUp, true);
+      window.removeEventListener("blur", onUp);
+      document.removeEventListener("visibilitychange", onUp);
       if (railRaf.current) cancelAnimationFrame(railRaf.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const status = node?.status ?? 'locked';
-  const isLocked = status === 'locked';
-  const isCompleted = status === 'completed';
-  const isInProgress = status === 'in_progress';
-  const isSkipped = status === 'skipped';
+  const status = node?.status ?? "locked";
+  const isLocked = status === "locked";
+  const isCompleted = status === "completed";
+  const isInProgress = status === "in_progress";
+  const isSkipped = status === "skipped";
   const depCount = node?.dependencies?.length ?? 0;
   const examList = node ? getNodeAssessments(node) : [];
   const needsExam = node ? nodeRequiresAssessment(node) : false;
@@ -192,8 +380,8 @@ export default function RoadmapDetailPanel({
 
   const lockedHint = isLocked
     ? depCount > 0
-      ? `Complete ${depCount} prerequisite${depCount === 1 ? '' : 's'} first.`
-      : 'Complete prerequisite nodes first.'
+      ? `Complete ${depCount} prerequisite${depCount === 1 ? "" : "s"} first.`
+      : "Complete prerequisite nodes first."
     : null;
 
   const rawResources = node?.resources || [];
@@ -209,63 +397,51 @@ export default function RoadmapDetailPanel({
   const otherResources = rawResources.filter((r) => !isYoutubeVideo(r));
 
   const currentVideo =
-    ytResources.length > 0
-      ? ytResources[Math.min(activeVideo, ytResources.length - 1)]
-      : null;
+    ytResources.length > 0 ? ytResources[Math.min(activeVideo, ytResources.length - 1)] : null;
   const currentEmbed = currentVideo ? youtubeEmbedUrl(currentVideo.url) : null;
 
   const openStudyRoom = async (markInProgress = false) => {
     if (!node || isLocked) return;
     if (markInProgress && !isInProgress && !isCompleted) {
-      await onStatusChange(node.id, 'in_progress');
+      await onStatusChange(node.id, "in_progress");
     }
     setExpanded(true);
-    setSideRail(ytResources.length > 0 ? 'playlist' : 'notes');
-    setTab('overview');
+    setSideRail("playlist");
+    setStudyBubble(null);
+    setMobileStudyTab(ytResources.length > 0 ? "playlist" : "overview");
+    setTab("overview");
   };
 
   const footerActions = (
-    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+    <div className="flex flex-wrap gap-3">
       {!isCompleted && !isLocked && hasExam && onTakeAssessment && (
-        <button onClick={() => onTakeAssessment(node!.id)} style={primaryBtn('#00c9a7')}>
+        <Button className="min-w-[140px] flex-1" onClick={() => onTakeAssessment(node!.id)}>
           <ClipboardCheck size={18} /> Take Assessment
-        </button>
+        </Button>
       )}
       {!isCompleted && !isLocked && !needsExam && (
-        <button onClick={() => onStatusChange(node!.id, 'completed')} style={primaryBtn('#00c9a7')}>
+        <Button className="min-w-[140px] flex-1" onClick={() => onStatusChange(node!.id, "completed")}>
           <CheckCircle size={18} /> Mark Complete
-        </button>
+        </Button>
       )}
       {!isInProgress && !isCompleted && !isLocked && (
-        <button onClick={() => void openStudyRoom(true)} style={primaryBtn('#6c63ff')}>
+        <Button className="min-w-[140px] flex-1" onClick={() => void openStudyRoom(true)}>
           <Play size={18} /> Start Learning
-        </button>
+        </Button>
       )}
       {isInProgress && !expanded && (
-        <button onClick={() => void openStudyRoom(false)} style={primaryBtn('#6c63ff')}>
+        <Button className="min-w-[140px] flex-1" onClick={() => void openStudyRoom(false)}>
           <Maximize2 size={18} /> Open Study Room
-        </button>
+        </Button>
       )}
       {!isSkipped && !isCompleted && !isLocked && !needsExam && (
-        <button
-          onClick={() => onStatusChange(node!.id, 'skipped')}
-          title="Skip"
-          style={{
-            padding: '12px',
-            background: 'var(--bg-alt)',
-            color: 'var(--text-main)',
-            border: '1px solid var(--border-strong)',
-            borderRadius: 8,
-            fontFamily: 'Outfit',
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
+        <IconButton
+          label="Skip"
+          variant="secondary"
+          onClick={() => onStatusChange(node!.id, "skipped")}
         >
           <SkipForward size={18} />
-        </button>
+        </IconButton>
       )}
     </div>
   );
@@ -274,113 +450,79 @@ export default function RoadmapDetailPanel({
     <AnimatePresence>
       {node && !expanded && (
         <motion.div
-          initial={{ x: 400, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          exit={{ x: 400, opacity: 0 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            bottom: 0,
-            width: 400,
-            background: 'var(--bg-card)',
-            borderLeft: '1px solid var(--border-light)',
-            boxShadow: '-8px 0 32px rgba(0,0,0,0.1)',
-            zIndex: 20,
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
+          initial={{ y: 48, opacity: 0 }}
+          animate={{
+            y: narrowStudy ? (sheetSnap === "full" ? 0 : "38%") : 0,
+            opacity: 1,
+            x: 0,
           }}
+          exit={{ y: 80, opacity: 0 }}
+          transition={{ type: "spring", damping: 28, stiffness: 260 }}
+          drag={narrowStudy ? "y" : false}
+          dragControls={sheetDragControls}
+          dragListener={false}
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={{ top: 0.12, bottom: 0.55 }}
+          onDragEnd={(_, info) => {
+            if (!narrowStudy) return;
+            const dy = info.offset.y;
+            const vy = info.velocity.y;
+            if (sheetSnap === "full") {
+              if (dy > 160 || vy > 900) onClose();
+              else if (dy > 56 || vy > 450) setSheetSnap("mid");
+            } else if (dy > 90 || vy > 650) {
+              onClose();
+            } else if (dy < -48 || vy < -400) {
+              setSheetSnap("full");
+            }
+          }}
+          className="absolute inset-x-0 bottom-0 z-20 flex w-full flex-col overflow-hidden rounded-t-[var(--radius-xl)] border-t border-line bg-surface shadow-[var(--shadow-xl)] max-lg:top-16 lg:inset-y-0 lg:right-0 lg:left-auto lg:top-0 lg:w-[400px] lg:rounded-none lg:border-t-0 lg:border-l"
         >
           <div
-            style={{
-              padding: 24,
-              borderBottom: '1px solid var(--border-light)',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start',
-              gap: 12,
-              flexShrink: 0,
+            className="flex shrink-0 cursor-grab touch-none flex-col items-center pt-2 pb-1 active:cursor-grabbing lg:hidden"
+            onPointerDown={(e) => sheetDragControls.start(e)}
+          >
+            <span className="h-1.5 w-12 rounded-full bg-[var(--border-strong)]" />
+            <span className="sr-only">Drag to expand or close</span>
+          </div>
+          <div
+            className="flex shrink-0 items-start justify-between gap-3 border-b border-line px-4 py-3 sm:p-6 max-lg:touch-none"
+            onPointerDown={(e) => {
+              if (!narrowStudy) return;
+              if ((e.target as HTMLElement).closest("button, a, input, textarea")) return;
+              sheetDragControls.start(e);
             }}
           >
-            <div style={{ minWidth: 0, flex: 1 }}>
-              <span
-                style={{
-                  fontFamily: 'Fira Code',
-                  fontSize: 12,
-                  color: '#6c63ff',
-                  textTransform: 'uppercase',
-                  background: 'rgba(108, 99, 255, 0.1)',
-                  padding: '4px 8px',
-                  borderRadius: 4,
-                }}
-              >
-                {node.type} · {status.replace('_', ' ')}
+            <div className="min-w-0 flex-1">
+              <Badge tone="accent">
+                {node.type} · {status.replace("_", " ")}
                 {hasExam
                   ? examList.length > 1
                     ? ` · ${examList.length} assessments`
                     : ` · ${examList[0]?.type}`
-                  : ''}
-              </span>
-              <h2
-                style={{
-                  fontFamily: 'Outfit',
-                  fontSize: 24,
-                  margin: '12px 0 0 0',
-                  color: 'var(--text-main)',
-                  lineHeight: 1.25,
-                }}
-              >
-                {node.title}
-              </h2>
-              <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  : ""}
+              </Badge>
+              <h2 className="type-h3 mt-2 mb-0 text-ink lg:mt-3">{node.title}</h2>
+              <div className="mt-2 hidden flex-wrap gap-2 lg:flex">
                 <AddNoteButton
                   sourceType="roadmap_node"
                   sourceId={node.id}
                   defaultTitle={node.title}
                   contextLabel={`Roadmap · ${node.title}`}
-                  links={[{ entityType: 'roadmap_node', entityId: node.id }]}
+                  links={[{ entityType: "roadmap_node", entityId: node.id }]}
                   compact
                 />
-                <button
-                  type="button"
-                  onClick={() => void openStudyRoom(false)}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    borderRadius: 8,
-                    border: '1.5px solid rgba(108,99,255,0.35)',
-                    background: 'rgba(108,99,255,0.1)',
-                    color: '#6c63ff',
-                    padding: '6px 10px',
-                    fontFamily: 'Outfit',
-                    fontWeight: 700,
-                    fontSize: 12,
-                    cursor: 'pointer',
-                  }}
-                >
+                <Button size="sm" variant="outline" onClick={() => void openStudyRoom(false)}>
                   <Maximize2 size={14} /> Full study
-                </button>
+                </Button>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close"
-              style={{
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                color: 'var(--text-muted)',
-              }}
-            >
-              <X size={24} />
-            </button>
+            <IconButton label="Close" onClick={onClose}>
+              <X size={20} />
+            </IconButton>
           </div>
 
-          <div style={{ padding: 24, flex: 1, overflowY: 'auto' }}>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3 sm:p-6">
             <CompactOverview
               node={node}
               ytLessons={ytLessons}
@@ -395,40 +537,16 @@ export default function RoadmapDetailPanel({
             />
           </div>
 
-          <div
-            style={{
-              padding: 24,
-              borderTop: '1px solid var(--border-light)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 12,
-              flexShrink: 0,
-            }}
-          >
+          <div className="flex shrink-0 flex-col gap-2 border-t border-line px-4 py-3 sm:gap-3 sm:p-6">
             {lockedHint && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  padding: '10px 12px',
-                  background: 'var(--bg-alt)',
-                  borderRadius: 8,
-                  color: 'var(--text-muted)',
-                  fontFamily: 'Outfit',
-                  fontSize: 13,
-                }}
-              >
-                <Lock size={16} />
-                <span>
-                  {lockedHint}
-                  {node.dependencies?.length
-                    ? ` (${node.dependencies
-                        .map((id) => allNodes.find((n) => n.id === id)?.title || id)
-                        .join(', ')})`
-                    : ''}
-                </span>
-              </div>
+              <Alert tone="warning">
+                {lockedHint}
+                {node.dependencies?.length
+                  ? ` (${node.dependencies
+                      .map((id) => allNodes.find((n) => n.id === id)?.title || id)
+                      .join(", ")})`
+                  : ""}
+              </Alert>
             )}
             {footerActions}
           </div>
@@ -438,171 +556,264 @@ export default function RoadmapDetailPanel({
       {node && expanded && (
         <motion.div
           key="study-room"
+          ref={studyRoomRef}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          style={{
-            position: 'absolute',
-            inset: 0,
-            zIndex: 40,
-            background: 'var(--bg-main, #f8fafc)',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-          }}
+          className="fixed inset-0 z-[var(--z-modal)] flex flex-col overflow-hidden bg-canvas pt-[env(safe-area-inset-top)] lg:absolute lg:z-40 lg:pt-0"
         >
-          <header
-            style={{
-              flexShrink: 0,
-              height: 56,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 16,
-              padding: '0 16px',
-              borderBottom: '1px solid var(--border-light)',
-              background: 'var(--bg-card, #fff)',
-              color: 'var(--text-main)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-              <button
-                type="button"
+          <header className="flex h-12 shrink-0 items-center gap-2 border-b border-line bg-surface px-3 text-ink lg:h-14 lg:gap-4 lg:px-4">
+            <div className="flex min-w-0 flex-1 items-center gap-1.5 lg:gap-2.5">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="shrink-0 px-2 lg:px-3"
                 onClick={() => setExpanded(false)}
-                title="Back to roadmap"
-                style={chromeBtn}
               >
                 <ChevronLeft size={20} />
-                <span style={{ fontFamily: 'Outfit', fontWeight: 600, fontSize: 13 }}>
-                  Roadmap
-                </span>
-              </button>
-              <div
-                style={{
-                  width: 1,
-                  height: 20,
-                  background: 'var(--border-light)',
-                }}
-              />
-              <div style={{ minWidth: 0 }}>
-                <div
-                  style={{
-                    fontFamily: 'Outfit',
-                    fontWeight: 700,
-                    fontSize: 14,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    maxWidth: 'min(520px, 45vw)',
-                    color: 'var(--text-main)',
-                  }}
-                >
+                <span className="hidden sm:inline">Roadmap</span>
+              </Button>
+              <div className="hidden h-5 w-px bg-[var(--border-light)] sm:block" />
+              <div className="min-w-0">
+                <div className="type-label truncate text-ink lg:max-w-[min(520px,45vw)]">
                   {node.title}
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'Inter' }}>
-                  {status.replace('_', ' ')}
-                  {node.estimatedHours ? ` · ~${node.estimatedHours}h` : ''}
+                <div className="type-caption hidden truncate text-muted sm:block">
+                  {status.replace("_", " ")}
+                  {node.estimatedHours ? ` · ~${node.estimatedHours}h` : ""}
                   {ytResources.length
-                    ? ` · ${ytResources.length} lesson${ytResources.length === 1 ? '' : 's'}`
-                    : ''}
+                    ? ` · ${ytResources.length} lesson${ytResources.length === 1 ? "" : "s"}`
+                    : ""}
                 </div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <button
-                type="button"
-                onClick={() => setSideRail('tutor')}
-                title="Ask the AI tutor"
-                style={{
-                  ...chromeBtn,
-                  background: sideRail === 'tutor' ? 'rgba(108,99,255,0.12)' : 'var(--bg-alt)',
-                  color: sideRail === 'tutor' ? '#6c63ff' : 'var(--text-main)',
-                  borderColor: sideRail === 'tutor' ? '#6c63ff' : 'var(--border-light)',
-                }}
-              >
-                <Sparkles size={16} /> AI Tutor
-              </button>
+            <div className="flex shrink-0 items-center gap-1 lg:gap-2">
               {!isCompleted && !isLocked && !needsExam && (
-                <button
-                  type="button"
-                  onClick={() => onStatusChange(node.id, 'completed')}
-                  style={{
-                    ...chromeBtn,
-                    background: '#00c9a7',
-                    border: 'none',
-                    color: '#fff',
-                    padding: '8px 12px',
-                  }}
-                >
-                  <CheckCircle size={16} /> Mark complete
-                </button>
+                <>
+                  <Button
+                    size="sm"
+                    className="hidden sm:inline-flex"
+                    onClick={() => onStatusChange(node.id, "completed")}
+                  >
+                    <CheckCircle size={16} /> Mark complete
+                  </Button>
+                  <IconButton
+                    label="Mark complete"
+                    className="sm:hidden"
+                    onClick={() => onStatusChange(node.id, "completed")}
+                  >
+                    <CheckCircle size={18} />
+                  </IconButton>
+                </>
               )}
               {!isCompleted && !isLocked && hasExam && onTakeAssessment && (
-                <button
-                  type="button"
-                  onClick={() => onTakeAssessment(node.id)}
-                  style={{
-                    ...chromeBtn,
-                    background: '#00c9a7',
-                    border: 'none',
-                    color: '#fff',
-                    padding: '8px 12px',
-                  }}
-                >
-                  <ClipboardCheck size={16} /> Assessment
-                </button>
+                <>
+                  <Button
+                    size="sm"
+                    className="hidden sm:inline-flex"
+                    onClick={() => onTakeAssessment(node.id)}
+                  >
+                    <ClipboardCheck size={16} /> Assessment
+                  </Button>
+                  <IconButton
+                    label="Take assessment"
+                    className="sm:hidden"
+                    onClick={() => onTakeAssessment(node.id)}
+                  >
+                    <ClipboardCheck size={18} />
+                  </IconButton>
+                </>
               )}
-              <button
-                type="button"
+              {!narrowStudy ? (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => void toggleStudyFullscreen()}
+                >
+                  {isStudyFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                  {isStudyFullscreen ? "Exit full screen" : "Full screen"}
+                </Button>
+              ) : null}
+              <IconButton
+                label="Close study room"
                 onClick={() => {
                   setExpanded(false);
                   onClose();
                 }}
-                aria-label="Close study room"
-                style={chromeBtn}
               >
                 <X size={18} />
-              </button>
+              </IconButton>
             </div>
           </header>
 
-          <div
-            style={{
-              flex: 1,
-              minHeight: 0,
-              overflowY: 'auto',
-              background: 'var(--bg-main, #f8fafc)',
-              color: 'var(--text-main)',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: narrowStudy ? 'column' : 'row',
-                alignItems: narrowStudy ? 'stretch' : 'flex-start',
-                gap: narrowStudy ? 16 : 0,
-                padding: '20px 24px 32px',
-                maxWidth: 1600,
-                margin: '0 auto',
-                width: '100%',
-                boxSizing: 'border-box',
-              }}
-              className="roadmap-study-grid"
-            >
-              <div style={{ minWidth: 0, flex: 1 }}>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-canvas text-ink">
+            {narrowStudy ? (
+              <div className="mx-auto flex w-full max-w-[40rem] flex-col px-3 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
                 <div
+                  className="relative w-full overflow-hidden rounded-[var(--radius-lg)] border border-line bg-inverse shadow-[var(--shadow-md)]"
+                  style={{ paddingBottom: "56.25%" }}
+                >
+                  {currentEmbed ? (
+                    <iframe
+                      key={currentEmbed}
+                      src={currentEmbed}
+                      title={currentVideo?.title || node.title}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                      allowFullScreen
+                      className="absolute inset-0 h-full w-full border-0"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 grid place-items-center p-4 text-center type-small text-muted">
+                      No video lesson for this topic yet. Use playlist, notes, or the tutor below.
+                    </div>
+                  )}
+                </div>
+
+                <h1 className="type-h4 mt-3 mb-1 text-ink">
+                  {currentVideo?.title || node.title}
+                </h1>
+                <div className="mb-3 flex flex-wrap items-center gap-2 type-caption text-muted">
+                  {ytResources.length > 0 ? (
+                    <span>
+                      {Math.min(activeVideo, ytResources.length - 1) + 1} / {ytResources.length}
+                      {currentVideo?.suggested ? " · Suggested" : ""}
+                    </span>
+                  ) : null}
+                  {currentVideo ? (
+                    <a
+                      href={currentVideo.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-accent no-underline"
+                    >
+                      YouTube <ExternalLink size={12} />
+                    </a>
+                  ) : null}
+                </div>
+
+                {ytResources.length > 1 ? (
+                  <div className="mb-3 flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="flex-1"
+                      disabled={activeVideo <= 0}
+                      onClick={() => setActiveVideo((i) => Math.max(0, i - 1))}
+                    >
+                      <ChevronLeft size={16} /> Prev
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="flex-1"
+                      disabled={activeVideo >= ytResources.length - 1}
+                      onClick={() => setActiveVideo((i) => Math.min(ytResources.length - 1, i + 1))}
+                    >
+                      Next <ChevronRight size={16} />
+                    </Button>
+                  </div>
+                ) : null}
+
+                <Tabs
+                  ariaLabel="Study sections"
+                  items={[
+                    {
+                      id: "playlist",
+                      label: "Playlist",
+                      icon: <Video size={14} />,
+                      badge: ytResources.length || undefined,
+                    },
+                    { id: "overview", label: "Overview", icon: <GraduationCap size={14} /> },
+                    {
+                      id: "resources",
+                      label: "Reading",
+                      icon: <Book size={14} />,
+                      badge: otherResources.length || undefined,
+                    },
+                  ]}
+                  value={mobileStudyTab}
+                  onChange={(id) => setMobileStudyTab(id as MobileStudyTab)}
+                />
+
+                <div className="mt-3">
+                  {mobileStudyTab === "playlist" ? (
+                    ytResources.length === 0 ? (
+                      <p className="type-small m-0 rounded-[var(--radius-md)] border border-line bg-surface p-4 text-muted">
+                        No video playlist for this topic. Use the AI or notes bubbles.
+                      </p>
+                    ) : (
+                      <div className="overflow-hidden rounded-[var(--radius-md)] border border-line bg-surface">
+                        {ytLessons.map((res, i) => (
+                          <PlaylistRow
+                            key={`${res.url}-${i}`}
+                            res={res}
+                            index={i}
+                            active={i === activeVideo}
+                            onSelect={() => setActiveVideo(i)}
+                            compact
+                          />
+                        ))}
+                        {ytSuggested.length > 0 ? (
+                          <div className="type-overline border-b border-line bg-sunken px-3 py-2 text-muted">
+                            Suggested
+                          </div>
+                        ) : null}
+                        {ytSuggested.map((res, i) => {
+                          const idx = ytLessons.length + i;
+                          return (
+                            <PlaylistRow
+                              key={`${res.url}-s-${i}`}
+                              res={res}
+                              index={idx}
+                              active={idx === activeVideo}
+                              onSelect={() => setActiveVideo(idx)}
+                              suggested
+                              compact
+                            />
+                          );
+                        })}
+                      </div>
+                    )
+                  ) : null}
+
+                  {mobileStudyTab === "overview" ? (
+                    <Card>
+                      <StudyOverview node={node} needsExam={needsExam} />
+                    </Card>
+                  ) : null}
+
+                  {mobileStudyTab === "resources" ? (
+                    <Card>
+                      {otherResources.length > 0 ? (
+                        <ResourceList resources={otherResources} />
+                      ) : (
+                        <p className="type-body m-0 text-muted">
+                          No extra docs for this node. Use the playlist or the notes bubble.
+                        </p>
+                      )}
+                    </Card>
+                  ) : null}
+                </div>
+              </div>
+            ) : (
+            <div
+              className="roadmap-study-grid mx-auto w-full max-w-[1600px] px-6 py-5 pb-8"
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "flex-start",
+                gap: 0,
+                boxSizing: "border-box",
+              }}
+            >
+              <div className="min-w-0 flex-1">
+                <div
+                  className="relative w-full overflow-hidden rounded-[var(--radius-lg)] border border-line bg-inverse shadow-[var(--shadow-md)]"
                   style={{
-                    position: 'relative',
-                    width: '100%',
-                    paddingBottom: '56.25%',
-                    background: '#0f172a',
-                    borderRadius: 14,
-                    overflow: 'hidden',
-                    pointerEvents: railDragging ? 'none' : undefined,
-                    boxShadow: '0 8px 28px rgba(15,23,42,0.12)',
-                    border: '1px solid var(--border-light)',
+                    paddingBottom: "56.25%",
+                    pointerEvents: railDragging ? "none" : undefined,
                   }}
                 >
                   {currentEmbed ? (
@@ -612,216 +823,88 @@ export default function RoadmapDetailPanel({
                       title={currentVideo?.title || node.title}
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                       allowFullScreen
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        width: '100%',
-                        height: '100%',
-                        border: 0,
-                      }}
+                      className="absolute inset-0 h-full w-full border-0"
                     />
                   ) : (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        display: 'grid',
-                        placeItems: 'center',
-                        padding: 24,
-                        textAlign: 'center',
-                        color: '#94a3b8',
-                        fontFamily: 'Inter',
-                        fontSize: 14,
-                      }}
-                    >
+                    <div className="absolute inset-0 grid place-items-center p-6 text-center type-small text-muted">
                       No video lesson for this topic yet. Use resources and notes below.
                     </div>
                   )}
                 </div>
 
-                <h1
-                  style={{
-                    fontFamily: 'Outfit',
-                    fontSize: 'clamp(18px, 2.2vw, 22px)',
-                    fontWeight: 800,
-                    margin: '16px 0 8px',
-                    lineHeight: 1.3,
-                    color: 'var(--text-main)',
-                  }}
-                >
+                <h1 className="type-h3 mt-4 mb-2 text-ink">
                   {currentVideo?.title || node.title}
                 </h1>
 
-                <div
-                  style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    alignItems: 'center',
-                    gap: 10,
-                    marginBottom: 14,
-                    fontFamily: 'Inter',
-                    fontSize: 13,
-                    color: 'var(--text-muted)',
-                  }}
-                >
+                <div className="mb-3.5 flex flex-wrap items-center gap-2.5 type-small text-muted">
                   {ytResources.length > 0 ? (
                     <span>
                       Video {Math.min(activeVideo, ytResources.length - 1) + 1} / {ytResources.length}
-                      {currentVideo?.suggested ? ' · Suggested' : ' · Lesson'}
+                      {currentVideo?.suggested ? " · Suggested" : " · Lesson"}
                     </span>
                   ) : null}
-                  <span
-                    style={{
-                      padding: '4px 8px',
-                      borderRadius: 6,
-                      background: 'var(--bg-alt)',
-                      border: '1px solid var(--border-light)',
-                      textTransform: 'capitalize',
-                    }}
-                  >
-                    {node.type}
-                  </span>
+                  <Badge>{node.type}</Badge>
                   {currentVideo ? (
                     <a
                       href={currentVideo.url}
                       target="_blank"
                       rel="noreferrer"
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        color: '#f7971e',
-                        textDecoration: 'none',
-                      }}
+                      className="inline-flex items-center gap-1.5 text-accent no-underline"
                     >
                       Open on YouTube <ExternalLink size={12} />
                     </a>
                   ) : null}
-                  {currentVideo?.channel ? (
-                    <span>{currentVideo.channel}</span>
-                  ) : null}
+                  {currentVideo?.channel ? <span>{currentVideo.channel}</span> : null}
                 </div>
 
                 {ytResources.length > 1 ? (
-                  <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-                    <button
-                      type="button"
+                  <div className="mb-4 flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="secondary"
                       disabled={activeVideo <= 0}
                       onClick={() => setActiveVideo((i) => Math.max(0, i - 1))}
-                      style={navVideoBtn(activeVideo <= 0)}
                     >
                       <ChevronLeft size={16} /> Previous
-                    </button>
-                    <button
-                      type="button"
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
                       disabled={activeVideo >= ytResources.length - 1}
                       onClick={() => setActiveVideo((i) => Math.min(ytResources.length - 1, i + 1))}
-                      style={navVideoBtn(activeVideo >= ytResources.length - 1)}
                     >
                       Next video <ChevronRight size={16} />
-                    </button>
+                    </Button>
                   </div>
                 ) : null}
 
-                <div
-                  style={{
-                    display: 'flex',
-                    gap: 4,
-                    borderBottom: '1px solid var(--border-light)',
-                    marginBottom: 16,
-                  }}
-                >
-                  {(
-                    [
-                      {
-                        id: 'overview' as const,
-                        label: 'Overview',
-                        icon: <GraduationCap size={14} />,
-                      },
-                      {
-                        id: 'resources' as const,
-                        label: 'Suggested reading',
-                        icon: <Book size={14} />,
-                        count: otherResources.length || undefined,
-                      },
-                      { id: 'notes' as const, label: 'Notes', icon: <StickyNote size={14} /> },
-                    ] as const
-                  ).map((t) => {
-                    const active = tab === t.id;
-                    return (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => setTab(t.id)}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 6,
-                          padding: '12px 14px',
-                          border: 'none',
-                          borderBottom: active
-                            ? '2px solid #6c63ff'
-                            : '2px solid transparent',
-                          background: 'transparent',
-                          color: active ? '#6c63ff' : 'var(--text-muted)',
-                          fontFamily: 'Outfit',
-                          fontWeight: 700,
-                          fontSize: 13,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {t.icon}
-                        {t.label}
-                        {'count' in t && typeof t.count === 'number' ? (
-                          <span
-                            style={{
-                              fontSize: 11,
-                              background: active
-                                ? 'rgba(108,99,255,0.12)'
-                                : 'var(--bg-alt)',
-                              borderRadius: 999,
-                              padding: '1px 6px',
-                            }}
-                          >
-                            {t.count}
-                          </span>
-                        ) : null}
-                      </button>
-                    );
-                  })}
-                </div>
+                <Tabs
+                  ariaLabel="Study sections"
+                  items={[
+                    { id: "overview", label: "Overview", icon: <GraduationCap size={14} /> },
+                    {
+                      id: "resources",
+                      label: "Suggested reading",
+                      icon: <Book size={14} />,
+                      badge: otherResources.length || undefined,
+                    },
+                  ]}
+                  value={tab}
+                  onChange={(id) => setTab(id as PanelTab)}
+                />
 
-                <div
-                  style={{
-                    background: 'var(--bg-card)',
-                    borderRadius: 14,
-                    padding: 16,
-                    border: '1px solid var(--border-light)',
-                  }}
-                >
-                  {tab === 'overview' && (
-                    <StudyOverview node={node} needsExam={needsExam} />
-                  )}
-                  {tab === 'resources' &&
+                <Card className="mt-4">
+                  {tab === "overview" && <StudyOverview node={node} needsExam={needsExam} />}
+                  {tab === "resources" &&
                     (otherResources.length > 0 ? (
                       <ResourceList resources={otherResources} />
                     ) : (
-                      <p style={{ ...bodyText, margin: 0 }}>
-                        No extra docs for this node. Watch the playlist in the player — every video plays in the same window.
+                      <p className="type-body m-0 text-muted">
+                        No extra docs for this node. Watch the playlist in the player — every video
+                        plays in the same window.
                       </p>
                     ))}
-                  {tab === 'notes' && (
-                    <NotesForSource
-                      sourceType="roadmap_node"
-                      sourceId={node.id}
-                      defaultTitle={node.title}
-                      contextLabel={`Roadmap · ${node.title}`}
-                      links={[{ entityType: 'roadmap_node', entityId: node.id }]}
-                      emptyHint="Capture takeaways while you watch — notes stay linked to this node."
-                      inline
-                    />
-                  )}
-                </div>
+                </Card>
               </div>
 
               {!narrowStudy ? (
@@ -838,8 +921,8 @@ export default function RoadmapDetailPanel({
                     draggingRail.current = true;
                     setRailDragging(true);
                     railDrag.current = { x: e.clientX, w: railWidthRef.current };
-                    document.body.style.cursor = 'col-resize';
-                    document.body.style.userSelect = 'none';
+                    document.body.style.cursor = "col-resize";
+                    document.body.style.userSelect = "none";
                   }}
                   onPointerMove={(e) => {
                     if (!draggingRail.current) return;
@@ -868,269 +951,256 @@ export default function RoadmapDetailPanel({
                       /* ignore */
                     }
                   }}
-                  style={{
-                    width: 10,
-                    flexShrink: 0,
-                    alignSelf: 'stretch',
-                    cursor: 'col-resize',
-                    touchAction: 'none',
-                    position: 'relative',
-                    margin: '0 2px',
-                    zIndex: 2,
-                  }}
+                  className="relative z-[2] mx-0.5 w-2.5 shrink-0 cursor-col-resize self-stretch touch-none"
                 >
                   <div
-                    style={{
-                      position: 'absolute',
-                      top: 12,
-                      bottom: 12,
-                      left: '50%',
-                      width: 3,
-                      marginLeft: -1.5,
-                      borderRadius: 99,
-                      background: railDragging ? '#6c63ff' : 'var(--border-light)',
-                    }}
+                    className={cn(
+                      "absolute top-3 bottom-3 left-1/2 w-0.5 -ml-[1.5px] rounded-full",
+                      railDragging ? "bg-primary" : "bg-[var(--border-light)]",
+                    )}
                   />
                 </div>
               ) : null}
 
               <aside
+                className="sticky top-0 flex shrink-0 flex-col overflow-hidden rounded-[var(--radius-lg)] border border-line bg-surface shadow-[var(--shadow-sm)]"
                 style={{
-                  width: narrowStudy ? '100%' : railWidth,
-                  flexShrink: 0,
+                  width: railWidth,
                   minHeight: 0,
-                  height: 'calc(100vh - 120px)',
-                  maxHeight: 'calc(100vh - 120px)',
-                  alignSelf: 'start',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 0,
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-light)',
-                  borderRadius: 14,
-                  overflow: 'hidden',
-                  position: 'sticky',
-                  top: 0,
-                  boxShadow: '0 4px 20px rgba(15,23,42,0.06)',
+                  height: "calc(100vh - 120px)",
+                  maxHeight: "calc(100vh - 120px)",
+                  alignSelf: "start",
                 }}
               >
-                <div
-                  style={{
-                    display: 'flex',
-                    borderBottom: '1px solid var(--border-light)',
-                    flexShrink: 0,
-                  }}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setSideRail('playlist')}
-                    style={railTab(sideRail === 'playlist')}
-                  >
-                    <Video size={14} /> Playlist
-                    {ytResources.length ? (
-                      <span style={{ opacity: 0.7 }}>({ytResources.length})</span>
-                    ) : null}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSideRail('notes')}
-                    style={railTab(sideRail === 'notes')}
-                  >
-                    <StickyNote size={14} /> Notes
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSideRail('tutor')}
-                    style={railTab(sideRail === 'tutor')}
-                  >
-                    <Sparkles size={14} /> Tutor
-                  </button>
-                </div>
-
-                <div
-                  style={{
-                    flex: 1,
-                    minHeight: 0,
-                    overflow: sideRail === 'tutor' ? 'hidden' : 'auto',
-                    overscrollBehavior: 'contain',
-                    padding: sideRail === 'notes' ? 12 : 0,
-                    display: sideRail === 'tutor' ? 'flex' : undefined,
-                    flexDirection: sideRail === 'tutor' ? 'column' : undefined,
-                  }}
-                >
-                  <div
-                    style={{
-                      display: sideRail === 'tutor' ? 'flex' : 'none',
-                      flex: 1,
-                      minHeight: 0,
-                      height: '100%',
-                      flexDirection: 'column',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <StudyRoomTutor
-                      node={node}
-                      videoTitle={currentVideo?.title}
-                      videoChannel={currentVideo?.channel}
-                    />
-                  </div>
-                  {sideRail === 'playlist' ? (
-                    ytResources.length === 0 ? (
-                      <p
-                        style={{
-                          padding: 16,
-                          margin: 0,
-                          color: 'var(--text-muted)',
-                          fontSize: 13,
-                          fontFamily: 'Inter',
-                          lineHeight: 1.5,
-                        }}
-                      >
-                        No video playlist for this topic. Switch to Notes or check Resources under
-                        the player.
-                      </p>
-                    ) : (
-                      <>
-                        {ytLessons.length > 0 ? (
-                          <div style={playlistSectionLabel}>Lessons</div>
-                        ) : null}
-                        {ytLessons.map((res, i) => (
-                          <PlaylistRow
-                            key={`${res.url}-${i}`}
-                            res={res}
-                            index={i}
-                            active={i === activeVideo}
-                            onSelect={() => setActiveVideo(i)}
-                          />
-                        ))}
-                        {ytSuggested.length > 0 ? (
-                          <div style={playlistSectionLabel}>Suggested · other channels</div>
-                        ) : null}
-                        {ytSuggested.map((res, i) => {
-                          const idx = ytLessons.length + i;
-                          return (
-                            <PlaylistRow
-                              key={`${res.url}-s-${i}`}
-                              res={res}
-                              index={idx}
-                              active={idx === activeVideo}
-                              onSelect={() => setActiveVideo(idx)}
-                              suggested
-                            />
-                          );
-                        })}
-                      </>
-                    )
-                  ) : sideRail === 'notes' ? (
-                    <NotesForSource
-                      sourceType="roadmap_node"
-                      sourceId={node.id}
-                      defaultTitle={node.title}
-                      contextLabel={`Roadmap · ${node.title}`}
-                      links={[{ entityType: 'roadmap_node', entityId: node.id }]}
-                      emptyHint="Jot takeaways while the video plays."
-                      inline
-                    />
+                <div className="type-overline flex items-center gap-2 border-b border-line bg-sunken px-3 py-2.5 text-muted">
+                  <Video size={14} />
+                  Playlist
+                  {ytResources.length ? (
+                    <span className="type-caption text-ink">{ytResources.length}</span>
                   ) : null}
+                </div>
+                <div className="min-h-0 flex-1 overflow-auto" style={{ overscrollBehavior: "contain" }}>
+                  {ytResources.length === 0 ? (
+                    <p className="type-small m-0 p-4 leading-relaxed text-muted">
+                      No video playlist for this topic. Use the notes or AI bubbles while you read.
+                    </p>
+                  ) : (
+                    <>
+                      {ytLessons.length > 0 ? (
+                        <div className="type-overline border-b border-line bg-sunken px-3 py-2.5 text-muted">
+                          Lessons
+                        </div>
+                      ) : null}
+                      {ytLessons.map((res, i) => (
+                        <PlaylistRow
+                          key={`${res.url}-${i}`}
+                          res={res}
+                          index={i}
+                          active={i === activeVideo}
+                          onSelect={() => setActiveVideo(i)}
+                        />
+                      ))}
+                      {ytSuggested.length > 0 ? (
+                        <div className="type-overline border-b border-line bg-sunken px-3 py-2.5 text-muted">
+                          Suggested · other channels
+                        </div>
+                      ) : null}
+                      {ytSuggested.map((res, i) => {
+                        const idx = ytLessons.length + i;
+                        return (
+                          <PlaylistRow
+                            key={`${res.url}-s-${i}`}
+                            res={res}
+                            index={idx}
+                            active={idx === activeVideo}
+                            onSelect={() => setActiveVideo(idx)}
+                            suggested
+                          />
+                        );
+                      })}
+                    </>
+                  )}
                 </div>
               </aside>
             </div>
+            )}
           </div>
 
-          <style>{`
-            @media (max-width: 980px) {
-              .roadmap-study-grid {
-                flex-direction: column !important;
-              }
-            }
-          `}</style>
+          {!studyBubble ? (
+            <div
+              className="absolute bottom-4 left-3 z-40 flex items-end justify-between"
+              style={{
+                right: narrowStudy ? 12 : railWidth + 20,
+              }}
+            >
+              <button
+                type="button"
+                aria-label="Notes"
+                onClick={() => setStudyBubble("notes")}
+                className="grid h-14 w-14 place-items-center rounded-full border border-line bg-surface text-primary shadow-[var(--shadow-lg)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              >
+                <StickyNote size={22} />
+              </button>
+              <button
+                type="button"
+                aria-label="AI Tutor"
+                onClick={() => setStudyBubble("tutor")}
+                className="grid h-14 w-14 place-items-center rounded-full border border-line bg-surface text-primary shadow-[var(--shadow-lg)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              >
+                <Sparkles size={22} />
+              </button>
+            </div>
+          ) : null}
+
+          <AnimatePresence>
+            {studyBubble ? (
+              <>
+                <motion.button
+                  key="study-bubble-backdrop"
+                  type="button"
+                  aria-label="Close panel"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 z-30 bg-[color-mix(in_srgb,var(--ink)_28%,transparent)]"
+                  onClick={() => setStudyBubble(null)}
+                />
+                <motion.div
+                  key={studyBubble}
+                  role="dialog"
+                  aria-label={studyBubble === "tutor" ? "AI Tutor" : "Notes"}
+                  initial={{ y: 32, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: 24, opacity: 0 }}
+                  transition={
+                    bubbleResizing
+                      ? { duration: 0 }
+                      : { type: "spring", damping: 26, stiffness: 220 }
+                  }
+                  className={cn(
+                    "absolute bottom-0 z-30 flex flex-col overflow-hidden border-t border-line bg-surface shadow-[var(--shadow-xl)]",
+                    narrowStudy
+                      ? "inset-x-0 rounded-t-[var(--radius-xl)]"
+                      : "right-6 rounded-[var(--radius-xl)] border",
+                    bubbleResizing ? "" : "transition-[height,width] duration-150",
+                  )}
+                  style={{
+                    height: `${Math.round(bubbleHeight * 100)}%`,
+                    maxHeight: "calc(100% - 3rem)",
+                    width: narrowStudy ? "100%" : bubbleWidth,
+                    maxWidth: "100%",
+                  }}
+                >
+                  <div
+                    role="separator"
+                    aria-orientation="horizontal"
+                    aria-label="Resize panel height"
+                    title="Drag to resize · double-click to reset"
+                    onPointerDown={(e) => startBubbleResize(e, "height")}
+                    onDoubleClick={() => {
+                      bubbleHeightRef.current = 0.72;
+                      setBubbleHeight(0.72);
+                      try {
+                        window.localStorage.setItem(STUDY_BUBBLE_H_KEY, "0.72");
+                      } catch {
+                        /* ignore */
+                      }
+                    }}
+                    className="flex h-5 shrink-0 cursor-ns-resize items-center justify-center touch-none hover:bg-sunken"
+                  >
+                    <span className="h-1 w-10 rounded-full bg-ink/20" />
+                  </div>
+                  {!narrowStudy ? (
+                    <div
+                      role="separator"
+                      aria-orientation="vertical"
+                      aria-label="Resize panel width"
+                      title="Drag to resize · double-click to reset"
+                      onPointerDown={(e) => startBubbleResize(e, "width")}
+                      onDoubleClick={() => {
+                        bubbleWidthRef.current = 420;
+                        setBubbleWidth(420);
+                        try {
+                          window.localStorage.setItem(STUDY_BUBBLE_W_KEY, "420");
+                        } catch {
+                          /* ignore */
+                        }
+                      }}
+                      className="absolute left-0 top-5 bottom-0 z-10 w-2 cursor-ew-resize touch-none hover:bg-ink/5"
+                    />
+                  ) : null}
+                  <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line px-3 py-2">
+                    <div className="flex min-w-0 items-center gap-2">
+                      {studyBubble === "tutor" ? (
+                        <Sparkles size={16} className="text-primary" />
+                      ) : (
+                        <StickyNote size={16} className="text-primary" />
+                      )}
+                      <span className="type-label text-ink">
+                        {studyBubble === "tutor" ? "AI Tutor" : "Notes"}
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      {studyBubble === "tutor" && tutorChrome ? (
+                        <>
+                          <IconButton
+                            size="sm"
+                            label={tutorChrome.showHistory ? "Back to chat" : "Chat history"}
+                            variant={tutorChrome.showHistory ? "secondary" : "ghost"}
+                            onClick={tutorChrome.toggleHistory}
+                          >
+                            <History size={16} />
+                          </IconButton>
+                          <IconButton
+                            size="sm"
+                            label="New chat"
+                            onClick={tutorChrome.startNewChat}
+                            disabled={tutorChrome.busy}
+                          >
+                            <Plus size={16} />
+                          </IconButton>
+                        </>
+                      ) : null}
+                      <IconButton size="sm" label="Close panel" onClick={() => setStudyBubble(null)}>
+                        <X size={18} />
+                      </IconButton>
+                    </div>
+                  </div>
+                  <div
+                    className={cn(
+                      "min-h-0 flex-1",
+                      studyBubble === "tutor" ? "flex flex-col overflow-hidden" : "overflow-y-auto p-3",
+                    )}
+                  >
+                    {studyBubble === "tutor" ? (
+                      <StudyRoomTutor
+                        node={node}
+                        videoTitle={currentVideo?.title}
+                        videoChannel={currentVideo?.channel}
+                        embedded
+                        onChrome={setTutorChrome}
+                      />
+                    ) : (
+                      <NotesForSource
+                        sourceType="roadmap_node"
+                        sourceId={node.id}
+                        defaultTitle={node.title}
+                        contextLabel={`Roadmap · ${node.title}`}
+                        links={[{ entityType: "roadmap_node", entityId: node.id }]}
+                        emptyHint="Capture takeaways while you watch — notes stay linked to this node."
+                        inline
+                      />
+                    )}
+                  </div>
+                </motion.div>
+              </>
+            ) : null}
+          </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>
   );
 }
-
-function railTab(active: boolean): React.CSSProperties {
-  return {
-    flex: 1,
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    padding: '12px 8px',
-    border: 'none',
-    borderBottom: active ? '2px solid #6c63ff' : '2px solid transparent',
-    background: active ? 'rgba(108,99,255,0.06)' : 'transparent',
-    color: active ? '#6c63ff' : 'var(--text-muted)',
-    fontFamily: 'Outfit',
-    fontWeight: 700,
-    fontSize: 13,
-    cursor: 'pointer',
-  };
-}
-
-const chromeBtn: React.CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 6,
-  borderRadius: 999,
-  border: '1px solid var(--border-light)',
-  background: 'var(--bg-alt)',
-  color: 'var(--text-main)',
-  padding: '8px 10px',
-  cursor: 'pointer',
-  fontFamily: 'Outfit',
-  fontSize: 13,
-};
-
-function primaryBtn(bg: string): React.CSSProperties {
-  return {
-    flex: 1,
-    minWidth: 140,
-    padding: '12px',
-    background: bg,
-    color: '#fff',
-    border: 'none',
-    borderRadius: 8,
-    fontFamily: 'Outfit',
-    fontWeight: 600,
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  };
-}
-
-function navVideoBtn(disabled: boolean): React.CSSProperties {
-  return {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: 6,
-    padding: '8px 12px',
-    borderRadius: 10,
-    border: '1px solid var(--border-light)',
-    background: 'var(--bg-alt)',
-    color: 'var(--text-main)',
-    fontFamily: 'Outfit',
-    fontWeight: 700,
-    fontSize: 13,
-    cursor: disabled ? 'not-allowed' : 'pointer',
-    opacity: disabled ? 0.45 : 1,
-  };
-}
-
-const playlistSectionLabel: React.CSSProperties = {
-  padding: '10px 12px 6px',
-  fontFamily: 'Outfit',
-  fontSize: 11,
-  fontWeight: 800,
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
-  color: 'var(--text-muted)',
-  background: 'var(--bg-alt)',
-  borderBottom: '1px solid var(--border-light)',
-};
 
 function PlaylistRow({
   res,
@@ -1138,107 +1208,57 @@ function PlaylistRow({
   active,
   onSelect,
   suggested,
+  compact,
 }: {
   res: RoadmapNodeResource;
   index: number;
   active: boolean;
   onSelect: () => void;
   suggested?: boolean;
+  compact?: boolean;
 }) {
   const thumb = youtubeThumb(res.url);
   return (
     <button
       type="button"
       onClick={onSelect}
-      style={{
-        display: 'grid',
-        gridTemplateColumns: '24px 120px 1fr',
-        gap: 10,
-        width: '100%',
-        padding: '10px 12px',
-        border: 'none',
-        borderBottom: '1px solid var(--border-light)',
-        background: active ? 'rgba(108,99,255,0.08)' : 'transparent',
-        color: 'var(--text-main)',
-        cursor: 'pointer',
-        textAlign: 'left',
-        alignItems: 'center',
-      }}
+      className={cn(
+        "grid w-full items-center border-0 border-b border-line text-left text-ink",
+        compact
+          ? "grid-cols-[20px_88px_1fr] gap-2 px-2 py-2"
+          : "grid-cols-[24px_120px_1fr] gap-2.5 px-3 py-2.5",
+        active ? "bg-primary-soft" : "bg-transparent",
+      )}
     >
-      <span
-        style={{
-          fontFamily: 'Outfit',
-          fontSize: 12,
-          color: active ? '#6c63ff' : 'var(--text-muted)',
-          textAlign: 'center',
-        }}
-      >
-        {active ? <Play size={12} fill="#6c63ff" color="#6c63ff" /> : index + 1}
+      <span className={cn("text-center type-caption", active ? "text-primary" : "text-muted")}>
+        {active ? <Play size={12} fill="var(--primary)" color="var(--primary)" /> : index + 1}
       </span>
       <div
-        style={{
-          position: 'relative',
-          width: 120,
-          height: 68,
-          borderRadius: 8,
-          overflow: 'hidden',
-          background: 'var(--bg-alt)',
-          flexShrink: 0,
-          border: '1px solid var(--border-light)',
-        }}
+        className={cn(
+          "relative shrink-0 overflow-hidden rounded-[var(--radius-sm)] border border-line bg-sunken",
+          compact ? "h-12 w-[88px]" : "h-[68px] w-[120px]",
+        )}
       >
         {thumb ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img src={thumb} alt="" className="h-full w-full object-cover" />
         ) : (
-          <div style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center' }}>
-            <Video size={18} color="#94a3b8" />
+          <div className="grid h-full w-full place-items-center">
+            <Video size={18} className="text-muted" />
           </div>
         )}
         {active ? (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background: 'rgba(108,99,255,0.28)',
-              display: 'grid',
-              placeItems: 'center',
-            }}
-          >
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 800,
-                fontFamily: 'Outfit',
-                background: '#6c63ff',
-                color: '#fff',
-                padding: '3px 6px',
-                borderRadius: 4,
-              }}
-            >
-              NOW
+          <div className="absolute inset-0 grid place-items-center bg-[var(--primary-border)]">
+            <span className="type-overline rounded bg-primary px-1.5 py-0.5 text-[var(--text-on-primary)]">
+              Now
             </span>
           </div>
         ) : null}
       </div>
-      <div style={{ minWidth: 0 }}>
-        <div
-          style={{
-            fontFamily: 'Outfit',
-            fontWeight: 700,
-            fontSize: 13,
-            lineHeight: 1.35,
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-          }}
-        >
-          {res.title}
-        </div>
-        <div style={{ marginTop: 4, fontSize: 11, color: 'var(--text-muted)', fontFamily: 'Inter' }}>
-          {suggested ? 'Suggested · ' : ''}
-          {res.channel || 'YouTube'}
+      <div className="min-w-0">
+        <div className="type-label line-clamp-2 leading-snug">{res.title}</div>
+        <div className="type-caption mt-1 text-muted">
+          {suggested ? "Suggested · " : ""}
+          {res.channel || "YouTube"}
         </div>
       </div>
     </button>
@@ -1258,9 +1278,9 @@ function CompactVideoList({
 }) {
   if (!items.length) return null;
   return (
-    <div style={{ marginBottom: 24 }}>
-      <h3 style={sectionTitle}>{title}</h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <div className="mb-6">
+      <h3 className="type-h4 mb-2 text-ink">{title}</h3>
+      <div className="flex flex-col gap-2">
         {items.map((res, i) => {
           const thumb = youtubeThumb(res.url);
           return (
@@ -1268,50 +1288,20 @@ function CompactVideoList({
               key={`${res.url}-${indexOffset + i}`}
               type="button"
               onClick={() => onPlayIndex(indexOffset + i)}
-              style={{
-                display: 'flex',
-                gap: 10,
-                alignItems: 'center',
-                padding: 8,
-                borderRadius: 10,
-                border: '1px solid var(--border-light)',
-                background: 'var(--bg-alt)',
-                cursor: 'pointer',
-                textAlign: 'left',
-                color: 'var(--text-main)',
-              }}
+              className="flex items-center gap-2.5 rounded-[var(--radius-md)] border border-line bg-sunken p-2 text-left text-ink"
             >
-              <div
-                style={{
-                  width: 88,
-                  height: 50,
-                  borderRadius: 8,
-                  overflow: 'hidden',
-                  background: '#111',
-                  flexShrink: 0,
-                  position: 'relative',
-                }}
-              >
+              <div className="relative h-[50px] w-[88px] shrink-0 overflow-hidden rounded-[var(--radius-sm)] bg-inverse">
                 {thumb ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={thumb} alt="" className="h-full w-full object-cover" />
                 ) : null}
-                <div
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    display: 'grid',
-                    placeItems: 'center',
-                    background: 'rgba(0,0,0,0.25)',
-                  }}
-                >
-                  <Play size={16} color="#fff" fill="#fff" />
+                <div className="absolute inset-0 grid place-items-center bg-[color-mix(in_srgb,var(--bg-inverse)_25%,transparent)]">
+                  <Play size={16} className="text-on-inverse" fill="currentColor" />
                 </div>
               </div>
-              <span style={{ fontFamily: 'Inter', fontSize: 13, fontWeight: 600 }}>
+              <span className="type-label">
                 {res.title}
                 {res.channel ? (
-                  <span style={{ display: 'block', fontWeight: 500, color: 'var(--text-muted)', fontSize: 11, marginTop: 2 }}>
+                  <span className="mt-0.5 block font-medium type-caption text-muted">
                     {res.channel}
                   </span>
                 ) : null}
@@ -1344,78 +1334,52 @@ function CompactOverview({
   return (
     <>
       {node.estimatedHours ? (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            color: 'var(--text-muted)',
-            marginBottom: 20,
-          }}
-        >
+        <div className="mb-5 flex items-center gap-2 text-muted">
           <Clock size={16} />
-          <span style={{ fontFamily: 'Outfit', fontSize: 14 }}>
-            Estimated time: {node.estimatedHours} hours
-          </span>
+          <span className="type-body">Estimated time: {node.estimatedHours} hours</span>
         </div>
       ) : null}
 
       {node.description ? (
-        <div style={{ marginBottom: 24 }}>
-          <h3 style={sectionTitle}>About this topic</h3>
-          <p style={bodyText}>{node.description}</p>
+        <div className="mb-6">
+          <h3 className="type-h4 mb-2 text-ink">About this topic</h3>
+          <p className="type-body m-0 text-muted">{node.description}</p>
         </div>
       ) : null}
 
       {node.whyLearn && (
-        <div style={{ marginBottom: 24 }}>
-          <h3 style={sectionTitle}>Why learn this?</h3>
-          <p style={bodyText}>{node.whyLearn}</p>
+        <div className="mb-6">
+          <h3 className="type-h4 mb-2 text-ink">Why learn this?</h3>
+          <p className="type-body m-0 text-muted">{node.whyLearn}</p>
         </div>
       )}
 
       {node.interviewFocus ? (
-        <div style={{ marginBottom: 24 }}>
-          <h3 style={sectionTitle}>Interview focus</h3>
-          <p style={bodyText}>{node.interviewFocus}</p>
+        <div className="mb-6">
+          <h3 className="type-h4 mb-2 text-ink">Interview focus</h3>
+          <p className="type-body m-0 text-muted">{node.interviewFocus}</p>
         </div>
       ) : null}
 
       {node.learningOutcomes && node.learningOutcomes.length > 0 ? (
-        <div style={{ marginBottom: 24 }}>
-          <h3 style={sectionTitle}>You will be able to</h3>
-          <ul
-            style={{
-              margin: 0,
-              paddingLeft: 20,
-              color: 'var(--text-muted)',
-              fontFamily: 'Inter',
-              fontSize: 14,
-              lineHeight: 1.6,
-            }}
-          >
+        <div className="mb-6">
+          <h3 className="type-h4 mb-2 text-ink">You will be able to</h3>
+          <ul className="type-body m-0 list-disc pl-5 text-muted">
             {node.learningOutcomes.map((item, i) => (
-              <li key={i} style={{ marginBottom: 4 }}>{item}</li>
+              <li key={i} className="mb-1">
+                {item}
+              </li>
             ))}
           </ul>
         </div>
       ) : null}
 
       {node.topics && node.topics.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <h3 style={sectionTitle}>Key Topics</h3>
-          <ul
-            style={{
-              margin: 0,
-              paddingLeft: 20,
-              color: 'var(--text-muted)',
-              fontFamily: 'Inter',
-              fontSize: 14,
-              lineHeight: 1.6,
-            }}
-          >
+        <div className="mb-6">
+          <h3 className="type-h4 mb-2 text-ink">Key Topics</h3>
+          <ul className="type-body m-0 list-disc pl-5 text-muted">
             {node.topics.map((topic, i) => (
-              <li key={i} style={{ marginBottom: 4 }}>
+              <li key={i} className="mb-1">
                 {topic}
               </li>
             ))}
@@ -1424,34 +1388,16 @@ function CompactOverview({
       )}
 
       {(ytLessons.length > 0 || ytSuggested.length > 0) && (
-        <div style={{ marginBottom: 8 }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: 8,
-            }}
-          >
-            <h3 style={{ ...sectionTitle, marginBottom: 0 }}>Watch in study room</h3>
-            <button
-              type="button"
-              onClick={onOpenStudy}
-              style={{
-                border: 'none',
-                background: 'transparent',
-                color: '#6c63ff',
-                fontFamily: 'Outfit',
-                fontWeight: 700,
-                fontSize: 12,
-                cursor: 'pointer',
-              }}
-            >
+        <div className="mb-2">
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="type-h4 m-0 text-ink">Watch in study room</h3>
+            <Button size="sm" variant="ghost" onClick={onOpenStudy}>
               Open player →
-            </button>
+            </Button>
           </div>
-          <p style={{ ...bodyText, marginBottom: 12, fontSize: 13 }}>
-            Every video plays in the same player. Suggested clips from other channels are listed separately so they are not mixed with core lessons.
+          <p className="type-small mb-3 text-muted">
+            Every video plays in the same player. Suggested clips from other channels are listed
+            separately so they are not mixed with core lessons.
           </p>
           <CompactVideoList title="Lessons" items={ytLessons} indexOffset={0} onPlayIndex={onPlayIndex} />
           <CompactVideoList
@@ -1464,38 +1410,28 @@ function CompactOverview({
       )}
 
       {otherResources.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <h3 style={sectionTitle}>Suggested reading</h3>
+        <div className="mb-6">
+          <h3 className="type-h4 mb-2 text-ink">Suggested reading</h3>
           <ResourceList resources={otherResources} />
         </div>
       )}
 
       {needsExam && (
-        <div
-          style={{
-            padding: 12,
-            borderRadius: 10,
-            background: 'rgba(108,99,255,0.08)',
-            border: '1px solid rgba(108,99,255,0.25)',
-            fontSize: 13,
-            color: 'var(--text-muted)',
-            fontFamily: 'Inter',
-            display: 'flex',
-            gap: 8,
-            alignItems: 'flex-start',
-          }}
-        >
-          <ListChecks size={16} color="#6c63ff" style={{ marginTop: 2, flexShrink: 0 }} />
-          <span>
-            Pass {(() => {
-              const exams = getNodeAssessments(node);
-              return exams.length > 1
-                ? `all ${exams.length} assessments (${exams.map((a) => a.type).join(', ')})`
-                : `a proctored ${node.assessment?.type === 'coding' ? 'coding' : 'MCQ'} assessment`;
-            })()}{' '}
-            to unlock the next nodes.
+        <Alert>
+          <span className="inline-flex items-start gap-2">
+            <ListChecks size={16} className="mt-0.5 shrink-0 text-primary" />
+            <span>
+              Pass{" "}
+              {(() => {
+                const exams = getNodeAssessments(node);
+                return exams.length > 1
+                  ? `all ${exams.length} assessments (${exams.map((a) => a.type).join(", ")})`
+                  : `a proctored ${node.assessment?.type === "coding" ? "coding" : "MCQ"} assessment`;
+              })()}{" "}
+              to unlock the next nodes.
+            </span>
           </span>
-        </div>
+        </Alert>
       )}
     </>
   );
@@ -1510,33 +1446,47 @@ function StudyOverview({
   needsExam: boolean;
   dark?: boolean;
 }) {
-  const muted = dark ? '#aaa' : 'var(--text-muted)';
-  const main = dark ? '#f1f1f1' : 'var(--text-main)';
+  const muted = dark ? "var(--text-inverse)" : undefined;
+  const main = dark ? "var(--text-inverse)" : undefined;
 
   return (
-    <div style={{ display: 'grid', gap: 16 }}>
+    <div className="grid gap-4">
       {node.description ? (
         <div>
-          <h3 style={{ ...sectionTitle, color: main }}>About</h3>
-          <p style={{ ...bodyText, color: muted }}>{node.description}</p>
+          <h3 className="type-h4 mb-2 text-ink" style={{ color: main }}>
+            About
+          </h3>
+          <p className="type-body m-0 text-muted" style={{ color: muted }}>
+            {node.description}
+          </p>
         </div>
       ) : null}
       {node.whyLearn ? (
         <div>
-          <h3 style={{ ...sectionTitle, color: main }}>Why learn this?</h3>
-          <p style={{ ...bodyText, color: muted }}>{node.whyLearn}</p>
+          <h3 className="type-h4 mb-2 text-ink" style={{ color: main }}>
+            Why learn this?
+          </h3>
+          <p className="type-body m-0 text-muted" style={{ color: muted }}>
+            {node.whyLearn}
+          </p>
         </div>
       ) : null}
       {node.interviewFocus ? (
         <div>
-          <h3 style={{ ...sectionTitle, color: main }}>Interview focus</h3>
-          <p style={{ ...bodyText, color: muted }}>{node.interviewFocus}</p>
+          <h3 className="type-h4 mb-2 text-ink" style={{ color: main }}>
+            Interview focus
+          </h3>
+          <p className="type-body m-0 text-muted" style={{ color: muted }}>
+            {node.interviewFocus}
+          </p>
         </div>
       ) : null}
       {node.learningOutcomes?.length ? (
         <div>
-          <h3 style={{ ...sectionTitle, color: main }}>You will be able to</h3>
-          <ul style={{ margin: 0, paddingLeft: 18, color: muted, fontFamily: 'Inter', fontSize: 14, lineHeight: 1.6 }}>
+          <h3 className="type-h4 mb-2 text-ink" style={{ color: main }}>
+            You will be able to
+          </h3>
+          <ul className="type-body m-0 list-disc pl-4.5 text-muted" style={{ color: muted }}>
             {node.learningOutcomes.map((item, i) => (
               <li key={i}>{item}</li>
             ))}
@@ -1545,8 +1495,10 @@ function StudyOverview({
       ) : null}
       {node.topics?.length ? (
         <div>
-          <h3 style={{ ...sectionTitle, color: main }}>Key topics</h3>
-          <ul style={{ margin: 0, paddingLeft: 18, color: muted, fontFamily: 'Inter', fontSize: 14, lineHeight: 1.6 }}>
+          <h3 className="type-h4 mb-2 text-ink" style={{ color: main }}>
+            Key topics
+          </h3>
+          <ul className="type-body m-0 list-disc pl-4.5 text-muted" style={{ color: muted }}>
             {node.topics.map((t, i) => (
               <li key={i}>{t}</li>
             ))}
@@ -1554,30 +1506,19 @@ function StudyOverview({
         </div>
       ) : null}
       {node.skills?.length ? (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        <div className="flex flex-wrap gap-2">
           {node.skills.map((skill) => (
-            <span
-              key={skill}
-              style={{
-                fontFamily: 'Outfit',
-                fontSize: 12,
-                fontWeight: 600,
-                padding: '6px 10px',
-                borderRadius: 999,
-                background: dark ? 'rgba(108,99,255,0.25)' : 'rgba(108,99,255,0.1)',
-                color: dark ? '#c4b5fd' : '#6c63ff',
-              }}
-            >
+            <Badge key={skill} tone="accent">
               {skill}
-            </span>
+            </Badge>
           ))}
         </div>
       ) : null}
       {needsExam ? (
-        <p style={{ ...bodyText, color: muted }}>
+        <p className="type-body m-0 text-muted" style={{ color: muted }}>
           {getNodeAssessments(node).length > 1
             ? `Pass all ${getNodeAssessments(node).length} assessments on this node to unlock what comes next.`
-            : 'Assessment required after this topic to unlock the next nodes.'}
+            : "Assessment required after this topic to unlock the next nodes."}
         </p>
       ) : null}
     </div>
@@ -1592,40 +1533,32 @@ function ResourceList({
   dark?: boolean;
 }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <div className="flex flex-col gap-2">
       {resources.map((res, i) => (
         <a
           key={`${res.url}-${i}`}
           href={res.url}
           target="_blank"
           rel="noreferrer"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: 12,
-            background: dark ? 'rgba(255,255,255,0.06)' : 'var(--bg-alt)',
-            borderRadius: 8,
-            textDecoration: 'none',
-            color: dark ? '#f1f1f1' : 'var(--text-main)',
-            fontFamily: 'Inter',
-            fontSize: 14,
-            border: dark ? '1px solid rgba(255,255,255,0.08)' : undefined,
-          }}
+          className={cn(
+            "flex items-center justify-between rounded-[var(--radius-sm)] p-3 type-body no-underline",
+            dark ? "border border-line bg-inverse text-on-inverse" : "bg-sunken text-ink",
+          )}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-            {res.type === 'video' ? (
-              <Video size={16} color="#f7971e" />
-            ) : res.type === 'practice' || res.type === 'project' ? (
-              <Code size={16} color="#00c9a7" />
+          <div className="flex min-w-0 items-center gap-2">
+            {res.type === "video" ? (
+              <Video size={16} className="text-accent" />
+            ) : res.type === "practice" || res.type === "project" ? (
+              <Code size={16} className="text-success" />
             ) : (
-              <Book size={16} color="#6c63ff" />
+              <Book size={16} className="text-primary" />
             )}
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {res.title}{res.channel ? ` · ${res.channel}` : ''}
+            <span className="overflow-hidden text-ellipsis">
+              {res.title}
+              {res.channel ? ` · ${res.channel}` : ""}
             </span>
           </div>
-          <ExternalLink size={14} color={dark ? '#888' : 'var(--text-muted)'} />
+          <ExternalLink size={14} className="text-muted" />
         </a>
       ))}
     </div>

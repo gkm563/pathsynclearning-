@@ -1,41 +1,120 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
-import { InteractiveCard } from "../../../components/ui/Shared";
-import { Users, Building, Trophy, Code } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "framer-motion";
+
+type Stat = {
+  label: string;
+  /** Final, canonical value — the only thing assistive tech ever reads. */
+  value: string;
+  target: number;
+  format: (n: number) => string;
+};
+
+const STATS: readonly Stat[] = [
+  {
+    label: "Active learners",
+    value: "40,000+",
+    target: 40000,
+    format: (n) => `${Math.round(n).toLocaleString("en-US")}+`,
+  },
+  {
+    label: "Placement rate",
+    value: "95%",
+    target: 95,
+    format: (n) => `${Math.round(n)}%`,
+  },
+  {
+    label: "Hiring partners",
+    value: "500+",
+    target: 500,
+    format: (n) => `${Math.round(n)}+`,
+  },
+  {
+    label: "Code submissions",
+    value: "2M+",
+    target: 2,
+    format: (n) => `${n.toFixed(1).replace(/\.0$/, "")}M+`,
+  },
+];
+
+const DURATION = 1200;
+
+/**
+ * Counts every metric off a single shared 0→1 progress value, so the four
+ * numbers land together instead of drifting apart on their own timers.
+ * Starts when the band scrolls into view; skipped entirely under reduced
+ * motion, where the final values render immediately.
+ */
+function useCountUp(reduced: boolean) {
+  const ref = useRef<HTMLDListElement>(null);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    if (reduced) {
+      setProgress(1);
+      return;
+    }
+
+    let frame = 0;
+    let startedAt = 0;
+
+    const tick = (now: number) => {
+      if (!startedAt) startedAt = now;
+      const t = Math.min(1, (now - startedAt) / DURATION);
+      setProgress(1 - Math.pow(1 - t, 3));
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        frame = requestAnimationFrame(tick);
+      },
+      { threshold: 0.3 },
+    );
+    observer.observe(node);
+
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+    };
+  }, [reduced]);
+
+  return { ref, progress };
+}
 
 export default function StatCounter() {
-  const fadeInUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
-
-  const stats = [
-    { label: "Active Learners", value: "40,000+", icon: <Users size={28} color="#6c63ff" />, color: "#6c63ff" },
-    { label: "Placement Rate", value: "95%", icon: <Trophy size={28} color="#00c9a7" />, color: "#00c9a7" },
-    { label: "Hiring Partners", value: "500+", icon: <Building size={28} color="#f7971e" />, color: "#f7971e" },
-    { label: "Code Submissions", value: "2M+", icon: <Code size={28} color="#e040fb" />, color: "#e040fb" }
-  ];
+  const reduced = useReducedMotion() ?? false;
+  const { ref, progress } = useCountUp(reduced);
 
   return (
-    <section style={{ padding: "80px 32px", background: "var(--bg-inverse)", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 32 }}>
-          {stats.map((stat, i) => (
-            <motion.div key={i} {...fadeInUp} transition={{ delay: i * 0.1, duration: 0.6 }}>
-              <InteractiveCard hoverColor={stat.color} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 20, padding: 32, textAlign: "center" }}>
-                <div style={{ background: "rgba(255,255,255,0.05)", width: 64, height: 64, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
-                  {stat.icon}
-                </div>
-                <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 48, fontWeight: 800, color: "var(--text-inverse)", marginBottom: 8 }}>
-                  {stat.value}
-                </div>
-                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 16, color: "var(--text-light)", fontWeight: 500, letterSpacing: 1, textTransform: "uppercase" }}>
-                  {stat.label}
-                </div>
-              </InteractiveCard>
-            </motion.div>
-          ))}
-        </div>
-      </div>
+    <section
+      aria-label="PathEd by the numbers"
+      className="border-y border-line bg-surface px-4 py-12 sm:px-6 sm:py-14"
+    >
+      <dl
+        ref={ref}
+        className="mx-auto grid max-w-[var(--measure-content)] grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4 md:gap-x-8"
+      >
+        {STATS.map((stat) => (
+          // `dt` precedes `dd` in the DOM as the spec requires; column-reverse
+          // puts the number on top where the eye expects it.
+          <div
+            key={stat.label}
+            className="flex min-w-0 flex-col-reverse items-center gap-2 text-center"
+          >
+            <dt className="type-overline text-muted">{stat.label}</dt>
+            <dd className="type-h1 type-numeric m-0 text-ink">
+              <span aria-hidden>{stat.format(stat.target * progress)}</span>
+              <span className="sr-only">{stat.value}</span>
+            </dd>
+          </div>
+        ))}
+      </dl>
     </section>
   );
 }

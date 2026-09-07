@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import {
   BookOpen,
   Code2,
@@ -10,77 +9,102 @@ import {
   Target,
   Zap,
 } from "lucide-react";
-import { HOME, homeUi } from "./tokens";
-import { SectionLabel } from "./shared";
+import { Alert, Button, IconButton, InlineLoader } from "@/components/ui";
+import { homeUi } from "./tokens";
 
 export type HomeInsight = {
   icon: "target" | "zap" | "rocket" | "book" | "code" | "shield";
   text: string;
 };
 
-const ICONS = {
+/** Icon keys returned by `POST /api/ai/insights`, mapped to lucide glyphs. */
+const ICONS: Record<HomeInsight["icon"], typeof Target> = {
   target: Target,
   zap: Zap,
   rocket: Rocket,
   book: BookOpen,
   code: Code2,
   shield: Shield,
-} as const;
+};
 
 type Props = {
   insights: HomeInsight[];
   loading: boolean;
+  error: string | null;
   onRefresh: () => void;
   goalRole: string;
 };
 
+/**
+ * AI coaching prompts.
+ *
+ * A failed refresh keeps the current list on screen and reports itself in an
+ * inline alert, because the previous advice is still valid — blanking the
+ * panel would lose usable content to a transient network error.
+ */
 export function InsightPanel({
   insights,
   loading,
+  error,
   onRefresh,
   goalRole,
 }: Props) {
   return (
-    <div
-      className={`${homeUi.card} flex flex-col bg-[linear-gradient(145deg,rgba(3,105,161,0.08),transparent_45%),var(--bg-card)]`}
-    >
-      <div className="mb-3.5 flex items-start justify-between gap-3">
-        <div>
-          <SectionLabel tone="ocean">AI career guide</SectionLabel>
-          <p className="m-0 text-[0.85rem] text-[var(--text-muted)]">
-            Personal reminders for {goalRole || "your path"}
+    <div className={homeUi.card}>
+      <div className={homeUi.cardHead}>
+        <div className="min-w-0">
+          <h3 className={homeUi.cardTitle}>Coach notes</h3>
+          <p className={homeUi.cardHint}>
+            Written for {goalRole || "your path"}
           </p>
         </div>
-        <button
-          type="button"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border-light)] bg-[var(--bg-alt)] text-[var(--text-muted)] disabled:opacity-55"
-          onClick={onRefresh}
-          disabled={loading}
-          aria-label="Refresh insights"
-        >
-          <RefreshCw size={15} className={loading ? "animate-spin" : undefined} />
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          {loading ? <InlineLoader label="Refreshing" /> : null}
+          <IconButton
+            label="Refresh coach notes"
+            variant="secondary"
+            onClick={onRefresh}
+            disabled={loading}
+          >
+            <RefreshCw size={15} aria-hidden />
+          </IconButton>
+        </div>
       </div>
 
-      <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
+      {error ? (
+        <Alert tone="error" title="Couldn’t refresh your notes">
+          <p className="m-0">{error}</p>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="mt-2.5"
+            onClick={onRefresh}
+            disabled={loading}
+          >
+            Try again
+          </Button>
+        </Alert>
+      ) : null}
+
+      <ul
+        className="m-0 mt-3 flex list-none flex-col gap-2 p-0 first:mt-0"
+        aria-live="polite"
+      >
         {insights.map((item, idx) => {
-          const Icon = ICONS[item.icon] || Target;
+          const Icon = ICONS[item.icon] ?? Target;
           return (
-            <motion.li
+            <li
               key={`${item.text}-${idx}`}
-              initial={{ opacity: 0, x: 12 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.08 * idx, duration: 0.35 }}
-              className="flex items-start gap-3 rounded-2xl border border-[var(--border-light)] bg-[var(--bg-alt)] px-3.5 py-3 text-[0.9rem] leading-snug font-semibold text-[var(--text-main)]"
+              className="flex min-w-0 items-start gap-3 rounded-[var(--radius-md)] border border-line bg-sunken px-3.5 py-3"
             >
               <span
-                className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] bg-[rgba(3,105,161,0.12)]"
-                style={{ color: HOME.ocean }}
+                className="mt-px inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-primary-soft text-primary"
+                aria-hidden
               >
-                <Icon size={16} />
+                <Icon size={15} />
               </span>
-              <span>{item.text}</span>
-            </motion.li>
+              <p className="type-small m-0 min-w-0 text-ink">{item.text}</p>
+            </li>
           );
         })}
       </ul>

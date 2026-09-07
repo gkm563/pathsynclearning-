@@ -1,19 +1,60 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Quote, Sparkles, RefreshCw } from "lucide-react";
+import { Button, Card } from "@/components/ui";
+import { cn } from "@/lib/cn";
 import quotesData from "../../data/quotes_dataset.json";
 
-export default function QuoteBanner({ userLevel = 1, userStreak = 7 }) {
-  const [quote, setQuote] = useState({ text: "The secret of getting ahead is getting started.", author: "Mark Twain", phase: "motivation" });
+type QuotePhase = "motivation" | "pushing" | "determination";
+
+type QuoteItem = {
+  text: string;
+  author: string;
+  phase: string;
+};
+
+const PHASE_CHROME: Record<
+  QuotePhase,
+  { wrap: string; ink: string; title: string }
+> = {
+  motivation: {
+    wrap: "border-primary-border bg-primary-soft",
+    ink: "text-primary",
+    title: "PHASE 1 · DAILY MOTIVATION",
+  },
+  pushing: {
+    wrap: "border-accent bg-accent-soft",
+    ink: "text-accent",
+    title: "PHASE 2 · DAILY PUSH",
+  },
+  determination: {
+    wrap: "border-success bg-success-soft",
+    ink: "text-success",
+    title: "PHASE 3 · DETERMINATION & MASTERY",
+  },
+};
+
+export default function QuoteBanner({
+  userLevel = 1,
+  userStreak = 7,
+}: {
+  userLevel?: number;
+  userStreak?: number;
+}) {
+  const [quote, setQuote] = useState<QuoteItem>({
+    text: "The secret of getting ahead is getting started.",
+    author: "Mark Twain",
+    phase: "motivation",
+  });
   const [loading, setLoading] = useState(false);
 
   // Determine user experience phase
-  const getPhase = () => {
+  const getPhase = (): QuotePhase => {
     if (userLevel <= 2) return "motivation"; // Beginner
-    if (userLevel <= 5) return "pushing";    // Intermediate
-    return "determination";                  // Advanced
+    if (userLevel <= 5) return "pushing"; // Intermediate
+    return "determination"; // Advanced
   };
 
   const currentPhase = getPhase();
@@ -53,62 +94,54 @@ export default function QuoteBanner({ userLevel = 1, userStreak = 7 }) {
     fetchQuote();
   }, [userLevel]);
 
-  const getPhaseTitle = () => {
-    if (currentPhase === "motivation") return "PHASE 1 · DAILY MOTIVATION";
-    if (currentPhase === "pushing") return "PHASE 2 · DAILY PUSH";
-    return "PHASE 3 · DETERMINATION & MASTERY";
-  };
-
-  const getPhaseColor = () => {
-    if (currentPhase === "motivation") return "#6c63ff";
-    if (currentPhase === "pushing") return "#f7971e";
-    return "#00c9a7";
-  };
+  const chrome = PHASE_CHROME[currentPhase];
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      style={{
-        background: `linear-gradient(135deg, ${getPhaseColor()}12, var(--bg-card))`,
-        border: `1.5px solid ${getPhaseColor()}35`,
-        borderRadius: 22, padding: "26px 32px", marginBottom: 32,
-        position: "relative", overflow: "hidden",
-        boxShadow: `0 8px 30px ${getPhaseColor()}10`
-      }}
+      className="mb-8"
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Sparkles size={18} color={getPhaseColor()} />
-          <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, color: getPhaseColor(), letterSpacing: 1.5 }}>
-            {getPhaseTitle()}
-          </span>
+      <Card className={cn("relative overflow-hidden", chrome.wrap)}>
+        <div className="mb-3.5 flex items-center justify-between gap-3">
+          <div className={cn("flex items-center gap-2", chrome.ink)}>
+            <Sparkles size={18} aria-hidden />
+            <span className="type-overline">{chrome.title}</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={fetchQuote}
+            disabled={loading}
+            title="Refresh Daily AI Quote"
+            className={cn("text-muted", loading && "opacity-50")}
+          >
+            <RefreshCw
+              size={14}
+              className={cn(loading && "animate-spin")}
+              aria-hidden
+            />
+            New Quote
+          </Button>
         </div>
 
-        <button
-          onClick={fetchQuote}
-          disabled={loading}
-          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, opacity: loading ? 0.5 : 1 }}
-          title="Refresh Daily AI Quote"
-        >
-          <RefreshCw size={14} style={{ animation: loading ? "spin 1s linear infinite" : "none" }} />
-          <span>New Quote</span>
-        </button>
-      </div>
-
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 18 }}>
-        <Quote size={36} color={getPhaseColor()} style={{ opacity: 0.6, flexShrink: 0, marginTop: 4 }} />
-        <div>
-          {/* Increased Quote Text Size to 24px Bold as Requested */}
-          <blockquote style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 800, color: "var(--text-main)", lineHeight: 1.4, margin: "0 0 10px" }}>
-            "{quote.text}"
-          </blockquote>
-          <cite style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, fontWeight: 700, color: "var(--text-muted)", fontStyle: "normal" }}>
-            — {quote.author}
-          </cite>
+        <div className="flex items-start gap-4">
+          <Quote
+            size={36}
+            className={cn("mt-1 shrink-0 opacity-60", chrome.ink)}
+            aria-hidden
+          />
+          <div>
+            <blockquote className="type-h3 m-0 mb-2.5 text-ink">
+              "{quote.text}"
+            </blockquote>
+            <cite className="type-label not-italic text-muted">
+              — {quote.author}
+            </cite>
+          </div>
         </div>
-      </div>
+      </Card>
     </motion.div>
   );
 }

@@ -1,17 +1,18 @@
 "use client";
 
-import { Loader2, RotateCcw, Save } from "lucide-react";
-import { Button } from "@/components/ui/primitives";
-import { PROFILE_COLS } from "./shared";
+import { RotateCcw, Save } from "lucide-react";
+import { Button } from "@/components/ui";
 
 export function SaveBar({
   dirty,
   saving,
+  status,
   onSave,
   onDiscard,
 }: {
   dirty: boolean;
   saving: boolean;
+  status?: string;
   onSave: () => void;
   onDiscard: () => void;
 }) {
@@ -21,53 +22,22 @@ export function SaveBar({
     <div
       role="region"
       aria-label="Unsaved changes"
-      style={{
-        position: "sticky",
-        bottom: 16,
-        zIndex: 40,
-        marginTop: 8,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 12,
-        flexWrap: "wrap",
-        padding: "14px 18px",
-        borderRadius: 16,
-        border: "1.5px solid rgba(108,99,255,0.35)",
-        background: "color-mix(in srgb, var(--bg-card) 92%, #6c63ff)",
-        boxShadow: "0 12px 40px rgba(15,23,42,0.18)",
-        backdropFilter: "blur(10px)",
-      }}
+      className="sticky bottom-[calc(var(--mobile-tabbar-height)+0.75rem+env(safe-area-inset-bottom,0px))] z-[var(--z-sticky)] mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-primary-border bg-surface px-4 py-3.5 shadow-[var(--shadow-md)] sm:px-5 lg:bottom-4"
     >
-      <div>
-        <div
-          style={{
-            fontFamily: "Outfit, sans-serif",
-            fontWeight: 800,
-            fontSize: 14,
-            color: "var(--text-main)",
-          }}
-        >
-          Unsaved changes
-        </div>
-        <div style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: 2 }}>
-          Save to sync your profile and preferences.
-        </div>
+      <div className="min-w-0">
+        <p className="type-label m-0 text-ink">Unsaved changes</p>
+        <p className="type-caption mt-0.5 mb-0 text-muted">
+          {status || "Save to sync your profile and preferences."}
+        </p>
       </div>
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+      <div className="flex flex-wrap gap-2">
         <Button variant="secondary" disabled={saving} onClick={onDiscard}>
-          <RotateCcw size={15} /> Discard
+          <RotateCcw size={15} aria-hidden />
+          Discard
         </Button>
-        <Button
-          disabled={!dirty || saving}
-          onClick={onSave}
-          style={{
-            opacity: !dirty || saving ? 0.65 : 1,
-            background: `linear-gradient(135deg, ${PROFILE_COLS.primary}, ${PROFILE_COLS.success})`,
-          }}
-        >
-          {saving ? <Loader2 size={15} /> : <Save size={15} />}
-          {saving ? "Saving…" : "Save changes"}
+        <Button loading={saving} disabled={!dirty} onClick={onSave}>
+          <Save size={15} aria-hidden />
+          Save changes
         </Button>
       </div>
     </div>

@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { MemoryCard } from "@/components/memory-lane/MemoryCard";
 import type { TimelineItem } from "@/lib/memory/types";
+import { LoadMore, Section } from "@/components/ui";
+import { cn } from "@/lib/cn";
 
 function yearOf(iso: string) {
   return new Date(iso).getFullYear();
@@ -40,95 +42,42 @@ export function MemoryTimeline({
   }, [items]);
 
   return (
-    <div style={{ marginTop: 28 }}>
+    <div className="mt-6">
       {grouped.map(([year, yearItems]) => (
-        <section key={year} style={{ marginBottom: 32 }}>
-          <h2
-            style={{
-              fontFamily: "Outfit, sans-serif",
-              fontSize: 22,
-              fontWeight: 800,
-              margin: "0 0 16px",
-              color: "var(--text-main)",
-            }}
-          >
-            {year}
-          </h2>
-          <div style={{ position: "relative", paddingLeft: 28 }}>
+        <Section key={year} title={String(year)}>
+          <div className="relative pl-7">
             <div
               aria-hidden
-              style={{
-                position: "absolute",
-                left: 7,
-                top: 4,
-                bottom: 4,
-                width: 2,
-                background: "var(--border-light)",
-              }}
+              className="absolute top-1 bottom-1 left-[7px] w-px bg-line"
             />
-            <ol style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 18 }}>
+            <ol className="m-0 grid list-none gap-4 p-0">
               {yearItems.map((item) => (
-                <li key={`${item.kind}-${item.id}`} style={{ position: "relative" }}>
+                <li key={`${item.kind}-${item.id}`} className="relative">
                   <span
                     aria-hidden
-                    style={{
-                      position: "absolute",
-                      left: -25,
-                      top: 18,
-                      width: 12,
-                      height: 12,
-                      borderRadius: "50%",
-                      background:
-                        item.kind === "note"
-                          ? "#64748b"
-                          : item.kind === "milestone"
-                            ? "#22c55e"
-                            : "var(--purple)",
-                      border: "2px solid var(--bg-main)",
-                      boxShadow: "0 0 0 2px var(--border-light)",
-                    }}
+                    className={cn(
+                      "absolute top-5 -left-[22px] h-3 w-3 rounded-full border-2 border-canvas bg-primary shadow-[0_0_0_2px_var(--border-light)]",
+                      item.kind === "note" && "bg-muted",
+                      item.kind === "milestone" && "bg-success",
+                    )}
                   />
-                  <div
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 800,
-                      letterSpacing: "0.04em",
-                      textTransform: "uppercase",
-                      color: "var(--text-light)",
-                      marginBottom: 6,
-                      fontFamily: "Outfit, sans-serif",
-                    }}
-                  >
+                  <p className="type-overline mb-2 text-faint">
                     {monthDay(item.occurredAt)}
-                  </div>
+                  </p>
                   <MemoryCard item={item} onOpen={onOpen} />
                 </li>
               ))}
             </ol>
           </div>
-        </section>
+        </Section>
       ))}
 
-      {hasMore ? (
-        <div style={{ textAlign: "center", marginTop: 8 }}>
-          <button
-            type="button"
-            onClick={onLoadMore}
-            disabled={loadingMore}
-            style={{
-              borderRadius: 10,
-              border: "1.5px solid var(--border-light)",
-              background: "var(--bg-card)",
-              padding: "10px 16px",
-              fontFamily: "Outfit, sans-serif",
-              fontWeight: 700,
-              cursor: "pointer",
-              color: "var(--text-main)",
-            }}
-          >
-            {loadingMore ? "Loading…" : "Load more"}
-          </button>
-        </div>
+      {hasMore && onLoadMore ? (
+        <LoadMore
+          hasMore
+          loading={Boolean(loadingMore)}
+          onClick={onLoadMore}
+        />
       ) : null}
     </div>
   );

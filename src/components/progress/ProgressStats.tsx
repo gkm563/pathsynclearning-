@@ -2,106 +2,39 @@
 
 import { CheckCircle2, CircleDashed, Loader2, Percent } from "lucide-react";
 import type { ProgressSummary } from "@/lib/progress/types";
-import { PROGRESS_COLS, cardStyle } from "@/components/progress/shared";
-
-const STATS = [
-  {
-    key: "completed" as const,
-    label: "Completed",
-    icon: CheckCircle2,
-    color: PROGRESS_COLS.success,
-  },
-  {
-    key: "inProgress" as const,
-    label: "In Progress",
-    icon: Loader2,
-    color: PROGRESS_COLS.primary,
-  },
-  {
-    key: "pending" as const,
-    label: "Pending",
-    icon: CircleDashed,
-    color: PROGRESS_COLS.warning,
-  },
-  {
-    key: "averageScore" as const,
-    label: "Average Score",
-    icon: Percent,
-    color: PROGRESS_COLS.info,
-  },
-];
+import { StatCard } from "@/components/ui";
 
 export function ProgressStats({ summary }: { summary: ProgressSummary }) {
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-        gap: 12,
-      }}
-      className="progress-stats-grid"
-    >
-      {STATS.map((stat) => {
-        const Icon = stat.icon;
-        const raw =
-          stat.key === "averageScore"
-            ? summary.averageScore
-            : summary[stat.key];
-        const value =
-          raw === null || raw === undefined
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <StatCard
+        label="Completed"
+        value={summary.completed}
+        hint="Finished tasks"
+        icon={<CheckCircle2 size={16} aria-hidden />}
+      />
+      <StatCard
+        label="In progress"
+        value={summary.inProgress}
+        hint="Currently open"
+        icon={<Loader2 size={16} aria-hidden />}
+      />
+      <StatCard
+        label="Pending"
+        value={summary.pending}
+        hint="Not started"
+        icon={<CircleDashed size={16} aria-hidden />}
+      />
+      <StatCard
+        label="Average score"
+        value={
+          summary.averageScore === null || summary.averageScore === undefined
             ? "—"
-            : stat.key === "averageScore"
-              ? `${raw}%`
-              : String(raw);
-
-        return (
-          <div key={stat.key} style={{ ...cardStyle, padding: 18 }}>
-            <div
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 12,
-                display: "grid",
-                placeItems: "center",
-                background: `${stat.color}18`,
-                color: stat.color,
-                marginBottom: 12,
-              }}
-            >
-              <Icon size={18} />
-            </div>
-            <div
-              style={{
-                fontFamily: "Outfit, sans-serif",
-                fontSize: 26,
-                fontWeight: 800,
-                color: "var(--text-main)",
-                lineHeight: 1.1,
-              }}
-            >
-              {value}
-            </div>
-            <div
-              style={{
-                marginTop: 6,
-                fontSize: 13,
-                color: "var(--text-muted)",
-                fontWeight: 600,
-              }}
-            >
-              {stat.label}
-            </div>
-          </div>
-        );
-      })}
-
-      <style>{`
-        @media (max-width: 900px) {
-          .progress-stats-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-          }
+            : `${summary.averageScore}%`
         }
-      `}</style>
+        hint="Across assessments"
+        icon={<Percent size={16} aria-hidden />}
+      />
     </div>
   );
 }

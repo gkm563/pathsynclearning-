@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
 import { ArrowRight, Lock, Maximize2 } from "lucide-react";
 import { MEMORY_TYPE_META } from "@/lib/memory/constants";
 import type { TimelineItem } from "@/lib/memory/types";
 import { RichStudyText } from "@/components/ai/RichStudyText";
+import { Badge } from "@/components/ui";
+import { cn } from "@/lib/cn";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString(undefined, {
@@ -19,10 +20,13 @@ function metaLine(item: TimelineItem): string[] {
   const lines: string[] = [];
   if (typeof m.score === "number") lines.push(`Score: ${m.score}%`);
   if (typeof m.difficulty === "string") lines.push(`Difficulty: ${m.difficulty}`);
-  if (typeof m.previousBest === "number") lines.push(`Previous Best: ${m.previousBest}%`);
-  if (typeof m.checklistPct === "number") lines.push(`Checklist: ${m.checklistPct}%`);
+  if (typeof m.previousBest === "number")
+    lines.push(`Previous Best: ${m.previousBest}%`);
+  if (typeof m.checklistPct === "number")
+    lines.push(`Checklist: ${m.checklistPct}%`);
   if (typeof m.newGoal === "string") lines.push(`New Goal: ${m.newGoal}`);
-  if (typeof m.previousGoal === "string") lines.push(`Previous: ${m.previousGoal}`);
+  if (typeof m.previousGoal === "string")
+    lines.push(`Previous: ${m.previousGoal}`);
   if (m.personalBestLabel) lines.push(String(m.personalBestLabel));
   return lines.slice(0, 3);
 }
@@ -36,8 +40,8 @@ export function MemoryCard({
 }) {
   const meta = MEMORY_TYPE_META[item.type] || {
     label: item.type,
-    emoji: "✦",
-    color: "var(--purple)",
+    emoji: "",
+    color: "var(--primary)",
   };
   const isNote = item.kind === "note" || item.type === "PERSONAL_NOTE";
   const lines = metaLine(item);
@@ -46,70 +50,34 @@ export function MemoryCard({
     <article
       onClick={() => onOpen(item)}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") onOpen(item);
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen(item);
+        }
       }}
       role="button"
       tabIndex={0}
-      style={{
-        borderRadius: 16,
-        border: isNote
-          ? "1.5px dashed rgba(100,116,139,0.4)"
-          : "1.5px solid var(--border-light)",
-        background: isNote ? "rgba(100,116,139,0.05)" : "var(--bg-card)",
-        padding: 16,
-        cursor: "pointer",
-        transition: "transform 0.15s ease, box-shadow 0.15s ease",
-      }}
+      className={cn(
+        "rounded-[var(--radius-lg)] border border-line bg-surface p-4 shadow-[var(--shadow-sm)] sm:p-5",
+        "cursor-pointer transition-[border-color,box-shadow] duration-[var(--duration-fast)]",
+        "hover:border-primary-border hover:shadow-[var(--shadow-md)]",
+        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+        isNote && "border-dashed",
+      )}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          marginBottom: 8,
-          color: meta.color,
-          fontSize: 12,
-          fontWeight: 800,
-          fontFamily: "Outfit, sans-serif",
-        }}
-      >
-        <span aria-hidden>{meta.emoji}</span>
-        <span>{meta.label}</span>
+      <div className="mb-2 flex items-center gap-2">
+        <Badge>{meta.label}</Badge>
         {item.visibility === "private" ? (
-          <Lock size={12} style={{ marginLeft: "auto", color: "var(--text-light)" }} />
+          <Lock size={12} className="ml-auto text-faint" aria-label="Private" />
         ) : null}
       </div>
-      <h3
-        style={{
-          margin: 0,
-          fontFamily: "Outfit, sans-serif",
-          fontSize: 16,
-          fontWeight: 800,
-          color: "var(--text-main)",
-        }}
-      >
-        {item.title}
-      </h3>
+      <h3 className="type-h4 m-0 text-ink">{item.title}</h3>
       {item.description ? (
-        <div
-          style={{
-            margin: "8px 0 0",
-            fontSize: 13,
-            color: "var(--text-muted)",
-          }}
-        >
+        <div className="type-small mt-2 text-muted">
           <RichStudyText text={item.description} compact />
         </div>
       ) : null}
-      <div
-        style={{
-          marginTop: 10,
-          fontSize: 12,
-          color: "var(--text-light)",
-          display: "grid",
-          gap: 2,
-        }}
-      >
+      <div className="type-caption mt-2.5 grid gap-0.5 text-faint">
         <span>{formatDate(item.occurredAt)}</span>
         {lines.map((l) => (
           <span key={l}>{l}</span>
@@ -121,23 +89,11 @@ export function MemoryCard({
           e.stopPropagation();
           onOpen(item);
         }}
-        style={{
-          marginTop: 12,
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 4,
-          color: "var(--purple)",
-          fontSize: 12,
-          fontWeight: 700,
-          fontFamily: "Outfit, sans-serif",
-          background: "none",
-          border: "none",
-          padding: 0,
-          cursor: "pointer",
-        }}
+        className="type-label mt-3 inline-flex items-center gap-1 text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       >
-        {isNote ? <Maximize2 size={13} /> : null}
-        {isNote ? "Open full note" : "View Details"} <ArrowRight size={13} />
+        {isNote ? <Maximize2 size={13} aria-hidden /> : null}
+        {isNote ? "Open full note" : "View Details"}{" "}
+        <ArrowRight size={13} aria-hidden />
       </button>
     </article>
   );

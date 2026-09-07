@@ -1,10 +1,8 @@
 "use client";
 
-import React from 'react';
-import { BaseEdge, getBezierPath } from '@xyflow/react';
+import { BaseEdge, getBezierPath, type EdgeProps } from "@xyflow/react";
 
 export default function DependencyEdge({
-  id,
   sourceX,
   sourceY,
   targetX,
@@ -13,8 +11,8 @@ export default function DependencyEdge({
   targetPosition,
   style = {},
   markerEnd,
-  data
-}: any) {
+  data,
+}: EdgeProps) {
   const [edgePath] = getBezierPath({
     sourceX,
     sourceY,
@@ -24,32 +22,27 @@ export default function DependencyEdge({
     targetPosition,
   });
 
-  const status = data?.status || 'locked';
-  
-  let stroke = 'var(--roadmap-edge)';
-  if (status === 'completed') stroke = '#00c9a7';
-  else if (status === 'in_progress') stroke = '#6c63ff';
-  
+  const status = (data as { status?: string } | undefined)?.status || "locked";
+
+  const stroke =
+    status === "completed"
+      ? "var(--success)"
+      : status === "in_progress"
+        ? "var(--primary)"
+        : "var(--roadmap-edge)";
+
   return (
-    <>
-      <BaseEdge 
-        path={edgePath} 
-        markerEnd={markerEnd} 
-        style={{
-          ...style,
-          strokeWidth: 2.5,
-          stroke,
-          animation: status === 'in_progress' ? 'dashdraw 1s linear infinite' : 'none'
-        }} 
-      />
-      {status === 'in_progress' && (
-        <style dangerouslySetInnerHTML={{__html: `
-          @keyframes dashdraw {
-            from { stroke-dashoffset: 10; }
-            to { stroke-dashoffset: 0; }
-          }
-        `}} />
-      )}
-    </>
+    <BaseEdge
+      path={edgePath}
+      markerEnd={markerEnd}
+      style={{
+        ...style,
+        fill: "none",
+        stroke,
+        strokeWidth: 2,
+        strokeLinecap: "round",
+        strokeDasharray: status === "in_progress" ? "8 6" : undefined,
+      }}
+    />
   );
 }

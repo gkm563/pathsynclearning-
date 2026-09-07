@@ -2,7 +2,8 @@
 
 import { Check, Circle } from "lucide-react";
 import type { ProgressMilestone } from "@/lib/progress/types";
-import { ProgressSection, PROGRESS_COLS } from "@/components/progress/shared";
+import { ProgressSection } from "@/components/progress/shared";
+import { cn } from "@/lib/cn";
 
 export function MilestoneTracker({
   milestones,
@@ -11,106 +12,36 @@ export function MilestoneTracker({
 }) {
   return (
     <ProgressSection title="Milestones">
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: `repeat(${Math.max(milestones.length, 1)}, minmax(0, 1fr))`,
-          gap: 8,
-          alignItems: "start",
-        }}
-        className="progress-milestone-grid"
-      >
+      <ol className="m-0 grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-1">
         {milestones.map((m, idx) => {
           const achieved = m.achieved;
           const next =
-            !achieved &&
-            milestones.slice(0, idx).every((x) => x.achieved);
+            !achieved && milestones.slice(0, idx).every((x) => x.achieved);
           return (
-            <div key={m.id} style={{ textAlign: "center", position: "relative" }}>
-              {idx < milestones.length - 1 ? (
-                <span
-                  aria-hidden
-                  style={{
-                    position: "absolute",
-                    top: 16,
-                    left: "50%",
-                    width: "100%",
-                    height: 3,
-                    background: milestones[idx + 1]?.achieved
-                      ? PROGRESS_COLS.success
-                      : "var(--border-light)",
-                    zIndex: 0,
-                  }}
-                />
-              ) : null}
-              <div
-                style={{
-                  width: 34,
-                  height: 34,
-                  borderRadius: 999,
-                  margin: "0 auto 10px",
-                  display: "grid",
-                  placeItems: "center",
-                  position: "relative",
-                  zIndex: 1,
-                  background: achieved
-                    ? PROGRESS_COLS.success
+            <li key={m.id} className="flex items-center gap-3">
+              <span
+                className={cn(
+                  "grid h-9 w-9 shrink-0 place-items-center rounded-full border",
+                  achieved
+                    ? "border-transparent bg-success text-on-primary"
                     : next
-                      ? PROGRESS_COLS.primary
-                      : "var(--bg-alt)",
-                  color: achieved || next ? "#fff" : "var(--text-muted)",
-                  border: achieved || next ? "none" : "1.5px solid var(--border-light)",
-                }}
+                      ? "border-transparent bg-primary text-on-primary"
+                      : "border-line bg-sunken text-muted",
+                )}
                 title={`${m.title} (${m.threshold}%)`}
               >
-                {achieved ? <Check size={16} /> : <Circle size={14} />}
+                {achieved ? <Check size={16} aria-hidden /> : <Circle size={14} aria-hidden />}
+              </span>
+              <div className="min-w-0">
+                <p className="type-label m-0 text-ink">{m.title}</p>
+                <p className="type-caption mt-0.5 mb-0 text-muted">
+                  {m.threshold}%
+                </p>
               </div>
-              <div
-                style={{
-                  fontFamily: "Outfit, sans-serif",
-                  fontWeight: 800,
-                  fontSize: 13,
-                  color: "var(--text-main)",
-                }}
-              >
-                {m.title}
-              </div>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "var(--text-muted)",
-                  marginTop: 4,
-                  lineHeight: 1.35,
-                }}
-              >
-                {m.threshold}%
-              </div>
-            </div>
+            </li>
           );
         })}
-      </div>
-
-      <style>{`
-        @media (max-width: 700px) {
-          .progress-milestone-grid {
-            grid-template-columns: 1fr !important;
-            gap: 14px !important;
-          }
-          .progress-milestone-grid > div > span {
-            display: none;
-          }
-          .progress-milestone-grid > div {
-            display: grid !important;
-            grid-template-columns: 34px 1fr;
-            text-align: left !important;
-            gap: 12px;
-            align-items: center;
-          }
-          .progress-milestone-grid > div > div:first-of-type {
-            margin: 0 !important;
-          }
-        }
-      `}</style>
+      </ol>
     </ProgressSection>
   );
 }

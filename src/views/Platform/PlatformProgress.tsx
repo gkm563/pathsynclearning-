@@ -1,7 +1,14 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Flag } from "lucide-react";
+import {
+  Button,
+  EmptyState,
+  ErrorState,
+  PageSkeleton,
+} from "@/components/ui";
 import { apiGet } from "@/lib/api";
 import { routes } from "@/lib/routes";
 import type { ProgressPayload, ProgressRange } from "@/lib/progress/types";
@@ -13,10 +20,8 @@ import {
   OverallProgressCard,
   PerformanceChart,
   ProgressHeader,
-  ProgressSkeleton,
   ProgressStats,
 } from "@/components/progress";
-import { Button, EmptyState } from "@/components/ui/primitives";
 
 export default function PlatformProgress() {
   const router = useRouter();
@@ -47,7 +52,6 @@ export default function PlatformProgress() {
     void load(range);
   }, [load, range]);
 
-  // Refresh when the tab becomes visible again (after completing assessments)
   useEffect(() => {
     const onVisible = () => {
       if (document.visibilityState === "visible") void load(range);
@@ -57,24 +61,24 @@ export default function PlatformProgress() {
   }, [load, range]);
 
   if (loading && !data) {
-    return (
-      <div style={{ padding: "8px 4px 32px", maxWidth: 1100, margin: "0 auto" }}>
-        <ProgressSkeleton />
-      </div>
-    );
+    return <PageSkeleton stats variant="cards" />;
   }
 
   if (error && !data) {
     return (
-      <div style={{ padding: "8px 4px 32px", maxWidth: 1100, margin: "0 auto" }}>
-        <EmptyState
-          title="Unable to load your progress."
-          description="Please try again. If the problem continues, refresh the page."
+      <>
+        <ProgressHeader range={range} onRangeChange={setRange} />
+        <ErrorState
+          title="Unable to load your progress"
+          description="Check your connection and try again. If this keeps happening, refresh the page."
+          detail={error}
           action={
-            <Button onClick={() => void load(range)}>Try Again</Button>
+            <Button variant="secondary" onClick={() => void load(range)}>
+              Try again
+            </Button>
           }
         />
-      </div>
+      </>
     );
   }
 
@@ -83,41 +87,27 @@ export default function PlatformProgress() {
   const emptyJourney = data.summary.totalTasks === 0;
 
   return (
-    <div style={{ padding: "8px 4px 40px", maxWidth: 1100, margin: "0 auto" }}>
+    <>
       <ProgressHeader range={range} onRangeChange={setRange} />
 
       {emptyJourney ? (
-        <div style={{ marginTop: 20 }}>
-          <EmptyState
-            title="No progress yet"
-            description="Complete your first assessment to start building your progress history."
-            action={
-              <Button onClick={() => router.push(routes.app.challenges)}>
-                Start Assessment →
-              </Button>
-            }
-          />
-        </div>
+        <EmptyState
+          icon={<Flag size={20} aria-hidden />}
+          title="No progress yet"
+          description="Complete your first assessment to start building a history you can actually use — scores, streaks and next steps will land here."
+          action={
+            <Button onClick={() => router.push(routes.app.challenges)}>
+              Start an assessment
+            </Button>
+          }
+        />
       ) : (
-        <div
-          style={{
-            display: "grid",
-            gap: 16,
-            marginTop: 20,
-          }}
-        >
+        <div className="flex flex-col gap-4 sm:gap-5">
           <OverallProgressCard summary={data.summary} />
           <ProgressStats summary={data.summary} />
           <AssessmentProgress assessments={data.assessments} />
 
-          <div
-            className="progress-mid-grid"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1.3fr 0.7fr",
-              gap: 16,
-            }}
-          >
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)]">
             <PerformanceChart points={data.performance} />
             <MilestoneTracker milestones={data.milestones} />
           </div>
@@ -128,49 +118,17 @@ export default function PlatformProgress() {
       )}
 
       {error ? (
-        <p
-          role="alert"
-          style={{
-            marginTop: 16,
-            color: "#ef4444",
-            fontSize: 13,
-            textAlign: "center",
-          }}
-        >
+        <p role="alert" className="type-small mt-4 mb-0 text-center text-danger">
           {error}{" "}
           <button
             type="button"
             onClick={() => void load(range)}
-            style={{
-              border: "none",
-              background: "transparent",
-              color: "#6c63ff",
-              fontWeight: 700,
-              cursor: "pointer",
-            }}
+            className="font-semibold text-primary underline-offset-4 hover:underline"
           >
-            Try Again
+            Try again
           </button>
         </p>
       ) : null}
-
-      <style>{`
-        @keyframes progressShimmer {
-          0% { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-        @media (max-width: 900px) {
-          .progress-mid-grid {
-            grid-template-columns: 1fr !important;
-          }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .progress-page * {
-            animation: none !important;
-            transition: none !important;
-          }
-        }
-      `}</style>
-    </div>
+    </>
   );
 }

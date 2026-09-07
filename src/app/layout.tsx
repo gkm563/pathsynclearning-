@@ -2,6 +2,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import HashScroll from "@/components/layout/HashScroll";
+import { ToastProvider } from "@/components/ui";
 import { routes } from "@/lib/routes";
 import "./globals.css";
 
@@ -60,11 +61,14 @@ export default function RootLayout({
             variables: {
               fontFamily: "var(--font-sans), sans-serif",
               fontFamilyButtons: "var(--font-sans), sans-serif",
+              colorPrimary: "#1b4540",
+              borderRadius: "12px",
             },
           }}
         >
           <HashScroll />
-          {children}
+          {/* Single toast host for the whole app — see useToast(). */}
+          <ToastProvider>{children}</ToastProvider>
         </ClerkProvider>
       </body>
     </html>

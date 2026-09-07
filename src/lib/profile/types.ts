@@ -136,5 +136,5 @@ export function passwordStrength(password: string): {
   if (score <= 1) return { score, label: "Weak", color: "#ef4444" };
   if (score <= 3) return { score, label: "Fair", color: "#f59e0b" };
   if (score === 4) return { score, label: "Strong", color: "#10b981" };
-  return { score, label: "Excellent", color: "#00c9a7" };
+  return { score, label: "Excellent", color: "#1f6b48" };
 }

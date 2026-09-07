@@ -1,102 +1,100 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowUpRight, Play } from "lucide-react";
-import { routes } from "@/lib/routes";
+import { ArrowUpRight, ListChecks, Play } from "lucide-react";
 import type { DailyChallengeCard } from "@/components/dashboard/StudentContext";
-import { SKILL_PALETTE, homeUi } from "./tokens";
-import { SectionLabel } from "./shared";
+import { Badge, EmptyState, Progress } from "@/components/ui";
+import { routes } from "@/lib/routes";
+import { homeUi } from "./tokens";
 
 type Props = {
   challenges: DailyChallengeCard[];
   streak: number;
 };
 
+/**
+ * Today's challenge queue.
+ *
+ * Rows rather than a card grid: four equally-weighted cards would compete with
+ * the primary action beside them, and a list makes "which one is already
+ * started" readable at a glance on a phone.
+ */
 export function ChallengeQueue({ challenges, streak }: Props) {
+  const queue = challenges.slice(0, 4);
+
   return (
-    <div>
-      <div className={homeUi.blockHead}>
-        <div>
-          <SectionLabel tone="amber">Today</SectionLabel>
-          <h2 className={homeUi.blockTitle}>Daily challenges</h2>
-          <p className={homeUi.blockSub}>
-            {challenges.length > 0
-              ? `${challenges.length} queued · streak ${streak}d`
-              : "No challenges loaded yet"}
+    <div className={homeUi.card}>
+      <div className={homeUi.cardHead}>
+        <div className="min-w-0">
+          <h3 className={homeUi.cardTitle}>Today’s challenges</h3>
+          <p className={homeUi.cardHint}>
+            {queue.length > 0
+              ? `${queue.length} queued · ${streak}-day streak`
+              : "Your daily pack hasn’t been built yet"}
           </p>
         </div>
-        <Link
-          href={routes.app.challenges}
-          className="inline-flex items-center gap-1.5 rounded-[14px] border-[1.5px] border-[rgba(217,119,6,0.28)] bg-[rgba(217,119,6,0.1)] px-3.5 py-2.5 font-[Outfit,sans-serif] text-[0.9rem] font-extrabold text-[#d97706] no-underline"
-        >
-          View all <ArrowUpRight size={15} />
+        <Link href={routes.app.challenges} className={homeUi.link}>
+          View all
+          <ArrowUpRight size={14} aria-hidden />
         </Link>
       </div>
 
-      {challenges.length === 0 ? (
-        <div className={homeUi.emptyCard}>
-          <p>Challenges will appear here once your daily pack is ready.</p>
-          <Link href={routes.app.challenges} className={homeUi.textLink}>
-            Open challenges
-          </Link>
-        </div>
+      {queue.length === 0 ? (
+        <EmptyState
+          compact
+          icon={<ListChecks size={17} aria-hidden />}
+          title="No challenges queued"
+          description="Challenges appear here once your daily pack is ready. Browse the library to start one now."
+          action={
+            <Link href={routes.app.challenges} className={homeUi.link}>
+              Open challenges
+              <ArrowUpRight size={14} aria-hidden />
+            </Link>
+          }
+        />
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3.5">
-          {challenges.map((task, idx) => {
-            const col = SKILL_PALETTE[idx % SKILL_PALETTE.length];
-            return (
-              <motion.article
-                key={`${task.title}-${idx}`}
-                className="flex min-h-[200px] flex-col rounded-[20px] border-[1.5px] p-[18px]"
-                style={{
-                  borderColor: `${col}40`,
-                  background: `${col}0f`,
-                }}
-                whileHover={{ y: -4 }}
-                transition={{ type: "spring", stiffness: 380, damping: 22 }}
-              >
-                <div className="mb-3 flex items-start justify-between gap-2">
-                  <span
-                    className="rounded-[10px] border border-[var(--border-light)] bg-[var(--bg-card)] px-2.5 py-1.5 font-['Fira_Code',monospace] text-xs font-extrabold"
-                    style={{ color: col }}
-                  >
+        <ul className="m-0 flex list-none flex-col gap-2 p-0">
+          {queue.map((task, idx) => (
+            <li
+              key={`${task.title}-${idx}`}
+              className="flex min-w-0 flex-col gap-3 rounded-[var(--radius-md)] border border-line bg-sunken p-3 sm:flex-row sm:items-center sm:gap-4"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="type-code type-numeric rounded-[var(--radius-sm)] border border-line bg-surface px-1.5 py-0.5 text-muted">
                     {task.icon}
                   </span>
-                  <div className="flex flex-wrap justify-end gap-1.5">
-                    <span className="rounded-lg border border-[var(--border-light)] bg-[var(--bg-card)] px-2 py-0.5 text-[11px] font-bold text-[var(--text-main)]">
-                      {task.diff}
-                    </span>
-                    <span
-                      className="rounded-lg px-2 py-0.5 text-[11px] font-bold text-white"
-                      style={{ background: col }}
-                    >
-                      +{task.xp} XP
-                    </span>
-                  </div>
+                  <Badge tone="neutral">{task.diff}</Badge>
+                  <Badge tone="accent">+{task.xp} XP</Badge>
                 </div>
-                <h3 className="mt-0 mb-2 font-[Outfit,sans-serif] text-[1.05rem] leading-snug font-extrabold text-[var(--text-main)]">
-                  {task.title}
-                </h3>
-                <p className="mb-4 text-[0.85rem] font-semibold text-[var(--text-muted)]">
+
+                <p className="type-label mt-2 mb-0 text-ink">{task.title}</p>
+                <p className="type-caption mt-1 mb-0 text-muted">
                   {task.category} · {task.time}
                 </p>
-                <Link
-                  href={routes.app.challenges}
-                  className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-xl border-[1.5px] bg-[var(--bg-card)] py-[11px] font-[Outfit,sans-serif] text-[0.9rem] font-extrabold no-underline"
-                  style={
-                    task.isStarted
-                      ? { background: col, color: "#fff", borderColor: col }
-                      : { color: col, borderColor: col }
-                  }
-                >
-                  <Play size={14} fill={task.isStarted ? "#fff" : col} />
-                  {task.isStarted ? "Resume" : "Start"}
-                </Link>
-              </motion.article>
-            );
-          })}
-        </div>
+
+                {task.isStarted ? (
+                  <Progress
+                    className="mt-2.5"
+                    size="sm"
+                    value={task.pct}
+                    label="Progress"
+                    showValue
+                  />
+                ) : null}
+              </div>
+
+              <Link
+                href={routes.app.challenges}
+                className="type-label inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-[var(--radius-md)] border border-primary-border bg-primary-soft px-4 text-primary transition-colors duration-[var(--duration-fast)] hover:bg-primary hover:text-on-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                aria-label={`${task.isStarted ? "Resume" : "Start"} ${task.title}`}
+              >
+                <Play size={14} aria-hidden />
+                {task.isStarted ? "Resume" : "Start"}
+              </Link>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );

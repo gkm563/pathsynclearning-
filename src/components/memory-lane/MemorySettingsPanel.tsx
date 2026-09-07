@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
-import { X } from "lucide-react";
+import { useState } from "react";
 import { apiSend } from "@/lib/api";
 import type { MemorySettingsDto } from "@/lib/memory/types";
-import { Button } from "@/components/ui/primitives";
+import { Button, Dialog, Switch } from "@/components/ui";
 
 const FIELDS: Array<{ key: keyof MemorySettingsDto; label: string }> = [
   { key: "includeLearning", label: "Learning Activity" },
@@ -47,72 +46,32 @@ export function MemorySettingsPanel({
   };
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 1350,
-        background: "rgba(15,23,42,0.45)",
-        display: "grid",
-        placeItems: "center",
-        padding: 16,
-      }}
-      onClick={onClose}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: "min(440px, 100%)",
-          background: "var(--bg-card)",
-          borderRadius: 18,
-          border: "1.5px solid var(--border-light)",
-          padding: 20,
-          fontFamily: "Outfit, sans-serif",
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>Memory Settings</h3>
-          <button type="button" onClick={onClose} style={{ border: "none", background: "none", cursor: "pointer" }}>
-            <X size={18} />
-          </button>
-        </div>
-        <p style={{ margin: "0 0 14px", color: "var(--text-muted)", fontSize: 13 }}>
-          Choose what appears on your Memory Lane. Progress analytics stay on the Progress tab.
-        </p>
-        <div style={{ display: "grid", gap: 10 }}>
-          {FIELDS.map((f) => (
-            <label
-              key={f.key}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                fontSize: 14,
-                fontWeight: 600,
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={Boolean(settings[f.key])}
-                onChange={(e) =>
-                  setSettings((s) => ({ ...s, [f.key]: e.target.checked }))
-                }
-              />
-              {f.label}
-            </label>
-          ))}
-        </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 18 }}>
+    <Dialog
+      open
+      onClose={onClose}
+      title="Memory Settings"
+      description="Choose what appears on your Memory Lane. Progress analytics stay on the Progress tab."
+      footer={
+        <>
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={() => void save()} disabled={saving}>
+          <Button onClick={() => void save()} loading={saving}>
             {saving ? "Saving…" : "Save"}
           </Button>
-        </div>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-4">
+        {FIELDS.map((f) => (
+          <Switch
+            key={f.key}
+            checked={Boolean(settings[f.key])}
+            onChange={(next) => setSettings((s) => ({ ...s, [f.key]: next }))}
+            label={f.label}
+          />
+        ))}
       </div>
-    </div>
+    </Dialog>
   );
 }

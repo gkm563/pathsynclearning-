@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Newspaper } from "lucide-react";
 import { apiGet, apiSend } from "@/lib/api";
 import type { NewsSort } from "@/lib/news/constants";
 import type {
@@ -8,7 +9,16 @@ import type {
   NewsListResponse,
   NewsPreferencesDto,
 } from "@/lib/news/types";
-import { Button, EmptyState } from "@/components/ui/primitives";
+import {
+  Alert,
+  Button,
+  CardGridSkeleton,
+  EmptyState,
+  ErrorState,
+  LoadMore,
+  RefreshOverlay,
+  Section,
+} from "@/components/ui";
 import { FeaturedStories } from "@/components/tech-news/FeaturedStories";
 import { NewsCard } from "@/components/tech-news/NewsCard";
 import {
@@ -17,7 +27,6 @@ import {
   TechNewsHeader,
 } from "@/components/tech-news/NewsControls";
 import { PreferencesPanel } from "@/components/tech-news/PreferencesPanel";
-import { NewsFeedBusy, NewsSection, NewsSkeletonGrid } from "@/components/tech-news/shared";
 
 export default function PlatformTechNews() {
   const [category, setCategory] = useState<string | "all">("all");
@@ -150,13 +159,16 @@ export default function PlatformTechNews() {
       : "Updating stories…";
 
   return (
-    <div className="tech-news">
+    <>
       <TechNewsHeader />
 
       {stale ? (
-        <p role="status" className="tech-news-banner">
-          Showing cached headlines — live feed temporarily unavailable.
-        </p>
+        <div className="mb-4">
+          <Alert tone="warning" title="Showing cached headlines">
+            The live feed is temporarily unavailable. Stories below may be a few
+            minutes behind.
+          </Alert>
+        </div>
       ) : null}
 
       <CategoryNav
@@ -177,19 +189,16 @@ export default function PlatformTechNews() {
         }}
       />
 
-      {feedRefreshing ? (
-        <div className="news-progress" role="progressbar" aria-label={busyLabel} />
-      ) : null}
-
-      {feedRefreshing && !hasFeed ? <NewsSkeletonGrid /> : null}
+      {feedRefreshing && !hasFeed ? <CardGridSkeleton count={6} withMedia /> : null}
 
       {!feedRefreshing && error && items.length === 0 ? (
-        <EmptyState
+        <ErrorState
           title="Unable to load tech news"
           description="Please try again in a moment."
+          detail={error}
           action={
-            <Button className="news-toolbar-btn" onClick={() => void load(null, false)}>
-              Try Again
+            <Button variant="secondary" onClick={() => void load(null, false)}>
+              Try again
             </Button>
           }
         />
@@ -197,6 +206,7 @@ export default function PlatformTechNews() {
 
       {!feedRefreshing && !error && items.length === 0 ? (
         <EmptyState
+          icon={<Newspaper size={20} aria-hidden />}
           title="No articles found"
           description={
             debouncedSearch
@@ -207,7 +217,6 @@ export default function PlatformTechNews() {
             debouncedSearch || category !== "all" ? (
               <Button
                 variant="secondary"
-                className="news-toolbar-btn"
                 onClick={() => {
                   setSearch("");
                   setCategory("all");
@@ -221,37 +230,29 @@ export default function PlatformTechNews() {
       ) : null}
 
       {hasFeed ? (
-        <div className={`news-feed${feedRefreshing ? " is-busy" : ""}`} aria-busy={feedRefreshing}>
-          {feedRefreshing ? <NewsFeedBusy label={busyLabel} /> : null}
-          <div className="news-feed-body">
-            {!debouncedSearch ? <FeaturedStories articles={featured} /> : null}
+        <RefreshOverlay busy={feedRefreshing} label={busyLabel}>
+          {!debouncedSearch ? <FeaturedStories articles={featured} /> : null}
 
-            <NewsSection title="Latest">
-              <div className="tech-news-grid">
-                {items.map((article) => (
-                  <NewsCard
-                    key={article.id}
-                    article={article}
-                    onToggleBookmark={(a) => void toggleBookmark(a)}
-                  />
-                ))}
-              </div>
-            </NewsSection>
+          <Section title="Latest">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {items.map((article) => (
+                <NewsCard
+                  key={article.id}
+                  article={article}
+                  onToggleBookmark={(a) => void toggleBookmark(a)}
+                />
+              ))}
+            </div>
+          </Section>
 
-            {nextCursor ? (
-              <div style={{ display: "flex", justifyContent: "center", marginTop: 8 }}>
-                <Button
-                  variant="secondary"
-                  className="news-toolbar-btn"
-                  disabled={loadingMore || feedRefreshing}
-                  onClick={() => void load(nextCursor, true)}
-                >
-                  {loadingMore ? "Loading…" : "Load more"}
-                </Button>
-              </div>
-            ) : null}
-          </div>
-        </div>
+          {nextCursor ? (
+            <LoadMore
+              hasMore
+              loading={loadingMore}
+              onClick={() => void load(nextCursor, true)}
+            />
+          ) : null}
+        </RefreshOverlay>
       ) : null}
 
       <PreferencesPanel
@@ -262,6 +263,6 @@ export default function PlatformTechNews() {
         onSave={() => void savePrefs()}
         saving={savingPrefs}
       />
-    </div>
+    </>
   );
 }

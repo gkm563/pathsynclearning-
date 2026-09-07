@@ -1,5 +1,17 @@
 "use client";
 
+import { ErrorScreen } from "@/components/ui/ErrorScreen";
+// The root layout never renders when this boundary is hit, so its stylesheet
+// import doesn't apply — this file has to pull in the token layer itself.
+import "./globals.css";
+
+/**
+ * Last-resort boundary for errors thrown in the root layout itself.
+ *
+ * Must render its own <html>/<body>. `data-theme` is intentionally unset:
+ * whatever set it has already failed, so this falls back to the light theme
+ * rather than risking an unstyled or unreadable screen.
+ */
 export default function GlobalError({
   error,
   reset,
@@ -9,62 +21,23 @@ export default function GlobalError({
 }) {
   return (
     <html lang="en">
-      <body
-        style={{
-          margin: 0,
-          minHeight: "100vh",
-          display: "grid",
-          placeItems: "center",
-          fontFamily: "var(--font-sans), Plus Jakarta Sans, system-ui, sans-serif",
-          background: "#fcfdff",
-          color: "#1a1a2e",
-          padding: 24,
-        }}
-      >
-        <div style={{ maxWidth: 420, textAlign: "center" }}>
-          <p style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", color: "#6c63ff" }}>
-            PATHED
-          </p>
-          <h1 style={{ fontSize: 28, margin: "8px 0 12px" }}>Something went wrong</h1>
-          <p style={{ color: "#666", lineHeight: 1.5, marginBottom: 20 }}>
-            An unexpected error occurred. You can try again, or return home.
-          </p>
-          <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-            <button
-              type="button"
-              onClick={reset}
-              style={{
-                border: "none",
-                borderRadius: 12,
-                padding: "10px 18px",
-                background: "#6c63ff",
-                color: "#fff",
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
-            >
-              Try again
-            </button>
+      <body className="bg-canvas text-ink">
+        <ErrorScreen
+          title="PathEd hit an unexpected error"
+          description="The application failed to start. Reloading usually resolves it — if it keeps happening, please get in touch with the reference below."
+          digest={error.digest}
+          onRetry={reset}
+          retryLabel="Reload"
+          secondaryAction={
             <a
               href="/"
-              style={{
-                borderRadius: 12,
-                padding: "10px 18px",
-                border: "1.5px solid #eaecff",
-                fontWeight: 700,
-                textDecoration: "none",
-                color: "#1a1a2e",
-              }}
+              className="type-label inline-flex min-h-11 items-center rounded-[var(--radius-md)] border border-line-strong bg-surface px-4 font-semibold text-ink transition-colors hover:bg-sunken focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               Go home
             </a>
-          </div>
-          {error.digest ? (
-            <p style={{ marginTop: 16, fontSize: 12, color: "#9ca3af" }}>
-              Ref: {error.digest}
-            </p>
-          ) : null}
-        </div>
+          }
+          className="min-h-dvh"
+        />
       </body>
     </html>
   );

@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
 import { Clock, Share2, Shield } from "lucide-react";
 import type { ChallengeSummary, ChallengesApiResponse } from "@/lib/challenges/types";
+import { Badge, Button, Card, EmptyState, Section } from "@/components/ui";
 import ChallengeCard from "./ChallengeCard";
 
 function formatCountdown(secs: number) {
@@ -47,66 +47,32 @@ export default function ChallengeOfDayPanel({
   const featuredDone = featured?.status === "solved";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: 12,
-          padding: "16px 20px",
-          borderRadius: 18,
-          background:
-            "linear-gradient(135deg, rgba(108,99,255,0.12), rgba(0,201,167,0.12))",
-          border: "1.5px solid rgba(0,201,167,0.3)",
-        }}
-      >
-        <div>
-          <div
-            style={{
-              fontFamily: "Outfit",
-              fontWeight: 800,
-              fontSize: 16,
-              color: "var(--text-main)",
-            }}
-          >
-            Today&apos;s pack
-            {careerGoal ? (
-              <span style={{ color: "#6c63ff" }}> · {careerGoal}</span>
-            ) : null}
-            {cleared ? (
-              <span style={{ color: "#00c9a7", marginLeft: 8 }}>Cleared</span>
-            ) : null}
+    <div className="flex flex-col gap-6">
+      <Card className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="type-h4 m-0 text-ink">Today&apos;s pack</h3>
+            {careerGoal ? <Badge tone="accent">{careerGoal}</Badge> : null}
+            {cleared ? <Badge tone="success">Cleared</Badge> : null}
           </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              marginTop: 4,
-              fontFamily: "Fira Code",
-              fontSize: 12,
-              color: "#00c9a7",
-              fontWeight: 700,
-            }}
-          >
-            <Clock size={13} />
+          <p className="type-caption mt-2 mb-0 inline-flex items-center gap-1.5 text-muted">
+            <Clock size={13} aria-hidden />
             Refresh in {formatCountdown(refreshInSeconds)}
-          </div>
+          </p>
         </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <button type="button" onClick={onShareDuel} style={chipBtn}>
-            <Share2 size={13} /> Share CotD ({duelCode.slice(-6)})
-          </button>
-          <button type="button" onClick={onBuyShield} style={chipBtn}>
-            <Shield size={13} /> Shields {shields}
-          </button>
-          <div style={{ fontFamily: "Outfit", fontSize: 13, color: "var(--text-muted)", alignSelf: "center" }}>
-            Featured {featuredDone ? "done" : "open"} · Side {sideDone}/{side.length}
-          </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="secondary" size="sm" onClick={onShareDuel}>
+            <Share2 size={13} aria-hidden /> Share CotD ({duelCode.slice(-6)})
+          </Button>
+          <Button variant="secondary" size="sm" onClick={onBuyShield}>
+            <Shield size={13} aria-hidden /> Shields {shields}
+          </Button>
+          <span className="type-caption text-muted">
+            Featured {featuredDone ? "done" : "open"} · Side {sideDone}/
+            {side.length}
+          </span>
         </div>
-      </div>
+      </Card>
 
       {featured ? (
         <ChallengeCard
@@ -118,24 +84,14 @@ export default function ChallengeOfDayPanel({
           hintBusy={hintBusy}
         />
       ) : (
-        <div
-          style={{
-            padding: 28,
-            borderRadius: 18,
-            background: "var(--bg-card)",
-            border: "1px dashed var(--border-light)",
-            color: "var(--text-muted)",
-            fontFamily: "Outfit",
-          }}
-        >
-          No featured challenge available. Complete roadmap personalization to unlock
-          goal-aligned packs.
-        </div>
+        <EmptyState
+          title="No featured challenge"
+          description="Complete roadmap personalization to unlock goal-aligned packs."
+        />
       )}
 
-      <div>
-        <h3 style={sectionTitle}>Side questions</h3>
-        <div style={grid}>
+      <Section title="Side questions">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {side.map((item) => (
             <ChallengeCard
               key={item.id}
@@ -147,13 +103,10 @@ export default function ChallengeOfDayPanel({
             />
           ))}
         </div>
-      </div>
+      </Section>
 
-      <div>
-        <h3 style={sectionTitle}>
-          Weekly boss · {weekly.weekKey} · {weekly.progress}%
-        </h3>
-        <div style={grid}>
+      <Section title={`Weekly boss · ${weekly.weekKey} · ${weekly.progress}%`}>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {weekly.boss && (
             <ChallengeCard
               item={weekly.boss}
@@ -175,36 +128,7 @@ export default function ChallengeOfDayPanel({
             />
           ))}
         </div>
-      </div>
+      </Section>
     </div>
   );
 }
-
-const sectionTitle: React.CSSProperties = {
-  margin: "0 0 12px",
-  fontFamily: "Outfit",
-  fontSize: 15,
-  fontWeight: 800,
-  color: "var(--text-main)",
-};
-
-const grid: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-  gap: 16,
-};
-
-const chipBtn: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 6,
-  padding: "8px 12px",
-  borderRadius: 12,
-  border: "1.5px solid var(--border-light)",
-  background: "var(--bg-card)",
-  color: "var(--text-main)",
-  fontFamily: "Outfit",
-  fontWeight: 700,
-  fontSize: 12,
-  cursor: "pointer",
-};

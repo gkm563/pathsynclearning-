@@ -1,21 +1,23 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Bookmark, CheckCheck } from "lucide-react";
+import { Bookmark, CheckCheck } from "lucide-react";
 import { apiGet, apiSend } from "@/lib/api";
 import type { NewsArticleDto } from "@/lib/news/types";
 import { routes } from "@/lib/routes";
-import { Button, EmptyState, PageSpinner } from "@/components/ui/primitives";
+import {
+  Badge,
+  Breadcrumb,
+  Button,
+  ErrorState,
+  PageSkeleton,
+} from "@/components/ui";
 import {
   ExternalSourceLink,
   ShareButton,
 } from "@/components/tech-news/NewsCard";
-import {
-  CATEGORY_COLOR,
-  formatNewsTime,
-  NewsCover,
-} from "@/components/tech-news/shared";
+import { formatNewsTime, NewsCover, newsDateTime } from "@/components/tech-news/shared";
 import { NewsArticleBody } from "@/components/tech-news/NewsArticleBody";
 
 export default function PlatformTechNewsArticle() {
@@ -71,30 +73,23 @@ export default function PlatformTechNewsArticle() {
   };
 
   if (loading) {
-    return (
-      <div style={{ padding: 24 }}>
-        <PageSpinner label="Loading article…" />
-      </div>
-    );
+    return <PageSkeleton stats={false} variant="list" />;
   }
 
   if (error || !article) {
     return (
-      <div className="tech-news">
-        <EmptyState
-          title="Unable to open article"
-          description={error || "This story may have been removed."}
-          action={
-            <Button onClick={() => router.push(routes.app.techNews)}>
-              Back to Tech News
-            </Button>
-          }
-        />
-      </div>
+      <ErrorState
+        title="Unable to open article"
+        description={error || "This story may have been removed."}
+        action={
+          <Button onClick={() => router.push(routes.app.techNews)}>
+            Back to Tech News
+          </Button>
+        }
+      />
     );
   }
 
-  const color = CATEGORY_COLOR[article.category] || "#6c63ff";
   const shareUrl =
     typeof window !== "undefined"
       ? window.location.href
@@ -107,75 +102,56 @@ export default function PlatformTechNewsArticle() {
       .includes(article.summary.replace(/\s+/g, " ").toLowerCase().slice(0, 80));
 
   return (
-    <article className="tech-news" style={{ maxWidth: 760 }}>
-      <button
-        type="button"
-        onClick={() => router.push(routes.app.techNews)}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 6,
-          border: "none",
-          background: "transparent",
-          color: "var(--text-muted)",
-          fontWeight: 650,
-          fontSize: 13,
-          cursor: "pointer",
-          marginBottom: 18,
-          minHeight: 40,
-          padding: 0,
-        }}
-      >
-        <ArrowLeft size={16} aria-hidden /> Back to Tech News
-      </button>
+    <article className="mx-auto max-w-[var(--measure-prose)]">
+      <Breadcrumb
+        items={[
+          { label: "Tech News", href: routes.app.techNews },
+          { label: article.title },
+        ]}
+        className="mb-5"
+      />
 
-      <div
-        style={{
-          borderRadius: 16,
-          border: "1px solid var(--border-light)",
-          overflow: "hidden",
-          marginBottom: 22,
-        }}
-      >
-        <NewsCover src={article.imageUrl} alt="" tint={color} />
+      <div className="mb-6 overflow-hidden rounded-[var(--radius-lg)] border border-line">
+        <NewsCover src={article.imageUrl} alt="" />
       </div>
 
-      <div className="news-card-meta" style={{ marginTop: 0, paddingTop: 0, marginBottom: 14 }}>
-        <span>{article.category}</span>
-        <span className="sep" aria-hidden>
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <Badge tone="accent">{article.category}</Badge>
+        <span className="type-caption text-faint">{article.sourceName}</span>
+        <span className="type-caption text-faint" aria-hidden>
           ·
         </span>
-        <span>{article.sourceName}</span>
-        <span className="sep" aria-hidden>
+        <time
+          className="type-caption text-faint"
+          dateTime={newsDateTime(article.publishedAt)}
+        >
+          {formatNewsTime(article.publishedAt)}
+        </time>
+        <span className="type-caption text-faint" aria-hidden>
           ·
         </span>
-        <span>{formatNewsTime(article.publishedAt)}</span>
-        <span className="sep" aria-hidden>
-          ·
+        <span className="type-caption text-faint">
+          {article.readingMinutes} min read
         </span>
-        <span>{article.readingMinutes} min read</span>
         {article.read ? (
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+          <span className="type-caption inline-flex items-center gap-1 text-muted">
             <CheckCheck size={14} aria-hidden /> Read
           </span>
         ) : null}
       </div>
 
-      <h1 className="tech-news-title" style={{ marginBottom: 12 }}>
-        {article.title}
-      </h1>
+      <h1 className="type-h2 mt-0 mb-3 text-ink">{article.title}</h1>
 
       {article.author ? (
-        <p style={{ margin: "0 0 16px", color: "var(--text-muted)", fontSize: 14 }}>
-          By {article.author}
-        </p>
+        <p className="type-small mt-0 mb-4 text-muted">By {article.author}</p>
       ) : null}
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 22 }}>
-        <Button variant="secondary" onClick={() => void toggleBookmark()} style={{ minHeight: 40 }} className="news-toolbar-btn">
+      <div className="mb-6 flex flex-wrap gap-2">
+        <Button variant="secondary" onClick={() => void toggleBookmark()}>
           <Bookmark
             size={16}
-            fill={article.bookmarked ? "currentColor" : "none"}
+            aria-hidden
+            className={article.bookmarked ? "fill-current" : undefined}
           />
           {article.bookmarked ? "Saved" : "Save"}
         </Button>
@@ -186,13 +162,13 @@ export default function PlatformTechNewsArticle() {
       </div>
 
       {showDek ? (
-        <p className="news-article-dek">{article.summary}</p>
+        <p className="type-body mt-0 mb-5 text-muted">{article.summary}</p>
       ) : null}
 
       {article.content ? (
         <NewsArticleBody content={article.content} />
       ) : (
-        <p className="news-article-fallback">
+        <p className="type-body text-muted">
           Full story is available on the original source.
         </p>
       )}

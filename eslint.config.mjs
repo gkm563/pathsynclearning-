@@ -44,9 +44,26 @@ const PORTAL_SHELL_BAN = {
 };
 
 const eslintConfig = [
+  // Global ignores. Must live in a standalone config object — an `ignores` key
+  // alongside `rules`/`files` is scoped to that object only, which previously
+  // let ESLint lint generated build output.
+  {
+    ignores: [
+      ".next/**",
+      ".next-dev/**",
+      "node_modules/**",
+      "out/**",
+      "build/**",
+      "coverage/**",
+      "drizzle/**",
+      ".agents/**",
+      ".cursor/**",
+      "scripts/**",
+      "next-env.d.ts",
+    ],
+  },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
-    ignores: [".next/**", "node_modules/**", "out/**", ".agents/**", "scripts/**"],
     rules: {
       "react/no-unescaped-entities": "off",
       "@next/next/no-img-element": "off",

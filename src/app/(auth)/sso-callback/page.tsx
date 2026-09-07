@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useClerk, useSignIn, useSignUp, useAuth } from "@clerk/nextjs";
 import { useSearchParams } from "next/navigation";
+import { AuthStatusScreen } from "@/components/auth/AuthStatusScreen";
 import { authContinueWithRole, routes } from "@/lib/routes";
 
 /**
@@ -166,28 +167,16 @@ function SSOCallbackContent() {
   }, [clerk.loaded]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[var(--bg-main)]">
-      <div id="clerk-captcha" />
-      <div
-        className="h-10 w-10 animate-spin rounded-full border-2 border-[#6c63ff] border-t-transparent"
-        aria-hidden
-      />
-      <p className="font-sans text-sm text-[var(--text-muted)]">{message}</p>
-    </div>
+    <AuthStatusScreen message={message}>
+      {/* Clerk bot protection can mount here during a transfer — keep it visible. */}
+      <div id="clerk-captcha" className="empty:hidden" />
+    </AuthStatusScreen>
   );
 }
 
 export default function SSOCallbackPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center bg-[var(--bg-main)]">
-          <p className="font-sans text-sm text-[var(--text-muted)]">
-            Completing sign-in…
-          </p>
-        </div>
-      }
-    >
+    <Suspense fallback={<AuthStatusScreen message="Completing sign-in…" />}>
       <SSOCallbackContent />
     </Suspense>
   );

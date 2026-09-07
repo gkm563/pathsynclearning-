@@ -1,73 +1,82 @@
 "use client";
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Calendar } from 'lucide-react';
-import { OnboardingCard, StepHeader } from '../onboarding-ui';
+
+import { Calendar } from "lucide-react";
+import { cn } from "@/lib/cn";
+import { OnboardingCard, StepHeader, labelClass } from "../onboarding-ui";
 
 const TIMELINES = ["1 month", "3 months", "6 months", "9 months", "1 year", "No fixed deadline"];
 const PRIORITIES = [
-  "Build skills", "Get internship", "Get job", "Build portfolio", 
-  "Improve coding", "Prepare for interviews", "Build projects", 
-  "Earn through freelancing", "Contribute to open source"
+  "Build skills",
+  "Get internship",
+  "Get job",
+  "Build portfolio",
+  "Improve coding",
+  "Prepare for interviews",
+  "Build projects",
+  "Earn through freelancing",
+  "Contribute to open source",
 ];
 
-export default function TimelineSection({ data, onChange }: { data: any, onChange: (data: any) => void; hideRole?: boolean }) {
-  const timeline = data.timeline || '';
-  const priority = data.priority || '';
-
-  const containerStyle: React.CSSProperties = {
-    display: 'flex', flexDirection: 'column', gap: '24px',
-    backgroundColor: 'var(--bg-card)', padding: '32px',
-    borderRadius: '16px', border: '1px solid var(--border-light)'
-  };
-
-  const titleStyle: React.CSSProperties = {
-    display: 'flex', alignItems: 'center', gap: '12px',
-    fontSize: '24px', fontWeight: 'bold', fontFamily: 'Outfit',
-    color: 'var(--text-main)', marginBottom: '8px'
-  };
-
-  const labelStyle: React.CSSProperties = {
-    display: 'block', marginBottom: '12px', fontWeight: 600,
-    color: 'var(--text-main)', fontFamily: 'Outfit', fontSize: '18px'
-  };
-
-  const gridStyle: React.CSSProperties = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-    gap: '12px'
-  };
-
-  const getCardStyle = (selected: boolean): React.CSSProperties => ({
-    padding: '16px', borderRadius: '12px', textAlign: 'center',
-    border: `2px solid ${selected ? '#6c63ff' : 'var(--border-light)'}`,
-    backgroundColor: selected ? 'rgba(108, 99, 255, 0.1)' : 'var(--bg-alt)',
-    color: 'var(--text-main)', cursor: 'pointer', fontFamily: 'Outfit',
-    fontWeight: selected ? 600 : 400, transition: 'all 0.2s'
-  });
+export default function TimelineSection({
+  data,
+  onChange,
+}: {
+  data: Record<string, unknown>;
+  onChange: (data: Record<string, unknown>) => void;
+  hideRole?: boolean;
+}) {
+  const timeline = typeof data.timeline === "string" ? data.timeline : "";
+  const priority = typeof data.priority === "string" ? data.priority : "";
 
   return (
-    <OnboardingCard accent="#6c63ff">
-      <StepHeader icon={<Calendar size={22} color="#6c63ff" />} kicker="Deadline" title="Timeline and priority" subtitle="This sets estimated weeks and which nodes are marked critical." />
-      
+    <OnboardingCard>
+      <StepHeader
+        icon={<Calendar size={22} aria-hidden />}
+        kicker="Deadline"
+        title="Timeline and priority"
+        subtitle="This sets estimated weeks and which nodes are marked critical."
+      />
+
       <div>
-        <label style={labelStyle}>When do you want to achieve your goal?</label>
-        <div style={gridStyle}>
-          {TIMELINES.map(t => (
-            <div key={t} style={getCardStyle(timeline === t)} onClick={() => onChange({ ...data, timeline: t })}>
+        <p className={labelClass}>When do you want to achieve your goal?</p>
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-2.5">
+          {TIMELINES.map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => onChange({ ...data, timeline: t })}
+              className={cn(
+                "rounded-[var(--radius-md)] border px-3.5 py-3 text-center transition-colors",
+                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                timeline === t
+                  ? "border-primary-border bg-primary-soft font-semibold text-ink"
+                  : "border-line bg-sunken text-ink hover:bg-surface",
+              )}
+            >
               {t}
-            </div>
+            </button>
           ))}
         </div>
       </div>
 
       <div>
-        <label style={labelStyle}>What is your biggest priority right now?</label>
-        <div style={gridStyle}>
-          {PRIORITIES.map(p => (
-            <div key={p} style={getCardStyle(priority === p)} onClick={() => onChange({ ...data, priority: p })}>
+        <p className={labelClass}>What is your biggest priority right now?</p>
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-2.5">
+          {PRIORITIES.map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => onChange({ ...data, priority: p })}
+              className={cn(
+                "rounded-[var(--radius-md)] border px-3.5 py-3 text-center transition-colors",
+                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                priority === p
+                  ? "border-primary-border bg-primary-soft font-semibold text-ink"
+                  : "border-line bg-sunken text-ink hover:bg-surface",
+              )}
+            >
               {p}
-            </div>
+            </button>
           ))}
         </div>
       </div>

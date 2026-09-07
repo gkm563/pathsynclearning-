@@ -1,143 +1,166 @@
-"use client";
+import {
+  DocProse,
+  DocsShell,
+  MarketingHero,
+  MarketingPage,
+  type DocsNavGroup,
+} from "@/components/marketing/MarketingChrome";
+import { cn } from "@/lib/cn";
 
-import React, { useEffect } from "react";
-import { motion } from "framer-motion";
-import Header from "../../components/layout/Header";
-import Footer from "../../components/layout/Footer";
-import { Chip } from "../../components/ui/Shared";
+/* -------------------------------------------------------------------------
+   Endpoint catalogue. `id` values are in-page anchor targets linked from the
+   sidebar; they must not change.
+------------------------------------------------------------------------- */
+
+type HttpMethod = "GET" | "POST";
+
+interface Endpoint {
+  id: string;
+  navLabel: string;
+  method: HttpMethod;
+  path: string;
+  title: string;
+  description: string;
+  sampleLabel: string;
+  sample: string;
+}
+
+const METHOD_TONE: Record<HttpMethod, string> = {
+  GET: "border-success/30 bg-success-soft text-success",
+  POST: "border-info/30 bg-info-soft text-info",
+};
+
+const ENDPOINTS: readonly Endpoint[] = [
+  {
+    id: "authentication",
+    navLabel: "Authentication",
+    method: "POST",
+    path: "/api/v1/auth/token",
+    title: "Authentication",
+    description:
+      "Exchange your client credentials for a Bearer token to authorize subsequent API requests.",
+    sampleLabel: "Request body",
+    sample: `{
+  "client_id": "string",
+  "client_secret": "string"
+}`,
+  },
+  {
+    id: "users",
+    navLabel: "Users",
+    method: "GET",
+    path: "/api/v1/users/{uid}",
+    title: "Retrieve User Data",
+    description:
+      "Fetch a student's public profile and metadata. Only accessible if the user has opted into the hiring network.",
+    sampleLabel: "Response",
+    sample: `{
+  "uid": "user_123xyz",
+  "name": "Alex Chen",
+  "role_target": "Backend Engineer"
+}`,
+  },
+  {
+    id: "cri-scores",
+    navLabel: "CRI Scores",
+    method: "GET",
+    path: "/api/v1/users/{uid}/cri",
+    title: "Retrieve CRI Score",
+    description:
+      "Fetch the latest Career Readiness Index score and breakdown for a specific authenticated user.",
+    sampleLabel: "Response",
+    sample: `{
+  "uid": "user_123xyz",
+  "cri_score": 84.5,
+  "percentile": 92,
+  "last_updated": "2026-07-19T12:00:00Z"
+}`,
+  },
+  {
+    id: "skill-trees",
+    navLabel: "Skill Trees",
+    method: "GET",
+    path: "/api/v1/users/{uid}/skills",
+    title: "Retrieve Skill Graph",
+    description:
+      "Fetch the user's completed skill nodes and their proficiency level in each.",
+    sampleLabel: "Response",
+    sample: `{
+  "nodes_unlocked": 14,
+  "top_skills": ["Node.js", "PostgreSQL", "Redis"]
+}`,
+  },
+];
+
+const API_NAV: readonly DocsNavGroup[] = [
+  {
+    label: "API Endpoints",
+    items: ENDPOINTS.map((endpoint) => ({
+      id: endpoint.id,
+      label: endpoint.navLabel,
+    })),
+  },
+];
+
+/* ----------------------------------------------------------------------- */
+
+function EndpointCard({ endpoint }: { endpoint: Endpoint }) {
+  return (
+    <section id={endpoint.id} className="min-w-0 scroll-mt-24">
+      <div className="min-w-0 overflow-hidden rounded-[var(--radius-lg)] border border-line bg-surface shadow-[var(--shadow-xs)]">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-line bg-sunken px-4 py-3 sm:px-6">
+          <span
+            className={cn(
+              "type-code inline-flex shrink-0 items-center rounded-[var(--radius-sm)] border px-2 py-0.5 font-semibold",
+              METHOD_TONE[endpoint.method],
+            )}
+          >
+            {endpoint.method}
+          </span>
+          <code className="type-code min-w-0 break-all text-ink">
+            {endpoint.path}
+          </code>
+        </div>
+
+        <div className="min-w-0 px-4 py-5 sm:px-6 sm:py-6">
+          <h2 className="type-h3 m-0 text-balance text-ink">
+            {endpoint.title}
+          </h2>
+          <DocProse className="mt-2">
+            <p>{endpoint.description}</p>
+          </DocProse>
+
+          <figure className="m-0 mt-5 min-w-0">
+            <figcaption className="type-caption mb-2 text-faint">
+              {endpoint.sampleLabel}
+            </figcaption>
+            <pre className="type-code m-0 min-w-0 overflow-x-auto rounded-[var(--radius-md)] border border-line bg-sunken px-4 py-3.5 text-ink">
+              <code>{endpoint.sample}</code>
+            </pre>
+          </figure>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function ApiReference() {
-  const fadeInUp = { initial: { opacity: 0, y: 20 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.5 } };
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
   return (
-    <div style={{ background: "#0a0a0f", minHeight: "100vh", fontFamily: "'Inter', sans-serif", color: "var(--text-inverse)" }}>
-      <Header />
-      
-      <div style={{ display: "flex", paddingTop: 100, minHeight: "100vh" }}>
-        {/* Sidebar */}
-        <aside style={{ width: 280, borderRight: "1px solid rgba(255,255,255,0.1)", padding: "40px 32px", display: "flex", flexDirection: "column", gap: 24, position: "sticky", top: 100, height: "calc(100vh - 100px)", overflowY: "auto" }}>
-          <div>
-            <h4 style={{ fontSize: 12, fontWeight: 800, color: "var(--text-light)", letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>API Endpoints</h4>
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
-              <li><a href="#authentication" style={{ color: "#00c9a7", fontWeight: 600, textDecoration: "none" }}>Authentication</a></li>
-              <li><a href="#users" style={{ color: "#d1d5db", textDecoration: "none" }}>Users</a></li>
-              <li><a href="#cri-scores" style={{ color: "#d1d5db", textDecoration: "none" }}>CRI Scores</a></li>
-              <li><a href="#skill-trees" style={{ color: "#d1d5db", textDecoration: "none" }}>Skill Trees</a></li>
-            </ul>
-          </div>
-        </aside>
+    <MarketingPage>
+      <MarketingHero
+        align="left"
+        kicker="v1.0.0 · Stable"
+        title="API Reference"
+        description="Integrate PathEd's career readiness data directly into your corporate HR systems or university dashboards using our robust REST API."
+      />
 
-        {/* Content */}
-        <main style={{ flex: 1, padding: "60px 80px", maxWidth: 1000, scrollBehavior: "smooth" }}>
-          <motion.div {...fadeInUp}>
-            <Chip bg="rgba(0,201,167,0.1)" border="rgba(0,201,167,0.3)" color="#00c9a7">v1.0.0 STABLE</Chip>
-            <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 48, fontWeight: 800, marginTop: 24, marginBottom: 24 }}>
-              API Reference
-            </h1>
-            <p style={{ fontSize: 18, color: "var(--text-light)", lineHeight: 1.8, marginBottom: 48 }}>
-              Integrate PathEd's career readiness data directly into your corporate HR systems or university dashboards using our robust REST API.
-            </p>
-
-            {/* AUTHENTICATION */}
-            <section id="authentication" style={{ paddingTop: 24, marginBottom: 48 }}>
-              <div style={{ border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, overflow: "hidden" }}>
-                <div style={{ background: "rgba(255,255,255,0.02)", padding: "20px 24px", borderBottom: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", gap: 16 }}>
-                  <span style={{ background: "#1677ff", color: "var(--text-inverse)", padding: "4px 12px", borderRadius: 6, fontSize: 12, fontWeight: 800, fontFamily: "'Fira Code', monospace" }}>POST</span>
-                  <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 16, color: "#d1d5db" }}>/api/v1/auth/token</span>
-                </div>
-                <div style={{ padding: 32 }}>
-                  <h4 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Authentication</h4>
-                  <p style={{ color: "var(--text-light)", lineHeight: 1.6, marginBottom: 24 }}>Exchange your client credentials for a Bearer token to authorize subsequent API requests.</p>
-                  
-                  <div style={{ background: "var(--bg-inverse)", borderRadius: 8, padding: 20, fontFamily: "'Fira Code', monospace", fontSize: 14, color: "#b2aeff" }}>
-                    <span style={{ color: "var(--text-muted)" }}>// Request body</span><br/>
-                    {'{'}<br/>
-                    &nbsp;&nbsp;"client_id": "string",<br/>
-                    &nbsp;&nbsp;"client_secret": "string"<br/>
-                    {'}'}
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* USERS */}
-            <section id="users" style={{ paddingTop: 80, marginTop: -80, marginBottom: 48 }}>
-              <div style={{ border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, overflow: "hidden" }}>
-                <div style={{ background: "rgba(255,255,255,0.02)", padding: "20px 24px", borderBottom: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", gap: 16 }}>
-                  <span style={{ background: "#00c9a7", color: "var(--text-inverse)", padding: "4px 12px", borderRadius: 6, fontSize: 12, fontWeight: 800, fontFamily: "'Fira Code', monospace" }}>GET</span>
-                  <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 16, color: "#d1d5db" }}>/api/v1/users/{'{uid}'}</span>
-                </div>
-                <div style={{ padding: 32 }}>
-                  <h4 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Retrieve User Data</h4>
-                  <p style={{ color: "var(--text-light)", lineHeight: 1.6, marginBottom: 24 }}>Fetch a student's public profile and metadata. Only accessible if the user has opted into the hiring network.</p>
-                  
-                  <div style={{ background: "var(--bg-inverse)", borderRadius: 8, padding: 20, fontFamily: "'Fira Code', monospace", fontSize: 14, color: "#00c9a7" }}>
-                    <span style={{ color: "var(--text-muted)" }}>// Response</span><br/>
-                    {'{'}<br/>
-                    &nbsp;&nbsp;"uid": "user_123xyz",<br/>
-                    &nbsp;&nbsp;"name": "Alex Chen",<br/>
-                    &nbsp;&nbsp;"role_target": "Backend Engineer"<br/>
-                    {'}'}
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* CRI SCORES */}
-            <section id="cri-scores" style={{ paddingTop: 80, marginTop: -80, marginBottom: 48 }}>
-              <div style={{ border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, overflow: "hidden" }}>
-                <div style={{ background: "rgba(255,255,255,0.02)", padding: "20px 24px", borderBottom: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", gap: 16 }}>
-                  <span style={{ background: "#00c9a7", color: "var(--text-inverse)", padding: "4px 12px", borderRadius: 6, fontSize: 12, fontWeight: 800, fontFamily: "'Fira Code', monospace" }}>GET</span>
-                  <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 16, color: "#d1d5db" }}>/api/v1/users/{'{uid}'}/cri</span>
-                </div>
-                <div style={{ padding: 32 }}>
-                  <h4 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Retrieve CRI Score</h4>
-                  <p style={{ color: "var(--text-light)", lineHeight: 1.6, marginBottom: 24 }}>Fetch the latest Career Readiness Index score and breakdown for a specific authenticated user.</p>
-                  
-                  <div style={{ background: "var(--bg-inverse)", borderRadius: 8, padding: 20, fontFamily: "'Fira Code', monospace", fontSize: 14, color: "#00c9a7" }}>
-                    <span style={{ color: "var(--text-muted)" }}>// Response</span><br/>
-                    {'{'}<br/>
-                    &nbsp;&nbsp;"uid": "user_123xyz",<br/>
-                    &nbsp;&nbsp;"cri_score": 84.5,<br/>
-                    &nbsp;&nbsp;"percentile": 92,<br/>
-                    &nbsp;&nbsp;"last_updated": "2026-07-19T12:00:00Z"<br/>
-                    {'}'}
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* SKILL TREES */}
-            <section id="skill-trees" style={{ paddingTop: 80, marginTop: -80, marginBottom: 48 }}>
-              <div style={{ border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, overflow: "hidden" }}>
-                <div style={{ background: "rgba(255,255,255,0.02)", padding: "20px 24px", borderBottom: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", gap: 16 }}>
-                  <span style={{ background: "#00c9a7", color: "var(--text-inverse)", padding: "4px 12px", borderRadius: 6, fontSize: 12, fontWeight: 800, fontFamily: "'Fira Code', monospace" }}>GET</span>
-                  <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 16, color: "#d1d5db" }}>/api/v1/users/{'{uid}'}/skills</span>
-                </div>
-                <div style={{ padding: 32 }}>
-                  <h4 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Retrieve Skill Graph</h4>
-                  <p style={{ color: "var(--text-light)", lineHeight: 1.6, marginBottom: 24 }}>Fetch the user's completed skill nodes and their proficiency level in each.</p>
-                  
-                  <div style={{ background: "var(--bg-inverse)", borderRadius: 8, padding: 20, fontFamily: "'Fira Code', monospace", fontSize: 14, color: "#00c9a7" }}>
-                    <span style={{ color: "var(--text-muted)" }}>// Response</span><br/>
-                    {'{'}<br/>
-                    &nbsp;&nbsp;"nodes_unlocked": 14,<br/>
-                    &nbsp;&nbsp;"top_skills": ["Node.js", "PostgreSQL", "Redis"]<br/>
-                    {'}'}
-                  </div>
-                </div>
-              </div>
-            </section>
-
-          </motion.div>
-        </main>
-      </div>
-      
-      <Footer />
-    </div>
+      <DocsShell nav={API_NAV}>
+        <div className="flex min-w-0 flex-col gap-8 pt-2 sm:gap-10">
+          {ENDPOINTS.map((endpoint) => (
+            <EndpointCard key={endpoint.id} endpoint={endpoint} />
+          ))}
+        </div>
+      </DocsShell>
+    </MarketingPage>
   );
 }

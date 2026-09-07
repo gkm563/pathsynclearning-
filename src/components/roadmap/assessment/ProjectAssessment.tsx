@@ -36,7 +36,7 @@ export default function ProjectAssessment({
   const project = assessment.project;
   if (!project) {
     return (
-      <div style={{ padding: 24, fontFamily: "Outfit" }}>
+      <div className="p-6 type-body text-muted">
         No project assessment configured for this node.
       </div>
     );

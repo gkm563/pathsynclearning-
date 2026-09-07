@@ -96,7 +96,10 @@ export default function ChallengeMcqIde({
 
   return (
     <>
-      <div style={{ position: "fixed", top: 16, right: 72, zIndex: 1300 }}>
+      <div
+        className="fixed top-4 right-[72px]"
+        style={{ zIndex: "var(--z-popover)" }}
+      >
         <AddNoteButton
           sourceType="challenge"
           sourceId={item.id}

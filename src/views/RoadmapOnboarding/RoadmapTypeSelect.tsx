@@ -1,17 +1,18 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Building2, Compass, Search, ShieldCheck, TriangleAlert } from "lucide-react";
 import { apiGet, apiSend } from "@/lib/api";
 import { OTHER_COMPANY, OTHER_ROLE } from "@/lib/roadmap/target-companies";
+import { Badge, Input } from "@/components/ui";
+import { cn } from "@/lib/cn";
 import {
   ChoiceCard,
   OnboardingCard,
   Pill,
   SearchField,
   StepHeader,
-  inputStyle,
-  labelStyle,
+  labelClass,
 } from "./onboarding-ui";
 
 export type RoadmapGenerationMode = "targeted" | "general";
@@ -121,50 +122,40 @@ export default function RoadmapTypeSelect({
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [mode, targetCompany, customCompany, roleOfInterest, customRole, selectedCompany?.id]);
 
   return (
-    <OnboardingCard accent={mode === "general" ? "#00c9a7" : "#6c63ff"}>
+    <OnboardingCard>
       <StepHeader
         kicker="Path type"
         title="How should we build this roadmap?"
         subtitle="Company paths follow real hiring loops. Role paths stay industry-general and never reuse the company questionnaire."
       />
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
-        <ChoiceCard selected={mode === "targeted"} onClick={() => onModeChange("targeted")} accent="#6c63ff">
-          <Building2 size={26} color="#6c63ff" />
-          <div style={{ fontWeight: 800, fontSize: 18, marginTop: 10 }}>Company hiring path</div>
-          <div style={{ fontSize: 14, color: "var(--text-muted)", marginTop: 6, lineHeight: 1.5 }}>
+      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+        <ChoiceCard selected={mode === "targeted"} onClick={() => onModeChange("targeted")}>
+          <Building2 size={22} className="text-primary" aria-hidden />
+          <p className="type-h4 mt-2.5 mb-0 text-ink">Company hiring path</p>
+          <p className="type-small mt-1.5 mb-0 text-muted">
             Pick an employer, then only roles they actually hire. Interview prep matches their OA, machine coding, and values rounds.
-          </div>
+          </p>
         </ChoiceCard>
-        <ChoiceCard selected={mode === "general"} onClick={() => onModeChange("general")} accent="#00c9a7">
-          <Compass size={26} color="#00c9a7" />
-          <div style={{ fontWeight: 800, fontSize: 18, marginTop: 10 }}>Role learning path</div>
-          <div style={{ fontSize: 14, color: "var(--text-muted)", marginTop: 6, lineHeight: 1.5 }}>
+        <ChoiceCard selected={mode === "general"} onClick={() => onModeChange("general")}>
+          <Compass size={22} className="text-primary" aria-hidden />
+          <p className="type-h4 mt-2.5 mb-0 text-ink">Role learning path</p>
+          <p className="type-small mt-1.5 mb-0 text-muted">
             Build skills for a role across the industry. Different questions, no company lock-in.
-          </div>
+          </p>
         </ChoiceCard>
       </div>
 
       {mode === "targeted" ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+        <div className="flex flex-col gap-6">
           <div>
-            <label style={labelStyle}>Search companies</label>
+            <label className={labelClass}>Search companies</label>
             <SearchField value={companyQuery} onChange={setCompanyQuery} placeholder="Google, Razorpay, TCS…" />
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(168px, 1fr))",
-                gap: 10,
-                marginTop: 12,
-                maxHeight: 280,
-                overflowY: "auto",
-                paddingRight: 4,
-              }}
-            >
+            <div className="mt-3 grid max-h-72 grid-cols-[repeat(auto-fill,minmax(168px,1fr))] gap-2.5 overflow-y-auto pr-1">
               {visibleCompanies.map((company) => {
                 const selected = targetCompany === company.name;
                 return (
@@ -176,26 +167,29 @@ export default function RoadmapTypeSelect({
                         ...data,
                         targetCompany: company.name,
                         customCompany: "",
-                        roleOfInterest: company.roleNames.includes(roleOfInterest) ? roleOfInterest : "",
+                        roleOfInterest: company.roleNames.includes(roleOfInterest)
+                          ? roleOfInterest
+                          : "",
                       })
                     }
-                    style={{
-                      display: "flex",
-                      gap: 10,
-                      alignItems: "center",
-                      textAlign: "left",
-                      padding: "10px 12px",
-                      borderRadius: 14,
-                      border: `2px solid ${selected ? "#6c63ff" : "var(--border-light)"}`,
-                      background: selected ? "rgba(108,99,255,0.1)" : "var(--bg-alt)",
-                      cursor: "pointer",
-                      color: "var(--text-main)",
-                    }}
+                    className={cn(
+                      "flex items-center gap-2.5 rounded-[var(--radius-md)] border px-3 py-2.5 text-left transition-colors",
+                      "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                      selected
+                        ? "border-primary-border bg-primary-soft"
+                        : "border-line bg-sunken hover:bg-surface",
+                    )}
                   >
-                    <img src={company.logo} alt="" width={22} height={22} style={{ borderRadius: 6 }} />
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: 13 }}>{company.name}</div>
-                      <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{company.region}</div>
+                    <img
+                      src={company.logo}
+                      alt=""
+                      width={22}
+                      height={22}
+                      className="h-[22px] w-[22px] rounded-[6px]"
+                    />
+                    <div className="min-w-0">
+                      <p className="type-label m-0 truncate text-ink">{company.name}</p>
+                      <p className="type-caption m-0 text-muted">{company.region}</p>
                     </div>
                   </button>
                 );
@@ -203,22 +197,20 @@ export default function RoadmapTypeSelect({
               <button
                 type="button"
                 onClick={() => onChange({ ...data, targetCompany: OTHER_COMPANY })}
-                style={{
-                  padding: 12,
-                  borderRadius: 14,
-                  border: `2px dashed ${targetCompany === OTHER_COMPANY ? "#6c63ff" : "var(--border-light)"}`,
-                  background: "transparent",
-                  cursor: "pointer",
-                  color: "var(--text-main)",
-                  fontWeight: 700,
-                }}
+                className={cn(
+                  "rounded-[var(--radius-md)] border border-dashed px-3 py-3 font-semibold text-ink",
+                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                  targetCompany === OTHER_COMPANY
+                    ? "border-primary-border bg-primary-soft"
+                    : "border-line",
+                )}
               >
                 Other company
               </button>
             </div>
             {targetCompany === OTHER_COMPANY ? (
-              <input
-                style={{ ...inputStyle, marginTop: 12 }}
+              <Input
+                className="mt-3"
                 placeholder="Company name"
                 value={customCompany}
                 onChange={(e) => onChange({ ...data, customCompany: e.target.value })}
@@ -227,46 +219,30 @@ export default function RoadmapTypeSelect({
           </div>
 
           {selectedCompany ? (
-            <div
-              style={{
-                padding: 16,
-                borderRadius: 16,
-                background: "var(--bg-alt)",
-                border: "1px solid var(--border-light)",
-              }}
-            >
-              <div style={{ fontWeight: 800, marginBottom: 6 }}>{selectedCompany.name} hiring snapshot</div>
-              <div style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
-                {selectedCompany.hiringNotes}
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
+            <div className="rounded-[var(--radius-md)] border border-line bg-sunken p-4">
+              <p className="type-label m-0 mb-1.5 text-ink">
+                {selectedCompany.name} hiring snapshot
+              </p>
+              <p className="type-small m-0 text-muted">{selectedCompany.hiringNotes}</p>
+              <div className="mt-2.5 flex flex-wrap gap-1.5">
                 {selectedCompany.interviewLoop.map((step) => (
-                  <span
-                    key={step}
-                    style={{
-                      fontSize: 12,
-                      padding: "4px 8px",
-                      borderRadius: 999,
-                      background: "var(--bg-card)",
-                      border: "1px solid var(--border-light)",
-                    }}
-                  >
+                  <Badge key={step} className="normal-case tracking-normal">
                     {step}
-                  </span>
+                  </Badge>
                 ))}
               </div>
             </div>
           ) : null}
 
           <div>
-            <label style={labelStyle}>
+            <label className={labelClass}>
               {selectedCompany ? `Roles ${selectedCompany.name} hires` : "Target role"}
             </label>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-              <Search size={16} color="var(--text-muted)" />
+            <div className="mb-2.5 flex items-center gap-2">
+              <Search size={16} className="shrink-0 text-muted" aria-hidden />
               <SearchField value={roleQuery} onChange={setRoleQuery} placeholder="Filter roles…" />
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <div className="flex flex-wrap gap-2">
               {rolesForUi.map((role) => (
                 <Pill
                   key={role.id}
@@ -282,22 +258,21 @@ export default function RoadmapTypeSelect({
                 <Pill
                   selected={roleOfInterest === OTHER_ROLE}
                   onClick={() => onChange({ ...data, roleOfInterest: OTHER_ROLE })}
-                  accent="#f7971e"
                 >
                   Other role
                 </Pill>
               )}
             </div>
             {roleOfInterest === OTHER_ROLE ? (
-              <input
-                style={{ ...inputStyle, marginTop: 12 }}
+              <Input
+                className="mt-3"
                 placeholder="Job role"
                 value={customRole}
                 onChange={(e) => onChange({ ...data, customRole: e.target.value })}
               />
             ) : null}
             {rolesForUi[0] && roleOfInterest && roleOfInterest !== OTHER_ROLE ? (
-              <p style={{ margin: "10px 0 0", color: "var(--text-muted)", fontSize: 13 }}>
+              <p className="type-small mt-2.5 mb-0 text-muted">
                 {rolesForUi.find((r) => r.name === roleOfInterest)?.summary}
               </p>
             ) : null}
@@ -305,19 +280,19 @@ export default function RoadmapTypeSelect({
 
           {pairingMessage ? (
             <div
-              style={{
-                display: "flex",
-                gap: 10,
-                alignItems: "flex-start",
-                padding: 12,
-                borderRadius: 12,
-                background: pairingOk ? "rgba(0,201,167,0.1)" : "rgba(239,68,68,0.1)",
-                color: "var(--text-main)",
-                fontSize: 13,
-              }}
+              className={cn(
+                "flex items-start gap-2.5 rounded-[var(--radius-md)] border px-3 py-2.5",
+                pairingOk
+                  ? "border-[color-mix(in_srgb,var(--success)_30%,var(--border-light))] bg-[var(--success-soft)]"
+                  : "border-[color-mix(in_srgb,var(--error)_30%,var(--border-light))] bg-[var(--error-soft)]",
+              )}
             >
-              {pairingOk ? <ShieldCheck size={18} color="#00c9a7" /> : <TriangleAlert size={18} color="#ef4444" />}
-              <span>{pairingMessage}</span>
+              {pairingOk ? (
+                <ShieldCheck size={18} className="shrink-0 text-success" aria-hidden />
+              ) : (
+                <TriangleAlert size={18} className="shrink-0 text-danger" aria-hidden />
+              )}
+              <span className="type-small text-ink">{pairingMessage}</span>
             </div>
           ) : null}
         </div>
@@ -325,9 +300,9 @@ export default function RoadmapTypeSelect({
 
       {mode === "general" ? (
         <div>
-          <label style={labelStyle}>Which role is this path for?</label>
+          <label className={labelClass}>Which role is this path for?</label>
           <SearchField value={roleQuery} onChange={setRoleQuery} placeholder="Search roles…" />
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+          <div className="mt-3 flex flex-wrap gap-2">
             {(roleQuery
               ? allRoles.filter(
                   (r) =>
@@ -347,14 +322,13 @@ export default function RoadmapTypeSelect({
             <Pill
               selected={roleOfInterest === OTHER_ROLE}
               onClick={() => onChange({ ...data, roleOfInterest: OTHER_ROLE })}
-              accent="#f7971e"
             >
               Other
             </Pill>
           </div>
           {roleOfInterest === OTHER_ROLE ? (
-            <input
-              style={{ ...inputStyle, marginTop: 12 }}
+            <Input
+              className="mt-3"
               placeholder="Job role"
               value={customRole}
               onChange={(e) => onChange({ ...data, customRole: e.target.value })}

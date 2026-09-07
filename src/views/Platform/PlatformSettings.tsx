@@ -2,11 +2,11 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { PageSpinner } from "@/components/ui";
 import { routes } from "@/lib/routes";
-import { PageSpinner } from "@/components/ui/primitives";
 
 /**
- * Settings now live inside Profile Management.
+ * Settings live inside Profile Management.
  * Keep this route for nav/bookmarks and forward to preferences.
  */
 export default function PlatformSettings() {
@@ -16,9 +16,5 @@ export default function PlatformSettings() {
     router.replace(`${routes.app.profile}?section=preferences`);
   }, [router]);
 
-  return (
-    <div style={{ padding: 48, display: "flex", justifyContent: "center" }}>
-      <PageSpinner label="Opening preferences…" />
-    </div>
-  );
+  return <PageSpinner label="Opening preferences…" />;
 }

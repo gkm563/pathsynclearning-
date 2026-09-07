@@ -8,6 +8,8 @@ import type { Roadmap, RoadmapNodeProgress } from "@/types/roadmap";
 import { routes } from "@/lib/routes";
 import { isRoadmapDeferred, setRoadmapDeferred } from "@/lib/roadmap/defer";
 import RoadmapEmptyState from "@/components/roadmap/RoadmapEmptyState";
+import { RoadmapSpinner } from "@/components/roadmap/RoadmapSpinner";
+import { Button } from "@/components/ui";
 
 const RoadmapOnboarding = React.lazy(
   () => import("@/views/RoadmapOnboarding/RoadmapOnboarding"),
@@ -123,28 +125,7 @@ export default function RoadmapPage() {
   }, [fetchRoadmap]);
 
   if (view === "loading") {
-    return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "calc(100vh - 80px)",
-          background: "var(--bg-main)",
-        }}
-      >
-        <div
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: "50%",
-            border: "2px solid #6c63ff",
-            borderTopColor: "transparent",
-            animation: "spin 0.8s linear infinite",
-          }}
-        />
-      </div>
-    );
+    return <RoadmapSpinner label="Opening roadmap…" />;
   }
 
   if (view === "empty") {
@@ -153,43 +134,16 @@ export default function RoadmapPage() {
 
   if (view === "onboarding") {
     return (
-      <React.Suspense
-        fallback={
-          <div
-            style={{
-              minHeight: "calc(100vh - 80px)",
-              background: "var(--bg-main)",
-            }}
-          />
-        }
-      >
-        <div style={{ position: "relative" }}>
+      <React.Suspense fallback={<RoadmapSpinner label="Opening roadmap…" />}>
+        <div className="relative">
           {creatingNew && roadmap ? (
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              className="sticky top-3 z-[5] mb-3"
               onClick={handleCancelCreate}
-              style={{
-                position: "sticky",
-                top: 12,
-                marginLeft: 20,
-                marginTop: 12,
-                zIndex: 5,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "8px 12px",
-                borderRadius: 10,
-                border: "1.5px solid var(--border-light)",
-                background: "var(--bg-card)",
-                color: "var(--text-main)",
-                fontFamily: "Outfit",
-                fontWeight: 700,
-                fontSize: 13,
-                cursor: "pointer",
-              }}
             >
-              ← Back to current roadmap
-            </button>
+              Back to current roadmap
+            </Button>
           ) : null}
           <RoadmapOnboarding
             onComplete={handleOnboardingComplete}
@@ -202,30 +156,10 @@ export default function RoadmapPage() {
   if (!roadmap) return null;
 
   return (
-    <React.Suspense
-      fallback={
-        <div
-          style={{
-            minHeight: "calc(100vh - 80px)",
-            background: "var(--bg-main)",
-          }}
-        />
-      }
-    >
+    <React.Suspense fallback={<RoadmapSpinner label="Opening roadmap…" />}>
       <ReactFlowProvider>
         <div
-          style={{
-            width: "calc(100% + 72px)",
-            marginLeft: -36,
-            marginRight: -36,
-            marginTop: -28,
-            marginBottom: -60,
-            height: "calc(100dvh - 72px)",
-            maxHeight: "calc(100dvh - 72px)",
-            position: "relative",
-            background: "var(--bg-main)",
-            overflow: "hidden",
-          }}
+          className="relative overflow-hidden bg-canvas max-lg:-mx-4 max-lg:-mt-5 max-lg:-mb-[calc(var(--mobile-tabbar-height)+1rem+env(safe-area-inset-bottom,0px))] h-[calc(100dvh-3.5rem-var(--mobile-tabbar-height)-env(safe-area-inset-bottom,0px))] sm:h-[calc(100dvh-4rem-var(--mobile-tabbar-height)-env(safe-area-inset-bottom,0px))] lg:h-[calc(100dvh-5.5rem)] lg:-mx-8 lg:-mt-6 lg:mb-0"
         >
           <RoadmapNoPageScroll />
           <RoadmapCanvas

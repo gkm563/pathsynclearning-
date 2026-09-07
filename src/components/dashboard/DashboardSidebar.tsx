@@ -1,199 +1,359 @@
 "use client";
 
-import { useRouter, usePathname } from "next/navigation";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
-import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Home, Map, Zap, BookOpen, BarChart2, Newspaper, 
-  Rocket, Inbox, Lightbulb, Award, ShieldAlert, Users, ShoppingBag, Settings, X, Globe, Calendar 
-} from "lucide-react";
-import { useStudent } from "./StudentContext";
+import { usePathname } from "next/navigation";
+import { ChevronRight, PanelLeftClose, Settings } from "lucide-react";
+import { BrandMark } from "@/components/ui/BrandMark";
+import { Avatar, Drawer, IconButton, Tooltip } from "@/components/ui";
+import { cn } from "@/lib/cn";
 import { routes } from "@/lib/routes";
+import { NAV_GROUPS, isNavItemActive, type NavItem } from "./nav-config";
+import { useStudent } from "./StudentContext";
 
-export default function DashboardSidebar({ isOpen, onClose }) {
-  const router = useRouter();
+const SIDEBAR_COLLAPSED_KEY = "pathed.sidebar-collapsed";
+
+const MOTION =
+  "transition-[width,max-width,opacity,padding,margin,gap,transform] duration-[var(--duration-slow)] ease-[var(--ease-standard)] motion-reduce:transition-none";
+
+/**
+ * Portal navigation.
+ *
+ * Renders twice from one config:
+ *  - `SidebarNav` inside a persistent column from `lg` up, because a career
+ *    platform with ~20 destinations shouldn't hide them all behind a hamburger
+ *    on a 1440px display;
+ *  - the same list inside a `Drawer` below `lg`.
+ *
+ * Mounted only by `PortalShell` — the ESLint `no-restricted-imports` rule and
+ * `scripts/check-portal-shell.mjs` enforce that views/pages never import it.
+ */
+
+function RailTip({
+  label,
+  enabled,
+  children,
+}: {
+  label: string;
+  enabled?: boolean;
+  children: ReactNode;
+}) {
+  if (!enabled) return children;
+  return (
+    <Tooltip label={label} side="right" className="flex w-full justify-center">
+      {children}
+    </Tooltip>
+  );
+}
+
+function Label({
+  collapsed,
+  children,
+  className,
+}: {
+  collapsed?: boolean;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "min-w-0 overflow-hidden whitespace-nowrap",
+        MOTION,
+        collapsed ? "max-w-0 flex-none opacity-0" : "max-w-[12rem] flex-1 opacity-100",
+        className,
+      )}
+      aria-hidden={collapsed || undefined}
+    >
+      {children}
+    </span>
+  );
+}
+
+function NavLink({
+  item,
+  active,
+  collapsed,
+  onNavigate,
+}: {
+  item: NavItem;
+  active: boolean;
+  collapsed?: boolean;
+  onNavigate?: () => void;
+}) {
+  const Icon = item.icon;
+  return (
+    <RailTip label={item.label} enabled={collapsed}>
+      <Link
+        href={item.href}
+        onClick={onNavigate}
+        aria-current={active ? "page" : undefined}
+        aria-label={collapsed ? item.label : undefined}
+        className={cn(
+          "group relative flex items-center rounded-[var(--radius-md)]",
+          "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring",
+          MOTION,
+          collapsed ? "h-10 w-10 justify-center px-0" : "min-h-10 w-full gap-2.5 px-2.5 py-2",
+          active
+            ? "bg-primary-soft font-semibold text-primary"
+            : "font-medium text-muted hover:bg-sunken hover:text-ink",
+        )}
+      >
+        <span
+          aria-hidden
+          className={cn(
+            "absolute top-1/2 -left-2 h-4 w-[3px] -translate-y-1/2 rounded-full bg-primary",
+            MOTION,
+            collapsed || !active ? "opacity-0" : "opacity-100",
+          )}
+        />
+        <Icon size={17} className="shrink-0" aria-hidden />
+        <Label collapsed={collapsed} className="type-small">
+          {item.label}
+        </Label>
+      </Link>
+    </RailTip>
+  );
+}
+
+function SidebarNav({
+  collapsed,
+  onNavigate,
+}: {
+  collapsed?: boolean;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
-  const student = useStudent();
-
-  const mainPortal = [
-    { id: "dashboard", path: routes.app.dashboard, label: "Home", icon: <Home size={20} /> },
-    { id: "roadmap", path: routes.app.roadmap, label: "Roadmap", icon: <Map size={20} /> },
-    { id: "challenges", path: routes.app.challenges, label: "Challenges", icon: <Zap size={20} /> },
-    { id: "memory-lane", path: routes.app.memoryLane, label: "Memory Lane", icon: <BookOpen size={20} /> },
-    { id: "progress", path: routes.app.progress, label: "Progress", icon: <BarChart2 size={20} /> },
-    { id: "tech-news", path: routes.app.techNews, label: "Tech News", icon: <Newspaper size={20} /> },
-  ];
-
-  const expandedFeatures = [
-    { id: "advanced-career", path: routes.app.advancedCareer, label: "Advanced Career", icon: <Rocket size={20} /> },
-    { id: "placement-inbox", path: routes.app.placementInbox, label: "Placement Inbox", icon: <Inbox size={20} /> },
-    { id: "placement-insights", path: routes.app.placementInsights, label: "Placement Insights", icon: <Lightbulb size={20} /> },
-    { id: "records-certs", path: routes.app.recordsCerts, label: "Records & Certs", icon: <Award size={20} /> },
-    { id: "og-opportunities", path: routes.app.ogOpportunities, label: "OG Opportunities", icon: <Award size={20} /> },
-    { id: "community", path: routes.app.community, label: "Community", icon: <Users size={20} /> },
-    { id: "store", path: routes.app.store, label: "Store", icon: <ShoppingBag size={20} /> },
-  ];
-
-  const handleNavClick = (path) => {
-    router.push(path);
-    if (onClose) onClose();
-  };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* Backdrop Blur Overlay */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            style={{
-              position: "fixed", inset: 0, zIndex: 199,
-              background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)"
-            }}
-          />
-
-          {/* Slide-over Drawer Sidebar */}
-          <motion.aside
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            style={{
-              position: "fixed", left: 0, top: 0, bottom: 0, width: 300,
-              background: "var(--bg-card)", borderRight: "1.5px solid var(--border-light)",
-              zIndex: 200, display: "flex", flexDirection: "column", justifyContent: "space-between",
-              padding: "26px 22px", boxShadow: "10px 0 40px rgba(0,0,0,0.25)", overflowY: "auto"
-            }}
+    <nav
+      aria-label="Portal sections"
+      className={cn("flex flex-col", MOTION, collapsed ? "items-center gap-1" : "gap-5")}
+    >
+      {NAV_GROUPS.map((group) => (
+        <div key={group.id} className={cn("w-full", collapsed && "flex flex-col items-center")}>
+          <h2
+            className={cn(
+              "type-overline overflow-hidden px-2.5 text-faint",
+              MOTION,
+              collapsed
+                ? "mb-0 max-h-0 opacity-0"
+                : "mb-1.5 max-h-6 opacity-100",
+            )}
           >
-            <div>
-              {/* Sidebar Header with Brand & Close Button */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, paddingBottom: 16, borderBottom: "1.5px solid var(--border-light)" }}>
-                <Link href="/" style={{ fontFamily: "'Syne', sans-serif", fontSize: 26, fontWeight: 800, color: "var(--text-main)", textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ width: 38, height: 38, borderRadius: 10, background: "linear-gradient(135deg, #6c63ff, #00c9a7)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 900, fontSize: 18 }}>
-                    P
-                  </div>
-                  <span>Path<span style={{ color: "#6c63ff" }}>Ed</span></span>
-                </Link>
+            {group.label}
+          </h2>
+          <ul
+            className={cn(
+              "m-0 flex list-none flex-col p-0",
+              MOTION,
+              collapsed ? "items-center gap-1" : "gap-0.5",
+            )}
+          >
+            {group.items.map((item) => (
+              <li key={item.id} className={collapsed ? undefined : "w-full"}>
+                <NavLink
+                  item={item}
+                  active={isNavItemActive(pathname, item)}
+                  collapsed={collapsed}
+                  onNavigate={onNavigate}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </nav>
+  );
+}
 
-                <button onClick={onClose} style={{ background: "var(--bg-alt)", border: "1px solid var(--border-light)", borderRadius: 12, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--text-main)" }}>
-                  <X size={20} />
-                </button>
-              </div>
+/** Account summary + settings entry, shared by both presentations. */
+function SidebarFooter({
+  collapsed,
+  onNavigate,
+}: {
+  collapsed?: boolean;
+  onNavigate?: () => void;
+}) {
+  const student = useStudent();
+  const pathname = usePathname();
+  const degree = (student.degree?.split("·")[0] ?? "").trim();
 
-              {/* User Profile Card */}
-              <div 
-                onClick={() => handleNavClick(routes.app.profile)}
-                style={{
-                  padding: "16px", borderRadius: 18, background: "var(--bg-alt)",
-                  border: "1.5px solid var(--border-light)", marginBottom: 26,
-                  display: "flex", alignItems: "center", gap: 14, cursor: "pointer"
-                }}
-              >
-                <div style={{ width: 50, height: 50, borderRadius: "50%", background: "linear-gradient(135deg, #6c63ff, #00c9a7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, color: "#fff", flexShrink: 0, boxShadow: "0 4px 14px rgba(108,99,255,0.3)" }}>
-                  🎓
-                </div>
-                <div>
-                  <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 800, color: "var(--text-main)" }}>{student.name}</div>
-                  <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, color: "#6c63ff", fontWeight: 700, letterSpacing: 0.5, marginTop: 2 }}>
-                    {(student.degree.split("·")[0] || "B.TECH").trim().toUpperCase()} · {student.institute.toUpperCase()}
-                  </div>
-                </div>
-              </div>
-
-              {/* MAIN PORTAL Links */}
-              <div style={{ marginBottom: 26 }}>
-                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, color: "var(--text-muted)", letterSpacing: 1.5, marginBottom: 12, paddingLeft: 8 }}>
-                  MAIN PORTAL
-                </div>
-                {mainPortal.map(item => {
-                  const isActive = pathname === item.path || (item.path !== routes.app.dashboard && pathname?.startsWith(item.path));
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => handleNavClick(item.path)}
-                      style={{
-                        width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "14px 16px",
-                        borderRadius: 14, border: "none", marginBottom: 6, cursor: "pointer",
-                        background: isActive ? "linear-gradient(135deg, rgba(108,99,255,0.15), rgba(0,201,167,0.1))" : "transparent",
-                        color: isActive ? "#6c63ff" : "var(--text-main)",
-                        fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: isActive ? 800 : 600,
-                        transition: "all 0.2s ease", textAlign: "left"
-                      }}
-                    >
-                      {item.icon}
-                      {item.label}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* EXPANDED FEATURES Section with Red NEW Badges */}
-              <div>
-                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, color: "var(--text-muted)", letterSpacing: 1.5, marginBottom: 12, paddingLeft: 8 }}>
-                  EXPANDED FEATURES
-                </div>
-                {expandedFeatures.map(item => {
-                  const isActive = pathname === item.path || pathname?.startsWith(item.path);
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => handleNavClick(item.path)}
-                      style={{
-                        width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
-                        padding: "14px 16px", borderRadius: 14, border: "none", marginBottom: 6, cursor: "pointer",
-                        background: isActive ? "linear-gradient(135deg, rgba(108,99,255,0.15), rgba(0,201,167,0.1))" : "transparent",
-                        color: isActive ? "#6c63ff" : "var(--text-main)",
-                        fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: isActive ? 800 : 600,
-                        transition: "all 0.2s ease"
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                        {item.icon}
-                        <span>{item.label}</span>
-                      </div>
-                      {/* Red Animated NEW Badge */}
-                      <motion.span
-                        animate={{ scale: [1, 1.08, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        style={{
-                          padding: "4px 10px", borderRadius: 8,
-                          background: "linear-gradient(135deg, #ef4444, #dc2626)",
-                          color: "#ffffff", fontFamily: "'Fira Code', monospace", fontSize: 10,
-                          fontWeight: 800, letterSpacing: 0.5, boxShadow: "0 2px 8px rgba(239,68,68,0.4)"
-                        }}
-                      >
-                        NEW
-                      </motion.span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Fixed Settings Button at Sidebar Bottom */}
-            <div style={{ paddingTop: 20, borderTop: "1.5px solid var(--border-light)" }}>
-              <button
-                onClick={() => handleNavClick(routes.app.settings)}
-                style={{
-                  width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "16px 18px",
-                  borderRadius: 16, background: "var(--bg-alt)", border: "1.5px solid var(--border-light)",
-                  color: "var(--text-main)", fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 800,
-                  cursor: "pointer", transition: "all 0.2s"
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#6c63ff"; e.currentTarget.style.color = "#6c63ff"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border-light)"; e.currentTarget.style.color = "var(--text-main)"; }}
-              >
-                <Settings size={22} />
-                <span>Settings</span>
-              </button>
-            </div>
-          </motion.aside>
-        </>
+  return (
+    <div
+      className={cn(
+        "mt-auto border-t border-line",
+        MOTION,
+        collapsed
+          ? "flex flex-col items-center gap-1 pt-2"
+          : "flex flex-col gap-1.5 pt-3",
       )}
-    </AnimatePresence>
+    >
+      <RailTip label={student.name || "Your profile"} enabled={collapsed}>
+        <Link
+          href={routes.app.profile}
+          onClick={onNavigate}
+          aria-current={pathname === routes.app.profile ? "page" : undefined}
+          aria-label={collapsed ? student.name || "Your profile" : undefined}
+          className={cn(
+            "flex items-center rounded-[var(--radius-md)] hover:bg-sunken",
+            "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring",
+            MOTION,
+            collapsed ? "h-10 w-10 justify-center" : "w-full gap-2.5 p-2",
+          )}
+        >
+          <Avatar name={student.name} size="sm" />
+          <Label collapsed={collapsed}>
+            <span className="type-label block truncate text-ink">
+              {student.name || "Your profile"}
+            </span>
+            <span className="type-caption block truncate text-muted">
+              {[degree, student.institute].filter(Boolean).join(" · ") ||
+                "View profile"}
+            </span>
+          </Label>
+          <ChevronRight
+            size={14}
+            aria-hidden
+            className={cn(
+              "shrink-0 text-faint",
+              MOTION,
+              collapsed ? "w-0 opacity-0" : "opacity-100",
+            )}
+          />
+        </Link>
+      </RailTip>
+
+      <RailTip label="Settings" enabled={collapsed}>
+        <Link
+          href={routes.app.settings}
+          onClick={onNavigate}
+          aria-label={collapsed ? "Settings" : undefined}
+          className={cn(
+            "type-small flex items-center font-medium text-muted hover:bg-sunken hover:text-ink",
+            "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring",
+            MOTION,
+            collapsed
+              ? "h-10 w-10 justify-center"
+              : "min-h-10 w-full gap-2.5 rounded-[var(--radius-md)] px-2.5 py-2",
+          )}
+        >
+          <Settings size={17} className="shrink-0" aria-hidden />
+          <Label collapsed={collapsed}>Settings</Label>
+        </Link>
+      </RailTip>
+    </div>
+  );
+}
+
+function useSidebarCollapsed() {
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    try {
+      setCollapsed(window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1");
+    } catch {
+      // private mode / blocked storage — keep expanded
+    }
+  }, []);
+
+  const toggle = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
+
+  return { collapsed, toggle };
+}
+
+/** Persistent sidebar column. Hidden below `lg`, where the drawer takes over. */
+export function DesktopSidebar() {
+  const { collapsed, toggle } = useSidebarCollapsed();
+
+  return (
+    <div
+      className={cn(
+        "sticky top-0 hidden h-dvh shrink-0 flex-col overflow-hidden border-r border-line bg-surface lg:flex",
+        MOTION,
+        collapsed ? "w-16" : "w-[16.5rem]",
+      )}
+    >
+      <div
+        className={cn(
+          "flex shrink-0 items-center overflow-hidden",
+          MOTION,
+          collapsed
+            ? "h-auto flex-col justify-center gap-1 px-2 pt-2 pb-1"
+            : "h-16 flex-row justify-between gap-2 px-3",
+        )}
+      >
+        <BrandMark
+          href={routes.app.dashboard}
+          size="sm"
+          showWordmark={!collapsed}
+          className={cn(MOTION, collapsed && "h-10 w-10 justify-center")}
+        />
+        <IconButton
+          label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          size="sm"
+          aria-expanded={!collapsed}
+          aria-controls="portal-sidebar-nav"
+          onClick={toggle}
+          className={MOTION}
+        >
+          <PanelLeftClose
+            size={18}
+            className={cn(MOTION, collapsed && "rotate-180")}
+          />
+        </IconButton>
+      </div>
+      <div
+        id="portal-sidebar-nav"
+        className={cn(
+          "hide-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain",
+          MOTION,
+          collapsed ? "px-2 py-1" : "px-3 pb-3",
+        )}
+      >
+        <SidebarNav collapsed={collapsed} />
+      </div>
+      <div className={cn("shrink-0", MOTION, collapsed ? "px-2 pb-2" : "px-3 pb-3")}>
+        <SidebarFooter collapsed={collapsed} />
+      </div>
+    </div>
+  );
+}
+
+/** Slide-in navigation for tablet and phone viewports. */
+export default function DashboardSidebar({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) {
+  return (
+    <Drawer
+      open={isOpen}
+      onClose={onClose}
+      side="left"
+      title="Navigation"
+      hideHeader
+      className="lg:hidden"
+    >
+      <div className="flex min-h-full flex-col">
+        <div className="mb-4 flex items-center justify-between">
+          <BrandMark href={routes.app.dashboard} size="sm" showWordmark />
+        </div>
+        <SidebarNav onNavigate={onClose} />
+        <SidebarFooter onNavigate={onClose} />
+      </div>
+    </Drawer>
   );
 }

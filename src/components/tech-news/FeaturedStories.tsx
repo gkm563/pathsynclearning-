@@ -1,87 +1,83 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import type { KeyboardEvent } from "react";
+import Link from "next/link";
 import type { NewsArticleDto } from "@/lib/news/types";
 import { techNewsArticlePath } from "@/lib/routes";
-import {
-  CATEGORY_COLOR,
-  formatNewsTime,
-  NewsCover,
-  NewsSection,
-} from "@/components/tech-news/shared";
+import { Section } from "@/components/ui";
+import { formatNewsTime, NewsCover, newsDateTime } from "@/components/tech-news/shared";
+import { cn } from "@/lib/cn";
 
 export function FeaturedStories({
   articles,
 }: {
   articles: NewsArticleDto[];
 }) {
-  const router = useRouter();
   if (articles.length === 0) return null;
 
   const [hero, ...rest] = articles;
 
   return (
-    <NewsSection title="Featured">
-      <div className="news-featured">
-        <FeaturedCard
-          article={hero}
-          large
-          onOpen={() => router.push(techNewsArticlePath(hero.id))}
-        />
-        <div className="news-featured-side">
+    <Section title="Featured">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <FeaturedCard article={hero} large />
+        <div className="flex min-w-0 flex-col gap-4">
           {rest.slice(0, 2).map((a) => (
-            <FeaturedCard
-              key={a.id}
-              article={a}
-              onOpen={() => router.push(techNewsArticlePath(a.id))}
-            />
+            <FeaturedCard key={a.id} article={a} />
           ))}
         </div>
       </div>
-    </NewsSection>
+    </Section>
   );
 }
 
 function FeaturedCard({
   article,
   large,
-  onOpen,
 }: {
   article: NewsArticleDto;
   large?: boolean;
-  onOpen: () => void;
 }) {
-  const color = CATEGORY_COLOR[article.category] || "#6c63ff";
-
-  const onKey = (e: KeyboardEvent<HTMLButtonElement>) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      onOpen();
-    }
-  };
-
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      onKeyDown={onKey}
-      className={`news-featured-card ${large ? "news-featured-card--hero" : "news-featured-card--row"}`}
+    <Link
+      href={techNewsArticlePath(article.id)}
       aria-label={article.title}
+      className={cn(
+        "group flex min-w-0 overflow-hidden rounded-[var(--radius-lg)] border border-line bg-surface shadow-[var(--shadow-xs)]",
+        "transition-[border-color,box-shadow] duration-[var(--duration-normal)]",
+        "hover:border-primary-border hover:shadow-[var(--shadow-md)]",
+        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+        large ? "flex-col" : "flex-col sm:flex-row",
+      )}
     >
-      <NewsCover src={article.imageUrl} tint={color} />
-      <div className="news-featured-copy">
-        <p className="news-card-cat" style={{ marginBottom: 6 }}>
+      <NewsCover
+        src={article.imageUrl}
+        zoomOnHover
+        className={cn(
+          large ? "aspect-video w-full" : "aspect-video w-full sm:aspect-auto sm:w-40 sm:shrink-0",
+        )}
+      />
+      <div className="flex min-w-0 flex-1 flex-col p-4 sm:p-5">
+        <p className="type-overline m-0 text-faint">
           {article.category}
-          <span className="sep" aria-hidden>
-            {" "}
-            ·{" "}
-          </span>
-          {formatNewsTime(article.publishedAt)}
+          <span aria-hidden> · </span>
+          <time dateTime={newsDateTime(article.publishedAt)}>
+            {formatNewsTime(article.publishedAt)}
+          </time>
         </p>
-        <h3 className="news-featured-title">{article.title}</h3>
-        {large ? <p className="news-featured-summary">{article.summary}</p> : null}
+        <h3
+          className={cn(
+            "mt-2 mb-0 line-clamp-3 [overflow-wrap:anywhere] text-ink",
+            large ? "type-h3" : "type-h4",
+          )}
+        >
+          {article.title}
+        </h3>
+        {large ? (
+          <p className="type-small mt-2 mb-0 line-clamp-3 text-muted">
+            {article.summary}
+          </p>
+        ) : null}
       </div>
-    </button>
+    </Link>
   );
 }

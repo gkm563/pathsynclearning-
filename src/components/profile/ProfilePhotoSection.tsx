@@ -1,27 +1,29 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ImagePlus, Loader2, Trash2, Upload } from "lucide-react";
+import { ImagePlus, Trash2, Upload } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import { apiSend } from "@/lib/api";
-import { Button } from "@/components/ui/primitives";
-import { PROFILE_COLS, SectionHeading, sectionCard } from "./shared";
+import { Alert, Avatar, Button, Card, useToast } from "@/components/ui";
 
 const MAX_BYTES = 2 * 1024 * 1024;
 const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
+/**
+ * Avatar upload. The file goes to Clerk first, then the resulting URL is
+ * mirrored to our own record via `PUT /api/me/avatar`.
+ */
 export function ProfilePhotoSection({
   imageUrl,
   fullName,
   onSynced,
-  onToast,
 }: {
   imageUrl: string;
   fullName: string;
   onSynced: (url: string) => void;
-  onToast: (message: string, tone?: "success" | "error") => void;
 }) {
   const { user, isLoaded } = useUser();
+  const toast = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
@@ -29,21 +31,10 @@ export function ProfilePhotoSection({
   const [error, setError] = useState("");
 
   const display = preview || imageUrl;
-  const initials =
-    fullName
-      .split(" ")
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((p) => p[0]?.toUpperCase())
-      .join("") || "PE";
 
   const validate = (file: File) => {
-    if (!ALLOWED.has(file.type)) {
-      return "Use JPEG, PNG, WebP, or GIF.";
-    }
-    if (file.size > MAX_BYTES) {
-      return "Image must be 2 MB or smaller.";
-    }
+    if (!ALLOWED.has(file.type)) return "Use JPEG, PNG, WebP, or GIF.";
+    if (file.size > MAX_BYTES) return "Image must be 2 MB or smaller.";
     return "";
   };
 
@@ -58,8 +49,7 @@ export function ProfilePhotoSection({
     }
     setError("");
     setPendingFile(file);
-    const url = URL.createObjectURL(file);
-    setPreview(url);
+    setPreview(URL.createObjectURL(file));
   };
 
   const save = async () => {
@@ -75,12 +65,11 @@ export function ProfilePhotoSection({
       setPendingFile(null);
       if (preview) URL.revokeObjectURL(preview);
       setPreview(null);
-      onToast("Profile photo updated", "success");
+      toast.success("Profile photo updated");
     } catch (e) {
-      const message =
-        e instanceof Error ? e.message : "Unable to upload photo";
+      const message = e instanceof Error ? e.message : "Unable to upload photo";
       setError(message);
-      onToast(message, "error");
+      toast.error(message);
     } finally {
       setUploading(false);
     }
@@ -98,12 +87,11 @@ export function ProfilePhotoSection({
       setPendingFile(null);
       if (preview) URL.revokeObjectURL(preview);
       setPreview(null);
-      onToast("Profile photo removed", "success");
+      toast.success("Profile photo removed");
     } catch (e) {
-      const message =
-        e instanceof Error ? e.message : "Unable to remove photo";
+      const message = e instanceof Error ? e.message : "Unable to remove photo";
       setError(message);
-      onToast(message, "error");
+      toast.error(message);
     } finally {
       setUploading(false);
     }
@@ -118,119 +106,83 @@ export function ProfilePhotoSection({
   };
 
   return (
-    <section id="photo" style={sectionCard}>
-      <SectionHeading
-        title="Profile photo"
-        description="Upload a clear square image. Files are stored securely via your auth provider."
-      />
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 24,
-          alignItems: "center",
-        }}
-      >
-        <div
-          style={{
-            width: 120,
-            height: 120,
-            borderRadius: 28,
-            border: "1.5px solid var(--border-light)",
-            background: display
-              ? `center/cover url(${display})`
-              : "linear-gradient(135deg, #6c63ff, #00c9a7)",
-            color: "#fff",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontFamily: "Outfit, sans-serif",
-            fontWeight: 800,
-            fontSize: 32,
-            flexShrink: 0,
-          }}
-          aria-hidden={!display}
-        >
-          {!display ? initials : null}
-        </div>
+    <section id="photo">
+      <Card>
+        <h2 className="type-h4 m-0 text-ink">Profile photo</h2>
+        <p className="type-small mt-1 mb-5 max-w-prose text-muted">
+          Upload a clear square image. Files are stored securely by your
+          sign-in provider — JPEG, PNG, WebP or GIF, up to 2&nbsp;MB.
+        </p>
 
-        <div style={{ flex: 1, minWidth: 220 }}>
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            hidden
-            onChange={(e) => onPick(e.target.files?.[0] ?? null)}
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-6">
+          <Avatar
+            src={display || null}
+            name={fullName || "PathEd student"}
+            size="xl"
+            className="shrink-0"
           />
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-            <Button
-              variant="secondary"
-              disabled={!isLoaded || uploading}
-              onClick={() => inputRef.current?.click()}
-            >
-              <ImagePlus size={15} /> Choose image
-            </Button>
-            <Button
-              disabled={!pendingFile || uploading}
-              onClick={() => void save()}
-            >
-              {uploading ? (
-                <Loader2 size={15} className="animate-spin" />
-              ) : (
-                <Upload size={15} />
-              )}
-              {uploading ? "Uploading…" : "Save photo"}
-            </Button>
-            {pendingFile ? (
-              <Button variant="ghost" disabled={uploading} onClick={discardPreview}>
-                Discard preview
-              </Button>
-            ) : null}
-            {imageUrl && !pendingFile ? (
+
+          <div className="min-w-0 flex-1">
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="sr-only"
+              aria-label="Choose a profile photo"
+              onChange={(e) => onPick(e.target.files?.[0] ?? null)}
+            />
+
+            <div className="flex flex-wrap gap-2">
               <Button
-                variant="danger"
-                disabled={uploading}
-                onClick={() => void remove()}
+                variant="secondary"
+                className="min-h-11"
+                disabled={!isLoaded || uploading}
+                onClick={() => inputRef.current?.click()}
               >
-                <Trash2 size={15} /> Remove
+                <ImagePlus size={15} aria-hidden />
+                Choose image
               </Button>
-            ) : null}
+              <Button
+                className="min-h-11"
+                loading={uploading}
+                disabled={!pendingFile}
+                onClick={() => void save()}
+              >
+                {uploading ? null : <Upload size={15} aria-hidden />}
+                {uploading ? "Uploading…" : "Save photo"}
+              </Button>
+              {pendingFile ? (
+                <Button
+                  variant="ghost"
+                  className="min-h-11"
+                  disabled={uploading}
+                  onClick={discardPreview}
+                >
+                  Discard preview
+                </Button>
+              ) : null}
+              {imageUrl && !pendingFile ? (
+                <Button
+                  variant="danger"
+                  className="min-h-11"
+                  disabled={uploading}
+                  onClick={() => void remove()}
+                >
+                  <Trash2 size={15} aria-hidden />
+                  Remove
+                </Button>
+              ) : null}
+            </div>
+
+            <div aria-live="polite" className="mt-4 empty:mt-0">
+              {error ? <Alert tone="error">{error}</Alert> : null}
+              {!error && pendingFile ? (
+                <Alert tone="info">Preview ready — save to apply.</Alert>
+              ) : null}
+            </div>
           </div>
-          <p
-            style={{
-              margin: "12px 0 0",
-              fontSize: 12.5,
-              color: "var(--text-muted)",
-            }}
-          >
-            JPEG, PNG, WebP, or GIF · max 2 MB
-          </p>
-          {error ? (
-            <p
-              role="alert"
-              style={{
-                margin: "8px 0 0",
-                fontSize: 13,
-                color: PROFILE_COLS.danger,
-              }}
-            >
-              {error}
-            </p>
-          ) : null}
-          {pendingFile ? (
-            <p
-              style={{
-                margin: "8px 0 0",
-                fontSize: 13,
-                color: PROFILE_COLS.primary,
-                fontWeight: 600,
-              }}
-            >
-              Preview ready — save to apply.
-            </p>
-          ) : null}
         </div>
-      </div>
+      </Card>
     </section>
   );
 }

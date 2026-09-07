@@ -1,5 +1,15 @@
 "use client";
 
+import Link from "next/link";
+import { Button } from "@/components/ui";
+import { ErrorScreen } from "@/components/ui/ErrorScreen";
+import { routes } from "@/lib/routes";
+
+/**
+ * Root route error boundary — catches render/data errors in any segment that
+ * doesn't declare a closer boundary. The portal has its own at
+ * `(app)/(portal)/error.tsx` so a failure there keeps the shell mounted.
+ */
 export default function Error({
   error,
   reset,
@@ -8,32 +18,14 @@ export default function Error({
   reset: () => void;
 }) {
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center">
-      <p className="text-xs font-bold tracking-[0.08em] text-[var(--purple)]">PATHED</p>
-      <h1 className="font-[family-name:var(--font-sans)] text-2xl font-extrabold tracking-tight text-[var(--text-main)]">
-        Something went wrong
-      </h1>
-      <p className="max-w-md text-sm text-[var(--text-muted)]">
-        We hit an unexpected problem loading this page.
-      </p>
-      <div className="flex gap-3">
-        <button
-          type="button"
-          onClick={reset}
-          className="rounded-xl bg-[var(--purple)] px-4 py-2.5 text-sm font-bold text-white"
-        >
-          Try again
-        </button>
-        <a
-          href="/"
-          className="rounded-xl border border-[var(--border-light)] px-4 py-2.5 text-sm font-bold text-[var(--text-main)]"
-        >
-          Go home
-        </a>
-      </div>
-      {error.digest ? (
-        <p className="text-xs text-[var(--text-light)]">Ref: {error.digest}</p>
-      ) : null}
-    </div>
+    <ErrorScreen
+      digest={error.digest}
+      onRetry={reset}
+      secondaryAction={
+        <Link href={routes.home}>
+          <Button variant="secondary">Go home</Button>
+        </Link>
+      }
+    />
   );
 }

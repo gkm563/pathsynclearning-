@@ -76,9 +76,9 @@ const FALLBACK_CHALLENGES: DailyChallengeCard[] = [
     xp: 150,
     pct: 68,
     isStarted: true,
-    col: "#6c63ff",
-    bg: "rgba(108,99,255,0.08)",
-    border: "#6c63ff40",
+    col: "#1b4540",
+    bg: "rgba(27,69,64,0.08)",
+    border: "#1b454040",
   },
   {
     icon: "LL",
@@ -102,9 +102,9 @@ const FALLBACK_CHALLENGES: DailyChallengeCard[] = [
     xp: 300,
     pct: 0,
     isStarted: false,
-    col: "#00c9a7",
-    bg: "rgba(0,201,167,0.08)",
-    border: "#00c9a740",
+    col: "#1f6b48",
+    bg: "rgba(31,107,72,0.08)",
+    border: "#1f6b4840",
   },
   {
     icon: "WEB",
@@ -115,14 +115,24 @@ const FALLBACK_CHALLENGES: DailyChallengeCard[] = [
     xp: 60,
     pct: 0,
     isStarted: false,
-    col: "#e040fb",
-    bg: "rgba(224,64,251,0.08)",
-    border: "#e040fb40",
+    col: "#c45c26",
+    bg: "rgba(196,92,38,0.08)",
+    border: "#c45c2640",
   },
 ];
 
+function publicDisplayName(full: string) {
+  const name = full.trim();
+  if (!name) return "Student";
+  if (name.includes("@")) {
+    const local = name.split("@")[0]?.split(/[._-]/)[0] || "Student";
+    return local.charAt(0).toUpperCase() + local.slice(1);
+  }
+  return name;
+}
+
 function shortNameFrom(full: string) {
-  const parts = full.trim().split(/\s+/).filter(Boolean);
+  const parts = publicDisplayName(full).split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "Student";
   if (parts.length === 1) return parts[0];
   return `${parts[0]} ${parts[parts.length - 1][0]}.`;
@@ -191,10 +201,10 @@ const DEFAULT_SNAPSHOT: Omit<StudentSnapshot, "loading" | "refresh"> = {
     outcome: "Industry-ready with strong fundamentals and portfolio projects",
   },
   skillsProgress: [
-    { label: "DSA", pct: 20, col: "#6c63ff" },
-    { label: "System Design", pct: 10, col: "#00c9a7" },
+    { label: "DSA", pct: 20, col: "#1b4540" },
+    { label: "System Design", pct: 10, col: "#1f6b48" },
     { label: "Web Dev", pct: 25, col: "#f7971e" },
-    { label: "Algorithms", pct: 15, col: "#e040fb" },
+    { label: "Algorithms", pct: 15, col: "#c45c26" },
   ],
   dailyChallenges: FALLBACK_CHALLENGES,
   plan: "free",
@@ -234,7 +244,9 @@ export function StudentProvider({ children }: { children: ReactNode }) {
         clerkUser?.fullName ||
         clerkUser?.username ||
         "";
-      const name = (p?.full_name as string) || clerkName || "Student";
+      const name = publicDisplayName(
+        (p?.full_name as string) || clerkName || "Student",
+      );
 
       const career =
         challengesRes?.careerGoal ||

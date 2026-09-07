@@ -1,46 +1,48 @@
 "use client";
 
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
+import { cn } from "@/lib/cn";
+import { Card } from "@/components/ui";
 
 export const PROGRESS_COLS = {
-  primary: "#6c63ff",
-  success: "#00c9a7",
-  warning: "#f59e0b",
-  danger: "#ec4899",
-  info: "#38bdf8",
-  muted: "var(--text-muted)",
+  primary: "var(--primary)",
+  success: "var(--success)",
+  warning: "var(--warning)",
+  danger: "var(--error)",
+  info: "var(--info)",
+  muted: "var(--muted)",
 } as const;
 
-export const cardStyle: CSSProperties = {
-  background: "var(--bg-card)",
-  border: "1.5px solid var(--border-light)",
-  borderRadius: 20,
+/** @deprecated Prefer Card + Tailwind. Kept for remaining progress widgets. */
+export const cardStyle = {
+  background: "var(--surface)",
+  border: "1px solid var(--line)",
+  borderRadius: "var(--radius-lg)",
   padding: 22,
-};
+} as const;
 
 export function SkeletonBlock({
   height = 16,
   width = "100%",
   radius = 10,
-  style,
+  className,
 }: {
   height?: number | string;
   width?: number | string;
   radius?: number;
-  style?: CSSProperties;
+  className?: string;
 }) {
   return (
     <div
       aria-hidden
+      className={cn(
+        "animate-[shShimmer_1.4s_ease-in-out_infinite] bg-[linear-gradient(90deg,var(--line)_25%,var(--bg-alt)_50%,var(--line)_75%)] bg-[length:200%_100%]",
+        className,
+      )}
       style={{
         height,
         width,
         borderRadius: radius,
-        background:
-          "linear-gradient(90deg, var(--border-light) 25%, var(--bg-alt) 50%, var(--border-light) 75%)",
-        backgroundSize: "200% 100%",
-        animation: "progressShimmer 1.2s ease-in-out infinite",
-        ...style,
       }}
     />
   );
@@ -50,38 +52,20 @@ export function ProgressSection({
   title,
   action,
   children,
-  style,
+  className,
 }: {
   title: string;
   action?: ReactNode;
   children: ReactNode;
-  style?: CSSProperties;
+  className?: string;
 }) {
   return (
-    <section style={{ ...cardStyle, ...style }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
-          marginBottom: 16,
-        }}
-      >
-        <h2
-          style={{
-            margin: 0,
-            fontFamily: "Outfit, sans-serif",
-            fontSize: 18,
-            fontWeight: 800,
-            color: "var(--text-main)",
-          }}
-        >
-          {title}
-        </h2>
+    <Card className={cn("min-w-0", className)}>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="type-h4 m-0 text-ink">{title}</h2>
         {action}
       </div>
       {children}
-    </section>
+    </Card>
   );
 }

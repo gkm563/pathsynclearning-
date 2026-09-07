@@ -1,77 +1,103 @@
-"use client";
-
-import React from "react";
-import { motion } from "framer-motion";
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { HoverCard } from "../../../components/ui/Shared";
+import { routes } from "@/lib/routes";
 
+type Pillar = {
+  img: string;
+  title: string;
+  desc: string;
+  tag: string;
+  href: string;
+};
+
+const PILLARS: readonly Pillar[] = [
+  {
+    img: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80",
+    title: "Real-world projects",
+    desc: "Stop building to-do apps. PathEd's HackAttack engine connects you with industry-grade projects that recruiters actually care about. Build in public, get reviewed by peers, and showcase verified work.",
+    tag: "Experience",
+    href: routes.marketing.platform,
+  },
+  {
+    img: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80",
+    title: "Peer-to-peer community",
+    desc: "You are not learning alone. Join a vibrant community of 40,000+ ambitious students. Find co-founders, get unstuck in minutes, and participate in exclusive weekend hackathons.",
+    tag: "Network",
+    href: routes.marketing.community,
+  },
+  {
+    img: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=800&q=80",
+    title: "AI-driven interview prep",
+    desc: "Don't get caught off-guard. Our AI simulates real interview rounds—from DSA to HR—tailored specifically to the companies you are targeting. Get instant feedback on your STAR answers.",
+    tag: "Placements",
+    href: routes.marketing.methodology,
+  },
+];
+
+/**
+ * Alternating media/copy rows. Static, so it stays a server component; the
+ * "Explore feature" affordance is a real link rather than the dead `<button>`
+ * it used to be.
+ */
 export default function PlatformOverview() {
-  const cards = [
-    {
-      img: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80",
-      title: "Real-World Projects",
-      desc: "Stop building to-do apps. PathEd's HackAttack engine connects you with industry-grade projects that recruiters actually care about. Build in public, get reviewed by peers, and showcase verified work.",
-      tag: "EXPERIENCE"
-    },
-    {
-      img: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80",
-      title: "Peer-to-Peer Community",
-      desc: "You are not learning alone. Join a vibrant community of 40,000+ ambitious students. Find co-founders, get unstuck in minutes, and participate in exclusive weekend hackathons.",
-      tag: "NETWORK"
-    },
-    {
-      img: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=800&q=80",
-      title: "AI-Driven Interview Prep",
-      desc: "Don't get caught off-guard. Our AI simulates real interview rounds—from DSA to HR—tailored specifically to the companies you are targeting. Get instant feedback on your STAR answers.",
-      tag: "PLACEMENTS"
-    }
-  ];
-
   return (
-    <section style={{ padding: "80px 32px", background: "var(--bg-alt)", position: "relative", zIndex: 2 }}>
-      <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: "60px" }}>
-          <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 800, color: "var(--text-main)", marginBottom: "16px" }}>
-            More than just <span style={{ color: "#6c63ff" }}>roadmaps.</span>
+    <section
+      aria-labelledby="pillars-heading"
+      className="px-4 py-16 sm:px-6 sm:py-20 lg:py-24"
+    >
+      <div className="mx-auto max-w-[var(--measure-content)]">
+        <div className="mx-auto max-w-[40rem] text-center">
+          <p className="type-overline text-primary">The ecosystem</p>
+          <h2 id="pillars-heading" className="type-h1 mt-3 text-ink">
+            More than just roadmaps
           </h2>
-          <p style={{ color: "var(--text-muted)", fontSize: "19px", maxWidth: "700px", margin: "0 auto", fontFamily: "'Inter', sans-serif" }}>
-            PathEd is a complete ecosystem designed to transform students into high-value industry professionals.
+          <p className="type-body-lg mt-4 text-muted">
+            PathEd is a complete ecosystem designed to transform students into
+            high-value industry professionals.
           </p>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "40px" }}>
-          {cards.map((card, i) => (
-            <motion.div 
-              key={i}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.6 }}
-              style={{
-                display: "flex", flexDirection: i % 2 === 0 ? "row" : "row-reverse", 
-                alignItems: "center", gap: "40px", background: "var(--bg-card)", 
-                borderRadius: "24px", padding: "24px", border: "1px solid var(--border-light)",
-                boxShadow: "0 10px 40px rgba(108,99,255,0.05)", flexWrap: "wrap"
-              }}
+        <div className="mt-12 grid gap-6 lg:mt-16 lg:gap-8">
+          {PILLARS.map((pillar, i) => (
+            <article
+              key={pillar.title}
+              className={`grid min-w-0 items-center gap-6 rounded-[var(--radius-xl)] border border-line bg-surface p-4 shadow-[var(--shadow-xs)] sm:p-6 lg:grid-cols-2 lg:gap-12 lg:p-8 ${
+                i % 2 === 1 ? "lg:[&>figure]:order-2" : ""
+              }`}
             >
-              <HoverCard style={{ flex: "1 1 400px", borderRadius: "16px", overflow: "hidden", height: "300px" }}>
-                <img src={card.img} alt={card.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              </HoverCard>
-              <div style={{ flex: "1 1 400px", padding: "20px" }}>
-                <div style={{ display: "inline-block", fontFamily: "'Fira Code', monospace", fontSize: "10px", color: "#6c63ff", background: "#f0f0ff", padding: "6px 12px", borderRadius: "12px", letterSpacing: "1px", marginBottom: "16px", fontWeight: 600 }}>
-                  {card.tag}
+              <figure className="m-0 min-w-0 overflow-hidden rounded-[var(--radius-lg)] bg-sunken">
+                <div className="aspect-[16/10] w-full">
+                  <img
+                    src={pillar.img}
+                    alt={pillar.title}
+                    width={800}
+                    height={500}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover"
+                  />
                 </div>
-                <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "28px", fontWeight: 800, color: "var(--text-main)", marginBottom: "16px" }}>
-                  {card.title}
-                </h3>
-                <p style={{ color: "var(--text-muted)", fontSize: "17px", lineHeight: 1.7, fontFamily: "'Inter', sans-serif", marginBottom: "24px" }}>
-                  {card.desc}
+              </figure>
+
+              <div className="min-w-0 lg:px-2">
+                <p className="type-overline text-accent">{pillar.tag}</p>
+                <h3 className="type-h2 mt-3 text-ink">{pillar.title}</h3>
+                <p className="type-body-lg type-prose mt-3 text-muted">
+                  {pillar.desc}
                 </p>
-                <button style={{ color: "#6c63ff", fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: "17px", display: "flex", alignItems: "center", gap: "8px" }}>
-                  Explore feature <ArrowRight size={16} />
-                </button>
+                <Link
+                  href={pillar.href}
+                  className="type-label group mt-5 inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-sm)] text-primary transition-colors duration-[var(--duration-fast)] hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none"
+                >
+                  Explore feature
+                  <ArrowRight
+                    size={16}
+                    aria-hidden
+                    className="transition-transform duration-[var(--duration-fast)] group-hover:translate-x-0.5 motion-reduce:transform-none motion-reduce:transition-none"
+                  />
+                </Link>
               </div>
-            </motion.div>
+            </article>
           ))}
         </div>
       </div>

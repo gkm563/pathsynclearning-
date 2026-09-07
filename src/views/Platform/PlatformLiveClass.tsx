@@ -2,34 +2,114 @@
 
 import { routes } from "@/lib/routes";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { 
-  ArrowLeft, Send, Users, MessageSquare, Video, ShieldCheck, 
-  Sparkles, FileText, Download, Play, Volume2, Settings, Maximize2 
+import {
+  type FormEvent,
+  type RefObject,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import {
+  ArrowLeft,
+  Check,
+  Download,
+  FileText,
+  Maximize2,
+  MessageSquare,
+  Play,
+  Send,
+  Settings,
+  Sparkles,
+  Users,
+  Volume2,
 } from "lucide-react";
+import {
+  Avatar,
+  Badge,
+  Button,
+  Card,
+  Dialog,
+  IconButton,
+  Input,
+  PageHeader,
+  TabPanel,
+  Tabs,
+  useToast,
+} from "@/components/ui";
+import { cn } from "@/lib/cn";
 
-/* ─── COLOR TOKENS ─── */
-const COLS = {
-  primary: "#6c63ff",
-  success: "#00c9a7",
-  warning: "#f59e0b",
-  danger: "#ec4899",
-  info: "#38bdf8"
+type ClassInfo = {
+  topic: string;
+  desc: string;
+  notes: string;
+  outline: string[];
+  videoUrl: string;
 };
 
-/* ─── CLASS PARTICIPANTS LIST DATA ─── */
-const PARTICIPANTS = [
-  { name: "Rahul Kushwaha", path: "AI & Machine Learning", status: "Active", avatar: "🎓" },
-  { name: "Anjali Sharma", path: "Core Software Engineering (SDE)", status: "Active", avatar: "👩‍💻" },
-  { name: "Rohan Das", path: "Database & Cloud Architecture", status: "Active", avatar: "👨‍💻" },
-  { name: "Sneha Iyer", path: "AI & Machine Learning", status: "Active", avatar: "👩‍🎓" },
-  { name: "Vikram Bose", path: "Core Software Engineering (SDE)", status: "Idle", avatar: "👨‍💻" },
-  { name: "Priya Nair", path: "Database & Cloud Architecture", status: "Active", avatar: "👩‍💻" }
+type ClassId = "m1" | "m2" | "m7";
+
+type Participant = {
+  name: string;
+  path: string;
+  status: "Active" | "Idle";
+  avatar: string;
+};
+
+type ChatMessage = {
+  user: string;
+  text: string;
+  time: string;
+  self: boolean;
+};
+
+type AiMessage = {
+  role: "assistant" | "user";
+  text: string;
+  time: string;
+};
+
+type PanelTab = "comments" | "participants";
+
+const PARTICIPANTS: Participant[] = [
+  {
+    name: "Rahul Kushwaha",
+    path: "AI & Machine Learning",
+    status: "Active",
+    avatar: "🎓",
+  },
+  {
+    name: "Anjali Sharma",
+    path: "Core Software Engineering (SDE)",
+    status: "Active",
+    avatar: "👩‍💻",
+  },
+  {
+    name: "Rohan Das",
+    path: "Database & Cloud Architecture",
+    status: "Active",
+    avatar: "👨‍💻",
+  },
+  {
+    name: "Sneha Iyer",
+    path: "AI & Machine Learning",
+    status: "Active",
+    avatar: "👩‍🎓",
+  },
+  {
+    name: "Vikram Bose",
+    path: "Core Software Engineering (SDE)",
+    status: "Idle",
+    avatar: "👨‍💻",
+  },
+  {
+    name: "Priya Nair",
+    path: "Database & Cloud Architecture",
+    status: "Active",
+    avatar: "👩‍💻",
+  },
 ];
 
-/* ─── CLASS DETAILS DICTIONARY ─── */
-const CLASS_INFO = {
+const CLASS_INFO: Record<ClassId, ClassInfo> = {
   m1: {
     topic: "ML Systems Design & Hyper-parameter Triage",
     desc: "In this session, we cover the end-to-end lifecycle of deploying Machine Learning systems in production. We address data drift, concept drift, feature store scaling, validation strategies, and hyper-parameter optimization loops (Bayesian Search vs Grid Search).",
@@ -38,9 +118,9 @@ const CLASS_INFO = {
       "1. Data validation and validation pipelines (TFDV)",
       "2. Feature engineering pipelines and online/offline alignment",
       "3. Distributed model training with Pytorch Lightning",
-      "4. Performance tuning: quantization, pruning, and model distillation"
+      "4. Performance tuning: quantization, pruning, and model distillation",
     ],
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
+    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
   },
   m2: {
     topic: "Preparing for Google STEP interviews",
@@ -50,9 +130,9 @@ const CLASS_INFO = {
       "1. Array manipulation and dynamic sliding window thresholds",
       "2. Stack matching algorithms & parentheses balanced sequences",
       "3. Tree traversal recursion and space-complexity validation",
-      "4. Interviewer communication: edge case listing and optimization pitches"
+      "4. Interviewer communication: edge case listing and optimization pitches",
     ],
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
+    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
   },
   m7: {
     topic: "Thinking like an Engineer: DSA Traverses",
@@ -62,36 +142,166 @@ const CLASS_INFO = {
       "1. Graph representation: Adjacency list memory optimization",
       "2. Depth-First Search (DFS) recursion stack modeling",
       "3. Breadth-First Search (BFS) queue mechanics & shortest path properties",
-      "4. Topological sort algorithm with cycle verification"
+      "4. Topological sort algorithm with cycle verification",
     ],
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
-  }
+    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+  },
 };
+
+function isClassId(value: string): value is ClassId {
+  return value === "m1" || value === "m2" || value === "m7";
+}
+
+function SessionPanel({
+  panelTab,
+  onPanelTab,
+  messages,
+  inputVal,
+  onInputVal,
+  onSend,
+  chatEndRef,
+}: {
+  panelTab: PanelTab;
+  onPanelTab: (next: PanelTab) => void;
+  messages: ChatMessage[];
+  inputVal: string;
+  onInputVal: (next: string) => void;
+  onSend: (e: FormEvent<HTMLFormElement>) => void;
+  chatEndRef: RefObject<HTMLDivElement | null>;
+}) {
+  return (
+    <Card padded={false} className="flex min-h-[28rem] flex-col overflow-hidden lg:min-h-[36rem]">
+      <Tabs<PanelTab>
+        items={[
+          {
+            id: "comments",
+            label: "Comments",
+            icon: <MessageSquare size={16} aria-hidden />,
+            badge: messages.length,
+          },
+          {
+            id: "participants",
+            label: "Participants",
+            icon: <Users size={16} aria-hidden />,
+            badge: PARTICIPANTS.length,
+          },
+        ]}
+        value={panelTab}
+        onChange={onPanelTab}
+        ariaLabel="Live class side panel"
+        className="px-3"
+      />
+
+      <TabPanel active={panelTab === "comments"} className="flex min-h-0 flex-1 flex-col">
+        <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4">
+          {messages.map((msg, i) => (
+            <div
+              key={`${msg.user}-${msg.time}-${i}`}
+              className={cn(
+                "flex max-w-[88%] flex-col gap-1",
+                msg.self ? "self-end" : "self-start",
+              )}
+            >
+              <span className="type-caption text-faint">
+                {msg.user} · {msg.time}
+              </span>
+              <div
+                className={cn(
+                  "rounded-[var(--radius-md)] px-3 py-2",
+                  msg.self
+                    ? "bg-primary text-[var(--text-on-primary)]"
+                    : "border border-line bg-sunken text-ink",
+                )}
+              >
+                <p className="type-small m-0">{msg.text}</p>
+              </div>
+            </div>
+          ))}
+          <div ref={chatEndRef} />
+        </div>
+        <form
+          onSubmit={onSend}
+          className="flex gap-2 border-t border-line p-3"
+        >
+          <Input
+            value={inputVal}
+            onChange={(e) => onInputVal(e.target.value)}
+            placeholder="Ask the instructor a question…"
+            aria-label="Chat message"
+            className="min-h-11"
+          />
+          <IconButton label="Send comment" type="submit" variant="primary">
+            <Send size={16} aria-hidden />
+          </IconButton>
+        </form>
+      </TabPanel>
+
+      <TabPanel active={panelTab === "participants"} className="flex-1 overflow-y-auto p-4">
+        <p className="type-caption mb-3 text-faint">Active attendees</p>
+        <ul className="flex list-none flex-col gap-2 p-0">
+          {PARTICIPANTS.map((part) => (
+            <li
+              key={part.name}
+              className="flex items-center justify-between gap-3 rounded-[var(--radius-md)] border border-line bg-sunken px-3 py-2.5"
+            >
+              <div className="flex min-w-0 items-center gap-2.5">
+                <Avatar name={part.name} size="sm" />
+                <div className="min-w-0">
+                  <p className="type-small m-0 truncate font-semibold text-ink">
+                    {part.name}
+                  </p>
+                  <p className="type-caption m-0 truncate text-muted">
+                    {part.path}
+                  </p>
+                </div>
+              </div>
+              <Badge tone={part.status === "Active" ? "success" : "warning"}>
+                {part.status}
+              </Badge>
+            </li>
+          ))}
+        </ul>
+      </TabPanel>
+    </Card>
+  );
+}
 
 export default function PlatformLiveClass() {
   const router = useRouter();
+  const toast = useToast();
   const searchParams = useSearchParams();
   const teacherId = searchParams.get("teacher") || "m7";
   const classTopic = searchParams.get("topic") || "DSA Traverses";
 
-  const classData = CLASS_INFO[teacherId] || CLASS_INFO.m7;
+  const classData = isClassId(teacherId) ? CLASS_INFO[teacherId] : CLASS_INFO.m7;
 
-  // Active side panel tab: "comments" | "participants"
-  const [panelTab, setPanelTab] = useState("comments");
-
-  // Chat message state
-  const [messages, setMessages] = useState([
-    { user: "Anjali Sharma", text: "Is the latency of the Redis caching layers dependent on partition sizes?", time: "4:02 PM", self: false },
-    { user: "Rohan Das", text: "Yes, larger hash rings require additional lookup segments.", time: "4:03 PM", self: false },
-    { user: "Dr. Arpan Mukherjee", text: "Welcome everyone! We will start the system designs discussion now. Feel free to type comments.", time: "4:04 PM", self: false }
+  const [panelTab, setPanelTab] = useState<PanelTab>("comments");
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      user: "Anjali Sharma",
+      text: "Is the latency of the Redis caching layers dependent on partition sizes?",
+      time: "4:02 PM",
+      self: false,
+    },
+    {
+      user: "Rohan Das",
+      text: "Yes, larger hash rings require additional lookup segments.",
+      time: "4:03 PM",
+      self: false,
+    },
+    {
+      user: "Dr. Arpan Mukherjee",
+      text: "Welcome everyone! We will start the system designs discussion now. Feel free to type comments.",
+      time: "4:04 PM",
+      self: false,
+    },
   ]);
   const [inputVal, setInputVal] = useState("");
-  const chatEndRef = useRef<any>(null);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
 
-  // AI Assistance tutor panel state
   const [showAiPanel, setShowAiPanel] = useState(false);
   const [aiInput, setAiInput] = useState("");
-  const aiEndRef = useRef<any>(null);
+  const aiEndRef = useRef<HTMLDivElement | null>(null);
 
   const getInitialAiMessage = () => {
     if (teacherId === "m1") {
@@ -103,15 +313,12 @@ export default function PlatformLiveClass() {
     return "Hello Rahul! The instructor is demonstrating Graph Traversals (DFS/BFS) and adjacency list optimizations. I can explain queue mechanics, shortest path bounds, or standard cycle checking models.";
   };
 
-  const [aiMessages, setAiMessages] = useState([
-    { role: "assistant", text: getInitialAiMessage(), time: "4:05 PM" }
+  const [aiMessages, setAiMessages] = useState<AiMessage[]>([
+    { role: "assistant", text: getInitialAiMessage(), time: "4:05 PM" },
   ]);
 
-  // Auto-scroll chat and AI responses
   useEffect(() => {
-    if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   useEffect(() => {
@@ -120,426 +327,239 @@ export default function PlatformLiveClass() {
     }
   }, [aiMessages, showAiPanel]);
 
-  const handleSend = (e) => {
+  const handleSend = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!inputVal.trim()) return;
-    setMessages(prev => [
+    setMessages((prev) => [
       ...prev,
-      { user: "Rahul Kushwaha (You)", text: inputVal, time: "4:05 PM", self: true }
+      {
+        user: "Rahul Kushwaha (You)",
+        text: inputVal,
+        time: "4:05 PM",
+        self: true,
+      },
     ]);
     setInputVal("");
   };
 
-  const handleAiSend = (e) => {
+  const handleAiSend = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!aiInput.trim()) return;
     const userText = aiInput;
-    setAiMessages(prev => [...prev, { role: "user", text: userText, time: "4:06 PM" }]);
+    setAiMessages((prev) => [
+      ...prev,
+      { role: "user", text: userText, time: "4:06 PM" },
+    ]);
     setAiInput("");
 
-    // Simulate AI response based on topic keywords
     setTimeout(() => {
-      let reply = "That is a great question. Let me break that concept down for you. In production environments, we prioritize modularity and low space complexity. Let me know if you would like a code snippet of this traversal implementation!";
-      if (userText.toLowerCase().includes("dfs") || userText.toLowerCase().includes("traverse")) {
-        reply = "Depth-First Search (DFS) traverses down recursion branches until they terminate, pushing nodes onto the system stack. It has O(V + E) time complexity and O(V) space complexity due to recursion depth. In comparison, BFS uses queue structures to traverse level-by-level.";
-      } else if (userText.toLowerCase().includes("ml") || userText.toLowerCase().includes("hyperparameter")) {
-        reply = "Hyper-parameter optimization calibrates training parameters (like learning rate or batch size) outside the model loop. Bayesian search uses prior trials to build a probability model of the objective function, targeting optimal values much faster than grid search.";
-      } else if (userText.toLowerCase().includes("step") || userText.toLowerCase().includes("google")) {
-        reply = "For Google STEP interviews, focus on clean recursive formulations and sliding windows. Practice expressing recursion trees clearly with verbal walkthroughs and write test cases covering empty arrays and duplicates.";
+      let reply =
+        "That is a great question. Let me break that concept down for you. In production environments, we prioritize modularity and low space complexity. Let me know if you would like a code snippet of this traversal implementation!";
+      if (
+        userText.toLowerCase().includes("dfs") ||
+        userText.toLowerCase().includes("traverse")
+      ) {
+        reply =
+          "Depth-First Search (DFS) traverses down recursion branches until they terminate, pushing nodes onto the system stack. It has O(V + E) time complexity and O(V) space complexity due to recursion depth. In comparison, BFS uses queue structures to traverse level-by-level.";
+      } else if (
+        userText.toLowerCase().includes("ml") ||
+        userText.toLowerCase().includes("hyperparameter")
+      ) {
+        reply =
+          "Hyper-parameter optimization calibrates training parameters (like learning rate or batch size) outside the model loop. Bayesian search uses prior trials to build a probability model of the objective function, targeting optimal values much faster than grid search.";
+      } else if (
+        userText.toLowerCase().includes("step") ||
+        userText.toLowerCase().includes("google")
+      ) {
+        reply =
+          "For Google STEP interviews, focus on clean recursive formulations and sliding windows. Practice expressing recursion trees clearly with verbal walkthroughs and write test cases covering empty arrays and duplicates.";
       }
-      setAiMessages(prev => [...prev, { role: "assistant", text: reply, time: "4:06 PM" }]);
+      setAiMessages((prev) => [
+        ...prev,
+        { role: "assistant", text: reply, time: "4:06 PM" },
+      ]);
     }, 1000);
   };
 
+  const watching = PARTICIPANTS.length + 18;
+
   return (
     <>
-      <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 60 }}>
-        
-        {/* Top bar header */}
-        <div style={{
-          padding: "18px 24px", borderRadius: 20, background: "var(--bg-card)",
-          border: "1.5px solid var(--border-light)", display: "flex", alignItems: "center", justifyContent: "space-between"
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <button
+      <PageHeader
+        eyebrow="Mentorship"
+        title={classData.topic}
+        description={`${classTopic} · Live session with ${watching} watching.`}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="secondary"
+              className="min-h-11"
               onClick={() => router.push(routes.app.mentorship)}
-              style={{
-                display: "flex", alignItems: "center", gap: 8, background: "var(--bg-alt)",
-                border: "1px solid var(--border-light)", borderRadius: 12, padding: "8px 14px",
-                color: "var(--text-main)", fontFamily: "'Outfit', sans-serif", fontSize: 13.5,
-                fontWeight: 800, cursor: "pointer"
-              }}
             >
-              <ArrowLeft size={16} /> Back to Mentorship
-            </button>
-            
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ padding: "4px 8px", background: "rgba(239, 68, 68, 0.15)", color: "#ec4899", border: "1px solid #ec4899", borderRadius: 8, fontSize: 11, fontFamily: "'Fira Code', monospace", fontWeight: 900 }}>
-                ● LIVE STREAM
-              </span>
-              <span style={{ padding: "4px 8px", background: "var(--bg-alt)", border: "1px solid var(--border-light)", borderRadius: 8, fontSize: 11, fontFamily: "'Fira Code', monospace", fontWeight: 800, color: "var(--text-muted)" }}>
-                {PARTICIPANTS.length + 18} WATCHING
-              </span>
-            </div>
+              <ArrowLeft size={16} aria-hidden />
+              Back to mentorship
+            </Button>
+            <Button className="min-h-11" onClick={() => setShowAiPanel(true)}>
+              <Sparkles size={16} aria-hidden />
+              AI assistance
+            </Button>
           </div>
+        }
+      />
 
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <button
-              onClick={() => setShowAiPanel(true)}
-              style={{
-                display: "flex", alignItems: "center", gap: 8,
-                background: "linear-gradient(135deg, rgba(108, 99, 255, 0.12), rgba(0, 201, 167, 0.12))",
-                border: "1.5px solid #6c63ff", borderRadius: 12, padding: "8px 16px",
-                color: "#6c63ff", fontFamily: "'Outfit', sans-serif", fontSize: 13.5,
-                fontWeight: 900, cursor: "pointer", transition: "all 0.2s"
-              }}
-            >
-              <Sparkles size={15} color="#6c63ff" />
-              <span>AI Assistance</span>
-            </button>
-          </div>
-        </div>
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <Badge tone="error">Live</Badge>
+        <Badge tone="neutral">{watching} watching</Badge>
+      </div>
 
-        {/* Live streaming layout: Left video/notes, Right panel */}
-        <div style={{ display: "grid", gridTemplateColumns: "2.4fr 1.1fr", gap: 24, alignItems: "start" }}>
-          
-          {/* Left Column: Video screen & syllabus description */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-            
-            {/* Immersive Video Screen (YouTube styled) */}
-            <div style={{
-              background: "#000", borderRadius: 24, overflow: "hidden", 
-              border: "1.5px solid var(--border-light)", position: "relative",
-              aspectRatio: "16/9", display: "flex", flexDirection: "column"
-            }}>
-              {/* Mock Video Iframe */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(18rem,22rem)] lg:items-start">
+        <div className="flex min-w-0 flex-col gap-6">
+          <div className="overflow-hidden rounded-[var(--radius-lg)] border border-line bg-sunken">
+            <div className="relative aspect-video w-full bg-[var(--bg-inverse)]">
               <iframe
-                width="100%"
-                height="100%"
+                className="absolute inset-0 h-full w-full border-0"
                 src={classData.videoUrl}
-                title="Live Stream Video"
-                frameBorder="0"
+                title="Live stream video"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
-                style={{ flex: 1, border: "none" }}
               />
-
-              {/* YouTube Styled Custom Control overlay */}
-              <div style={{
-                background: "rgba(15, 23, 42, 0.9)", padding: "12px 20px",
-                display: "flex", alignItems: "center", justifyContent: "space-between", color: "#fff"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                  <button style={{ background: "transparent", border: "none", color: "#fff", cursor: "pointer" }}><Play size={16} /></button>
-                  <button style={{ background: "transparent", border: "none", color: "#fff", cursor: "pointer" }}><Volume2 size={16} /></button>
-                  <span style={{ fontSize: 12, fontFamily: "'Fira Code', monospace", opacity: 0.8 }}>04:12 / Live Class</span>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                  <button style={{ background: "transparent", border: "none", color: "#fff", cursor: "pointer" }}><Settings size={16} /></button>
-                  <button style={{ background: "transparent", border: "none", color: "#fff", cursor: "pointer" }}><Maximize2 size={16} /></button>
-                </div>
-              </div>
             </div>
-
-            {/* Description & Syllabus Outline */}
-            <div style={{
-              padding: 28, borderRadius: 24, background: "var(--bg-card)",
-              border: "1.5px solid var(--border-light)", display: "flex", flexDirection: "column", gap: 16
-            }}>
-              <div>
-                <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, color: "#6c63ff", fontWeight: 900 }}>
-                  SYLLABUS LECTURE HIGHLIGHTS
-                </span>
-                <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 26, fontWeight: 900, color: "var(--text-main)", margin: "4px 0 0" }}>
-                  {classData.topic}
-                </h2>
+            <div className="flex items-center justify-between gap-3 border-t border-line bg-surface px-3 py-2">
+              <div className="flex items-center gap-1">
+                <IconButton label="Play" variant="ghost" size="sm">
+                  <Play size={16} aria-hidden />
+                </IconButton>
+                <IconButton label="Volume" variant="ghost" size="sm">
+                  <Volume2 size={16} aria-hidden />
+                </IconButton>
+                <span className="type-caption text-muted">04:12 / Live class</span>
               </div>
-
-              <p style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontSize: 15.5, color: "var(--text-muted)", lineHeight: 1.6 }}>
-                {classData.desc}
-              </p>
-
-              {/* Document/Notes download area */}
-              <div style={{
-                padding: "16px 20px", borderRadius: 16, background: "var(--bg-alt)",
-                border: "1.5px solid var(--border-light)", display: "flex", alignItems: "center", justifyContent: "space-between"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <FileText size={22} color="#6c63ff" />
-                  <div>
-                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14.5, fontWeight: 800, color: "var(--text-main)" }}>
-                      {classData.notes}
-                    </div>
-                    <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                      Syllabus notes, traversal diagrams, and code snippets handout
-                    </span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => alert(`Downloading ${classData.notes}...`)}
-                  style={{
-                    padding: "8px 16px", borderRadius: 10, border: "none",
-                    background: "rgba(108,99,255,0.12)", color: "#6c63ff",
-                    fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 800,
-                    cursor: "pointer", display: "flex", alignItems: "center", gap: 6
-                  }}
+              <div className="flex items-center gap-1">
+                <IconButton label="Settings" variant="ghost" size="sm">
+                  <Settings size={16} aria-hidden />
+                </IconButton>
+                <IconButton
+                  label="Fullscreen"
+                  variant="ghost"
+                  size="sm"
+                  className="hidden lg:inline-flex"
                 >
-                  <Download size={14} /> Download
-                </button>
+                  <Maximize2 size={16} aria-hidden />
+                </IconButton>
               </div>
-
-              {/* Core outlines */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
-                <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, color: "var(--text-muted)", fontWeight: 800 }}>
-                  LECTURE SYLLABUS PATH INDEX:
-                </span>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {classData.outline.map((out, idx) => (
-                    <div key={idx} style={{ fontSize: 14.5, fontFamily: "'Outfit', sans-serif", color: "var(--text-main)", display: "flex", gap: 8 }}>
-                      <span style={{ color: "#00c9a7" }}>✓</span>
-                      <span>{out}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
             </div>
-
           </div>
 
-          {/* Right Column: Panel with Comments / Participants toggle (YouTube styled) */}
-          <div style={{
-            background: "var(--bg-card)", border: "1.5px solid var(--border-light)",
-            borderRadius: 24, height: "100%", minHeight: 600, display: "flex", flexDirection: "column",
-            overflow: "hidden", position: "relative"
-          }}>
-            
-            {/* AI Tutor Panel Overlay */}
-            {showAiPanel && (
-              <>
-                {/* Transparent click-outside dismiss overlay covering the entire window */}
-                <div 
-                  onClick={() => setShowAiPanel(false)}
-                  style={{
-                    position: "fixed", inset: 0, zIndex: 110,
-                    background: "rgba(0,0,0,0.02)", cursor: "default"
-                  }}
-                />
+          <Card className="flex flex-col gap-4">
+            <div>
+              <p className="type-caption m-0 text-primary">Lecture highlights</p>
+              <h2 className="type-h2 mt-1 mb-0 text-ink">{classData.topic}</h2>
+            </div>
+            <p className="type-body m-0 text-muted">{classData.desc}</p>
 
-                {/* Floating AI Panel inside the right column bounds */}
-                <div style={{
-                  position: "absolute", inset: 0, background: "var(--bg-card)",
-                  borderRadius: 24, zIndex: 120, display: "flex", flexDirection: "column",
-                  boxShadow: "-8px 8px 30px rgba(0,0,0,0.12)", border: "1.5px solid #6c63ff",
-                  overflow: "hidden"
-                }}>
-                  
-                  {/* Header */}
-                  <div style={{
-                    padding: "16px 20px", borderBottom: "1.5px solid var(--border-light)",
-                    display: "flex", justifyContent: "space-between", alignItems: "center",
-                    background: "linear-gradient(135deg, rgba(108,99,255,0.06), rgba(0,201,167,0.06))"
-                  }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <span style={{ fontSize: 24 }}>🤖</span>
-                      <div>
-                        <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14.5, fontWeight: 900, color: "var(--text-main)" }}>
-                          PathED AI Tutor
-                        </div>
-                        <span style={{ fontSize: 11, color: "#00c9a7", fontWeight: 800, fontFamily: "'Fira Code', monospace" }}>
-                          Active Stream Analyst
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setShowAiPanel(false)}
-                      style={{
-                        background: "transparent", border: "none", color: "var(--text-muted)",
-                        fontSize: 18, cursor: "pointer", fontWeight: 900
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-
-                  {/* Message body */}
-                  <div style={{ flex: 1, overflowY: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
-                    {aiMessages.map((msg, i) => (
-                      <div key={i} style={{ display: "flex", flexDirection: "column", gap: 4, alignSelf: msg.role === "user" ? "flex-end" : "flex-start", maxWidth: "85%" }}>
-                        <span style={{ fontSize: 11.5, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)" }}>
-                          {msg.role === "user" ? "You" : "PathED AI Tutor"} • {msg.time}
-                        </span>
-                        <div style={{
-                          padding: "10px 14px", borderRadius: 14,
-                          background: msg.role === "user" ? "linear-gradient(135deg, #6c63ff, #00c9a7)" : "var(--bg-alt)",
-                          color: msg.role === "user" ? "#fff" : "var(--text-main)",
-                          fontSize: 13.5, fontFamily: "'Outfit', sans-serif", lineHeight: 1.45,
-                          border: msg.role === "user" ? "none" : "1px solid var(--border-light)"
-                        }}>
-                          {msg.text}
-                        </div>
-                      </div>
-                    ))}
-                    <div ref={aiEndRef} />
-                  </div>
-
-                  {/* Input form */}
-                  <form onSubmit={handleAiSend} style={{ display: "flex", gap: 8, padding: 20, borderTop: "1.5px solid var(--border-light)" }}>
-                    <input
-                      type="text"
-                      value={aiInput}
-                      onChange={e => setAiInput(e.target.value)}
-                      placeholder="Ask the AI Tutor anything..."
-                      style={{
-                        flex: 1, padding: "10px 14px", borderRadius: 12,
-                        background: "var(--bg-alt)", border: "1.5px solid var(--border-light)",
-                        color: "var(--text-main)", outline: "none", fontFamily: "'Outfit', sans-serif", fontSize: 13.5
-                      }}
-                    />
-                    <button
-                      type="submit"
-                      style={{
-                        width: 42, height: 42, borderRadius: 12, border: "none",
-                        background: "linear-gradient(135deg, #6c63ff, #00c9a7)", color: "#fff",
-                        display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer"
-                      }}
-                    >
-                      <Send size={15} />
-                    </button>
-                  </form>
-
+            <div className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-line bg-sunken p-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-start gap-3">
+                <FileText size={18} className="mt-0.5 shrink-0 text-muted" aria-hidden />
+                <div className="min-w-0">
+                  <p className="type-small m-0 font-semibold text-ink">
+                    {classData.notes}
+                  </p>
+                  <p className="type-caption m-0 text-muted">
+                    Syllabus notes, diagrams, and code snippets
+                  </p>
                 </div>
-              </>
-            )}
-            
-            {/* Toggle header */}
-            <div style={{
-              display: "flex", background: "var(--bg-alt)", borderBottom: "1.5px solid var(--border-light)",
-              padding: 6, gap: 6
-            }}>
-              <button
-                onClick={() => setPanelTab("comments")}
-                style={{
-                  flex: 1, padding: "12px", borderRadius: 14, border: "none",
-                  background: panelTab === "comments" ? "var(--bg-card)" : "transparent",
-                  color: panelTab === "comments" ? "#6c63ff" : "var(--text-muted)",
-                  fontFamily: "'Outfit', sans-serif", fontSize: 13.5, fontWeight: 900,
-                  cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8
-                }}
+              </div>
+              <Button
+                variant="secondary"
+                className="min-h-11 shrink-0"
+                onClick={() =>
+                  toast.success({
+                    title: "Download started",
+                    description: classData.notes,
+                  })
+                }
               >
-                <MessageSquare size={15} />
-                <span>Comments</span>
-              </button>
-
-              <button
-                onClick={() => setPanelTab("participants")}
-                style={{
-                  flex: 1, padding: "12px", borderRadius: 14, border: "none",
-                  background: panelTab === "participants" ? "var(--bg-card)" : "transparent",
-                  color: panelTab === "participants" ? "#6c63ff" : "var(--text-muted)",
-                  fontFamily: "'Outfit', sans-serif", fontSize: 13.5, fontWeight: 900,
-                  cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8
-                }}
-              >
-                <Users size={15} />
-                <span>Participants</span>
-              </button>
+                <Download size={16} aria-hidden />
+                Download
+              </Button>
             </div>
 
-            {/* Content area: Comments or Participants (with full vertical scrolling) */}
-            <div style={{ flex: 1, overflowY: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
-              
-              {panelTab === "comments" ? (
-                <>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
-                    {messages.map((msg, i) => (
-                      <div key={i} style={{ display: "flex", flexDirection: "column", gap: 4, alignSelf: msg.self ? "flex-end" : "flex-start", maxWidth: "85%" }}>
-                        <span style={{ fontSize: 11.5, fontFamily: "'Fira Code', monospace", color: "var(--text-muted)" }}>
-                          {msg.user} • {msg.time}
-                        </span>
-                        <div style={{
-                          padding: "10px 14px", borderRadius: 14,
-                          background: msg.self ? "linear-gradient(135deg, #6c63ff, #00c9a7)" : "var(--bg-alt)",
-                          color: msg.self ? "#fff" : "var(--text-main)",
-                          fontSize: 13.5, fontFamily: "'Outfit', sans-serif", lineHeight: 1.45,
-                          border: msg.self ? "none" : "1px solid var(--border-light)"
-                        }}>
-                          {msg.text}
-                        </div>
-                      </div>
-                    ))}
-                    <div ref={chatEndRef} />
-                  </div>
-
-                  {/* Submission form */}
-                  <form onSubmit={handleSend} style={{ display: "flex", gap: 8, marginTop: 12, borderTop: "1.5px solid var(--border-light)", paddingTop: 14 }}>
-                    <input
-                      type="text"
-                      value={inputVal}
-                      onChange={e => setInputVal(e.target.value)}
-                      placeholder="Ask the instructor a question..."
-                      style={{
-                        flex: 1, padding: "10px 14px", borderRadius: 12,
-                        background: "var(--bg-alt)", border: "1.5px solid var(--border-light)",
-                        color: "var(--text-main)", outline: "none", fontFamily: "'Outfit', sans-serif", fontSize: 13.5
-                      }}
-                    />
-                    <button
-                      type="submit"
-                      style={{
-                        width: 42, height: 42, borderRadius: 12, border: "none",
-                        background: "linear-gradient(135deg, #6c63ff, #00c9a7)", color: "#fff",
-                        display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer"
-                      }}
-                    >
-                      <Send size={15} />
-                    </button>
-                  </form>
-                </>
-              ) : (
-                /* Participants Roster List with detailed careers */
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10.5, color: "var(--text-muted)", fontWeight: 800, marginBottom: 4 }}>
-                    ACTIVE ATTENDEES ROSTER:
-                  </div>
-                  {PARTICIPANTS.map((part, i) => (
-                    <div key={i} style={{
-                      padding: 12, borderRadius: 12, background: "var(--bg-alt)",
-                      border: "1px solid var(--border-light)", display: "flex", alignItems: "center", justifyContent: "space-between"
-                    }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <span style={{ fontSize: 20 }}>{part.avatar}</span>
-                        <div>
-                          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 13.5, fontWeight: 800, color: "var(--text-main)" }}>
-                            {part.name}
-                          </div>
-                          <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
-                            {part.path}
-                          </span>
-                        </div>
-                      </div>
-
-                      <span style={{
-                        padding: "2px 6px", borderRadius: 6,
-                        background: part.status === "Active" ? "rgba(0, 201, 167, 0.12)" : "rgba(245, 158, 11, 0.12)",
-                        color: part.status === "Active" ? "#00c9a7" : "#f59e0b",
-                        fontSize: 10, fontFamily: "'Fira Code', monospace", fontWeight: 800
-                      }}>
-                        {part.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
+            <div>
+              <p className="type-caption mb-2 text-faint">Syllabus path</p>
+              <ul className="m-0 flex list-none flex-col gap-2 p-0">
+                {classData.outline.map((out) => (
+                  <li key={out} className="flex gap-2 text-ink">
+                    <Check size={16} className="mt-0.5 shrink-0 text-success" aria-hidden />
+                    <span className="type-small">{out}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
-
-          </div>
-
+          </Card>
         </div>
 
-      </div></>
+        <div className="min-w-0">
+          <SessionPanel
+            panelTab={panelTab}
+            onPanelTab={setPanelTab}
+            messages={messages}
+            inputVal={inputVal}
+            onInputVal={setInputVal}
+            onSend={handleSend}
+            chatEndRef={chatEndRef}
+          />
+        </div>
+      </div>
+
+      <Dialog
+        open={showAiPanel}
+        onClose={() => setShowAiPanel(false)}
+        title="PathED AI tutor"
+        description="Active stream analyst"
+        size="md"
+      >
+        <div className="flex max-h-[50vh] flex-col gap-3 overflow-y-auto">
+          {aiMessages.map((msg, i) => (
+            <div
+              key={`${msg.role}-${i}`}
+              className={cn(
+                "flex max-w-[88%] flex-col gap-1",
+                msg.role === "user" ? "self-end" : "self-start",
+              )}
+            >
+              <span className="type-caption text-faint">
+                {msg.role === "user" ? "You" : "PathED AI tutor"} · {msg.time}
+              </span>
+              <div
+                className={cn(
+                  "rounded-[var(--radius-md)] px-3 py-2",
+                  msg.role === "user"
+                    ? "bg-primary text-[var(--text-on-primary)]"
+                    : "border border-line bg-sunken text-ink",
+                )}
+              >
+                <p className="type-small m-0">{msg.text}</p>
+              </div>
+            </div>
+          ))}
+          <div ref={aiEndRef} />
+        </div>
+        <form
+          onSubmit={handleAiSend}
+          className="mt-4 flex gap-2 border-t border-line pt-3"
+        >
+          <Input
+            value={aiInput}
+            onChange={(e) => setAiInput(e.target.value)}
+            placeholder="Ask the AI tutor anything…"
+            aria-label="AI tutor message"
+            className="min-h-11"
+          />
+          <IconButton label="Send to AI tutor" type="submit" variant="primary">
+            <Send size={16} aria-hidden />
+          </IconButton>
+        </form>
+      </Dialog>
+    </>
   );
 }
-

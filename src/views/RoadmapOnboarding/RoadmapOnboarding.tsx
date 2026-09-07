@@ -18,6 +18,8 @@ import { setRoadmapDeferred } from '@/lib/roadmap/defer';
 import { progressFor, type RoadmapGenerationProgress } from '@/lib/roadmap/generation-progress';
 import { useRouter, usePathname } from 'next/navigation';
 import { routes } from '@/lib/routes';
+import { Alert, Button } from '@/components/ui';
+import { cn } from '@/lib/cn';
 
 const CORE_SECTIONS = [
   { id: 'education', Component: EducationSection },
@@ -319,32 +321,27 @@ export default function RoadmapOnboarding({
         : (fromRoadmap ? 1 : 2) + currentStepIndex;
 
   return (
-    <div style={{ maxWidth: 880, margin: '0 auto', padding: '28px 16px 48px', display: 'flex', flexDirection: 'column', gap: 22 }}>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+    <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-7 sm:px-6">
+      <div className="flex flex-wrap gap-1.5" aria-label="Onboarding progress">
         {stepLabels.map((label, i) => {
           const done = i < activeStep;
           const active = i === activeStep;
           return (
-            <div key={label} style={{ flex: '1 1 64px', minWidth: 56 }}>
+            <div key={label} className="min-w-14 flex-1">
               <div
-                style={{
-                  height: 6,
-                  borderRadius: 99,
-                  background: active ? '#6c63ff' : done ? '#00c9a7' : 'var(--bg-alt)',
-                }}
+                className={cn(
+                  "h-1.5 rounded-full",
+                  active ? "bg-primary" : done ? "bg-success" : "bg-sunken",
+                )}
               />
-              <div
-                style={{
-                  marginTop: 6,
-                  fontSize: 10,
-                  fontFamily: 'Outfit',
-                  textTransform: 'capitalize',
-                  color: active ? 'var(--text-main)' : 'var(--text-muted)',
-                  fontWeight: active ? 700 : 500,
-                }}
+              <p
+                className={cn(
+                  "type-caption mt-1.5 mb-0 capitalize",
+                  active ? "font-semibold text-ink" : "text-muted",
+                )}
               >
                 {label}
-              </div>
+              </p>
             </div>
           );
         })}
@@ -362,7 +359,7 @@ export default function RoadmapOnboarding({
       ) : !isAiStep && CurrentSection ? (
         <CurrentSection
           data={formData}
-          onChange={(d: any) => setFormData(d)}
+          onChange={(d: Record<string, unknown>) => setFormData(d)}
           hideRole
         />
       ) : (
@@ -374,53 +371,41 @@ export default function RoadmapOnboarding({
         />
       )}
 
-      {error && (
-        <p style={{ color: '#c0392b', fontFamily: 'Outfit', fontSize: '14px', margin: 0 }} role="alert">
+      {error ? (
+        <Alert tone="error" title="Couldn't continue">
           {error}
-        </p>
-      )}
+        </Alert>
+      ) : null}
 
       {hideNav ? null : (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-          <button
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Button
+            type="button"
+            variant="secondary"
             onClick={handleBack}
-            style={{ ...navBtn(false, hideBack), visibility: hideBack ? 'hidden' : 'visible' }}
+            className={hideBack ? "invisible" : undefined}
           >
             Back
-          </button>
+          </Button>
           {fromRoadmap ? <span /> : (
-          <button
-            type="button"
-            onClick={skipForLater}
-            style={{ ...navBtn(false, false), background: 'transparent', color: 'var(--text-muted)' }}
-          >
-            Skip for later
-          </button>
+            <Button type="button" variant="ghost" onClick={skipForLater}>
+              Skip for later
+            </Button>
           )}
-          <button
-            onClick={handleNext}
+          <Button
+            type="button"
+            onClick={() => void handleNext()}
             disabled={continueDisabled}
-            style={navBtn(true, continueDisabled)}
+            loading={isLoading}
           >
-            {isLoading ? 'Loading...' : (isAiStep || (inFormSteps && currentStepIndex === sections.length - 1)) ? 'Generate roadmap' : 'Continue'}
-          </button>
+            {isLoading
+              ? "Loading..."
+              : isAiStep || (inFormSteps && currentStepIndex === sections.length - 1)
+                ? "Generate roadmap"
+                : "Continue"}
+          </Button>
         </div>
       )}
     </div>
   );
-}
-
-function navBtn(primary: boolean, disabled: boolean): React.CSSProperties {
-  return {
-    padding: '12px 22px',
-    borderRadius: 12,
-    border: primary ? 'none' : '1px solid var(--border-light)',
-    backgroundColor: primary ? '#6c63ff' : 'var(--bg-alt)',
-    color: primary ? '#fff' : 'var(--text-main)',
-    fontFamily: 'Outfit',
-    fontWeight: 700,
-    fontSize: 15,
-    cursor: disabled ? 'not-allowed' : 'pointer',
-    opacity: disabled ? 0.55 : 1,
-  };
 }

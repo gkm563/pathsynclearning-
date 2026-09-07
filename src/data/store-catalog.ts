@@ -22,7 +22,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=600",
     desc: "Complete semester-wise course layouts, syllabus breakdowns, and exam prep trackers tailored for AKTU.",
     meta: "Academic Roadmap",
-    col: "#6c63ff",
+    col: "#1b4540",
     included: ["Semester-wise curriculum mapping", "Curated NPTEL/YouTube lectures links", "Standard question papers & notes templates", "AI credit checkpoints tracking"]
   },
   {
@@ -34,7 +34,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=600",
     desc: "Curated lectures, rigorous assignments, and projects matching standard IIT Bombay CSE syllabus.",
     meta: "Academic Roadmap",
-    col: "#00c9a7",
+    col: "#1f6b48",
     included: ["IIT Bombay CS equivalent syllabus", "Advanced problem sets & laboratory tests", "Open-source research projects references", "Self-evaluation scoring templates"]
   },
   {
@@ -202,7 +202,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=600",
     desc: "Unlock 1-on-1 monthly sessions with senior engineers from Tier-1 tech firms.",
     meta: "Premium Unlocks",
-    col: "#6c63ff",
+    col: "#1b4540",
     included: ["One monthly 1-on-1 video call pass", "Direct resume review check", "Unlimited slack chat channels access", "Priority mock interview scheduler"]
   },
   {
@@ -226,7 +226,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1511556532299-8f662fc26c06?auto=format&fit=crop&q=80&w=600",
     desc: "Direct referral channel to 500+ placed alumni across global MNCs.",
     meta: "Premium Unlocks",
-    col: "#00c9a7",
+    col: "#1f6b48",
     included: ["Referral directory search access", "Automated referral requests messenger", "Alumni newsletter refer patterns", "Private alumni meet channels"]
   },
   {
@@ -252,7 +252,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1501504905252-473c47e087f8?auto=format&fit=crop&q=80&w=600",
     desc: "Auto-calibrates dashboard: daily GATE questions, syllabus checkpoints, and mock test schedules.",
     meta: "AI Plugin Module",
-    col: "#8b5cf6",
+    col: "#1b4540",
     included: ["Daily GATE computer science tasks", "Syllabus checkpoints tracker", "Test series calendar integration", "CRI scoring GATE weights calibration"]
   },
   {

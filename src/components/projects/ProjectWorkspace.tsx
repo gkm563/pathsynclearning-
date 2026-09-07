@@ -7,6 +7,19 @@ import type {
   ProjectEvidenceKind,
   ProjectRubricBreakdownItem,
 } from "@/lib/projects/types";
+import {
+  Badge,
+  Button,
+  Card,
+  Checkbox,
+  FormField,
+  Input,
+  Progress,
+  Segmented,
+  Textarea,
+} from "@/components/ui";
+import { cn } from "@/lib/cn";
+import { Check, X } from "lucide-react";
 
 type Phase = "overview" | "steps" | "submit";
 
@@ -140,186 +153,133 @@ export default function ProjectWorkspace({
 
   return (
     <div
-      style={{
-        position: embedded ? "relative" : "fixed",
-        inset: embedded ? undefined : 0,
-        flex: embedded ? 1 : undefined,
-        minHeight: embedded ? 0 : undefined,
-        zIndex: embedded ? undefined : 1200,
-        background: "var(--bg-main, #f8fafc)",
-        display: "flex",
-        flexDirection: "column",
-        fontFamily: "Outfit, sans-serif",
-      }}
+      className={cn(
+        "flex flex-col bg-canvas",
+        embedded ? "relative min-h-0 flex-1" : "fixed inset-0",
+      )}
+      style={embedded ? undefined : { zIndex: "var(--z-modal)" }}
     >
-      <header
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
-          padding: "14px 20px",
-          borderBottom: "1px solid var(--border-light, rgba(15,23,42,0.1))",
-          background: "var(--bg-card, #fff)",
-        }}
-      >
-        <div>
-          <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 700 }}>
+      <header className="flex items-center justify-between gap-3 border-b border-line bg-surface px-5 py-3.5">
+        <div className="min-w-0">
+          <p className="type-caption m-0 font-semibold text-muted">
             Project assessment · +{xp} XP · {coins} coins
-          </div>
-          <h1 style={{ margin: "2px 0 0", fontSize: 20, fontWeight: 800 }}>
-            {title}
-          </h1>
+          </p>
+          <h1 className="type-h3 m-0 mt-0.5 truncate text-ink">{title}</h1>
         </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <span style={{ fontFamily: "Fira Code", fontSize: 12, fontWeight: 700 }}>
-            {donePct}% steps
-          </span>
-          <button type="button" onClick={onClose} style={ghostBtn}>
+        <div className="flex shrink-0 items-center gap-3">
+          <div className="w-28">
+            <Progress value={donePct} label="Steps" showValue size="sm" />
+          </div>
+          <Button variant="secondary" onClick={onClose}>
             Close
-          </button>
+          </Button>
         </div>
       </header>
 
-      <nav
-        style={{
-          display: "flex",
-          gap: 8,
-          padding: "12px 20px",
-          borderBottom: "1px solid var(--border-light)",
-          background: "var(--bg-card)",
-        }}
-      >
-        {(
-          [
-            ["overview", "Overview"],
-            ["steps", "Step-by-step"],
-            ["submit", "Submit"],
-          ] as const
-        ).map(([id, label]) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setPhase(id)}
-            style={{
-              ...ghostBtn,
-              background: phase === id ? "rgba(108,99,255,0.12)" : "var(--bg-alt)",
-              borderColor: phase === id ? "#6c63ff" : "var(--border-light)",
-              color: phase === id ? "#6c63ff" : "var(--text-main)",
-            }}
-          >
-            {label}
-          </button>
-        ))}
+      <nav className="border-b border-line bg-surface px-5 py-3">
+        <Segmented
+          ariaLabel="Project phases"
+          value={phase}
+          onChange={(id) => setPhase(id as Phase)}
+          items={[
+            { id: "overview", label: "Overview" },
+            { id: "steps", label: "Step-by-step" },
+            { id: "submit", label: "Submit" },
+          ]}
+        />
       </nav>
 
-      <div style={{ flex: 1, overflow: "auto", padding: 20 }}>
+      <div className="flex-1 overflow-auto p-5">
         {phase === "overview" && (
-          <div style={{ maxWidth: 820, margin: "0 auto", display: "grid", gap: 16 }}>
+          <div className="mx-auto grid w-full max-w-[820px] gap-4">
             <Card>
-              <h2 style={h2}>Goal</h2>
-              <p style={body}>{spec.overview.goal}</p>
+              <h2 className="type-h4 m-0 mb-2 text-ink">Goal</h2>
+              <p className="type-body m-0 text-ink">{spec.overview.goal}</p>
             </Card>
             <Card>
-              <h2 style={h2}>Stack</h2>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              <h2 className="type-h4 m-0 mb-2 text-ink">Stack</h2>
+              <div className="flex flex-wrap gap-2">
                 {spec.overview.stack.map((s) => (
-                  <span key={s} style={chip}>
+                  <Badge key={s} tone="accent">
                     {s}
-                  </span>
+                  </Badge>
                 ))}
               </div>
             </Card>
             <Card>
-              <h2 style={h2}>Deliverables</h2>
-              <ul style={{ margin: 0, paddingLeft: 18 }}>
+              <h2 className="type-h4 m-0 mb-2 text-ink">Deliverables</h2>
+              <ul className="type-body m-0 list-disc pl-4.5 text-ink">
                 {spec.overview.deliverables.map((d) => (
-                  <li key={d} style={body}>
-                    {d}
-                  </li>
+                  <li key={d}>{d}</li>
                 ))}
               </ul>
             </Card>
             <Card>
-              <h2 style={h2}>Pass rubric (summary)</h2>
-              <p style={body}>
+              <h2 className="type-h4 m-0 mb-2 text-ink">Pass rubric (summary)</h2>
+              <p className="type-body m-0 text-ink">
                 Pass mark {spec.passScore}%. Estimated {spec.overview.estimatedHours}{" "}
                 hours. Complete steps, attach evidence, then submit for automated
                 checks (including GitHub when a repo URL is provided).
               </p>
-              <ul style={{ margin: "8px 0 0", paddingLeft: 18 }}>
+              <ul className="type-body mt-2 mb-0 list-disc pl-4.5 text-ink">
                 {spec.rubric.map((r) => (
-                  <li key={r.id} style={{ ...body, marginBottom: 4 }}>
+                  <li key={r.id} className="mb-1">
                     {r.label} · {r.weight}%
                   </li>
                 ))}
               </ul>
             </Card>
-            <button
-              type="button"
-              onClick={() => setPhase("steps")}
-              style={primaryBtn}
-            >
+            <Button onClick={() => setPhase("steps")}>
               Start step-by-step guide
-            </button>
+            </Button>
           </div>
         )}
 
         {phase === "steps" && current && (
-          <div style={{ maxWidth: 820, margin: "0 auto", display: "grid", gap: 14 }}>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <div className="mx-auto grid w-full max-w-[820px] gap-3.5">
+            <div className="flex flex-wrap gap-2">
               {spec.steps.map((s, i) => {
                 const done = stepsDone.includes(s.id);
                 return (
-                  <button
+                  <Button
                     key={s.id}
                     type="button"
+                    variant={i === stepIndex ? "primary" : "secondary"}
+                    size="sm"
+                    className={cn(
+                      done &&
+                        i !== stepIndex &&
+                        "border-[color-mix(in_srgb,var(--success)_36%,var(--border-light))] bg-success-soft text-success",
+                    )}
                     onClick={() => setStepIndex(i)}
-                    style={{
-                      ...ghostBtn,
-                      borderColor:
-                        i === stepIndex
-                          ? "#6c63ff"
-                          : done
-                            ? "#00c9a7"
-                            : "var(--border-light)",
-                      background:
-                        i === stepIndex
-                          ? "rgba(108,99,255,0.12)"
-                          : done
-                            ? "rgba(0,201,167,0.1)"
-                            : "var(--bg-alt)",
-                    }}
                   >
                     {i + 1}. {s.title}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
             <Card>
-              <h2 style={h2}>
+              <h2 className="type-h4 m-0 text-ink">
                 Step {stepIndex + 1}: {current.title}
               </h2>
-              <p style={body}>{current.instructions}</p>
-              <h3 style={{ ...h2, fontSize: 14, marginTop: 14 }}>Acceptance</h3>
-              <ul style={{ margin: 0, paddingLeft: 18 }}>
+              <p className="type-body mt-2 mb-0 text-ink">{current.instructions}</p>
+              <h3 className="type-label mt-3.5 mb-1.5 text-ink">Acceptance</h3>
+              <ul className="type-body m-0 list-disc pl-4.5 text-ink">
                 {current.acceptance.map((a) => (
-                  <li key={a} style={body}>
-                    {a}
-                  </li>
+                  <li key={a}>{a}</li>
                 ))}
               </ul>
               {current.resources && current.resources.length > 0 && (
                 <>
-                  <h3 style={{ ...h2, fontSize: 14, marginTop: 14 }}>Resources</h3>
-                  <ul style={{ margin: 0, paddingLeft: 18 }}>
+                  <h3 className="type-label mt-3.5 mb-1.5 text-ink">Resources</h3>
+                  <ul className="m-0 list-disc pl-4.5">
                     {current.resources.map((r) => (
                       <li key={r.url}>
                         <a
                           href={r.url}
                           target="_blank"
                           rel="noreferrer"
-                          style={{ color: "#6c63ff", fontFamily: "Outfit" }}
+                          className="type-small text-primary underline-offset-4 hover:underline"
                         >
                           {r.label}
                         </a>
@@ -328,120 +288,126 @@ export default function ProjectWorkspace({
                   </ul>
                 </>
               )}
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  marginTop: 16,
-                  fontWeight: 700,
-                }}
-              >
-                <input
-                  type="checkbox"
+              <div className="mt-4">
+                <Checkbox
                   checked={stepsDone.includes(current.id)}
                   onChange={() => toggleStep(current.id)}
+                  label="Mark this step complete"
                 />
-                Mark this step complete
-              </label>
+              </div>
             </Card>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <button
-                type="button"
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="secondary"
                 disabled={stepIndex === 0}
                 onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
-                style={ghostBtn}
               >
                 Previous
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="secondary"
                 disabled={stepIndex >= spec.steps.length - 1}
                 onClick={() =>
                   setStepIndex((i) => Math.min(spec.steps.length - 1, i + 1))
                 }
-                style={ghostBtn}
               >
                 Next
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="secondary"
                 disabled={saving}
+                loading={saving}
                 onClick={() => void persist()}
-                style={ghostBtn}
               >
                 {saving ? "Saving…" : "Save progress"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setPhase("submit")}
-                style={primaryBtn}
-              >
+              </Button>
+              <Button onClick={() => setPhase("submit")}>
                 Continue to submit
-              </button>
+              </Button>
             </div>
           </div>
         )}
 
         {phase === "submit" && (
-          <div style={{ maxWidth: 820, margin: "0 auto", display: "grid", gap: 14 }}>
+          <div className="mx-auto grid w-full max-w-[820px] gap-3.5">
             <Card>
-              <h2 style={h2}>Evidence</h2>
-              <p style={body}>
+              <h2 className="type-h4 m-0 mb-2 text-ink">Evidence</h2>
+              <p className="type-body m-0 mb-3 text-muted">
                 Attach links and a short reflection. GitHub checks run when you
                 provide a repository URL.
               </p>
-              <Field
-                label="Repository URL"
-                value={repoUrl}
-                onChange={setRepoUrl}
-                placeholder="https://github.com/you/project"
-              />
-              <Field
-                label="Demo URL (optional)"
-                value={evidenceValue("demo_url")?.url || ""}
-                onChange={(v) => setEvidenceField("demo_url", { url: v })}
-                placeholder="https://…"
-              />
-              <Field
-                label="Screenshot / preview URL (optional)"
-                value={evidenceValue("screenshot_url")?.url || ""}
-                onChange={(v) => setEvidenceField("screenshot_url", { url: v })}
-                placeholder="https://…"
-              />
-              <label style={{ display: "block", marginTop: 12, fontWeight: 700 }}>
-                Reflection
-                <textarea
-                  value={reflection}
-                  onChange={(e) => setReflection(e.target.value)}
-                  rows={5}
-                  placeholder="What you built, how you verified it, tradeoffs…"
-                  style={textarea}
-                />
-              </label>
+              <div className="grid gap-3">
+                <FormField label="Repository URL">
+                  {(props) => (
+                    <Input
+                      {...props}
+                      value={repoUrl}
+                      onChange={(e) => setRepoUrl(e.target.value)}
+                      placeholder="https://github.com/you/project"
+                    />
+                  )}
+                </FormField>
+                <FormField label="Demo URL (optional)" optional>
+                  {(props) => (
+                    <Input
+                      {...props}
+                      value={evidenceValue("demo_url")?.url || ""}
+                      onChange={(e) =>
+                        setEvidenceField("demo_url", { url: e.target.value })
+                      }
+                      placeholder="https://…"
+                    />
+                  )}
+                </FormField>
+                <FormField label="Screenshot / preview URL (optional)" optional>
+                  {(props) => (
+                    <Input
+                      {...props}
+                      value={evidenceValue("screenshot_url")?.url || ""}
+                      onChange={(e) =>
+                        setEvidenceField("screenshot_url", {
+                          url: e.target.value,
+                        })
+                      }
+                      placeholder="https://…"
+                    />
+                  )}
+                </FormField>
+                <FormField label="Reflection">
+                  {(props) => (
+                    <Textarea
+                      {...props}
+                      value={reflection}
+                      onChange={(e) => setReflection(e.target.value)}
+                      rows={5}
+                      placeholder="What you built, how you verified it, tradeoffs…"
+                    />
+                  )}
+                </FormField>
+              </div>
             </Card>
             <Card>
-              <h2 style={h2}>Checklist status</h2>
-              <ul style={{ margin: 0, paddingLeft: 18 }}>
+              <h2 className="type-h4 m-0 mb-2 text-ink">Checklist status</h2>
+              <ul className="type-body m-0 list-disc pl-4.5 text-ink">
                 {spec.steps.map((s) => (
-                  <li key={s.id} style={body}>
+                  <li key={s.id}>
                     {stepsDone.includes(s.id) ? "Done" : "Open"} — {s.title}
                   </li>
                 ))}
               </ul>
             </Card>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <button
-                type="button"
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="secondary"
                 disabled={saving}
+                loading={saving}
                 onClick={() => void persist()}
-                style={ghostBtn}
               >
                 {saving ? "Saving…" : "Save draft"}
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 disabled={submitting}
+                loading={submitting}
                 onClick={() =>
                   void onSubmit({
                     stepsDone,
@@ -458,63 +424,14 @@ export default function ProjectWorkspace({
                     reflection: reflection.trim() || undefined,
                   })
                 }
-                style={primaryBtn}
               >
                 {submitting ? "Submitting…" : "Submit for check"}
-              </button>
+              </Button>
             </div>
           </div>
         )}
       </div>
     </div>
-  );
-}
-
-function Card({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      style={{
-        padding: 18,
-        borderRadius: 16,
-        background: "var(--bg-card, #fff)",
-        border: "1.5px solid var(--border-light, rgba(15,23,42,0.1))",
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-}) {
-  return (
-    <label style={{ display: "block", marginTop: 12, fontWeight: 700 }}>
-      {label}
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        style={{
-          display: "block",
-          width: "100%",
-          marginTop: 6,
-          padding: "10px 12px",
-          borderRadius: 10,
-          border: "1px solid var(--border-light)",
-          fontFamily: "Outfit",
-          fontSize: 14,
-        }}
-      />
-    </label>
   );
 }
 
@@ -526,42 +443,14 @@ export function ProjectRubricList({
   if (!breakdown?.length) return null;
   const failed = breakdown.filter((b) => !b.passed);
   return (
-    <div style={{ marginTop: 16, textAlign: "left" }}>
-      <div style={{ fontFamily: "Outfit", fontWeight: 800, marginBottom: 8 }}>
-        Rubric breakdown
-      </div>
+    <div className="mt-4 text-left">
+      <h3 className="type-h4 mb-2 text-ink">Rubric breakdown</h3>
       {failed.length > 0 ? (
-        <div
-          style={{
-            marginBottom: 12,
-            padding: 12,
-            borderRadius: 12,
-            background: "rgba(239,68,68,0.06)",
-            border: "1px solid rgba(239,68,68,0.2)",
-          }}
-        >
-          <div
-            style={{
-              fontFamily: "Outfit",
-              fontWeight: 800,
-              fontSize: 13,
-              color: "#b91c1c",
-              marginBottom: 6,
-            }}
-          >
-            Missing to pass
-          </div>
-          <ul style={{ margin: 0, paddingLeft: 18 }}>
+        <div className="mb-3 rounded-[var(--radius-md)] border border-[color-mix(in_srgb,var(--error)_28%,var(--border-light))] bg-danger-soft p-3">
+          <p className="type-label mb-1.5 text-danger">Missing to pass</p>
+          <ul className="m-0 list-disc pl-4.5">
             {failed.map((b) => (
-              <li
-                key={`missing-${b.id}`}
-                style={{
-                  fontSize: 13,
-                  fontFamily: "Outfit",
-                  marginBottom: 4,
-                  color: "var(--text-main)",
-                }}
-              >
+              <li key={`missing-${b.id}`} className="type-small mb-1 text-ink">
                 <strong>{b.label}</strong> — {b.detail}
               </li>
             ))}
@@ -571,28 +460,18 @@ export function ProjectRubricList({
       {breakdown.map((b) => (
         <div
           key={b.id}
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            gap: 12,
-            padding: "8px 0",
-            borderTop: "1px solid var(--border-light)",
-            fontSize: 13,
-            fontFamily: "Outfit",
-          }}
+          className="flex justify-between gap-3 border-t border-line py-2"
         >
           <div>
             <div
-              style={{
-                fontWeight: 700,
-                color: b.passed ? "#059669" : "#ef4444",
-              }}
+              className={`type-small flex items-center gap-1.5 font-semibold ${b.passed ? "text-success" : "text-danger"}`}
             >
-              {b.passed ? "✓ Pass" : "✗ Fail"} · {b.label}
+              {b.passed ? <Check size={14} aria-hidden /> : <X size={14} aria-hidden />}
+              {b.passed ? "Pass" : "Fail"} · {b.label}
             </div>
-            <div style={{ color: "var(--text-muted)" }}>{b.detail}</div>
+            <p className="type-caption m-0 text-muted">{b.detail}</p>
           </div>
-          <strong style={{ color: b.passed ? "#059669" : "#ef4444" }}>
+          <strong className={`type-small ${b.passed ? "text-success" : "text-danger"}`}>
             {b.earned}/{b.weight}
           </strong>
         </div>
@@ -600,56 +479,3 @@ export function ProjectRubricList({
     </div>
   );
 }
-
-const h2: React.CSSProperties = {
-  margin: "0 0 8px",
-  fontSize: 16,
-  fontWeight: 800,
-};
-const body: React.CSSProperties = {
-  margin: 0,
-  fontSize: 14,
-  lineHeight: 1.55,
-  color: "var(--text-main)",
-};
-const chip: React.CSSProperties = {
-  padding: "4px 10px",
-  borderRadius: 999,
-  background: "rgba(108,99,255,0.1)",
-  color: "#6c63ff",
-  fontSize: 12,
-  fontWeight: 700,
-};
-const ghostBtn: React.CSSProperties = {
-  padding: "10px 14px",
-  borderRadius: 12,
-  border: "1.5px solid var(--border-light)",
-  background: "var(--bg-alt)",
-  color: "var(--text-main)",
-  fontWeight: 700,
-  fontFamily: "Outfit",
-  fontSize: 13,
-  cursor: "pointer",
-};
-const primaryBtn: React.CSSProperties = {
-  padding: "12px 18px",
-  borderRadius: 12,
-  border: "none",
-  background: "linear-gradient(135deg, #6c63ff, #00c9a7)",
-  color: "#fff",
-  fontWeight: 800,
-  fontFamily: "Outfit",
-  fontSize: 14,
-  cursor: "pointer",
-};
-const textarea: React.CSSProperties = {
-  display: "block",
-  width: "100%",
-  marginTop: 6,
-  padding: 12,
-  borderRadius: 10,
-  border: "1px solid var(--border-light)",
-  fontFamily: "Outfit",
-  fontSize: 14,
-  resize: "vertical",
-};

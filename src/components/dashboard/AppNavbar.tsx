@@ -1,451 +1,272 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  type MouseEvent as ReactMouseEvent,
-  type ReactNode,
-} from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useClerk, useUser } from "@clerk/nextjs";
 import {
-  BarChart2,
   Bell,
-  BookOpen,
-  Briefcase,
   Check,
-  GraduationCap,
-  LayoutDashboard,
   LogOut,
-  Map,
-  Menu,
-  Newspaper,
+  Settings,
+  Sparkles,
+  Trophy,
   UserRound,
-  Zap,
 } from "lucide-react";
+import { Avatar, Breadcrumb, IconButton, Menu } from "@/components/ui";
+import { useDismiss } from "@/hooks/useOverlay";
 import { useNotifications } from "@/hooks/useNotifications";
+import { cn } from "@/lib/cn";
 import { relativeNotificationTime } from "@/lib/notifications/client";
 import { routes } from "@/lib/routes";
+import { resolveBreadcrumb } from "./nav-config";
 
-type FocusMode = "career" | "academic";
+/**
+ * Portal header.
+ *
+ * Sticky rather than `position: fixed` — the previous implementation offset a
+ * fixed bar with a hardcoded spacer (`h-[6.25rem] sm:h-[6.85rem] lg:h-16`),
+ * which drifted out of sync with the bar's real height at several breakpoints
+ * and clipped page content. Sticky inside the scroll container needs no
+ * spacer and can't fall out of alignment.
+ *
+ * Navigation itself lives in the sidebar/tab bar; this bar answers "where am
+ * I" (breadcrumb) and holds account-level controls.
+ */
 
-type NavItem = {
-  href: string;
-  label: string;
-  icon: ReactNode;
-  match: "exact" | "prefix";
-};
-
-const PRIMARY_NAV: NavItem[] = [
-  {
-    href: routes.app.dashboard,
-    label: "Home",
-    icon: <LayoutDashboard size={15} />,
-    match: "exact",
-  },
-  {
-    href: routes.app.roadmap,
-    label: "Roadmap",
-    icon: <Map size={15} />,
-    match: "prefix",
-  },
-  {
-    href: routes.app.challenges,
-    label: "Challenges",
-    icon: <Zap size={15} />,
-    match: "prefix",
-  },
-  {
-    href: routes.app.memoryLane,
-    label: "Memory Lane",
-    icon: <BookOpen size={15} />,
-    match: "prefix",
-  },
-  {
-    href: routes.app.progress,
-    label: "Progress",
-    icon: <BarChart2 size={15} />,
-    match: "prefix",
-  },
-  {
-    href: routes.app.techNews,
-    label: "Tech News",
-    icon: <Newspaper size={15} />,
-    match: "prefix",
-  },
-];
-
-function isNavActive(pathname: string | null, item: NavItem): boolean {
-  if (!pathname) return false;
-  if (item.match === "exact") return pathname === item.href;
-  return pathname === item.href || pathname.startsWith(`${item.href}/`);
+function NotificationIcon({ type }: { type?: string }) {
+  if (type === "reward") return <Trophy size={15} aria-hidden />;
+  if (type === "system") return <Bell size={15} aria-hidden />;
+  return <Sparkles size={15} aria-hidden />;
 }
 
-function notificationIcon(type?: string): string {
-  if (type === "system") return "🔔";
-  if (type === "reward") return "🏆";
-  return "✨";
-}
-
-type AppNavbarProps = {
-  onMenuOpen: () => void;
-};
-
-export default function AppNavbar({ onMenuOpen }: AppNavbarProps) {
+function NotificationBell() {
   const router = useRouter();
-  const pathname = usePathname();
-  const panelRef = useRef<HTMLDivElement>(null);
-  const accountRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const reduceMotion = useReducedMotion();
+  const { notifications, unreadCount, openInbox, markAsRead, markAllAsRead } =
+    useNotifications({ load: "summary" });
+
+  useDismiss({ ref: wrapperRef, active: open, onDismiss: () => setOpen(false) });
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <IconButton
+        label={
+          unreadCount > 0
+            ? `Notifications, ${unreadCount} unread`
+            : "Notifications"
+        }
+        variant="ghost"
+        size="sm"
+        aria-expanded={open}
+        onClick={() => {
+          setOpen((v) => {
+            if (!v) openInbox();
+            return !v;
+          });
+        }}
+        className="relative"
+      >
+        <Bell size={18} aria-hidden />
+        {unreadCount > 0 ? (
+          <span
+            aria-hidden
+            className="type-numeric absolute top-1 right-1 flex h-4 min-w-4 items-center justify-center rounded-full border-2 border-surface bg-accent px-1 text-[10px] font-bold text-on-primary"
+          >
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        ) : null}
+      </IconButton>
+
+      <AnimatePresence>
+        {open ? (
+          <motion.div
+            initial={
+              reduceMotion ? { opacity: 0 } : { opacity: 0, y: 6, scale: 0.98 }
+            }
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.15 }}
+            style={{ zIndex: "var(--z-dropdown)" }}
+            className="absolute top-[calc(100%+8px)] right-0 flex w-[min(22rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-[var(--radius-md)] border border-line bg-surface shadow-[var(--shadow-lg)]"
+          >
+            <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-2.5">
+              <h2 className="type-label m-0 text-ink">Notifications</h2>
+              {unreadCount > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => void markAllAsRead()}
+                  className="type-caption inline-flex items-center gap-1 rounded-[var(--radius-sm)] font-semibold text-primary transition-opacity hover:opacity-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                >
+                  <Check size={13} aria-hidden />
+                  Mark all read
+                </button>
+              ) : null}
+            </div>
+
+            <div className="max-h-[min(24rem,60vh)] overflow-y-auto overscroll-contain">
+              {notifications.length === 0 ? (
+                <p className="type-small px-4 py-8 text-center text-muted">
+                  You&apos;re all caught up.
+                </p>
+              ) : (
+                <ul className="list-none p-0">
+                  {notifications.map((item) => (
+                    <li key={item.id}>
+                      <button
+                        type="button"
+                        onClick={() => void markAsRead(item.id)}
+                        className={cn(
+                          "flex w-full items-start gap-3 border-b border-line px-4 py-3 text-left transition-colors last:border-0 hover:bg-sunken focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring",
+                          !item.read && "bg-primary-soft/60",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full",
+                            item.read
+                              ? "bg-sunken text-muted"
+                              : "bg-primary-soft text-primary",
+                          )}
+                        >
+                          <NotificationIcon type={item.type} />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span
+                            className={cn(
+                              "type-small block text-ink",
+                              item.read ? "font-medium" : "font-semibold",
+                            )}
+                          >
+                            {item.title}
+                            {!item.read ? (
+                              <span className="sr-only"> (unread)</span>
+                            ) : null}
+                          </span>
+                          {item.message || item.desc ? (
+                            <span className="type-caption mt-0.5 block text-muted">
+                              {item.message || item.desc}
+                            </span>
+                          ) : null}
+                          {item.time ? (
+                            <span className="type-caption mt-1 block text-faint">
+                              {relativeNotificationTime(item.time)}
+                            </span>
+                          ) : null}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="border-t border-line bg-sunken p-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  router.push(routes.app.notifications);
+                }}
+                className="type-label w-full rounded-[var(--radius-sm)] py-2 font-semibold text-ink transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              >
+                View all notifications
+              </button>
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function AccountMenu() {
   const { user } = useUser();
   const { signOut } = useClerk();
 
-  const [focusMode, setFocusMode] = useState<FocusMode>("career");
-  const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [isAccountOpen, setIsAccountOpen] = useState(false);
-  const {
-    notifications,
-    unreadCount,
-    openInbox,
-    markAsRead,
-    markAllAsRead,
-  } = useNotifications({ load: "summary" });
+  return (
+    <Menu
+      ariaLabel="Account"
+      groups={[
+        {
+          id: "identity",
+          items: [
+            {
+              id: "profile",
+              label: "Profile",
+              icon: <UserRound size={15} />,
+              href: routes.app.profile,
+            },
+            {
+              id: "settings",
+              label: "Settings",
+              icon: <Settings size={15} />,
+              href: routes.app.settings,
+            },
+          ],
+        },
+        {
+          id: "session",
+          items: [
+            {
+              id: "sign-out",
+              label: "Sign out",
+              icon: <LogOut size={15} />,
+              tone: "danger",
+              onSelect: () => void signOut({ redirectUrl: "/" }),
+            },
+          ],
+        },
+      ]}
+      trigger={({ open, toggle, ref }) => (
+        <button
+          ref={ref}
+          type="button"
+          onClick={toggle}
+          aria-expanded={open}
+          aria-haspopup="menu"
+          aria-label="Account menu"
+          className="flex items-center gap-2 rounded-full p-0.5 transition-shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
+          <Avatar
+            src={user?.imageUrl}
+            name={user?.fullName || user?.username || "Account"}
+            size="sm"
+          />
+        </button>
+      )}
+    />
+  );
+}
 
-  useEffect(() => {
-    if (!isPanelOpen && !isAccountOpen) return;
-
-    const onPointerDown = (event: globalThis.MouseEvent) => {
-      const target = event.target as Node;
-      if (!panelRef.current?.contains(target)) setIsPanelOpen(false);
-      if (!accountRef.current?.contains(target)) setIsAccountOpen(false);
-    };
-
-    const onEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsPanelOpen(false);
-        setIsAccountOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onEscape);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onEscape);
-    };
-  }, [isPanelOpen, isAccountOpen]);
-
-  const handleMarkAllAsRead = async (event: ReactMouseEvent) => {
-    event.stopPropagation();
-    await markAllAsRead();
-  };
+export default function AppNavbar({ onMenuOpen }: { onMenuOpen: () => void }) {
+  const pathname = usePathname();
+  const trail = resolveBreadcrumb(pathname);
 
   return (
-    <>
-    <header className="fixed top-0 right-0 left-0 z-[100] border-b border-[var(--border-light)] bg-[var(--bg-card)]/95 backdrop-blur-xl">
-      <div className="mx-auto flex h-14 w-full max-w-[1440px] items-center justify-between gap-3 px-4 sm:h-16 sm:gap-4 sm:px-6 lg:px-8">
-        {/* Left: menu + brand + primary nav */}
-        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-          <button
-            type="button"
-            onClick={onMenuOpen}
-            aria-label="Open navigation menu"
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--border-light)] bg-[var(--bg-alt)] text-[var(--text-main)] transition-colors hover:bg-[var(--bg-alt)]/80 sm:h-10 sm:w-10"
-          >
-            <Menu size={18} />
-          </button>
-
-          <Link
-            href={routes.app.dashboard}
-            className="flex shrink-0 items-center gap-2"
-          >
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-[#6c63ff] to-[#00c9a7] text-sm font-extrabold text-white sm:h-9 sm:w-9 sm:text-base">
-              P
-            </span>
-            <span className="hidden text-lg font-extrabold tracking-tight text-[var(--text-main)] sm:inline">
-              Path<span className="text-[#6c63ff]">Ed</span>
-            </span>
-          </Link>
-
-          <nav
-            aria-label="Primary"
-            className="ml-1 hidden min-w-0 items-center gap-0.5 rounded-xl border border-[var(--border-light)] bg-[var(--bg-alt)] p-1 lg:flex"
-          >
-            {PRIMARY_NAV.map((item) => {
-              const active = isNavActive(pathname, item);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={[
-                    "inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-[13px] font-semibold transition-colors xl:gap-2 xl:px-3",
-                    active
-                      ? "bg-[var(--bg-card)] text-[#6c63ff] shadow-sm"
-                      : "text-[var(--text-muted)] hover:bg-[var(--bg-card)]/70 hover:text-[var(--text-main)]",
-                  ].join(" ")}
-                >
-                  {item.icon}
-                  <span className="hidden xl:inline">{item.label}</span>
-                  <span className="xl:hidden">
-                    {item.label === "Memory Lane"
-                      ? "Memory"
-                      : item.label === "Tech News"
-                        ? "News"
-                        : item.label}
-                  </span>
-                </Link>
-              );
-            })}
-          </nav>
+    <header className="sticky top-0 border-b border-line bg-[var(--overlay-bg)] backdrop-blur-xl" style={{ zIndex: "var(--z-header)" }}>
+      <div className="flex h-14 items-center gap-2 px-3 sm:h-16 sm:gap-3 sm:px-5 lg:px-7">
+        {/* Desktop: breadcrumb. Mobile: tab bar owns navigation — no logo,
+            hamburger, or page title here. */}
+        <div className="hidden min-w-0 flex-1 lg:block">
+          <Breadcrumb items={trail} />
         </div>
+        <div className="min-w-0 flex-1 lg:hidden" />
 
-        {/* Right: focus mode + notifications + account */}
-        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-          <div
-            role="group"
-            aria-label="Focus mode"
-            className="flex items-center gap-0.5 rounded-xl border border-[var(--border-light)] bg-[var(--bg-alt)] p-1"
+        <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
+          <Link
+            href={routes.app.store}
+            className="type-label hidden rounded-[var(--radius-md)] border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:bg-sunken hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:inline-flex"
           >
-            <button
-              type="button"
-              onClick={() => setFocusMode("career")}
-              aria-pressed={focusMode === "career"}
-              className={[
-                "inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold transition-colors sm:px-2.5 sm:text-[13px]",
-                focusMode === "career"
-                  ? "bg-[var(--bg-card)] text-[var(--text-main)] shadow-sm"
-                  : "text-[var(--text-muted)] hover:text-[var(--text-main)]",
-              ].join(" ")}
-            >
-              <Briefcase size={14} />
-              <span className="hidden md:inline">Career</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setFocusMode("academic")}
-              aria-pressed={focusMode === "academic"}
-              className={[
-                "inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold transition-colors sm:px-2.5 sm:text-[13px]",
-                focusMode === "academic"
-                  ? "bg-[var(--bg-card)] text-[var(--text-main)] shadow-sm"
-                  : "text-[var(--text-muted)] hover:text-[var(--text-main)]",
-              ].join(" ")}
-            >
-              <GraduationCap size={14} />
-              <span className="hidden md:inline">Academic</span>
-            </button>
-          </div>
-
-          <div className="relative" ref={panelRef}>
-            <button
-              type="button"
-              onClick={() => {
-                setIsAccountOpen(false);
-                setIsPanelOpen((open) => {
-                  const next = !open;
-                  if (next) openInbox();
-                  return next;
-                });
-              }}
-              aria-label="Notifications"
-              aria-expanded={isPanelOpen}
-              className="relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border-light)] bg-[var(--bg-alt)] text-[var(--text-main)] transition-colors hover:bg-[var(--bg-alt)]/80 sm:h-10 sm:w-10"
-            >
-              <Bell size={18} />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full border-2 border-[var(--bg-card)] bg-red-500 px-1 text-[10px] font-bold text-white">
-                  {unreadCount > 9 ? "9+" : unreadCount}
-                </span>
-              )}
-            </button>
-
-            <AnimatePresence>
-              {isPanelOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute top-[calc(100%+8px)] right-0 z-[200] w-[min(340px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-[var(--border-light)] bg-[var(--bg-card)] shadow-[0_12px_40px_rgba(0,0,0,0.12)]"
-                >
-                  <div className="flex items-center justify-between gap-3 border-b border-[var(--border-light)] px-4 py-3">
-                    <p className="text-sm font-bold text-[var(--text-main)]">
-                      Notifications
-                    </p>
-                    {unreadCount > 0 && (
-                      <button
-                        type="button"
-                        onClick={handleMarkAllAsRead}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#6c63ff] hover:opacity-80"
-                      >
-                        <Check size={14} />
-                        Mark all read
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="max-h-80 overflow-y-auto">
-                    {notifications.length === 0 ? (
-                      <p className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">
-                        You&apos;re all caught up.
-                      </p>
-                    ) : (
-                      notifications.map((item) => (
-                        <button
-                          key={item.id}
-                          type="button"
-                          onClick={() => markAsRead(item.id)}
-                          className={[
-                            "flex w-full items-start gap-3 border-l-[3px] px-4 py-3 text-left transition-colors hover:bg-[var(--bg-alt)]",
-                            item.read
-                              ? "border-transparent"
-                              : "border-[#6c63ff] bg-[rgba(108,99,255,0.04)]",
-                          ].join(" ")}
-                        >
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--bg-alt)] text-base">
-                            {notificationIcon(item.type)}
-                          </span>
-                          <span className="min-w-0">
-                            <span
-                              className={[
-                                "block truncate text-sm text-[var(--text-main)]",
-                                item.read ? "font-medium" : "font-bold",
-                              ].join(" ")}
-                            >
-                              {item.title}
-                            </span>
-                            <span className="mt-0.5 block text-xs leading-relaxed text-[var(--text-muted)]">
-                              {item.message || item.desc}
-                            {item.time ? (
-                              <span className="mt-1 block text-[10px] text-[var(--text-light)]">
-                                {relativeNotificationTime(item.time)}
-                              </span>
-                            ) : null}
-                            </span>
-                          </span>
-                        </button>
-                      ))
-                    )}
-                  </div>
-
-                  <div className="border-t border-[var(--border-light)] p-3">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsPanelOpen(false);
-                        router.push(routes.app.notifications);
-                      }}
-                      className="w-full rounded-lg border border-[var(--border-light)] px-3 py-2 text-sm font-semibold text-[var(--text-main)] transition-colors hover:bg-[var(--bg-alt)]"
-                    >
-                      View all
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <div className="relative pl-0.5 sm:pl-1" ref={accountRef}>
-            <button
-              type="button"
-              onClick={() => {
-                setIsPanelOpen(false);
-                setIsAccountOpen((open) => !open);
-              }}
-              aria-label="Account menu"
-              aria-expanded={isAccountOpen}
-              className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-[var(--border-light)] bg-[var(--bg-alt)]"
-            >
-              {user?.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={user.imageUrl}
-                  alt=""
-                  className="h-full w-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <span className="text-xs font-bold text-[var(--text-main)]">
-                  {(user?.firstName?.[0] || user?.username?.[0] || "U").toUpperCase()}
-                </span>
-              )}
-            </button>
-
-            <AnimatePresence>
-              {isAccountOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute top-[calc(100%+8px)] right-0 z-[200] w-52 overflow-hidden rounded-2xl border border-[var(--border-light)] bg-[var(--bg-card)] shadow-[0_12px_40px_rgba(0,0,0,0.12)]"
-                >
-                  <div className="border-b border-[var(--border-light)] px-3 py-2.5">
-                    <p className="truncate text-sm font-bold text-[var(--text-main)]">
-                      {user?.fullName || user?.username || "Account"}
-                    </p>
-                    <p className="truncate text-xs text-[var(--text-muted)]">
-                      {user?.primaryEmailAddress?.emailAddress}
-                    </p>
-                  </div>
-                  <Link
-                    href={routes.app.profile}
-                    onClick={() => setIsAccountOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--bg-alt)]"
-                  >
-                    <UserRound size={15} />
-                    Profile
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      setIsAccountOpen(false);
-                      await signOut({ redirectUrl: "/" });
-                    }}
-                    className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm font-semibold text-[var(--text-muted)] hover:bg-[var(--bg-alt)]"
-                  >
-                    <LogOut size={15} />
-                    Sign out
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+            Store
+          </Link>
+          <NotificationBell />
+          <AccountMenu />
         </div>
       </div>
-
-      {/* Compact primary nav for tablet / small desktop */}
-      <nav
-        aria-label="Primary compact"
-        className="flex gap-1 overflow-x-auto border-t border-[var(--border-light)] px-4 py-2 sm:px-6 lg:hidden"
-      >
-        {PRIMARY_NAV.map((item) => {
-          const active = isNavActive(pathname, item);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={[
-                "inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors",
-                active
-                  ? "bg-[var(--bg-alt)] text-[#6c63ff]"
-                  : "text-[var(--text-muted)] hover:bg-[var(--bg-alt)] hover:text-[var(--text-main)]",
-              ].join(" ")}
-            >
-              {item.icon}
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
     </header>
-    {/* Spacer matches fixed navbar height so page content isn't covered */}
-    <div
-      aria-hidden
-      className="h-[6.25rem] shrink-0 sm:h-[6.85rem] lg:h-16"
-    />
-    </>
   );
 }

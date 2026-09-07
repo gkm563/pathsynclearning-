@@ -14,6 +14,8 @@ import { assessmentLabel, attemptsForAssessment } from "@/lib/roadmap/assessment
 import { apiGet, apiSend } from "@/lib/api";
 import type { ProjectEvidenceInput } from "@/lib/projects/types";
 import { AddNoteButton } from "@/components/memory-lane/AddNoteButton";
+import { Badge, Button, Card, Dialog } from "@/components/ui";
+import { cn } from "@/lib/cn";
 
 type LoadState = {
   title: string;
@@ -232,50 +234,21 @@ export default function NodeAssessmentModal({
 
   if (error && !data) {
     return (
-      <div
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 9999,
-          background: "rgba(0,0,0,0.5)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <div
-          style={{
-            background: "var(--bg-card)",
-            padding: 24,
-            borderRadius: 12,
-            maxWidth: 400,
-          }}
-        >
-          <p>{error}</p>
-          <button type="button" onClick={onClose}>
-            Close
-          </button>
-        </div>
-      </div>
+      <Dialog
+        open
+        onClose={onClose}
+        title="Could not load assessment"
+        description={error}
+        footer={<Button onClick={onClose}>Close</Button>}
+      />
     );
   }
 
   if (!data) {
     return (
-      <div
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 9999,
-          background: "var(--bg-main)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontFamily: "Outfit",
-        }}
-      >
-        Loading assessment…
-      </div>
+      <Dialog open onClose={onClose} title="Loading assessment" hideHeader>
+        <p className="type-body m-0 py-8 text-center text-muted">Loading assessment…</p>
+      </Dialog>
     );
   }
 
@@ -290,68 +263,31 @@ export default function NodeAssessmentModal({
     const passMark = active?.passScore ?? data.assessment.passScore ?? 70;
     const score = resultScore ?? 0;
     return (
-      <div
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 9999,
-          background: "var(--bg-main)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 24,
-          overflow: "auto",
-        }}
+      <Dialog
+        open
+        onClose={finishResult}
+        size={resultPassed && answerReview ? "lg" : "md"}
+        title={resultMsg || "Assessment ended"}
+        footer={
+          <Button className="w-full sm:w-auto" onClick={finishResult}>
+            {resultPassed && !nodeComplete ? "Next assessment" : "Back to roadmap"}
+          </Button>
+        }
       >
-        <div
-          style={{
-            background: "var(--bg-card)",
-            border: "1px solid var(--border-light)",
-            borderRadius: 16,
-            padding: 32,
-            maxWidth: resultPassed && answerReview ? 640 : 480,
-            width: "100%",
-            textAlign: "center",
-            margin: "auto",
-          }}
-        >
-          <div
-            style={{
-              fontFamily: "Fira Code",
-              fontSize: 12,
-              fontWeight: 700,
-              color: resultPassed ? "#059669" : "#ef4444",
-              letterSpacing: 1,
-              marginBottom: 8,
-            }}
-          >
-            {resultPassed ? "PASSED" : "NOT PASSED"}
+        <div className="text-center">
+          <div className={cn("type-overline mb-2", resultPassed ? "text-success" : "text-danger")}>
+            {resultPassed ? "Passed" : "Not passed"}
           </div>
           <div
-            style={{
-              fontFamily: "Outfit",
-              fontSize: 56,
-              fontWeight: 800,
-              color: resultPassed ? "#00c9a7" : "#ef4444",
-              lineHeight: 1,
-            }}
+            className={cn(
+              "type-numeric text-[56px] leading-none font-extrabold",
+              resultPassed ? "text-success" : "text-danger",
+            )}
           >
             {score}%
           </div>
-          <p
-            style={{
-              color: "var(--text-muted)",
-              fontFamily: "Inter",
-              fontSize: 13,
-              marginTop: 8,
-            }}
-          >
-            Pass mark: {passMark}%
-          </p>
-          <h2 style={{ fontFamily: "Outfit", fontSize: 20, marginBottom: 8 }}>
-            {resultMsg || "Assessment ended"}
-          </h2>
-          <p style={{ color: "var(--text-muted)", fontFamily: "Inter", fontSize: 14 }}>
+          <p className="type-small mt-2 text-muted">Pass mark: {passMark}%</p>
+          <p className="type-body text-muted">
             {resultPassed
               ? nodeComplete
                 ? unlockedNodeIds.length
@@ -364,85 +300,35 @@ export default function NodeAssessmentModal({
           {resultPassed && answerReview && <AnswerReview review={answerReview} />}
 
           {historyForActive.length > 0 && (
-            <div
-              style={{
-                marginTop: 20,
-                textAlign: "left",
-                background: "var(--bg-alt)",
-                borderRadius: 12,
-                padding: 14,
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: "Outfit",
-                  fontWeight: 700,
-                  fontSize: 13,
-                  marginBottom: 8,
-                }}
-              >
+            <Card padded={false} className="mt-5 p-3.5 text-left">
+              <div className="type-label mb-2">
                 {active ? `${assessmentLabel(active)} · attempt history` : "Attempt history"}
               </div>
               {historyForActive.slice(0, 5).map((a, i) => (
                 <div
                   key={a.id || i}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontSize: 13,
-                    fontFamily: "Inter",
-                    color: "var(--text-muted)",
-                    padding: "4px 0",
-                    borderTop: i ? "1px solid var(--border-light)" : "none",
-                  }}
+                  className={cn(
+                    "flex justify-between py-1 type-small text-muted",
+                    i ? "border-t border-line" : "",
+                  )}
                 >
                   <span>
                     {i === 0 ? "This attempt" : `Attempt ${historyForActive.length - i}`}
                     {a.passed ? " · passed" : ""}
                   </span>
-                  <strong style={{ color: a.passed ? "#059669" : "var(--text-main)" }}>
-                    {a.score}%
-                  </strong>
+                  <strong className={a.passed ? "text-success" : "text-ink"}>{a.score}%</strong>
                 </div>
               ))}
-            </div>
+            </Card>
           )}
 
-          {autoAdvanceIn !== null ? (
-            <p
-              style={{
-                marginTop: 20,
-                fontFamily: "Outfit",
-                fontWeight: 600,
-                fontSize: 14,
-                color: "var(--text-muted)",
-              }}
-            >
-              {nodeComplete || !resultPassed
-                ? `Returning to roadmap in ${autoAdvanceIn}s…`
-                : null}
+          {autoAdvanceIn !== null && (nodeComplete || !resultPassed) ? (
+            <p className="type-label mt-5 text-muted">
+              Returning to roadmap in {autoAdvanceIn}s…
             </p>
           ) : null}
-          <button
-            type="button"
-            onClick={finishResult}
-            style={{
-              marginTop: 12,
-              width: "100%",
-              padding: "12px 24px",
-              borderRadius: 10,
-              border: "none",
-              background: resultPassed ? "#00c9a7" : "#6c63ff",
-              color: "#fff",
-              fontFamily: "Outfit",
-              fontWeight: 700,
-              cursor: "pointer",
-            }}
-          >
-            {resultPassed && !nodeComplete ? "Next assessment" : "Back to roadmap"}
-          </button>
         </div>
-      </div>
+      </Dialog>
     );
   }
 
@@ -452,122 +338,53 @@ export default function NodeAssessmentModal({
   if (showPicker) {
     const done = list.filter((a) => a.id && passedSet.has(a.id)).length;
     return (
-      <div
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 9999,
-          background: "var(--bg-main)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 24,
-        }}
-      >
-        <div
-          style={{
-            background: "var(--bg-card)",
-            border: "1px solid var(--border-light)",
-            borderRadius: 16,
-            padding: 28,
-            maxWidth: 520,
-            width: "100%",
-          }}
-        >
-          <h2 style={{ fontFamily: "Outfit", fontSize: 22, margin: "0 0 8px" }}>
-            {data.title}
-          </h2>
-          <p
-            style={{
-              color: "var(--text-muted)",
-              fontFamily: "Inter",
-              fontSize: 14,
-              margin: "0 0 20px",
-            }}
-          >
-            This node has {list.length} assessments. Pass all of them to unlock the next nodes ({done}/{list.length} done).
-          </p>
-          <div style={{ display: "grid", gap: 10 }}>
-            {list.map((item, i) => {
-              const passed = Boolean(item.id && passedSet.has(item.id));
-              const ownAttempts = attemptsForAssessment(data.attempts, item, list);
-              const best = ownAttempts.reduce(
-                (m, a) => Math.max(m, a.score),
-                0,
-              );
-              const last = ownAttempts[0];
-              return (
-                <button
-                  key={item.id || i}
-                  type="button"
-                  disabled={passed}
-                  onClick={() => item.id && setActiveId(item.id)}
-                  style={{
-                    textAlign: "left",
-                    padding: "14px 16px",
-                    borderRadius: 12,
-                    border: "1px solid var(--border-light)",
-                    background: passed ? "rgba(0,201,167,0.08)" : "var(--bg-alt)",
-                    cursor: passed ? "default" : "pointer",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    gap: 12,
-                  }}
-                >
-                  <span>
-                    <strong style={{ fontFamily: "Outfit", fontSize: 15 }}>
-                      {i + 1}. {assessmentLabel(item)}
-                    </strong>
-                    <span
-                      style={{
-                        display: "block",
-                        marginTop: 4,
-                        fontSize: 12,
-                        color: "var(--text-muted)",
-                        textTransform: "uppercase",
-                        letterSpacing: 0.4,
-                      }}
-                    >
-                      {item.type} · {item.timeLimitMinutes} min · pass {item.passScore}%
-                      {last
-                        ? ` · last ${last.score}%${best !== last.score ? ` · best ${best}%` : ""}`
-                        : ""}
-                    </span>
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: "Outfit",
-                      fontWeight: 700,
-                      fontSize: 12,
-                      color: passed ? "#059669" : "#6c63ff",
-                    }}
-                  >
-                    {passed ? "Passed" : "Start"}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              marginTop: 16,
-              width: "100%",
-              padding: "10px 16px",
-              borderRadius: 10,
-              border: "1px solid var(--border-light)",
-              background: "transparent",
-              cursor: "pointer",
-              fontFamily: "Outfit",
-              fontWeight: 600,
-            }}
-          >
+      <Dialog
+        open
+        onClose={onClose}
+        size="md"
+        title={data.title}
+        description={`This node has ${list.length} assessments. Pass all of them to unlock the next nodes (${done}/${list.length} done).`}
+        footer={
+          <Button variant="secondary" className="w-full" onClick={onClose}>
             Back to roadmap
-          </button>
+          </Button>
+        }
+      >
+        <div className="grid gap-2.5">
+          {list.map((item, i) => {
+            const passed = Boolean(item.id && passedSet.has(item.id));
+            const ownAttempts = attemptsForAssessment(data.attempts, item, list);
+            const best = ownAttempts.reduce((m, a) => Math.max(m, a.score), 0);
+            const last = ownAttempts[0];
+            return (
+              <button
+                key={item.id || i}
+                type="button"
+                disabled={passed}
+                onClick={() => item.id && setActiveId(item.id)}
+                className={cn(
+                  "flex items-center justify-between gap-3 rounded-[var(--radius-md)] border border-line px-4 py-3.5 text-left",
+                  passed ? "bg-success-soft" : "bg-sunken",
+                  passed && "cursor-default",
+                )}
+              >
+                <span>
+                  <strong className="type-label">
+                    {i + 1}. {assessmentLabel(item)}
+                  </strong>
+                  <span className="type-overline mt-1 block text-muted">
+                    {item.type} · {item.timeLimitMinutes} min · pass {item.passScore}%
+                    {last
+                      ? ` · last ${last.score}%${best !== last.score ? ` · best ${best}%` : ""}`
+                      : ""}
+                  </span>
+                </span>
+                <Badge tone={passed ? "success" : "accent"}>{passed ? "Passed" : "Start"}</Badge>
+              </button>
+            );
+          })}
         </div>
-      </div>
+      </Dialog>
     );
   }
 
@@ -578,7 +395,7 @@ export default function NodeAssessmentModal({
   return (
     <>
       {active.type !== "coding" ? (
-        <div style={{ position: "fixed", top: 16, right: 72, zIndex: 1300 }}>
+        <div className="fixed top-4 right-[72px] z-[1300]">
           <AddNoteButton
             sourceType="roadmap_node"
             sourceId={nodeId}

@@ -1,155 +1,17 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { cn } from "@/lib/cn";
 import { isGeneratedSocialCard, nonemptyUrl } from "@/lib/news/normalize";
 
-export function NewsCover({
-  src,
-  alt = "",
-  tint,
-}: {
-  src: string | null;
-  alt?: string;
-  tint?: string;
-}) {
-  const [failed, setFailed] = useState(false);
-  const photo = nonemptyUrl(src);
-  const showPhoto = Boolean(photo) && !isGeneratedSocialCard(photo) && !failed;
+/**
+ * Presentation helpers shared by the Tech News feed, saved list and article.
+ *
+ * Everything here is Tailwind-on-tokens; the old hand-written `.news-*` CSS
+ * block that used to own these styles has been removed from `globals.css`.
+ */
 
-  useEffect(() => {
-    setFailed(false);
-  }, [src]);
-
-  return (
-    <div
-      className="news-cover"
-      style={
-        tint
-          ? {
-              background: `linear-gradient(135deg, ${tint}22, var(--bg-alt))`,
-            }
-          : undefined
-      }
-    >
-      {showPhoto ? (
-        <img
-          src={photo ?? undefined}
-          alt={alt}
-          loading="lazy"
-          decoding="async"
-          onError={() => setFailed(true)}
-        />
-      ) : (
-        <div className="news-cover-fallback" aria-hidden>
-          <img src="/favicon.svg" alt="" />
-          <span>PathEd</span>
-        </div>
-      )}
-    </div>
-  );
-}
-
-export function NewsFeedBusy({ label = "Updating stories…" }: { label?: string }) {
-  return (
-    <div className="news-feed-overlay">
-      <div className="news-feed-status" role="status" aria-live="polite">
-        <span className="news-spin" aria-hidden />
-        {label}
-      </div>
-    </div>
-  );
-}
-
-export function NewsSkeletonGrid({ count = 6 }: { count?: number }) {
-  return (
-    <div className="tech-news-grid" aria-busy="true" aria-label="Loading news">
-      {Array.from({ length: count }).map((_, i) => (
-        <div
-          key={i}
-          className="news-card"
-          style={{ pointerEvents: "none", boxShadow: "none" }}
-        >
-          <div
-            className="news-cover"
-            style={{
-              background:
-                "linear-gradient(90deg, var(--border-light) 25%, var(--bg-alt) 50%, var(--border-light) 75%)",
-              backgroundSize: "200% 100%",
-              animation: "newsShimmer 1.2s ease-in-out infinite",
-            }}
-          />
-          <div className="news-card-body">
-            <div className="news-skel-line" style={{ height: 10, width: "28%" }} />
-            <div
-              className="news-skel-line"
-              style={{ height: 16, width: "92%", marginTop: 12 }}
-            />
-            <div
-              className="news-skel-line"
-              style={{ height: 16, width: "74%", marginTop: 8 }}
-            />
-            <div
-              className="news-skel-line"
-              style={{ height: 12, width: "100%", marginTop: 14 }}
-            />
-            <div
-              className="news-skel-line"
-              style={{ height: 12, width: "64%", marginTop: 8 }}
-            />
-          </div>
-        </div>
-      ))}
-      <style>{`
-        @keyframes newsShimmer {
-          0% { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .tech-news-grid .news-cover { animation: none !important; }
-        }
-      `}</style>
-    </div>
-  );
-}
-
-export function NewsSection({
-  title,
-  action,
-  children,
-}: {
-  title: string;
-  action?: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <section style={{ marginBottom: 32 }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "baseline",
-          justifyContent: "space-between",
-          gap: 12,
-          marginBottom: 16,
-        }}
-      >
-        <h2
-          style={{
-            margin: 0,
-            fontSize: 15,
-            fontWeight: 700,
-            letterSpacing: "-0.02em",
-            color: "var(--text-main)",
-          }}
-        >
-          {title}
-        </h2>
-        {action}
-      </div>
-      {children}
-    </section>
-  );
-}
-
+/** Relative age for feed cards ("3h ago"), falling back to a short date. */
 export function formatNewsTime(iso: string): string {
   const t = new Date(iso).getTime();
   if (Number.isNaN(t)) return "";
@@ -167,13 +29,122 @@ export function formatNewsTime(iso: string): string {
   });
 }
 
-export const CATEGORY_COLOR: Record<string, string> = {
-  AI: "#6c63ff",
-  Programming: "#00c9a7",
-  Startups: "#38bdf8",
-  Cybersecurity: "#ec4899",
-  "Web Development": "#8b5cf6",
-  Cloud: "#f59e0b",
-  "Open Source": "#10b981",
-  Gadgets: "#64748b",
-};
+/** Machine-readable value for `<time dateTime>`; empty when unparseable. */
+export function newsDateTime(iso: string): string | undefined {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
+}
+
+/** Full date for the article byline. */
+export function formatNewsDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+/**
+ * Cover image with a reserved aspect box so the grid never reflows once the
+ * photo decodes. Dev.to "social card" images and load failures fall back to a
+ * branded placeholder rather than a broken image.
+ */
+export function NewsCover({
+  src,
+  alt = "",
+  className,
+  zoomOnHover = false,
+}: {
+  src: string | null;
+  alt?: string;
+  className?: string;
+  /** Applies a subtle scale when an ancestor marked `group` is hovered. */
+  zoomOnHover?: boolean;
+}) {
+  const [failed, setFailed] = useState(false);
+  const photo = nonemptyUrl(src);
+  const showPhoto = Boolean(photo) && !isGeneratedSocialCard(photo) && !failed;
+
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
+
+  const motionClass = zoomOnHover
+    ? "transition-transform duration-[var(--duration-normal)] ease-[var(--ease-standard)] group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+    : undefined;
+
+  return (
+    <div
+      className={cn(
+        "relative isolate w-full overflow-hidden bg-sunken",
+        className ?? "aspect-video",
+      )}
+    >
+      {showPhoto ? (
+        <img
+          src={photo ?? undefined}
+          alt={alt}
+          loading="lazy"
+          decoding="async"
+          onError={() => setFailed(true)}
+          className={cn("absolute inset-0 h-full w-full object-cover", motionClass)}
+        />
+      ) : (
+        <div
+          aria-hidden
+          className={cn(
+            "absolute inset-0 flex flex-col items-center justify-center gap-2 bg-primary-soft",
+            motionClass,
+          )}
+        >
+          <img
+            src="/favicon.svg"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="h-10 w-10 rounded-[var(--radius-md)] object-contain shadow-[var(--shadow-sm)] sm:h-12 sm:w-12"
+          />
+          <span className="type-label text-ink">PathEd</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Dot-separated metadata row (source, author, age, reading time).
+ * Each entry is `min-w-0` so a long source name wraps instead of widening
+ * the card.
+ */
+export function NewsMeta({
+  items,
+  className,
+}: {
+  items: Array<string | { key: string; node: ReactNode }>;
+  className?: string;
+}) {
+  const entries = items.filter(Boolean);
+  if (entries.length === 0) return null;
+
+  return (
+    <p className={cn("type-caption m-0 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-faint", className)}>
+      {entries.map((entry, index) => {
+        const key = typeof entry === "string" ? `${entry}-${index}` : entry.key;
+        return (
+          <span key={key} className="flex min-w-0 items-center gap-1.5">
+            {index > 0 ? (
+              <span aria-hidden className="opacity-55">
+                ·
+              </span>
+            ) : null}
+            <span className="min-w-0">
+              {typeof entry === "string" ? entry : entry.node}
+            </span>
+          </span>
+        );
+      })}
+    </p>
+  );
+}

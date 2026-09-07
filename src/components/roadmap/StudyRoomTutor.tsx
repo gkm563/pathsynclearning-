@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { History, Loader2, Plus, Send, Sparkles, Trash2 } from "lucide-react";
 import { apiSend } from "@/lib/api";
 import type { RoadmapNode } from "@/types/roadmap";
@@ -23,6 +23,8 @@ import {
   localTutorReply,
   scopeRefusal,
 } from "@/lib/ai/tutor-scope";
+import { EmptyState, IconButton, Input } from "@/components/ui";
+import { cn } from "@/lib/cn";
 
 type TutorApiResponse = {
   reply?: string;
@@ -72,29 +74,25 @@ function greetingMsg(title: string): TutorChatMsg {
   };
 }
 
-function iconBtn(active?: boolean): React.CSSProperties {
-  return {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    border: "1px solid var(--border-light)",
-    background: active ? "rgba(108,99,255,0.12)" : "var(--bg-card)",
-    color: active ? "#6c63ff" : "var(--text-main)",
-    display: "grid",
-    placeItems: "center",
-    cursor: "pointer",
-    flexShrink: 0,
-  };
-}
+export type TutorChrome = {
+  showHistory: boolean;
+  toggleHistory: () => void;
+  startNewChat: () => void;
+  busy: boolean;
+};
 
 export default function StudyRoomTutor({
   node,
   videoTitle,
   videoChannel,
+  embedded = false,
+  onChrome,
 }: {
   node: RoadmapNode;
   videoTitle?: string;
   videoChannel?: string;
+  embedded?: boolean;
+  onChrome?: (api: TutorChrome | null) => void;
 }) {
   const [messages, setMessages] = useState<TutorChatMsg[]>(() => [greetingMsg(node.title)]);
   const [store, setStore] = useState<TutorChatStore | null>(null);
@@ -146,17 +144,17 @@ export default function StudyRoomTutor({
     el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [messages, busy, showHistory]);
 
-  const persistStore = (next: TutorChatStore, nextMessages?: TutorChatMsg[]) => {
+  const persistStore = useCallback((next: TutorChatStore, nextMessages?: TutorChatMsg[]) => {
     storeRef.current = next;
     setStore(next);
     if (nextMessages) {
       messagesRef.current = nextMessages;
       setMessages(nextMessages);
     }
-    saveTutorStore(node.id, nextMessages ? upsertActiveThread(next, nextMessages) : next);
-  };
+    saveTutorStore(nodeIdRef.current, nextMessages ? upsertActiveThread(next, nextMessages) : next);
+  }, []);
 
-  const startNewChat = () => {
+  const startNewChat = useCallback(() => {
     if (busy) return;
     const greeting = greetingMsg(node.title);
     const id = createThreadId();
@@ -165,7 +163,19 @@ export default function StudyRoomTutor({
     persistStore(next, [greeting]);
     setShowHistory(false);
     setError(null);
-  };
+  }, [busy, node.title, persistStore]);
+
+  const toggleHistory = useCallback(() => {
+    setShowHistory((v) => !v);
+  }, []);
+
+  useEffect(() => {
+    onChrome?.({ showHistory, toggleHistory, startNewChat, busy });
+  }, [onChrome, showHistory, toggleHistory, startNewChat, busy]);
+
+  useEffect(() => {
+    return () => onChrome?.(null);
+  }, [onChrome]);
 
   const openThread = (thread: TutorThread) => {
     if (busy) return;
@@ -273,131 +283,36 @@ export default function StudyRoomTutor({
     .filter((t) => hasUserTurns(t.messages))
     .sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
 
+  const chatStarted = hasUserTurns(messages);
+
   return (
-    <div
-      style={{
-        height: "100%",
-        minHeight: 0,
-        flex: 1,
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-      }}
-    >
-      <div
-        style={{
-          padding: "12px 14px",
-          borderBottom: "1px solid var(--border-light)",
-          background:
-            "linear-gradient(135deg, rgba(108,99,255,0.08), rgba(0,201,167,0.06))",
-          flexShrink: 0,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Sparkles size={16} color="#6c63ff" />
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div
-              style={{
-                fontFamily: "Outfit",
-                fontWeight: 800,
-                fontSize: 13,
-                color: "var(--text-main)",
-              }}
-            >
-              AI Tutor
-            </div>
-            <div
-              style={{
-                fontSize: 11,
-                color: "var(--text-muted)",
-                fontFamily: "Inter",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              {showHistory
-                ? `${historyThreads.length} saved chat${historyThreads.length === 1 ? "" : "s"}`
-                : videoTitle
-                  ? `This lesson · ${videoTitle}`
-                  : `This node · ${node.title}`}
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+      {embedded ? null : (
+        <div className="shrink-0 border-b border-line bg-[linear-gradient(135deg,var(--primary-soft),var(--success-soft))] px-3.5 py-2.5">
+          <div className="flex items-center gap-2">
+            <Sparkles size={16} className="text-primary" />
+            <div className="min-w-0 flex-1">
+              <div className="type-label text-ink">AI Tutor</div>
+              <div className="type-caption truncate text-muted">
+                {showHistory
+                  ? `${historyThreads.length} saved chat${historyThreads.length === 1 ? "" : "s"}`
+                  : videoTitle
+                    ? `This lesson · ${videoTitle}`
+                    : `This node · ${node.title}`}
+              </div>
             </div>
           </div>
-          <button
-            type="button"
-            title="Chat history"
-            aria-label="Chat history"
-            onClick={() => setShowHistory((v) => !v)}
-            style={iconBtn(showHistory)}
-          >
-            <History size={15} />
-          </button>
-          <button
-            type="button"
-            title="New chat"
-            aria-label="New chat"
-            onClick={startNewChat}
-            disabled={busy}
-            style={{ ...iconBtn(), opacity: busy ? 0.5 : 1 }}
-          >
-            <Plus size={15} />
-          </button>
         </div>
-        {!showHistory ? (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
-            {PROMPTS.map((p) => (
-              <button
-                key={p}
-                type="button"
-                disabled={busy}
-                onClick={() => void send(p)}
-                style={{
-                  border: "1px solid var(--border-light)",
-                  background: "var(--bg-card)",
-                  color: "var(--text-main)",
-                  borderRadius: 999,
-                  padding: "4px 10px",
-                  fontFamily: "Outfit",
-                  fontSize: 11,
-                  fontWeight: 700,
-                  cursor: busy ? "not-allowed" : "pointer",
-                  opacity: busy ? 0.6 : 1,
-                }}
-              >
-                {p}
-              </button>
-            ))}
-          </div>
-        ) : null}
-      </div>
+      )}
 
       {showHistory ? (
-        <div
-          className="tutor-scroll"
-          style={{
-            flex: 1,
-            minHeight: 0,
-            overflowY: "auto",
-            overscrollBehavior: "contain",
-            padding: 12,
-            display: "flex",
-            flexDirection: "column",
-            gap: 8,
-          }}
-        >
+        <div className="tutor-scroll flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-3 [overflow-anchor:none] [overscroll-behavior:contain]">
           {historyThreads.length === 0 ? (
-            <p
-              style={{
-                margin: 0,
-                padding: 8,
-                color: "var(--text-muted)",
-                fontFamily: "Inter",
-                fontSize: 13,
-                lineHeight: 1.5,
-              }}
-            >
-              No saved chats for this lesson yet. Ask a question and it will show up here.
-            </p>
+            <EmptyState
+              compact
+              title="No saved chats"
+              description="Ask a question and it will show up here."
+            />
           ) : (
             historyThreads.map((thread) => {
               const active = thread.id === store?.activeId;
@@ -409,54 +324,19 @@ export default function StudyRoomTutor({
                   key={thread.id}
                   type="button"
                   onClick={() => openThread(thread)}
-                  style={{
-                    textAlign: "left",
-                    border: active ? "1.5px solid #6c63ff" : "1px solid var(--border-light)",
-                    background: active ? "rgba(108,99,255,0.08)" : "var(--bg-alt)",
-                    borderRadius: 12,
-                    padding: "10px 12px",
-                    cursor: "pointer",
-                    display: "flex",
-                    gap: 8,
-                    alignItems: "flex-start",
-                  }}
+                  className={cn(
+                    "flex items-start gap-2 rounded-[var(--radius-md)] p-3 text-left",
+                    active
+                      ? "border-[1.5px] border-primary bg-primary-soft"
+                      : "border border-line bg-sunken",
+                  )}
                 >
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div
-                      style={{
-                        fontFamily: "Outfit",
-                        fontWeight: 800,
-                        fontSize: 13,
-                        color: "var(--text-main)",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {thread.title}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: "var(--text-muted)",
-                        fontFamily: "Inter",
-                        marginTop: 3,
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                      }}
-                    >
+                  <div className="min-w-0 flex-1">
+                    <div className="type-label truncate text-ink">{thread.title}</div>
+                    <div className="type-caption mt-0.5 line-clamp-2 text-muted">
                       {preview.replace(/\*\*|==/g, "")}
                     </div>
-                    <div
-                      style={{
-                        fontSize: 10,
-                        color: "var(--text-muted)",
-                        fontFamily: "Inter",
-                        marginTop: 6,
-                      }}
-                    >
+                    <div className="type-caption mt-1.5 text-muted">
                       {thread.messages.filter((m) => m.role === "user").length} questions ·{" "}
                       {formatDay(thread.updatedAt)}
                     </div>
@@ -468,17 +348,10 @@ export default function StudyRoomTutor({
                     aria-label="Delete chat"
                     onClick={(e) => deleteThread(thread.id, e)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") deleteThread(thread.id, e as unknown as React.MouseEvent);
+                      if (e.key === "Enter" || e.key === " ")
+                        deleteThread(thread.id, e as unknown as React.MouseEvent);
                     }}
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: 8,
-                      display: "grid",
-                      placeItems: "center",
-                      color: "var(--text-muted)",
-                      flexShrink: 0,
-                    }}
+                    className="grid h-7 w-7 shrink-0 place-items-center rounded-[var(--radius-sm)] text-muted"
                   >
                     <Trash2 size={14} />
                   </span>
@@ -490,138 +363,135 @@ export default function StudyRoomTutor({
       ) : (
         <div
           ref={listRef}
-          className="tutor-scroll"
-          style={{
-            flex: 1,
-            minHeight: 0,
-            overflowY: "auto",
-            overscrollBehavior: "contain",
-            padding: 12,
-            display: "flex",
-            flexDirection: "column",
-            gap: 10,
-          }}
+          className="tutor-scroll flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto p-3 [overflow-anchor:none] [overscroll-behavior:contain]"
         >
           {messages.map((msg, i) => (
             <div
               key={`${msg.role}-${msg.at}-${i}`}
-              style={{
-                alignSelf: msg.role === "user" ? "flex-end" : "flex-start",
-                maxWidth: "92%",
-              }}
+              className={cn(
+                "max-w-[92%]",
+                msg.role === "user" ? "self-end" : "self-start",
+              )}
             >
               <div
-                style={{
-                  fontSize: 10,
-                  color: "var(--text-muted)",
-                  fontFamily: "Inter",
-                  marginBottom: 4,
-                  textAlign: msg.role === "user" ? "right" : "left",
-                }}
+                className={cn(
+                  "type-caption mb-1 text-muted",
+                  msg.role === "user" ? "text-right" : "text-left",
+                )}
               >
                 {msg.role === "user" ? "You" : "PathED Tutor"}
                 {msg.at ? ` · ${formatAt(msg.at)}` : ""}
               </div>
               <div
-                className={msg.role === "user" ? "tutor-bubble tutor-bubble-user" : "tutor-bubble"}
-                style={{
-                  padding: "10px 12px",
-                  borderRadius: 12,
-                  overflowWrap: "break-word",
-                  wordBreak: "normal",
-                  textAlign: "left",
-                  fontFamily: "Inter",
-                  fontSize: 13,
-                  lineHeight: 1.65,
-                  background:
-                    msg.role === "user"
-                      ? "linear-gradient(135deg, #6c63ff, #00c9a7)"
-                      : "var(--bg-alt)",
-                  color: msg.role === "user" ? "#fff" : "var(--text-main)",
-                  border: msg.role === "user" ? "none" : "1px solid var(--border-light)",
-                }}
+                className={cn(
+                  "tutor-bubble overflow-wrap-anywhere rounded-[var(--radius-md)] px-3 py-2.5 text-left type-small leading-relaxed",
+                  msg.role === "user"
+                    ? "tutor-bubble-user bg-primary text-[var(--text-on-primary)]"
+                    : "border border-line bg-sunken text-ink",
+                )}
               >
                 <RichStudyText text={msg.text} invert={msg.role === "user"} />
               </div>
             </div>
           ))}
           {busy ? (
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                color: "var(--text-muted)",
-                fontSize: 12,
-                fontFamily: "Inter",
-              }}
-            >
-              <Loader2 size={14} className="spin-tutor" />
+            <div className="inline-flex items-center gap-2 type-caption text-muted">
+              <Loader2 size={14} className="animate-spin" />
               Thinking…
             </div>
           ) : null}
-          {error ? (
-            <div style={{ fontSize: 12, color: "#ec4899", fontFamily: "Inter" }}>{error}</div>
-          ) : null}
+          {error ? <div className="type-caption text-danger">{error}</div> : null}
         </div>
       )}
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          void send(input);
-        }}
-        style={{
-          display: "flex",
-          gap: 8,
-          padding: 12,
-          borderTop: "1px solid var(--border-light)",
-          flexShrink: 0,
-        }}
-      >
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          disabled={busy}
-          placeholder="Ask about this lesson only…"
-          maxLength={2000}
-          style={{
-            flex: 1,
-            padding: "10px 12px",
-            borderRadius: 10,
-            border: "1.5px solid var(--border-light)",
-            background: "var(--bg-alt)",
-            color: "var(--text-main)",
-            outline: "none",
-            fontFamily: "Outfit",
-            fontSize: 13,
+      {!showHistory && !chatStarted ? (
+        <div className="hide-scrollbar flex shrink-0 gap-1.5 overflow-x-auto px-3 pt-2 pb-1">
+          {PROMPTS.map((p) => (
+            <button
+              key={p}
+              type="button"
+              disabled={busy}
+              onClick={() => void send(p)}
+              className="type-caption shrink-0 rounded-full border border-line bg-sunken px-2.5 py-1 font-bold text-ink disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
+      {showHistory ? (
+        embedded ? null : (
+          <div className="flex shrink-0 items-center gap-1.5 border-t border-line p-3">
+            <IconButton
+              type="button"
+              label="Back to chat"
+              variant="secondary"
+              onClick={toggleHistory}
+            >
+              <History size={16} />
+            </IconButton>
+            <IconButton
+              type="button"
+              label="New chat"
+              variant="ghost"
+              onClick={startNewChat}
+              disabled={busy}
+            >
+              <Plus size={16} />
+            </IconButton>
+            <p className="type-caption m-0 min-w-0 flex-1 text-muted">
+              {historyThreads.length} saved chat{historyThreads.length === 1 ? "" : "s"}
+            </p>
+          </div>
+        )
+      ) : (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void send(input);
           }}
-        />
-        <button
-          type="submit"
-          disabled={busy || !input.trim()}
-          aria-label="Send"
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 10,
-            border: "none",
-            background: "linear-gradient(135deg, #6c63ff, #00c9a7)",
-            color: "#fff",
-            display: "grid",
-            placeItems: "center",
-            cursor: busy || !input.trim() ? "not-allowed" : "pointer",
-            opacity: busy || !input.trim() ? 0.55 : 1,
-          }}
+          className="flex shrink-0 items-center gap-1.5 border-t border-line p-3"
         >
-          <Send size={15} />
-        </button>
-      </form>
-      <style>{`
-        .tutor-scroll { overflow-anchor: none; }
-        .spin-tutor { animation: spin-tutor 0.9s linear infinite; }
-        @keyframes spin-tutor { to { transform: rotate(360deg); } }
-      `}</style>
+          {embedded ? null : (
+            <>
+              <IconButton
+                type="button"
+                label="Chat history"
+                variant="ghost"
+                onClick={toggleHistory}
+              >
+                <History size={16} />
+              </IconButton>
+              <IconButton
+                type="button"
+                label="New chat"
+                variant="ghost"
+                onClick={startNewChat}
+                disabled={busy}
+              >
+                <Plus size={16} />
+              </IconButton>
+            </>
+          )}
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            disabled={busy}
+            placeholder="Ask about this lesson only…"
+            maxLength={2000}
+            className="min-h-10 min-w-0 flex-1 bg-sunken py-2"
+          />
+          <IconButton
+            type="submit"
+            label="Send"
+            variant="primary"
+            disabled={busy || !input.trim()}
+          >
+            <Send size={15} />
+          </IconButton>
+        </form>
+      )}
     </div>
   );
 }

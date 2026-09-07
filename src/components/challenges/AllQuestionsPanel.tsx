@@ -1,11 +1,25 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { ChallengeSummary, ChallengeType } from "@/lib/challenges/types";
-import ChallengeCard from "./ChallengeCard";
 import { routes } from "@/lib/routes";
+import {
+  Button,
+  Checkbox,
+  EmptyState,
+  SearchInput,
+  Section,
+  Select,
+  Toolbar,
+} from "@/components/ui";
+import ChallengeCard from "./ChallengeCard";
 
-const TYPE_SECTIONS: { id: ChallengeType | "milestone"; label: string; match: (q: ChallengeSummary) => boolean }[] = [
+const TYPE_SECTIONS: {
+  id: ChallengeType | "milestone";
+  label: string;
+  match: (q: ChallengeSummary) => boolean;
+}[] = [
   {
     id: "coding",
     label: "Coding",
@@ -55,16 +69,22 @@ export default function AllQuestionsPanel({
   const [company, setCompany] = useState("all");
   const [roadmapOnly, setRoadmapOnly] = useState(Boolean(roadmapOnlyDefault));
   const [q, setQ] = useState("");
-  const [sort, setSort] = useState<"recommended" | "xp" | "difficulty">("recommended");
+  const [sort, setSort] = useState<"recommended" | "xp" | "difficulty">(
+    "recommended",
+  );
+  const router = useRouter();
 
   const filtered = useMemo(() => {
     let list = [...questions];
     if (type === "coding") list = list.filter((x) => x.type === "coding");
     if (type === "mcq") list = list.filter((x) => x.type === "mcq");
     if (type === "project") {
-      list = list.filter((x) => x.type === "project" && x.legacyType !== "MILESTONE");
+      list = list.filter(
+        (x) => x.type === "project" && x.legacyType !== "MILESTONE",
+      );
     }
-    if (type === "milestone") list = list.filter((x) => x.legacyType === "MILESTONE");
+    if (type === "milestone")
+      list = list.filter((x) => x.legacyType === "MILESTONE");
     if (diff !== "all") list = list.filter((x) => x.difficulty === diff);
     if (status !== "all") list = list.filter((x) => x.status === status);
     if (company !== "all") {
@@ -105,159 +125,110 @@ export default function AllQuestionsPanel({
     })).filter((s) => s.items.length > 0);
   }, [filtered, type]);
 
-  const selectStyle: React.CSSProperties = {
-    padding: "8px 12px",
-    borderRadius: 10,
-    border: "1px solid var(--border-light)",
-    background: "var(--bg-card)",
-    color: "var(--text-main)",
-    fontFamily: "Outfit",
-    fontSize: 13,
-  };
-
   if (!careerGoal) {
     return (
-      <div
-        style={{
-          padding: 28,
-          borderRadius: 18,
-          background: "var(--bg-card)",
-          border: "1.5px solid var(--border-light)",
-          fontFamily: "Outfit",
-        }}
-      >
-        <h3 style={{ marginTop: 0 }}>Set your career goal</h3>
-        <p style={{ color: "var(--text-muted)" }}>
-          All Questions are ranked for your goal. Personalize your roadmap first.
-        </p>
-        <a
-          href={routes.app.roadmapPersonalize}
-          style={{
-            display: "inline-block",
-            marginTop: 8,
-            padding: "10px 16px",
-            borderRadius: 12,
-            background: "#6c63ff",
-            color: "#fff",
-            fontWeight: 700,
-            textDecoration: "none",
-          }}
-        >
-          Personalize roadmap
-        </a>
-      </div>
+      <EmptyState
+        title="Set your career goal"
+        description="All Questions are ranked for your goal. Personalize your roadmap first."
+        action={
+          <Button onClick={() => router.push(routes.app.roadmapPersonalize)}>
+            Personalize roadmap
+          </Button>
+        }
+      />
     );
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 10,
-          alignItems: "center",
-        }}
-      >
-        <input
+    <div className="flex flex-col gap-5">
+      <Toolbar>
+        <SearchInput
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onValueChange={setQ}
           placeholder="Search questions, topics, companies…"
-          style={{ ...selectStyle, minWidth: 220, flex: 1 }}
+          aria-label="Search questions"
         />
-        <select
+        <Select
           value={type}
           onChange={(e) => setType(e.target.value as typeof type)}
-          style={selectStyle}
+          aria-label="Challenge type"
+          className="w-auto min-w-40"
         >
           <option value="all">All types (grouped)</option>
           <option value="coding">Coding only</option>
           <option value="mcq">MCQ only</option>
           <option value="project">Projects only</option>
           <option value="milestone">Milestones only</option>
-        </select>
-        <select value={diff} onChange={(e) => setDiff(e.target.value as typeof diff)} style={selectStyle}>
+        </Select>
+        <Select
+          value={diff}
+          onChange={(e) => setDiff(e.target.value as typeof diff)}
+          aria-label="Difficulty"
+          className="w-auto min-w-36"
+        >
           <option value="all">All difficulty</option>
           <option value="easy">Easy</option>
           <option value="medium">Medium</option>
           <option value="hard">Hard</option>
-        </select>
-        <select value={status} onChange={(e) => setStatus(e.target.value as typeof status)} style={selectStyle}>
+        </Select>
+        <Select
+          value={status}
+          onChange={(e) => setStatus(e.target.value as typeof status)}
+          aria-label="Status"
+          className="w-auto min-w-32"
+        >
           <option value="all">All status</option>
           <option value="todo">Todo</option>
           <option value="attempted">Attempted</option>
           <option value="solved">Solved</option>
-        </select>
-        <select value={company} onChange={(e) => setCompany(e.target.value)} style={selectStyle}>
+        </Select>
+        <Select
+          value={company}
+          onChange={(e) => setCompany(e.target.value)}
+          aria-label="Company"
+          className="w-auto min-w-36"
+        >
           <option value="all">All companies</option>
           {companies.map((c) => (
             <option key={c} value={c}>
               Asked at {c}
             </option>
           ))}
-        </select>
-        <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} style={selectStyle}>
+        </Select>
+        <Select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as typeof sort)}
+          aria-label="Sort"
+          className="w-auto min-w-36"
+        >
           <option value="recommended">Recommended</option>
           <option value="xp">XP</option>
           <option value="difficulty">Difficulty</option>
-        </select>
-        <label
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            fontSize: 13,
-            fontFamily: "Outfit",
-            color: "var(--text-main)",
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={roadmapOnly}
-            onChange={(e) => setRoadmapOnly(e.target.checked)}
-          />
-          From my roadmap
-        </label>
-      </div>
+        </Select>
+        <Checkbox
+          checked={roadmapOnly}
+          onChange={setRoadmapOnly}
+          label="From my roadmap"
+        />
+      </Toolbar>
 
-      <div style={{ fontSize: 13, color: "var(--text-muted)", fontFamily: "Outfit" }}>
+      <p className="type-small m-0 text-muted">
         Showing {filtered.length} of {questions.length} · goal{" "}
-        <b style={{ color: "#6c63ff" }}>{careerGoal}</b>
-      </div>
+        <span className="font-semibold text-ink">{careerGoal}</span>
+      </p>
 
       {sections.map((section) => (
-        <div key={section.id} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 10,
-            }}
-          >
-            <h3
-              style={{
-                margin: 0,
-                fontFamily: "Outfit",
-                fontSize: 16,
-                fontWeight: 800,
-                color: "var(--text-main)",
-              }}
-            >
-              {section.label}
-            </h3>
-            <span style={{ fontFamily: "Fira Code", fontSize: 12, color: "var(--text-muted)" }}>
+        <Section
+          key={section.id}
+          title={section.label}
+          actions={
+            <span className="type-caption type-numeric text-muted">
               {section.items.filter((i) => i.status === "solved").length}/
               {section.items.length} solved
             </span>
-          </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-              gap: 16,
-            }}
-          >
+          }
+        >
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {section.items.map((item) => (
               <ChallengeCard
                 key={item.id}
@@ -269,22 +240,14 @@ export default function AllQuestionsPanel({
               />
             ))}
           </div>
-        </div>
+        </Section>
       ))}
 
       {filtered.length === 0 && (
-        <div
-          style={{
-            padding: 28,
-            borderRadius: 16,
-            background: "var(--bg-card)",
-            border: "1px dashed var(--border-light)",
-            color: "var(--text-muted)",
-            fontFamily: "Outfit",
-          }}
-        >
-          No questions match these filters.
-        </div>
+        <EmptyState
+          title="No questions match these filters"
+          description="Try a different search or clear some of the filters above."
+        />
       )}
     </div>
   );

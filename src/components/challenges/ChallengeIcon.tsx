@@ -1,4 +1,4 @@
-import React from "react";
+import type { ComponentType } from "react";
 import {
   BookOpen,
   Code2,
@@ -16,7 +16,7 @@ import type { ChallengeIconKey } from "@/lib/challenges/types";
 
 const MAP: Record<
   ChallengeIconKey,
-  React.ComponentType<{ size?: number; color?: string }>
+  ComponentType<{ size?: number; className?: string; color?: string }>
 > = {
   code: Code2,
   tree: GitBranch,
@@ -34,12 +34,15 @@ const MAP: Record<
 export default function ChallengeIcon({
   name,
   size = 20,
-  color = "#6c63ff",
+  color,
+  className,
 }: {
   name: ChallengeIconKey | string;
   size?: number;
   color?: string;
+  className?: string;
 }) {
-  const Comp = MAP[(name as ChallengeIconKey) in MAP ? (name as ChallengeIconKey) : "code"];
-  return <Comp size={size} color={color} />;
+  const Comp =
+    MAP[(name as ChallengeIconKey) in MAP ? (name as ChallengeIconKey) : "code"];
+  return <Comp size={size} color={color} className={className} />;
 }

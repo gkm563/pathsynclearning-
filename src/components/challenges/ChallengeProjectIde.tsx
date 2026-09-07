@@ -3,9 +3,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { apiGet, apiSend } from "@/lib/api";
 import ChallengeResultScreen from "@/components/challenges/ChallengeResultScreen";
-import ProjectWorkspace, {
-  ProjectRubricList,
-} from "@/components/projects/ProjectWorkspace";
+import ProjectWorkspace from "@/components/projects/ProjectWorkspace";
 import { AddNoteButton } from "@/components/memory-lane/AddNoteButton";
 import type { ChallengeSummary } from "@/lib/challenges/types";
 import type {
@@ -13,6 +11,8 @@ import type {
   ProjectEvidenceInput,
   ProjectRubricBreakdownItem,
 } from "@/lib/projects/types";
+import { Button, EmptyState, PageSpinner, useToast } from "@/components/ui";
+import { FolderKanban } from "lucide-react";
 
 type ProjectLoad = {
   questionId: string;
@@ -46,6 +46,7 @@ export default function ChallengeProjectIde({
     challengesPayload?: unknown;
   }) => void;
 }) {
+  const toast = useToast();
   const [data, setData] = useState<ProjectLoad | null>(null);
   const [error, setError] = useState("");
   const [submitError, setSubmitError] = useState("");
@@ -78,23 +79,34 @@ export default function ChallengeProjectIde({
     void load();
   }, [load]);
 
+  useEffect(() => {
+    if (!submitError) return;
+    toast.error({ title: "Unable to submit project", description: submitError });
+  }, [submitError]);
+
   if (error) {
     return (
-      <div style={overlay}>
-        <div style={{ textAlign: "center", fontFamily: "Outfit" }}>
-          <p>{error}</p>
-          <button type="button" onClick={onClose}>
-            Close
-          </button>
-        </div>
+      <div
+        className="fixed inset-0 grid place-items-center bg-canvas p-6"
+        style={{ zIndex: "var(--z-modal)" }}
+      >
+        <EmptyState
+          icon={<FolderKanban size={20} />}
+          title="Couldn’t load project"
+          description={error}
+          action={<Button onClick={onClose}>Close</Button>}
+        />
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div style={overlay}>
-        <div style={{ fontFamily: "Outfit" }}>Loading project workspace…</div>
+      <div
+        className="fixed inset-0 grid place-items-center bg-canvas"
+        style={{ zIndex: "var(--z-modal)" }}
+      >
+        <PageSpinner label="Loading project workspace…" />
       </div>
     );
   }
@@ -107,7 +119,7 @@ export default function ChallengeProjectIde({
     const didPass = resultPassed || data.run.status === "passed";
 
     return (
-      <div style={{ position: "relative", zIndex: 1300 }}>
+      <div className="relative" style={{ zIndex: "var(--z-modal)" }}>
         <ChallengeResultScreen
           score={resultScore || data.run.score}
           passed={didPass}
@@ -132,7 +144,10 @@ export default function ChallengeProjectIde({
 
   return (
     <>
-      <div style={{ position: "fixed", top: 16, right: 72, zIndex: 1300 }}>
+      <div
+        className="fixed top-4 right-[72px]"
+        style={{ zIndex: "var(--z-popover)" }}
+      >
         <AddNoteButton
           sourceType="project"
           sourceId={item.id}
@@ -190,38 +205,6 @@ export default function ChallengeProjectIde({
         }
       }}
     />
-    {submitError ? (
-      <div
-        role="alert"
-        style={{
-          position: "fixed",
-          bottom: 24,
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 1400,
-          maxWidth: "min(480px, 92vw)",
-          padding: "12px 16px",
-          borderRadius: 12,
-          background: "rgba(127,29,29,0.95)",
-          color: "#fff",
-          fontFamily: "Outfit, sans-serif",
-          fontWeight: 700,
-          fontSize: 13.5,
-          boxShadow: "0 12px 40px rgba(0,0,0,0.25)",
-        }}
-      >
-        {submitError}
-      </div>
-    ) : null}
     </>
   );
 }
-
-const overlay: React.CSSProperties = {
-  position: "fixed",
-  inset: 0,
-  zIndex: 1200,
-  display: "grid",
-  placeItems: "center",
-  background: "var(--bg-main)",
-};

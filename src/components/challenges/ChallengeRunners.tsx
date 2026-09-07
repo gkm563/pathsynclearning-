@@ -3,132 +3,123 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
-  Play, Check, X, ShieldAlert, Cpu, Trophy, ChevronRight, Send, HelpCircle,
-  Maximize2, Minimize2, Copy, FileText, Code2, Sun, Moon, AlertTriangle,
-  CheckSquare, BarChart2, MessageSquare
+  Play,
+  Check,
+  X,
+  ShieldAlert,
+  Code2,
+  Sun,
+  Moon,
+  Send,
+  FileText,
+  CheckSquare,
+  BarChart2,
+  Clock,
+  Timer,
+  HardDrive,
 } from "lucide-react";
 import ChallengeIcon from "@/components/challenges/ChallengeIcon";
 import { CAT_COLORS } from "@/lib/challenges/catalog";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  IconButton,
+  Select,
+  Tabs,
+  Textarea,
+} from "@/components/ui";
+import { cn } from "@/lib/cn";
 
-const DIFF_STYLES: Record<string, { bg: string; bdr: string; col: string }> = {
-  Easy: { bg: "rgba(0, 201, 167, 0.12)", bdr: "#00c9a7", col: "#00c9a7" },
-  Medium: { bg: "rgba(245, 158, 11, 0.12)", bdr: "#f59e0b", col: "#f59e0b" },
-  Hard: { bg: "rgba(236, 72, 153, 0.12)", bdr: "#ec4899", col: "#ec4899" },
-  Milestone: { bg: "rgba(255, 215, 0, 0.15)", bdr: "#ffd700", col: "#ffd700" },
+const DIFF_TONE: Record<string, "success" | "warning" | "error" | "accent"> = {
+  Easy: "success",
+  Medium: "warning",
+  Hard: "error",
+  Milestone: "accent",
 };
+
 /* ─── CHALLENGE CARD COMPONENT ─── */
 export function LegacyChallengeCard({ ch, onOpenIDE, onOpenMCQ, onMarkDone }) {
-  const ds = DIFF_STYLES[ch.diff] || DIFF_STYLES.Medium;
-  const catColor = CAT_COLORS[ch.cat] || "#6c63ff";
+  const catColor = CAT_COLORS[ch.cat] || "var(--primary)";
 
   return (
-    <motion.div
-      whileHover={{ y: -4 }}
-      style={{
-        background: ch.done ? "rgba(0, 201, 167, 0.06)" : "var(--bg-card)",
-        border: `1.5px solid ${ch.done ? "#00c9a7" : "var(--border-light)"}`,
-        borderRadius: 22, padding: 24,
-        display: "flex", flexDirection: "column", justifyContent: "space-between",
-        boxShadow: "0 8px 24px rgba(0,0,0,0.04)", position: "relative"
-      }}
-    >
-      {ch.done && (
-        <span style={{
-          position: "absolute", top: 16, right: 16,
-          padding: "4px 12px", borderRadius: 12,
-          background: "#00c9a7", color: "#ffffff",
-          fontFamily: "'Fira Code', monospace", fontSize: 11.5, fontWeight: 900
-        }}>
-          ✓ DONE
-        </span>
-      )}
+    <motion.div whileHover={{ y: -4 }} className="relative">
+      <Card
+        className={cn(
+          "flex h-full flex-col justify-between",
+          ch.done &&
+            "border-[color-mix(in_srgb,var(--success)_36%,var(--border-light))] bg-success-soft",
+        )}
+      >
+        {ch.done && (
+          <Badge tone="success" className="absolute top-4 right-4">
+            Done
+          </Badge>
+        )}
 
-      <div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-          <ChallengeIcon name={ch.icon} size={22} color={catColor} />
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <span style={{
-              padding: "4px 10px", borderRadius: 10,
-              background: ds.bg, border: `1px solid ${ds.bdr}`,
-              color: ds.col, fontFamily: "'Fira Code', monospace", fontSize: 11.5, fontWeight: 900
-            }}>
-              {ch.diff}
-            </span>
-            <span style={{
-              padding: "4px 10px", borderRadius: 10,
-              background: "rgba(108,99,255,0.1)", border: "1px solid rgba(108,99,255,0.2)",
-              color: catColor, fontFamily: "'Fira Code', monospace", fontSize: 11.5, fontWeight: 900
-            }}>
-              {ch.cat}
+        <div>
+          <div className="mb-3 flex items-center gap-3">
+            <ChallengeIcon name={ch.icon} size={22} color={catColor} />
+            <div className="flex flex-wrap gap-2">
+              <Badge tone={DIFF_TONE[ch.diff] || "warning"}>{ch.diff}</Badge>
+              <Badge tone="accent">{ch.cat}</Badge>
+            </div>
+          </div>
+
+          <h3 className="type-h4 m-0 mb-2 text-ink">{ch.label}</h3>
+          <p className="type-body m-0 mb-4 text-muted">{ch.desc}</p>
+        </div>
+
+        <div>
+          <div className="type-caption mb-3.5 flex items-center justify-between">
+            <span className="font-semibold text-primary">+{ch.xp} XP</span>
+            <span className="inline-flex items-center gap-1 text-muted">
+              <Clock size={12} aria-hidden />
+              {ch.time}
             </span>
           </div>
+
+          <div className="flex gap-2.5">
+            {ch.done ? (
+              <div className="w-full rounded-[var(--radius-md)] bg-success-soft px-3 py-3 text-center type-small font-semibold text-success">
+                Solution verified
+              </div>
+            ) : (
+              <>
+                <Button
+                  className="flex-[2]"
+                  onClick={ch.type === "MCQ" ? onOpenMCQ : onOpenIDE}
+                >
+                  {ch.type === "MCQ" ? (
+                    <ShieldAlert size={16} aria-hidden />
+                  ) : (
+                    <Code2 size={16} aria-hidden />
+                  )}
+                  {ch.type === "MCQ" ? "Launch Assessment" : "Launch Pro IDE"}
+                </Button>
+                <Button variant="secondary" className="flex-1" onClick={onMarkDone}>
+                  Mark
+                </Button>
+              </>
+            )}
+          </div>
         </div>
-
-        <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18.5, fontWeight: 900, color: "var(--text-main)", margin: "0 0 8px", lineHeight: 1.35 }}>
-          {ch.label}
-        </h3>
-
-        <p style={{ margin: "0 0 16px", fontSize: 14.5, color: "var(--text-muted)", lineHeight: 1.6, fontFamily: "'Outfit', sans-serif" }}>
-          {ch.desc}
-        </p>
-      </div>
-
-      <div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, fontFamily: "'Fira Code', monospace", fontSize: 13.5 }}>
-          <span style={{ color: catColor, fontWeight: 900 }}>+{ch.xp} XP</span>
-          <span style={{ color: "var(--text-muted)" }}>⏱️ {ch.time}</span>
-        </div>
-
-        <div style={{ display: "flex", gap: 10 }}>
-          {ch.done ? (
-            <div style={{
-              width: "100%", padding: "12px", borderRadius: 14,
-              background: "rgba(0, 201, 167, 0.15)", color: "#00c9a7",
-              fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 900, textAlign: "center"
-            }}>
-              ✓ Solution Verified
-            </div>
-          ) : (
-            <>
-              <button
-                onClick={ch.type === "MCQ" ? onOpenMCQ : onOpenIDE}
-                style={{
-                  flex: 2, padding: "12px 16px", borderRadius: 14, border: "none",
-                  background: `linear-gradient(135deg, ${catColor}, #6c63ff)`,
-                  color: "#ffffff", fontFamily: "'Outfit', sans-serif", fontSize: 14.5, fontWeight: 900,
-                  cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8
-                }}
-              >
-                {ch.type === "MCQ" ? <ShieldAlert size={16} /> : <Code2 size={16} />}
-                <span>{ch.type === "MCQ" ? "Launch Assessment" : "Launch Pro IDE"}</span>
-              </button>
-
-              <button
-                onClick={onMarkDone}
-                style={{
-                  flex: 1, padding: "12px 14px", borderRadius: 14,
-                  border: "1.5px solid var(--border-light)", background: "var(--bg-alt)",
-                  color: "var(--text-muted)", fontFamily: "'Outfit', sans-serif", fontSize: 13.5, fontWeight: 800,
-                  cursor: "pointer"
-                }}
-              >
-                ✓ Mark
-              </button>
-            </>
-          )}
-        </div>
-      </div>
+      </Card>
     </motion.div>
   );
 }
+
+type IdeTab = "description" | "testcases" | "feedback" | "submissions";
 
 /* ─── MNC-GRADE PRO IDE PANEL ─── */
 export function ProIdePanel({ challenge, onClose, onSubmit }) {
   const [themeMode, setThemeMode] = useState("light");
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("python");
-  const [activeTab, setActiveTab] = useState("description");
-  
+  const [activeTab, setActiveTab] = useState<IdeTab>("description");
+
   const [terminalLogs, setTerminalLogs] = useState([
     "$ PathEd Code Evaluation Engine v3.2 Ready...",
     `$ Loaded challenge: '${challenge?.label}'`
@@ -154,21 +145,6 @@ export function ProIdePanel({ challenge, onClose, onSubmit }) {
   if (!challenge) return null;
 
   const isLight = themeMode === "light";
-
-  const t = {
-    panelBg: isLight ? "#ffffff" : "#0f172a",
-    headerBg: isLight ? "#f8fafc" : "#0b1329",
-    headerBorder: isLight ? "1.5px solid #e2e8f0" : "1.5px solid rgba(255,255,255,0.12)",
-    titleText: isLight ? "#0f172a" : "#ffffff",
-    leftColBg: isLight ? "#ffffff" : "#0f172a",
-    leftColBorder: isLight ? "1.5px solid #e2e8f0" : "1.5px solid rgba(255,255,255,0.1)",
-    tabBtnBg: isLight ? "#f1f5f9" : "#0b1329",
-    editorBg: isLight ? "#f8fafc" : "#0b1329",
-    editorText: isLight ? "#0f172a" : "#38bdf8",
-    editorBorder: isLight ? "1.5px solid #e2e8f0" : "none",
-    terminalBg: isLight ? "#0f172a" : "#070c19",
-    terminalText: "#cbd5e1"
-  };
 
   const evaluateUserCode = (isFullSubmission = false) => {
     const isWorking = isFullSubmission ? setIsSubmitting : setIsRunning;
@@ -213,7 +189,7 @@ export function ProIdePanel({ challenge, onClose, onSubmit }) {
       }));
 
       setTestResults(updatedTCs);
-      
+
       setAiFeedback({
         score: "Pending",
         status: "Local preview — not auto-accepted",
@@ -239,58 +215,44 @@ export function ProIdePanel({ challenge, onClose, onSubmit }) {
     }, 1100);
   };
 
+  const ideTabs = [
+    { id: "description" as const, label: "Problem Statement", icon: <FileText size={14} /> },
+    { id: "testcases" as const, label: "Test Suite", icon: <CheckSquare size={14} /> },
+    { id: "feedback" as const, label: "AI Review", icon: <BarChart2 size={14} /> },
+    { id: "submissions" as const, label: "Submissions", icon: <FileText size={14} /> },
+  ];
+
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 1100,
-      background: t.panelBg,
-      display: "flex", flexDirection: "column"
-    }}>
-      {/* IDE Top Navigation Bar */}
-      <div style={{
-        padding: "12px 22px", background: t.headerBg,
-        borderBottom: t.headerBorder,
-        display: "flex", alignItems: "center", justifyContent: "space-between"
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <ChallengeIcon name={challenge.icon} size={20} color="#6c63ff" />
+    <div
+      data-theme={isLight ? undefined : "dark"}
+      className="fixed inset-0 flex flex-col bg-canvas text-ink"
+      style={{ zIndex: "var(--z-modal)" }}
+    >
+      <div className="flex items-center justify-between border-b border-line bg-sunken px-5 py-3">
+        <div className="flex items-center gap-3">
+          <ChallengeIcon name={challenge.icon} size={20} color="var(--primary)" />
           <div>
-            <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 900, color: t.titleText }}>
-              {challenge.label}
-            </div>
-            <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 10.5, color: "#00c9a7", fontWeight: 800 }}>
-              PATHED PRO IDE & CODE EVALUATION ENGINE v3.2
+            <div className="type-h4 text-ink">{challenge.label}</div>
+            <div className="type-overline text-success">
+              PathEd Pro IDE & code evaluation engine v3.2
             </div>
           </div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          {/* Theme Mode Toggle */}
-          <button
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => setThemeMode(isLight ? "dark" : "light")}
-            style={{
-              padding: "6px 12px", borderRadius: 10,
-              border: isLight ? "1.5px solid #0284c7" : "1.5px solid rgba(0,201,167,0.5)",
-              background: isLight ? "#f0f9ff" : "rgba(255,255,255,0.08)",
-              color: isLight ? "#0284c7" : "#00c9a7",
-              fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 800,
-              cursor: "pointer", display: "flex", alignItems: "center", gap: 6
-            }}
           >
-            {isLight ? <Moon size={14} /> : <Sun size={14} />}
-            <span>{isLight ? "Dark IDE" : "Light IDE"}</span>
-          </button>
+            {isLight ? <Moon size={14} aria-hidden /> : <Sun size={14} aria-hidden />}
+            {isLight ? "Dark IDE" : "Light IDE"}
+          </Button>
 
-          {/* Language Selector */}
-          <select
+          <Select
             value={language}
             onChange={e => setLanguage(e.target.value)}
-            style={{
-              padding: "6px 12px", borderRadius: 10,
-              background: isLight ? "#ffffff" : "#1e293b",
-              border: isLight ? "1.5px solid #cbd5e1" : "1px solid rgba(255,255,255,0.2)",
-              color: isLight ? "#0f172a" : "#ffffff",
-              fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800
-            }}
+            className="min-h-9 w-auto py-1.5 type-code"
           >
             <option value="python">Python 3 (v3.12)</option>
             <option value="javascript">JavaScript / Node.js (v20)</option>
@@ -298,269 +260,202 @@ export function ProIdePanel({ challenge, onClose, onSubmit }) {
             <option value="java">Java (OpenJDK 21)</option>
             <option value="go">Go (v1.22)</option>
             <option value="sql">PostgreSQL SQL</option>
-          </select>
+          </Select>
 
-          <button
-            onClick={onClose}
-            style={{
-              width: 36, height: 36, borderRadius: 10,
-              border: isLight ? "1.5px solid #cbd5e1" : "1px solid rgba(255,255,255,0.2)",
-              background: isLight ? "#f8fafc" : "rgba(255,255,255,0.08)",
-              color: isLight ? "#0f172a" : "#ffffff", cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center"
-            }}
-          >
+          <IconButton label="Close IDE" variant="secondary" onClick={onClose}>
             <X size={18} />
-          </button>
+          </IconButton>
         </div>
       </div>
 
-      {/* Split Workspace View */}
-      <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1.25fr", overflow: "hidden" }}>
-        
-        {/* LEFT COLUMN: PROBLEM DESCRIPTION, TEST CASES & AI REVIEW */}
-        <div style={{
-          background: t.leftColBg, borderRight: t.leftColBorder,
-          display: "flex", flexDirection: "column", overflow: "hidden"
-        }}>
-          {/* Subtabs Navigation */}
-          <div style={{ display: "flex", borderBottom: t.headerBorder, background: t.tabBtnBg }}>
-            {[
-              { id: "description", label: "📜 Problem Statement" },
-              { id: "testcases", label: "🧪 Test Suite" },
-              { id: "feedback", label: "📊 AI Review" },
-              { id: "submissions", label: "📜 Submissions" }
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                style={{
-                  padding: "11px 16px", background: "none", border: "none",
-                  borderBottom: activeTab === tab.id ? "2px solid #00c9a7" : "none",
-                  color: activeTab === tab.id ? "#00c9a7" : isLight ? "#64748b" : "#94a3b8",
-                  fontFamily: "'Outfit', sans-serif", fontSize: 12.5, fontWeight: 800,
-                  cursor: "pointer"
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+      <div className="grid min-h-0 flex-1 grid-cols-[1fr_1.25fr] overflow-hidden">
+        <div className="flex flex-col overflow-hidden border-r border-line bg-surface">
+          <Tabs
+            items={ideTabs}
+            value={activeTab}
+            onChange={(id) => setActiveTab(id as IdeTab)}
+            ariaLabel="IDE panels"
+            className="bg-sunken px-2"
+          />
 
-          <div style={{ padding: 22, overflowY: "auto", flex: 1, color: isLight ? "#0f172a" : "#e2e8f0" }}>
+          <div className="flex-1 overflow-y-auto p-5 text-ink">
             {activeTab === "description" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <div className="flex flex-col gap-4">
                 <div>
-                  <h3 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 900, color: isLight ? "#0f172a" : "#ffffff", margin: "0 0 8px" }}>
-                    Problem Description
-                  </h3>
-                  <div style={{ fontSize: 13.5, lineHeight: 1.6, whiteSpace: "pre-line", fontFamily: "'Outfit', sans-serif" }}>
+                  <h3 className="type-h4 m-0 mb-2 text-ink">Problem Description</h3>
+                  <div className="type-body whitespace-pre-line text-ink">
                     {challenge.problem}
                   </div>
                 </div>
 
                 {challenge.examples && (
-                  <div style={{
-                    background: isLight ? "#f8fafc" : "rgba(255,255,255,0.04)",
-                    padding: 14, borderRadius: 14,
-                    border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255,255,255,0.1)"
-                  }}>
-                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, color: "#0284c7", fontWeight: 800, marginBottom: 6 }}>
-                      Sample Test Examples:
-                    </div>
-                    <pre style={{ margin: 0, fontFamily: "'Fira Code', monospace", fontSize: 11.5, color: isLight ? "#334155" : "#cbd5e1", whiteSpace: "pre-wrap" }}>
+                  <Card className="bg-sunken p-3.5 sm:p-3.5">
+                    <p className="type-overline mb-1.5 text-info">Sample test examples</p>
+                    <pre className="type-code m-0 whitespace-pre-wrap text-muted">
                       {challenge.examples}
                     </pre>
-                  </div>
+                  </Card>
                 )}
               </div>
             )}
 
             {activeTab === "testcases" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 900, color: isLight ? "#0f172a" : "#ffffff" }}>
+              <div className="flex flex-col gap-3.5">
+                <h3 className="type-h4 m-0 text-ink">
                   Detailed Test Suite Results ({testResults.length} Cases)
-                </div>
+                </h3>
 
                 {testResults.map((tc, idx) => (
-                  <div
+                  <Card
                     key={idx}
-                    style={{
-                      padding: 14, borderRadius: 14,
-                      background: isLight ? "#f8fafc" : "rgba(255,255,255,0.04)",
-                      border: tc.status?.includes("Passed") ? "1.5px solid #00c9a7" : isLight ? "1px solid #e2e8f0" : "1px solid rgba(255,255,255,0.1)"
-                    }}
+                    className={cn(
+                      "bg-sunken p-3.5 sm:p-3.5",
+                      tc.status?.includes("Passed") &&
+                        "border-[color-mix(in_srgb,var(--success)_36%,var(--border-light))]",
+                    )}
                   >
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                      <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff" }}>
+                    <div className="mb-1.5 flex items-center justify-between gap-2">
+                      <span className="type-code font-semibold text-ink">
                         Case {idx + 1}: {tc.name || `Test Case ${idx + 1}`}
                       </span>
                       {tc.status && (
-                        <span style={{
-                          padding: "2px 8px", borderRadius: 8,
-                          background: tc.status.includes("Passed") ? "rgba(0,201,167,0.15)" : "rgba(239,68,68,0.15)",
-                          color: tc.status.includes("Passed") ? "#00c9a7" : "#ef4444",
-                          fontFamily: "'Fira Code', monospace", fontSize: 10, fontWeight: 900
-                        }}>
+                        <Badge
+                          tone={
+                            tc.status.includes("Passed")
+                              ? "success"
+                              : tc.status.includes("Failed")
+                                ? "error"
+                                : "warning"
+                          }
+                        >
                           {tc.status}
-                        </span>
+                        </Badge>
                       )}
                     </div>
 
-                    <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, color: isLight ? "#475569" : "#cbd5e1" }}>
-                      <div><b>Input:</b> {tc.input}</div>
-                      <div><b>Expected:</b> {tc.expected}</div>
-                      {tc.actual && <div style={{ color: "#00c9a7" }}><b>Actual Output:</b> {tc.actual}</div>}
+                    <div className="type-code text-muted">
+                      <div><b className="text-ink">Input:</b> {tc.input}</div>
+                      <div><b className="text-ink">Expected:</b> {tc.expected}</div>
+                      {tc.actual && (
+                        <div className="text-success">
+                          <b>Actual Output:</b> {tc.actual}
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  </Card>
                 ))}
               </div>
             )}
 
             {activeTab === "feedback" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 900, color: isLight ? "#0f172a" : "#ffffff" }}>
+              <div className="flex flex-col gap-3.5">
+                <h3 className="type-h4 m-0 text-ink">
                   AI Code Review & Complexity Analysis
-                </div>
+                </h3>
 
                 {aiFeedback ? (
-                  <div style={{
-                    padding: 16, borderRadius: 16,
-                    background: isLight ? "#f0fdf4" : "rgba(16, 185, 129, 0.12)",
-                    border: "1.5px solid #10b981", color: isLight ? "#064e3b" : "#ffffff"
-                  }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                      <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 900, color: "#10b981" }}>
-                        Score: {aiFeedback.score}
-                      </span>
-                      <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, color: "#10b981", fontWeight: 800 }}>
-                        {aiFeedback.status}
-                      </span>
-                    </div>
-
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10, fontFamily: "'Fira Code', monospace", fontSize: 11 }}>
-                      <div style={{ padding: 8, borderRadius: 8, background: isLight ? "#ffffff" : "rgba(0,0,0,0.2)" }}>
-                        ⏱️ Time: <b>{aiFeedback.timeComplexity}</b>
+                  <Alert tone="success" title={`Score: ${aiFeedback.score}`}>
+                    <p className="type-caption m-0 font-semibold">{aiFeedback.status}</p>
+                    <div className="mt-2.5 grid grid-cols-2 gap-2.5">
+                      <div className="rounded-[var(--radius-sm)] bg-surface p-2 type-code">
+                        <Timer size={12} className="mr-1 inline" aria-hidden />
+                        Time: <b>{aiFeedback.timeComplexity}</b>
                       </div>
-                      <div style={{ padding: 8, borderRadius: 8, background: isLight ? "#ffffff" : "rgba(0,0,0,0.2)" }}>
-                        💾 Space: <b>{aiFeedback.spaceComplexity}</b>
+                      <div className="rounded-[var(--radius-sm)] bg-surface p-2 type-code">
+                        <HardDrive size={12} className="mr-1 inline" aria-hidden />
+                        Space: <b>{aiFeedback.spaceComplexity}</b>
                       </div>
                     </div>
-
-                    <div style={{ fontSize: 12.5, lineHeight: 1.5, fontFamily: "'Outfit', sans-serif" }}>
+                    <p className="type-small mt-2.5 mb-0">
                       <b>AI Audit Note:</b> {aiFeedback.review}
-                    </div>
-                  </div>
+                    </p>
+                  </Alert>
                 ) : (
-                  <div style={{ fontSize: 13, color: isLight ? "#64748b" : "#94a3b8" }}>
-                    Run or submit your code to generate real-time AI logic analysis and complexity bounds.
-                  </div>
+                  <EmptyState
+                    compact
+                    title="No review yet"
+                    description="Run or submit your code to generate real-time AI logic analysis and complexity bounds."
+                  />
                 )}
               </div>
             )}
 
             {activeTab === "submissions" && (
-              <div style={{ fontSize: 13, color: isLight ? "#64748b" : "#94a3b8" }}>
-                <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 800, color: isLight ? "#0f172a" : "#fff", marginBottom: 12 }}>
-                  Submissions Log
-                </div>
+              <div>
+                <h3 className="type-h4 mb-3 text-ink">Submissions Log</h3>
                 {challenge.done ? (
-                  <div style={{ padding: 12, borderRadius: 10, background: "rgba(0, 201, 167, 0.12)", border: "1px solid #00c9a7", color: "#00c9a7", fontFamily: "'Fira Code', monospace", fontSize: 11 }}>
-                    ✓ Accepted • Runtime: 12ms (Beats 98.4%) • Memory: 16.4 MB
-                  </div>
+                  <Alert tone="success" title="Accepted">
+                    Runtime: 12ms (Beats 98.4%) · Memory: 16.4 MB
+                  </Alert>
                 ) : (
-                  <div>No submitted solution logged yet for this problem.</div>
+                  <EmptyState
+                    compact
+                    title="No submissions"
+                    description="No submitted solution logged yet for this problem."
+                  />
                 )}
               </div>
             )}
           </div>
         </div>
 
-        {/* RIGHT COLUMN: CODE EDITOR & TERMINAL */}
-        <div style={{ display: "flex", flexDirection: "column", background: t.editorBg, overflow: "hidden" }}>
-          
-          {/* Editor Header Bar */}
-          <div style={{
-            padding: "8px 16px", background: t.headerBg,
-            borderBottom: t.headerBorder,
-            display: "flex", alignItems: "center", justifyContent: "space-between"
-          }}>
-            <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, color: "#00c9a7", fontWeight: 800 }}>
+        <div className="flex flex-col overflow-hidden bg-sunken">
+          <div className="flex items-center justify-between border-b border-line bg-surface px-4 py-2">
+            <span className="type-code text-success">
               solution.{language === "python" ? "py" : language === "javascript" ? "js" : "cpp"}
             </span>
-            <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 10, color: isLight ? "#64748b" : "#94a3b8" }}>
-              UTF-8 • Real AI Judge Connected
-            </span>
+            <span className="type-caption text-muted">UTF-8 · Real AI Judge Connected</span>
           </div>
 
-          {/* Code Textarea Workspace */}
           <textarea
             value={code}
             onChange={e => setCode(e.target.value)}
             spellCheck={false}
-            style={{
-              flex: 1, padding: 18, background: t.editorBg,
-              color: t.editorText, fontFamily: "'Fira Code', monospace", fontSize: 13,
-              border: t.editorBorder, outline: "none", resize: "none", lineHeight: 1.7
-            }}
+            className="min-h-0 flex-1 resize-none border-0 bg-sunken p-4 type-code text-ink outline-none"
           />
 
-          {/* Action Bar */}
-          <div style={{
-            padding: "12px 18px", background: t.headerBg,
-            borderTop: t.headerBorder,
-            display: "flex", alignItems: "center", gap: 12
-          }}>
-            <button
+          <div className="flex items-center gap-3 border-t border-line bg-surface px-4 py-3">
+            <Button
+              variant="outline"
               onClick={() => evaluateUserCode(false)}
               disabled={isRunning}
-              style={{
-                padding: "10px 20px", borderRadius: 12,
-                border: "1.5px solid #00c9a7", background: "rgba(0, 201, 167, 0.15)",
-                color: "#00c9a7", fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 900,
-                cursor: "pointer", display: "flex", alignItems: "center", gap: 6
-              }}
+              loading={isRunning}
             >
-              <Play size={15} />
-              <span>{isRunning ? "Evaluating..." : "▶ Run Code"}</span>
-            </button>
+              <Play size={15} aria-hidden />
+              {isRunning ? "Evaluating..." : "Run Code"}
+            </Button>
 
-            <button
+            <Button
               onClick={() => evaluateUserCode(true)}
               disabled={isSubmitting}
-              style={{
-                padding: "10px 24px", borderRadius: 12, border: "none",
-                background: "linear-gradient(135deg, #00c9a7, #6c63ff)",
-                color: "#ffffff", fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 900,
-                cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
-                boxShadow: "0 4px 16px rgba(0, 201, 167, 0.3)"
-              }}
+              loading={isSubmitting}
             >
-              <Send size={15} />
-              <span>{isSubmitting ? "Submitting..." : "🚀 Submit Solution"}</span>
-            </button>
+              <Send size={15} aria-hidden />
+              {isSubmitting ? "Submitting..." : "Submit Solution"}
+            </Button>
 
-            <span style={{ marginLeft: "auto", fontFamily: "'Fira Code', monospace", fontSize: 11, color: "#f59e0b", fontWeight: 800 }}>
+            <span className="type-caption ml-auto font-semibold text-warning">
               Reward: +{challenge.xp} XP
             </span>
           </div>
 
-          {/* Terminal Console Output */}
-          <div style={{
-            height: 125, background: t.terminalBg, padding: 12,
-            borderTop: "1px solid rgba(255,255,255,0.1)",
-            fontFamily: "'Fira Code', monospace", fontSize: 11, color: t.terminalText,
-            overflowY: "auto"
-          }}>
+          <div className="h-[125px] overflow-y-auto border-t border-line bg-inverse p-3 type-code text-on-inverse">
             {terminalLogs.map((log, idx) => (
-              <div key={idx} style={{ color: log.includes("✓") || log.includes("ACCEPTED") ? "#00c9a7" : log.includes("❌") ? "#ef4444" : "#cbd5e1" }}>
+              <div
+                key={idx}
+                className={
+                  log.includes("✓") || log.includes("ACCEPTED")
+                    ? "text-success"
+                    : log.includes("❌")
+                      ? "text-danger"
+                      : "text-on-inverse"
+                }
+              >
                 {log}
               </div>
             ))}
           </div>
-
         </div>
-
       </div>
     </div>
   );
@@ -596,30 +491,6 @@ export function ProAssessmentSubpage({ challenge, onClose, onSubmit }) {
 
   const currentQ = questionsList[currentQIndex] || questionsList[0];
   const isLight = themeMode === "light";
-
-  // Dynamic Theme Token Palette
-  const t = {
-    subpageBg: isLight 
-      ? "linear-gradient(135deg, #ffffff 0%, #f8fafc 60%, #f0f9ff 100%)" 
-      : "#0b1329",
-    bannerBg: isLight 
-      ? "linear-gradient(135deg, #e0e7ff 0%, #ccfbf1 100%)" 
-      : "linear-gradient(135deg, #1e1b4b, #311042)",
-    bannerBorder: isLight ? "1.5px solid #99f6e4" : "1.5px solid rgba(239, 68, 68, 0.4)",
-    bannerTitleText: isLight ? "#0f172a" : "#ffffff",
-    cardBg: isLight ? "#ffffff" : "#0f172a",
-    cardBorder: isLight ? "1.5px solid #e2e8f0" : "1.5px solid rgba(139, 92, 246, 0.4)",
-    titleText: isLight ? "#0f172a" : "#ffffff",
-    subtitleText: isLight ? "#475569" : "#cbd5e1",
-    optionBg: isLight ? "#f8fafc" : "rgba(255,255,255,0.05)",
-    optionBorder: isLight ? "1.5px solid #e2e8f0" : "1.5px solid rgba(255,255,255,0.12)",
-    optionActiveBg: isLight ? "#f0fdf4" : "rgba(139, 92, 246, 0.2)",
-    optionActiveBorder: "#8b5cf6",
-    textareaBg: isLight ? "#ffffff" : "rgba(255,255,255,0.05)",
-    textareaBorder: isLight ? "1.5px solid #cbd5e1" : "1px solid rgba(255,255,255,0.2)",
-    navPillBg: isLight ? "#f1f5f9" : "rgba(255,255,255,0.08)",
-    navPillText: isLight ? "#334155" : "#cbd5e1"
-  };
 
   const handleSelectOption = (optIndex) => {
     setUserAnswers(prev => ({ ...prev, [currentQ.id]: optIndex }));
@@ -664,312 +535,224 @@ export function ProAssessmentSubpage({ challenge, onClose, onSubmit }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      style={{
-        position: "fixed", inset: 0, zIndex: 1200,
-        background: t.subpageBg, color: t.titleText,
-        display: "flex", flexDirection: "column", overflow: "hidden"
-      }}
+      data-theme={isLight ? undefined : "dark"}
+      className="fixed inset-0 flex flex-col overflow-hidden bg-canvas text-ink"
+      style={{ zIndex: "var(--z-modal)" }}
     >
-      {/* Proctoring Shield Header */}
-      <div style={{
-        padding: "16px 28px", background: t.bannerBg,
-        borderBottom: t.bannerBorder,
-        display: "flex", alignItems: "center", justifyContent: "space-between"
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <ShieldAlert size={24} color={isLight ? "#0284c7" : "#ef4444"} />
+      <div className="flex items-center justify-between border-b border-line bg-primary-soft px-7 py-4">
+        <div className="flex items-center gap-3.5">
+          <ShieldAlert size={24} className="text-info" />
           <div>
-            <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 900, color: t.bannerTitleText }}>
-              PATHED PROCTORER ASSESSMENT SUITE ({questionsList.length} QUESTIONS)
+            <div className="type-h4 text-ink">
+              PathEd proctorer assessment suite ({questionsList.length} questions)
             </div>
-            <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, color: isLight ? "#0284c7" : "#fca5a5", fontWeight: 800 }}>
-              🔒 PROCTORING ACTIVE • ANTI-TAB SWITCH & TIMER ENABLED
+            <div className="type-caption inline-flex items-center gap-1 font-semibold text-info">
+              <ShieldAlert size={12} aria-hidden />
+              Proctoring active · anti-tab switch & timer enabled
             </div>
           </div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          {/* Theme Mode Toggle Button */}
-          <button
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => setThemeMode(isLight ? "dark" : "light")}
-            style={{
-              padding: "7px 14px", borderRadius: 12,
-              border: isLight ? "1.5px solid #0284c7" : "1.5px solid rgba(0,201,167,0.5)",
-              background: isLight ? "#ffffff" : "rgba(255,255,255,0.08)",
-              color: isLight ? "#0284c7" : "#00c9a7",
-              fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 800,
-              cursor: "pointer", display: "flex", alignItems: "center", gap: 6
-            }}
           >
-            {isLight ? <Moon size={15} /> : <Sun size={15} />}
-            <span>{isLight ? "🌙 Dark Mode" : "🌞 Light Mode"}</span>
-          </button>
+            {isLight ? <Moon size={15} aria-hidden /> : <Sun size={15} aria-hidden />}
+            {isLight ? "Dark Mode" : "Light Mode"}
+          </Button>
 
-          {/* Ticking Assessment Timer */}
-          <div style={{
-            padding: "8px 16px", borderRadius: 14,
-            background: isLight ? "#ffffff" : "rgba(239, 68, 68, 0.15)",
-            border: isLight ? "1.5px solid #0284c7" : "1px solid #ef4444",
-            color: isLight ? "#0284c7" : "#ff4d4d", fontFamily: "'Fira Code', monospace", fontSize: 14, fontWeight: 900
-          }}>
-            ⏱️ {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
-          </div>
+          <Badge tone="info" className="type-code px-3 py-1.5 text-[14px] tracking-normal normal-case">
+            <Clock size={14} aria-hidden />
+            {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+          </Badge>
 
-          <button
-            onClick={onClose}
-            style={{
-              padding: "8px 16px", borderRadius: 12,
-              border: isLight ? "1.5px solid #cbd5e1" : "1px solid rgba(255,255,255,0.2)",
-              background: isLight ? "#ffffff" : "rgba(255,255,255,0.08)",
-              color: t.titleText, fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 800, cursor: "pointer"
-            }}
-          >
+          <Button variant="secondary" onClick={onClose}>
             Exit Assessment
-          </button>
+          </Button>
         </div>
       </div>
 
-      {/* Question Series Navigator Bar (Q1 to Q7) */}
-      <div style={{
-        padding: "12px 28px", background: isLight ? "#ffffff" : "#0f172a",
-        borderBottom: isLight ? "1.5px solid #e2e8f0" : "1px solid rgba(255,255,255,0.1)",
-        display: "flex", alignItems: "center", gap: 10, overflowX: "auto"
-      }}>
-        <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 11.5, fontWeight: 900, color: "#8b5cf6", letterSpacing: 0.5, flexShrink: 0 }}>
-          QUESTION SERIES:
-        </span>
+      <div className="flex items-center gap-2.5 overflow-x-auto border-b border-line bg-surface px-7 py-3">
+        <span className="type-overline shrink-0 text-primary">Question series</span>
         {questionsList.map((q, idx) => {
           const isCurrent = currentQIndex === idx;
           const isAnswered = userAnswers[q.id] !== undefined;
 
           return (
-            <button
+            <Button
               key={q.id}
+              size="sm"
+              variant={isCurrent ? "primary" : "secondary"}
+              className={cn(
+                "type-code",
+                isAnswered &&
+                  !isCurrent &&
+                  "border-[color-mix(in_srgb,var(--success)_36%,var(--border-light))] bg-success-soft text-success",
+              )}
               onClick={() => setCurrentQIndex(idx)}
-              style={{
-                padding: "6px 14px", borderRadius: 12,
-                border: isCurrent ? "2px solid #8b5cf6" : isAnswered ? "1.5px solid #10b981" : isLight ? "1.5px solid #e2e8f0" : "1px solid rgba(255,255,255,0.1)",
-                background: isCurrent ? "linear-gradient(135deg, #8b5cf6, #00c9a7)" : isAnswered ? "rgba(16,185,129,0.15)" : t.navPillBg,
-                color: isCurrent ? "#ffffff" : isAnswered ? "#10b981" : t.navPillText,
-                fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 900,
-                cursor: "pointer", transition: "all 0.2s"
-              }}
             >
-              Q{idx + 1} {isAnswered ? "✓" : ""}
-            </button>
+              Q{idx + 1}
+              {isAnswered ? <Check size={12} aria-hidden /> : null}
+            </Button>
           );
         })}
       </div>
 
-      {/* Main Examination Workspace */}
-      <div style={{ flex: 1, padding: "28px 32px", overflowY: "auto", maxWidth: 880, margin: "0 auto", width: "100%", display: "flex", flexDirection: "column", gap: 20 }}>
-        
-        {/* If Exam Submitted, Show Final Result Card */}
+      <div className="mx-auto flex w-full max-w-[880px] flex-1 flex-col gap-5 overflow-y-auto px-8 py-7">
         {isExamSubmitted ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            style={{
-              padding: 28, borderRadius: 24, background: t.cardBg, border: "2px solid #10b981",
-              boxShadow: "0 20px 60px rgba(16, 185, 129, 0.2)", display: "flex", flexDirection: "column", gap: 18
-            }}
           >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div>
-                <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 900, color: "#10b981", margin: 0 }}>
-                  🎉 Assessment Completed!
-                </h2>
-                <p style={{ margin: "4px 0 0", fontSize: 14, color: t.subtitleText, fontFamily: "'Outfit', sans-serif" }}>
-                  Your score and active recall reasoning notes have been logged to Memory Lane.
-                </p>
-              </div>
-
-              <div style={{
-                padding: "10px 20px", borderRadius: 18, background: "rgba(16, 185, 129, 0.15)",
-                border: "1.5px solid #10b981", textAlign: "right"
-              }}>
-                <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 26, fontWeight: 900, color: "#10b981" }}>
-                  {scoreResult.percentage}%
+            <Card className="flex flex-col gap-4.5 border-[color-mix(in_srgb,var(--success)_36%,var(--border-light))]">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h2 className="type-h2 m-0 text-success">Assessment completed</h2>
+                  <p className="type-small mt-1 mb-0 text-muted">
+                    Your score and active recall reasoning notes have been logged to Memory Lane.
+                  </p>
                 </div>
-                <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, color: "#10b981", fontWeight: 800 }}>
-                  {scoreResult.correctCount} / {scoreResult.total} Correct
-                </div>
-              </div>
-            </div>
 
-            {/* Question Breakdown List */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 10 }}>
-              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 900, color: "#00c9a7", letterSpacing: 0.5 }}>
-                SERIES QUESTION BREAKDOWN & AI EXPLANATIONS:
-              </div>
-
-              {questionsList.map((q, idx) => {
-                const userAns = userAnswers[q.id];
-                const isCorrect = userAns === q.correct;
-
-                return (
-                  <div
-                    key={q.id}
-                    style={{
-                      padding: 16, borderRadius: 16,
-                      background: isCorrect ? "rgba(16, 185, 129, 0.08)" : "rgba(239, 68, 68, 0.08)",
-                      border: `1.5px solid ${isCorrect ? "#10b981" : "#ef4444"}`
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                      <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14.5, fontWeight: 900, color: t.titleText }}>
-                        Q{idx + 1}: {q.q}
-                      </span>
-                      <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, fontWeight: 900, color: isCorrect ? "#10b981" : "#ef4444" }}>
-                        {isCorrect ? "✓ Correct" : "❌ Incorrect"}
-                      </span>
-                    </div>
-
-                    <div style={{ fontSize: 12.5, color: t.subtitleText, fontFamily: "'Outfit', sans-serif", marginTop: 4 }}>
-                      <b style={{ color: "#00c9a7" }}>AI Solution Note:</b> {q.explanation}
-                    </div>
+                <div className="rounded-[var(--radius-lg)] border border-[color-mix(in_srgb,var(--success)_36%,var(--border-light))] bg-success-soft px-5 py-2.5 text-right">
+                  <div className="type-h2 m-0 text-success">{scoreResult.percentage}%</div>
+                  <div className="type-caption font-semibold text-success">
+                    {scoreResult.correctCount} / {scoreResult.total} Correct
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              </div>
 
-            <button
-              onClick={onClose}
-              style={{
-                marginTop: 10, padding: "14px", borderRadius: 16, border: "none",
-                background: "linear-gradient(135deg, #00c9a7, #6c63ff)", color: "#ffffff",
-                fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 900, cursor: "pointer"
-              }}
-            >
-              Back to Challenges Workspace
-            </button>
+              <div className="mt-2.5 flex flex-col gap-3">
+                <p className="type-overline m-0 text-success">
+                  Series question breakdown & AI explanations
+                </p>
+
+                {questionsList.map((q, idx) => {
+                  const userAns = userAnswers[q.id];
+                  const isCorrect = userAns === q.correct;
+
+                  return (
+                    <Card
+                      key={q.id}
+                      className={cn(
+                        "p-4 sm:p-4",
+                        isCorrect
+                          ? "border-[color-mix(in_srgb,var(--success)_36%,var(--border-light))] bg-success-soft"
+                          : "border-[color-mix(in_srgb,var(--error)_36%,var(--border-light))] bg-danger-soft",
+                      )}
+                    >
+                      <div className="mb-1.5 flex items-center justify-between gap-2">
+                        <span className="type-small font-semibold text-ink">
+                          Q{idx + 1}: {q.q}
+                        </span>
+                        <Badge tone={isCorrect ? "success" : "error"}>
+                          {isCorrect ? "Correct" : "Incorrect"}
+                        </Badge>
+                      </div>
+
+                      <p className="type-small m-0 text-muted">
+                        <b className="text-success">AI Solution Note:</b> {q.explanation}
+                      </p>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              <Button className="mt-2.5 w-full" onClick={onClose}>
+                Back to Challenges Workspace
+              </Button>
+            </Card>
           </motion.div>
         ) : (
-          /* Active Question Room */
-          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span style={{
-                padding: "4px 14px", borderRadius: 12,
-                background: "rgba(139, 92, 246, 0.18)", border: "1px solid #8b5cf6",
-                color: "#8b5cf6", fontFamily: "'Fira Code', monospace", fontSize: 12, fontWeight: 900
-              }}>
-                QUESTION {currentQIndex + 1} OF {questionsList.length} • {challenge.label}
-              </span>
+          <div className="flex flex-col gap-5">
+            <div className="flex items-center justify-between">
+              <Badge tone="accent">
+                Question {currentQIndex + 1} of {questionsList.length} · {challenge.label}
+              </Badge>
 
-              <span style={{ fontFamily: "'Fira Code', monospace", fontSize: 13, color: "#f59e0b", fontWeight: 900 }}>
+              <span className="type-caption font-semibold text-warning">
                 Reward: +{challenge.xp} XP
               </span>
             </div>
 
-            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: 22, fontWeight: 900, margin: 0, lineHeight: 1.4, color: t.titleText }}>
-              {currentQ.q}
-            </h2>
+            <h2 className="type-h3 m-0 text-ink">{currentQ.q}</h2>
 
-            {/* Options List */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div className="flex flex-col gap-3">
               {currentQ.opts.map((opt, idx) => {
                 const isSelected = userAnswers[currentQ.id] === idx;
-                
-                let bg = isSelected ? t.optionActiveBg : t.optionBg;
-                let border = isSelected ? "2px solid #8b5cf6" : t.optionBorder;
 
                 return (
-                  <div
+                  <button
                     key={idx}
+                    type="button"
                     onClick={() => handleSelectOption(idx)}
-                    style={{
-                      padding: "16px 20px", borderRadius: 18, background: bg, border,
-                      cursor: "pointer", display: "flex", alignItems: "center", gap: 14, transition: "all 0.2s"
-                    }}
+                    className={cn(
+                      "flex cursor-pointer items-center gap-3.5 rounded-[var(--radius-lg)] border px-5 py-4 text-left transition-colors duration-[var(--duration-fast)]",
+                      isSelected
+                        ? "border-primary bg-primary-soft"
+                        : "border-line bg-sunken hover:border-primary-border",
+                    )}
                   >
-                    <div style={{
-                      width: 30, height: 30, borderRadius: "50%",
-                      border: isSelected ? "2px solid #8b5cf6" : "1.5px solid #64748b",
-                      background: isSelected ? "#8b5cf6" : "transparent",
-                      color: isSelected ? "#ffffff" : t.titleText,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontFamily: "'Fira Code', monospace", fontSize: 13, fontWeight: 900
-                    }}>
+                    <span
+                      className={cn(
+                        "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full type-code font-semibold",
+                        isSelected
+                          ? "bg-primary text-on-primary"
+                          : "border border-line-strong text-ink",
+                      )}
+                    >
                       {String.fromCharCode(65 + idx)}
-                    </div>
-                    <span style={{ fontSize: 15.5, fontFamily: "'Outfit', sans-serif", fontWeight: isSelected ? 800 : 500, color: t.titleText }}>
+                    </span>
+                    <span className={cn("type-body", isSelected ? "font-semibold text-ink" : "text-ink")}>
                       {opt}
                     </span>
-                  </div>
+                  </button>
                 );
               })}
             </div>
 
-            {/* Active Recall Textarea */}
             {userAnswers[currentQ.id] !== undefined && (
-              <div style={{ marginTop: 4 }}>
-                <label style={{ display: "block", fontFamily: "'Fira Code', monospace", fontSize: 12, color: "#8b5cf6", fontWeight: 800, marginBottom: 6 }}>
-                  ACTIVE RECALL PROMPT: Explain your technical reasoning for Q{currentQIndex + 1}
+              <div>
+                <label className="type-label mb-1.5 block text-primary">
+                  Active recall prompt: Explain your technical reasoning for Q{currentQIndex + 1}
                 </label>
-                <textarea
+                <Textarea
                   value={userReasonings[currentQ.id] || ""}
                   onChange={e => handleReasoningChange(e.target.value)}
                   placeholder="Explain why this option is technically correct (trains memory and logged to portfolio)..."
-                  style={{
-                    width: "100%", height: 85, padding: 14, borderRadius: 16,
-                    background: t.textareaBg, border: t.textareaBorder,
-                    color: t.titleText, fontFamily: "'Outfit', sans-serif", fontSize: 13.5, outline: "none", resize: "none"
-                  }}
+                  className="min-h-[85px] resize-none"
                 />
               </div>
             )}
 
-            {/* Question Navigation Controls */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10 }}>
-              <button
+            <div className="mt-2.5 flex items-center justify-between">
+              <Button
+                variant="secondary"
                 onClick={() => setCurrentQIndex(prev => Math.max(0, prev - 1))}
                 disabled={currentQIndex === 0}
-                style={{
-                  padding: "12px 20px", borderRadius: 14,
-                  border: isLight ? "1.5px solid #cbd5e1" : "1px solid rgba(255,255,255,0.2)",
-                  background: isLight ? "#ffffff" : "rgba(255,255,255,0.08)",
-                  color: t.titleText, fontFamily: "'Outfit', sans-serif", fontSize: 13.5, fontWeight: 800,
-                  cursor: currentQIndex === 0 ? "not-allowed" : "pointer", opacity: currentQIndex === 0 ? 0.5 : 1
-                }}
               >
-                ← Previous Q
-              </button>
+                Previous Q
+              </Button>
 
               {currentQIndex < questionsList.length - 1 ? (
-                <button
+                <Button
                   onClick={() => setCurrentQIndex(prev => Math.min(questionsList.length - 1, prev + 1))}
-                  style={{
-                    padding: "12px 24px", borderRadius: 14, border: "none",
-                    background: "linear-gradient(135deg, #6c63ff, #00c9a7)", color: "#ffffff",
-                    fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 900, cursor: "pointer"
-                  }}
                 >
-                  Next Q →
-                </button>
+                  Next Q
+                </Button>
               ) : (
-                <button
+                <Button
                   onClick={handleSubmitFullAssessment}
                   disabled={Object.keys(userAnswers).length < questionsList.length}
-                  style={{
-                    padding: "12px 28px", borderRadius: 14, border: "none",
-                    background: "linear-gradient(135deg, #00c9a7, #6c63ff)", color: "#ffffff",
-                    fontFamily: "'Outfit', sans-serif", fontSize: 14.5, fontWeight: 900,
-                    cursor: Object.keys(userAnswers).length < questionsList.length ? "not-allowed" : "pointer",
-                    opacity: Object.keys(userAnswers).length < questionsList.length ? 0.6 : 1,
-                    boxShadow: "0 4px 18px rgba(0, 201, 167, 0.4)"
-                  }}
                 >
                   Submit Full Assessment Suite ({Object.keys(userAnswers).length} / {questionsList.length})
-                </button>
+                </Button>
               )}
             </div>
-
           </div>
         )}
-
       </div>
     </motion.div>
   );
 }
-

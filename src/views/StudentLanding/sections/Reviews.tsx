@@ -1,11 +1,18 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Star } from "lucide-react";
-import { InteractiveCard } from "../../../components/ui/Shared";
 
-const allReviews = [
+type Review = {
+  id: number;
+  name: string;
+  role: string;
+  text: string;
+  avatar: string;
+};
+
+const REVIEWS: readonly Review[] = [
   { id: 1, name: "Aryan Mehta", role: "SDE @ Microsoft", text: "PathEd's CRI tracker kept me laser-focused. I landed my dream role 6 months before graduation.", avatar: "AM" },
   { id: 2, name: "Priya Sharma", role: "ML Engineer @ Google", text: "The AI-fication feature literally remapped my roadmap to Google's exact skill stack.", avatar: "PS" },
   { id: 3, name: "Karan Singh", role: "DevOps @ Razorpay", text: "Balancing CGPA and career prep felt impossible until PathEd showed me exactly where to focus.", avatar: "KS" },
@@ -17,97 +24,137 @@ const allReviews = [
   { id: 9, name: "Rahul Verma", role: "Frontend Dev @ Swiggy", text: "My CRI score gave me the confidence to apply for senior roles straight out of college.", avatar: "RV" },
   { id: 10, name: "Diya Kapoor", role: "Security Analyst @ IBM", text: "The cybersecurity roadmap is top-tier. Real-world challenges that actually test your skills.", avatar: "DK" },
   { id: 11, name: "Arjun Nair", role: "Backend Eng @ Cred", text: "Nothing beats the gamified learning. The XP system kept me hooked on solving DSA daily.", avatar: "AN" },
-  { id: 12, name: "Tanya Desai", role: "UI/UX Designer @ Canva", text: "Even for design, the portfolio building track was incredibly helpful for structuring my case studies.", avatar: "TD" }
+  { id: 12, name: "Tanya Desai", role: "UI/UX Designer @ Canva", text: "Even for design, the portfolio building track was incredibly helpful for structuring my case studies.", avatar: "TD" },
 ];
 
+const PER_PAGE = 3;
+const PAGES = Math.ceil(REVIEWS.length / PER_PAGE);
+const INTERVAL = 6000;
+
 export default function Reviews() {
+  const reduced = useReducedMotion() ?? false;
   const [page, setPage] = useState(0);
-  const totalPages = Math.ceil(allReviews.length / 3);
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setPage((prev) => (prev + 1) % totalPages);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, [totalPages]);
+    if (paused || reduced) return;
+    const timer = window.setInterval(
+      () => setPage((prev) => (prev + 1) % PAGES),
+      INTERVAL,
+    );
+    return () => window.clearInterval(timer);
+  }, [paused, reduced]);
 
-  const visibleReviews = allReviews.slice(page * 3, page * 3 + 3);
+  const visible = REVIEWS.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
 
   return (
-    <section style={{ padding: "80px 32px 120px", background: "var(--bg-alt)", position: "relative", zIndex: 2 }}>
-      <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
-        
-        <div style={{ textAlign: "center", marginBottom: "60px" }}>
-          <div style={{ fontFamily: "'Fira Code', monospace", fontSize: "12px", fontWeight: 600, color: "#6c63ff", letterSpacing: "3px", marginBottom: "12px" }}>▸ STUDENT VOICES</div>
-          <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 800, color: "var(--text-main)", marginBottom: "16px" }}>
-            Those who walked <span style={{ color: "#6c63ff" }}>the path.</span>
+    <section
+      aria-labelledby="reviews-heading"
+      className="px-4 py-16 sm:px-6 sm:py-20 lg:py-24"
+    >
+      <div className="mx-auto max-w-[var(--measure-content)]">
+        <div className="mx-auto max-w-[40rem] text-center">
+          <p className="type-overline text-primary">Student voices</p>
+          <h2 id="reviews-heading" className="type-h1 mt-3 text-ink">
+            Those who walked the path
           </h2>
         </div>
 
-        <div style={{ minHeight: "260px", position: "relative" }}>
-          <AnimatePresence mode="wait">
-            <motion.div 
-              key={page}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-              style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px" }}
-            >
-              {visibleReviews.map((review) => (
-                <InteractiveCard key={review.id} delay={0.1} style={{ 
-                  background: "var(--bg-card)", borderRadius: "20px", padding: "32px", 
-                  border: "1px solid var(--border-light)", boxShadow: "0 10px 30px rgba(108,99,255,0.05)",
-                  display: "flex", flexDirection: "column", justifyContent: "space-between"
-                }}>
-                  <div>
-                    <div style={{ display: "flex", gap: "4px", marginBottom: "20px" }}>
-                      {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="#f7971e" color="#f7971e" />)}
-                    </div>
-                    <p style={{ color: "var(--text-muted)", fontSize: "15px", lineHeight: 1.7, fontStyle: "italic", fontFamily: "'Inter', sans-serif", marginBottom: "24px" }}>
-                      “{review.text}”
-                    </p>
-                  </div>
-                  
-                  <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                    <div style={{ 
-                      width: "48px", height: "48px", borderRadius: "50%", 
-                      background: "linear-gradient(135deg, #6c63ff, #00c9a7)", 
-                      display: "flex", alignItems: "center", justifyContent: "center", 
-                      fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: "16px", color: "var(--text-inverse)" 
-                    }}>
-                      {review.avatar}
-                    </div>
-                    <div>
-                      <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: "16px", color: "var(--text-main)" }}>
-                        {review.name}
-                      </div>
-                      <div style={{ fontFamily: "'Fira Code', monospace", fontSize: "10px", color: "#6c63ff", marginTop: "4px" }}>
-                        {review.role}
-                      </div>
-                    </div>
-                  </div>
-                </InteractiveCard>
-              ))}
-            </motion.div>
-          </AnimatePresence>
-        </div>
+        <div
+          role="group"
+          aria-roledescription="carousel"
+          aria-label="Student reviews"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          onFocus={() => setPaused(true)}
+          onBlur={() => setPaused(false)}
+          className="mt-12 lg:mt-16"
+        >
+          <p aria-live="polite" className="sr-only">
+            {`Showing reviews ${page * PER_PAGE + 1} to ${page * PER_PAGE + visible.length} of ${REVIEWS.length}.`}
+          </p>
 
-        <div style={{ display: "flex", justifyContent: "center", gap: "8px", marginTop: "40px" }}>
-          {[...Array(totalPages)].map((_, i) => (
-            <button 
-              key={i} 
-              onClick={() => setPage(i)}
-              style={{ 
-                width: i === page ? "24px" : "8px", 
-                height: "8px", borderRadius: "4px", 
-                background: i === page ? "#6c63ff" : "#d8d4ff",
-                transition: "all 0.3s ease", padding: 0
-              }}
-            />
-          ))}
-        </div>
+          {/* Track — the only element allowed to clip. */}
+          <div className="min-w-0 overflow-hidden">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.ul
+                key={page}
+                initial={reduced ? undefined : { opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={reduced ? undefined : { opacity: 0 }}
+                transition={{ duration: 0.24 }}
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`Page ${page + 1} of ${PAGES}`}
+                className="grid list-none grid-cols-1 gap-5 p-0 md:grid-cols-3"
+              >
+                {visible.map((review) => (
+                  <li
+                    key={review.id}
+                    className="flex min-w-0 flex-col rounded-[var(--radius-lg)] border border-line bg-surface p-6 shadow-[var(--shadow-xs)]"
+                  >
+                    <div
+                      className="flex gap-0.5 text-accent"
+                      aria-label="Rated 5 out of 5"
+                      role="img"
+                    >
+                      {Array.from({ length: 5 }, (_, i) => (
+                        <Star
+                          key={i}
+                          size={14}
+                          aria-hidden
+                          className="fill-accent"
+                        />
+                      ))}
+                    </div>
 
+                    <blockquote className="type-body mt-5 flex-1 text-muted">
+                      {`“${review.text}”`}
+                    </blockquote>
+
+                    <div className="mt-6 flex min-w-0 items-center gap-3">
+                      <span
+                        aria-hidden
+                        className="type-label flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary"
+                      >
+                        {review.avatar}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="type-label truncate text-ink">
+                          {review.name}
+                        </p>
+                        <p className="type-caption truncate text-muted">
+                          {review.role}
+                        </p>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </motion.ul>
+            </AnimatePresence>
+          </div>
+
+          <ul className="mt-8 flex list-none items-center justify-center p-0">
+            {Array.from({ length: PAGES }, (_, i) => (
+              <li key={i}>
+                <button
+                  type="button"
+                  onClick={() => setPage(i)}
+                  aria-label={`Go to reviews page ${i + 1} of ${PAGES}`}
+                  aria-current={i === page ? "true" : undefined}
+                  className="flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-sm)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                >
+                  <span
+                    aria-hidden
+                    className={`h-1.5 rounded-full transition-[width,background-color] duration-[var(--duration-normal)] motion-reduce:transition-none ${
+                      i === page ? "w-6 bg-primary" : "w-1.5 bg-line-strong"
+                    }`}
+                  />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </section>
   );

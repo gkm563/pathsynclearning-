@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MemoryLaneHeader } from "@/components/memory-lane/MemoryLaneHeader";
 import { MemorySections } from "@/components/memory-lane/MemorySections";
@@ -11,16 +11,17 @@ import {
 import { MemoryTimeline } from "@/components/memory-lane/MemoryTimeline";
 import { MemoryDetail } from "@/components/memory-lane/MemoryDetail";
 import { MemorySettingsPanel } from "@/components/memory-lane/MemorySettingsPanel";
+import { AddNoteButton } from "@/components/memory-lane/AddNoteButton";
 import {
-  AddNoteButton,
-} from "@/components/memory-lane/AddNoteButton";
-import { EmptyState, PageSpinner } from "@/components/ui/primitives";
+  Button,
+  EmptyState,
+  ErrorState,
+  ListSkeleton,
+  Toolbar,
+} from "@/components/ui";
 import { apiGet } from "@/lib/api";
 import { routes } from "@/lib/routes";
-import {
-  MEMORY_SECTION_META,
-  SECTION_FILTERS,
-} from "@/lib/memory/sections";
+import { MEMORY_SECTION_META, SECTION_FILTERS } from "@/lib/memory/sections";
 import { noteIdFromTimelineItem } from "@/lib/memory/note-id";
 import type {
   MemoryFilter,
@@ -213,132 +214,111 @@ export default function PlatformMemoryLane() {
   const noteMeta = noteDefaults(section);
 
   return (
-    <div style={{ maxWidth: 920, margin: "0 auto" }}>
-        <MemoryLaneHeader
-          onOpenSettings={() => setSettingsOpen(true)}
-          onExport={() => void exportJourney()}
-        />
+    <div className="mx-auto max-w-3xl">
+      <MemoryLaneHeader
+        onOpenSettings={() => setSettingsOpen(true)}
+        onExport={() => void exportJourney()}
+      />
 
-        <MemorySections
-          value={section}
-          counts={stats?.sections ?? DEFAULT_SECTION_COUNTS}
-          onChange={changeSection}
-        />
+      <MemorySections
+        value={section}
+        counts={stats?.sections ?? DEFAULT_SECTION_COUNTS}
+        onChange={changeSection}
+      />
 
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 10,
-            alignItems: "center",
-            marginTop: 16,
-          }}
-        >
-          <MemorySearch value={search} onChange={setSearch} />
-          <AddNoteButton
-            sourceType={noteMeta.sourceType}
-            sourceId={noteMeta.sourceId}
-            defaultTitle=""
-            contextLabel={noteMeta.contextLabel}
+      <Toolbar>
+        <MemorySearch value={search} onChange={setSearch} />
+        <AddNoteButton
+          sourceType={noteMeta.sourceType}
+          sourceId={noteMeta.sourceId}
+          defaultTitle=""
+          contextLabel={noteMeta.contextLabel}
+        />
+      </Toolbar>
+      <MemoryFilters
+        value={filter}
+        onChange={setFilter}
+        filters={SECTION_FILTERS[section]}
+      />
+
+      {error && !loading && items.length === 0 ? (
+        <div className="mt-6">
+          <ErrorState
+            title="Couldn't load Memory Lane"
+            description="The timeline didn't come back. Retry, and if it keeps failing the service is temporarily unavailable."
+            detail={error}
+            action={
+              <Button variant="secondary" onClick={() => void load(null, false)}>
+                Try again
+              </Button>
+            }
           />
         </div>
-        <MemoryFilters
-          value={filter}
-          onChange={setFilter}
-          filters={SECTION_FILTERS[section]}
-        />
+      ) : null}
 
-        {error ? (
-          <p style={{ color: "#ef4444", marginTop: 16, fontSize: 14 }}>{error}</p>
-        ) : null}
+      {error && items.length > 0 ? (
+        <p className="type-small mt-4 mb-0 font-medium text-danger" role="alert">
+          {error}
+        </p>
+      ) : null}
 
-        {loading ? <PageSpinner label="Loading your journey…" /> : null}
+      {loading ? <ListSkeleton count={6} className="mt-6" /> : null}
 
-        {!loading && emptySearch ? (
-          <div style={{ marginTop: 28 }}>
-            <EmptyState
-              title="No memories found."
-              description="Try another search or remove some filters."
-              action={
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearch("");
-                    setFilter("all");
-                  }}
-                  style={{
-                    border: "none",
-                    background: "none",
-                    color: "var(--purple)",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
-                >
-                  Clear filters
-                </button>
-              }
-            />
-          </div>
-        ) : null}
-
-        {!loading && empty && !emptySearch ? (
-          <div style={{ marginTop: 28 }}>
-            <EmptyState
-              title={sectionMeta.emptyTitle}
-              description={sectionMeta.emptyDescription}
-              action={
-                <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
-                  {section === "roadmap" ? (
-                    <button
-                      type="button"
-                      onClick={() => router.push(routes.app.roadmap)}
-                      style={cta}
-                    >
-                      Open Roadmap
-                    </button>
-                  ) : null}
-                  {section === "challenges" ? (
-                    <button
-                      type="button"
-                      onClick={() => router.push(routes.app.challenges)}
-                      style={cta}
-                    >
-                      Try a Challenge
-                    </button>
-                  ) : null}
-                  {section === "general" ? (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => router.push(routes.app.roadmap)}
-                        style={cta}
-                      >
-                        Open Roadmap
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => router.push(routes.app.challenges)}
-                        style={cta}
-                      >
-                        Try a Challenge
-                      </button>
-                    </>
-                  ) : null}
-                </div>
-              }
-            />
-          </div>
-        ) : null}
-
-        {!loading && items.length > 0 ? (
-          <MemoryTimeline
-            items={items}
-            onOpen={setSelected}
-            hasMore={Boolean(nextCursor)}
-            loadingMore={loadingMore}
-            onLoadMore={() => void load(nextCursor, true)}
+      {!loading && emptySearch ? (
+        <div className="mt-7">
+          <EmptyState
+            title="No memories found"
+            description="Try another search or remove some filters."
+            action={
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setSearch("");
+                  setFilter("all");
+                }}
+              >
+                Clear filters
+              </Button>
+            }
           />
-        ) : null}
+        </div>
+      ) : null}
+
+      {!loading && empty && !emptySearch ? (
+        <div className="mt-7">
+          <EmptyState
+            title={sectionMeta.emptyTitle}
+            description={sectionMeta.emptyDescription}
+            action={
+              <div className="flex flex-wrap justify-center gap-2">
+                {section === "roadmap" || section === "general" ? (
+                  <Button onClick={() => router.push(routes.app.roadmap)}>
+                    Open Roadmap
+                  </Button>
+                ) : null}
+                {section === "challenges" || section === "general" ? (
+                  <Button
+                    variant={section === "general" ? "secondary" : "primary"}
+                    onClick={() => router.push(routes.app.challenges)}
+                  >
+                    Try a Challenge
+                  </Button>
+                ) : null}
+              </div>
+            }
+          />
+        </div>
+      ) : null}
+
+      {!loading && items.length > 0 ? (
+        <MemoryTimeline
+          items={items}
+          onOpen={setSelected}
+          hasMore={Boolean(nextCursor)}
+          loadingMore={loadingMore}
+          onLoadMore={() => void load(nextCursor, true)}
+        />
+      ) : null}
 
       {selected ? (
         <MemoryDetail
@@ -379,14 +359,3 @@ export default function PlatformMemoryLane() {
     </div>
   );
 }
-
-const cta: React.CSSProperties = {
-  borderRadius: 10,
-  border: "1.5px solid var(--border-light)",
-  background: "var(--bg-card)",
-  padding: "10px 14px",
-  fontFamily: "Outfit, sans-serif",
-  fontWeight: 700,
-  cursor: "pointer",
-  color: "var(--text-main)",
-};

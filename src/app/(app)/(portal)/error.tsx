@@ -1,5 +1,15 @@
 "use client";
 
+import Link from "next/link";
+import { Button } from "@/components/ui";
+import { ErrorScreen } from "@/components/ui/ErrorScreen";
+import { routes } from "@/lib/routes";
+
+/**
+ * Portal error boundary. Sits below the shell, so navigation, the sidebar and
+ * the header stay usable while one page has failed — the user can move on
+ * instead of being dropped onto a bare full-page error.
+ */
 export default function PortalError({
   error,
   reset,
@@ -8,28 +18,17 @@ export default function PortalError({
   reset: () => void;
 }) {
   return (
-    <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 px-6 py-16 text-center">
-      <p className="text-xs font-bold tracking-[0.08em] text-[var(--purple)]">
-        PATHED
-      </p>
-      <h1 className="font-[family-name:var(--font-sans)] text-2xl font-extrabold tracking-tight text-[var(--text-main)]">
-        Something went wrong
-      </h1>
-      <p className="max-w-md text-sm text-[var(--text-muted)]">
-        We hit an unexpected problem loading this page.
-      </p>
-      <div className="flex gap-3">
-        <button
-          type="button"
-          onClick={reset}
-          className="rounded-xl bg-[var(--purple)] px-4 py-2.5 text-sm font-bold text-white"
-        >
-          Try again
-        </button>
-      </div>
-      {error.digest ? (
-        <p className="text-xs text-[var(--text-light)]">Ref: {error.digest}</p>
-      ) : null}
-    </div>
+    <ErrorScreen
+      title="This page didn’t load"
+      description="Something went wrong fetching your data. Try again — the rest of your workspace is still available from the navigation."
+      digest={error.digest}
+      onRetry={reset}
+      secondaryAction={
+        <Link href={routes.app.dashboard}>
+          <Button variant="secondary">Back to dashboard</Button>
+        </Link>
+      }
+      className="min-h-[50vh]"
+    />
   );
 }

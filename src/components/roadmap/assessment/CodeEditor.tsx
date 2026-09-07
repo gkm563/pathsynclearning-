@@ -100,10 +100,10 @@ export default function CodeEditor({
         "editorLineNumber.activeForeground": "#abb2bf",
         "editor.selectionBackground": "#264f78",
         "editor.inactiveSelectionBackground": "#3a3d41",
-        "editorCursor.foreground": "#00c9a7",
+        "editorCursor.foreground": "#1f6b48",
         "editor.lineHighlightBackground": "#161b22",
         "editorBracketMatch.background": "#3b4048",
-        "editorBracketMatch.border": "#00c9a7",
+        "editorBracketMatch.border": "#1f6b48",
         "editorIndentGuide.background1": "#2c313a",
         "editorIndentGuide.activeBackground1": "#4b5263",
         "editorWidget.background": "#1a1f2b",
@@ -224,7 +224,7 @@ export default function CodeEditor({
         borderRadius: isLc ? 0 : 12,
         border: isLc ? "none" : "1px solid var(--border-light)",
         overflow: "hidden",
-        background: isLc ? "#1e1e1e" : "#0f1117",
+        background: isLc ? "var(--bg-inverse)" : "var(--bg-inverse)",
       }}
     >
       <div style={{ position: "absolute", inset: 0 }}>
@@ -240,10 +240,9 @@ export default function CodeEditor({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                color: "#9ca3af",
-                fontFamily: "Outfit",
+                color: "var(--text-inverse)",
                 fontSize: 13,
-                background: isLc ? "#1e1e1e" : "#0f1117",
+                background: isLc ? "var(--bg-inverse)" : "var(--bg-inverse)",
               }}
             >
               Loading editor…
@@ -254,8 +253,7 @@ export default function CodeEditor({
           options={{
             readOnly,
             fontSize: 14,
-            fontFamily:
-              "'Fira Code', 'Cascadia Code', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace",
+            fontFamily: "var(--font-code), ui-monospace, monospace",
             fontLigatures: true,
             lineHeight: 22,
             letterSpacing: 0.2,

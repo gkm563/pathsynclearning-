@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import React, { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Check,
   ChevronDown,
+  LoaderCircle,
   MoreHorizontal,
   Plus,
   Route,
@@ -13,22 +13,31 @@ import {
 } from "lucide-react";
 import { apiGet, apiSend } from "@/lib/api";
 import type { RoadmapSummary } from "@/types/roadmap";
-
-type PanelPos = { top: number; left: number; width: number };
+import { AnimatePresence, motion } from "framer-motion";
+import { Button, IconButton, Input } from "@/components/ui";
+import { cn } from "@/lib/cn";
 
 export default function RoadmapSwitcher({
   activeRoadmapId,
   activeTitle,
   onSwitched,
   onCreateNew,
+  onBusyChange,
   embedded = false,
+  children,
 }: {
   activeRoadmapId: string;
   activeTitle: string;
   onSwitched: () => void | Promise<void>;
   onCreateNew: () => void;
+  onBusyChange?: (busy: boolean) => void;
   /** Compact trigger for the canvas overview nav bar. */
   embedded?: boolean;
+  children?: (api: {
+    open: boolean;
+    trigger: ReactNode;
+    list: ReactNode;
+  }) => ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<RoadmapSummary[]>([]);
@@ -37,9 +46,7 @@ export default function RoadmapSwitcher({
   const [menuId, setMenuId] = useState<string | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
-  const [pos, setPos] = useState<PanelPos | null>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -53,47 +60,15 @@ export default function RoadmapSwitcher({
     }
   }, []);
 
-  const updatePosition = useCallback(() => {
-    const btn = buttonRef.current;
-    if (!btn) return;
-    const rect = btn.getBoundingClientRect();
-    const width = Math.min(340, window.innerWidth - 24);
-    let left = rect.left;
-    if (left + width > window.innerWidth - 12) {
-      left = Math.max(12, window.innerWidth - width - 12);
-    }
-    setPos({
-      top: rect.bottom + 8,
-      left,
-      width,
-    });
-  }, []);
-
   useEffect(() => {
     if (open) void load();
   }, [open, load]);
-
-  useLayoutEffect(() => {
-    if (!open) {
-      setPos(null);
-      return;
-    }
-    updatePosition();
-    const onWin = () => updatePosition();
-    window.addEventListener("resize", onWin);
-    window.addEventListener("scroll", onWin, true);
-    return () => {
-      window.removeEventListener("resize", onWin);
-      window.removeEventListener("scroll", onWin, true);
-    };
-  }, [open, updatePosition, items.length]);
 
   useEffect(() => {
     if (!open) return;
     const onDoc = (e: MouseEvent) => {
       const t = e.target as Node;
-      if (buttonRef.current?.contains(t)) return;
-      if (panelRef.current?.contains(t)) return;
+      if (rootRef.current?.contains(t)) return;
       setOpen(false);
       setMenuId(null);
     };
@@ -117,12 +92,14 @@ export default function RoadmapSwitcher({
       return;
     }
     setBusyId(id);
+    onBusyChange?.(true);
     try {
       await apiSend("/api/roadmap/switch", "POST", { roadmapId: id });
       setOpen(false);
       await onSwitched();
     } finally {
       setBusyId(null);
+      onBusyChange?.(false);
     }
   };
 
@@ -152,6 +129,7 @@ export default function RoadmapSwitcher({
       return;
     }
     setBusyId(id);
+    onBusyChange?.(true);
     try {
       await apiSend(`/api/roadmap/${id}`, "DELETE");
       setMenuId(null);
@@ -159,376 +137,212 @@ export default function RoadmapSwitcher({
       await onSwitched();
     } finally {
       setBusyId(null);
+      onBusyChange?.(false);
     }
   };
 
-  const needsListScroll = items.length > 6;
+  const trigger = (
+    <button
+      type="button"
+      onClick={() => setOpen((v) => !v)}
+      title="Switch roadmap"
+      aria-expanded={open}
+      aria-haspopup="listbox"
+      className={cn(
+        "inline-flex min-w-0 max-w-full items-center gap-2 text-ink",
+        embedded
+          ? "my-[-2px] rounded-[10px] border-0 bg-transparent py-0.5 pr-1.5 pl-0.5"
+          : "rounded-[var(--radius-md)] border border-line bg-surface/92 px-3 py-2 shadow-[var(--shadow-sm)] backdrop-blur-md",
+      )}
+    >
+      <div
+        className="grid shrink-0 place-items-center rounded-[9px] bg-primary-soft"
+        style={{
+          width: embedded ? 28 : 32,
+          height: embedded ? 28 : 32,
+        }}
+      >
+        <Route size={embedded ? 14 : 16} color="var(--primary)" />
+      </div>
+      <span className="flex min-w-0 flex-col items-start gap-0.5">
+        {embedded ? (
+          <span className="type-overline leading-none text-muted">Roadmap</span>
+        ) : null}
+        <span
+          className={cn(
+            "overflow-hidden text-ellipsis whitespace-nowrap font-bold leading-tight",
+            embedded ? "type-label max-w-[min(220px,48vw)]" : "type-small max-w-[220px]",
+          )}
+        >
+          {activeTitle || "My roadmap"}
+        </span>
+      </span>
+      <ChevronDown
+        size={15}
+        className={cn(
+          "shrink-0 text-muted transition-transform duration-[var(--duration-slow)] ease-[var(--ease-standard)] motion-reduce:transition-none",
+          open && "rotate-180",
+        )}
+      />
+    </button>
+  );
 
-  const panel =
-    open && pos && typeof document !== "undefined"
-      ? createPortal(
-          <div
-            ref={panelRef}
-            role="listbox"
-            aria-label="Your roadmaps"
-            style={{
-              position: "fixed",
-              top: pos.top,
-              left: pos.left,
-              width: pos.width,
-              zIndex: 1200,
-              background: "var(--bg-card)",
-              border: "1.5px solid var(--border-light)",
-              borderRadius: 16,
-              boxShadow: "0 16px 40px rgba(15,23,42,0.16)",
-              display: "flex",
-              flexDirection: "column",
-              maxHeight: `min(420px, calc(100vh - ${pos.top + 16}px))`,
-            }}
-          >
-            <div
-              style={{
-                padding: "12px 14px 8px",
-                fontFamily: "Outfit",
-                fontSize: 12,
-                fontWeight: 700,
-                color: "var(--text-muted)",
-                letterSpacing: 0.4,
-                flexShrink: 0,
-              }}
-            >
-              YOUR ROADMAPS
-            </div>
+  const list = (
+    <AnimatePresence initial={false}>
+      {open ? (
+        <motion.div
+          key="roadmap-list"
+          role="listbox"
+          aria-label="Your roadmaps"
+          initial={{ height: 0 }}
+          animate={{ height: "auto" }}
+          exit={{ height: 0 }}
+          transition={{
+            height: { duration: 0.32, ease: [0.32, 0.72, 0, 1] },
+          }}
+          className="min-w-0 w-full overflow-hidden border-t border-line"
+        >
+          <div className="type-overline px-3.5 pt-3 pb-2 text-muted">Your roadmaps</div>
 
-            <div
-              style={{
-                padding: "0 8px 8px",
-                // Only scroll when there are many roadmaps — avoid nested scroll for 1–few items
-                overflowY: needsListScroll ? "auto" : "visible",
-                flex: needsListScroll ? "1 1 auto" : "0 0 auto",
-                minHeight: 0,
-              }}
-            >
-              {loading && items.length === 0 ? (
-                <p
-                  style={{
-                    margin: 0,
-                    padding: 12,
-                    fontSize: 13,
-                    color: "var(--text-muted)",
-                    fontFamily: "Inter",
-                  }}
+          <div className="max-h-[min(50dvh,22rem)] overflow-y-auto px-2 pb-2">
+            {loading && items.length === 0 ? (
+              <div className="flex items-center justify-center gap-2 p-4 text-muted">
+                <LoaderCircle
+                  size={16}
+                  aria-hidden
+                  className="animate-spin text-primary motion-reduce:animate-none"
+                />
+                <p className="type-small m-0">Loading roadmaps…</p>
+              </div>
+            ) : null}
+
+            {items.map((item) => {
+              const active = item.id === activeRoadmapId;
+              const renaming = renamingId === item.id;
+              return (
+                <div
+                  key={item.id}
+                  className={cn(
+                    "mb-0.5 flex items-start gap-1.5 rounded-[var(--radius-md)] px-1.5 py-2",
+                    active && "bg-primary-soft",
+                  )}
                 >
-                  Loading…
-                </p>
-              ) : null}
-
-              {items.map((item) => {
-                const active = item.id === activeRoadmapId;
-                const renaming = renamingId === item.id;
-                return (
-                  <div
-                    key={item.id}
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: 6,
-                      padding: "8px 6px",
-                      borderRadius: 12,
-                      background: active ? "rgba(108,99,255,0.08)" : "transparent",
-                      marginBottom: 2,
-                    }}
+                  <button
+                    type="button"
+                    disabled={Boolean(busyId)}
+                    onClick={() => void switchTo(item.id)}
+                    className="min-w-0 flex-1 cursor-pointer border-0 bg-transparent px-1.5 py-1 text-left text-ink"
                   >
-                    <button
-                      type="button"
-                      disabled={busyId === item.id}
-                      onClick={() => void switchTo(item.id)}
-                      style={{
-                        flex: 1,
-                        minWidth: 0,
-                        border: "none",
-                        background: "transparent",
-                        cursor: "pointer",
-                        textAlign: "left",
-                        padding: "4px 6px",
-                        color: "var(--text-main)",
+                    {renaming ? (
+                      <Input
+                        autoFocus
+                        value={renameValue}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => setRenameValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") void saveRename(item.id);
+                          if (e.key === "Escape") setRenamingId(null);
+                        }}
+                        onBlur={() => void saveRename(item.id)}
+                        className="min-h-0 py-1.5"
+                      />
+                    ) : (
+                      <>
+                        <div className="type-label flex items-center gap-1.5">
+                          <span className="truncate">{item.title}</span>
+                          {busyId === item.id ? (
+                            <LoaderCircle
+                              size={14}
+                              aria-hidden
+                              className="shrink-0 animate-spin text-primary motion-reduce:animate-none"
+                            />
+                          ) : active ? (
+                            <Check size={14} className="shrink-0 text-primary" />
+                          ) : null}
+                        </div>
+                        <div className="type-caption mt-0.5 text-muted">
+                          {item.targetCompany ? `${item.targetCompany} · ` : ""}
+                          {item.completionPercent}% · {item.completedNodes ?? 0}/
+                          {item.nodeCount} nodes
+                          {typeof item.remainingHours === "number"
+                            ? ` · ~${item.remainingHours}h left`
+                            : item.estimatedWeeks
+                              ? ` · ~${item.estimatedWeeks}w`
+                              : ""}
+                        </div>
+                      </>
+                    )}
+                  </button>
+
+                  <div className="relative shrink-0">
+                    <IconButton
+                      label="More"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMenuId((v) => (v === item.id ? null : item.id));
                       }}
                     >
-                      {renaming ? (
-                        <input
-                          autoFocus
-                          value={renameValue}
-                          onClick={(e) => e.stopPropagation()}
-                          onChange={(e) => setRenameValue(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") void saveRename(item.id);
-                            if (e.key === "Escape") setRenamingId(null);
+                      <MoreHorizontal size={16} />
+                    </IconButton>
+                    {menuId === item.id ? (
+                      <div className="absolute top-full right-0 z-[2] mt-1 min-w-[140px] rounded-[var(--radius-md)] border border-line bg-surface py-1 shadow-[var(--shadow-md)]">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRenamingId(item.id);
+                            setRenameValue(item.title);
+                            setMenuId(null);
                           }}
-                          onBlur={() => void saveRename(item.id)}
-                          style={{
-                            width: "100%",
-                            padding: "6px 8px",
-                            borderRadius: 8,
-                            border: "1.5px solid #6c63ff",
-                            fontFamily: "Outfit",
-                            fontSize: 13,
-                            background: "var(--bg-alt)",
-                            color: "var(--text-main)",
-                            boxSizing: "border-box",
-                          }}
-                        />
-                      ) : (
-                        <>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 6,
-                              fontFamily: "Outfit",
-                              fontWeight: 700,
-                              fontSize: 13,
-                            }}
-                          >
-                            <span
-                              style={{
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              {item.title}
-                            </span>
-                            {active ? <Check size={14} color="#6c63ff" /> : null}
-                          </div>
-                          <div
-                            style={{
-                              marginTop: 2,
-                              fontSize: 11,
-                              color: "var(--text-muted)",
-                              fontFamily: "Inter",
-                            }}
-                          >
-                            {item.targetCompany ? `${item.targetCompany} · ` : ""}
-                            {item.completionPercent}% · {item.completedNodes ?? 0}/
-                            {item.nodeCount} nodes
-                            {typeof item.remainingHours === "number"
-                              ? ` · ~${item.remainingHours}h left`
-                              : item.estimatedWeeks
-                                ? ` · ~${item.estimatedWeeks}w`
-                                : ""}
-                          </div>
-                        </>
-                      )}
-                    </button>
-
-                    <div style={{ position: "relative", flexShrink: 0 }}>
-                      <button
-                        type="button"
-                        title="More"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setMenuId((v) => (v === item.id ? null : item.id));
-                        }}
-                        style={{
-                          border: "none",
-                          background: "transparent",
-                          cursor: "pointer",
-                          color: "var(--text-muted)",
-                          padding: 6,
-                          borderRadius: 8,
-                        }}
-                      >
-                        <MoreHorizontal size={16} />
-                      </button>
-                      {menuId === item.id ? (
-                        <div
-                          style={{
-                            position: "absolute",
-                            right: 0,
-                            top: "100%",
-                            marginTop: 4,
-                            background: "var(--bg-card)",
-                            border: "1px solid var(--border-light)",
-                            borderRadius: 10,
-                            boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                            minWidth: 140,
-                            zIndex: 2,
-                          }}
+                          className="type-label flex w-full items-center gap-2 px-3 py-2.5 text-left text-ink hover:bg-sunken"
                         >
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setRenamingId(item.id);
-                              setRenameValue(item.title);
-                              setMenuId(null);
-                            }}
-                            style={menuItemStyle}
-                          >
-                            <Pencil size={14} /> Rename
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => void remove(item.id)}
-                            style={{ ...menuItemStyle, color: "#ef4444" }}
-                          >
-                            <Trash2 size={14} /> Delete
-                          </button>
-                        </div>
-                      ) : null}
-                    </div>
+                          <Pencil size={14} /> Rename
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void remove(item.id)}
+                          className="type-label flex w-full items-center gap-2 px-3 py-2.5 text-left text-danger hover:bg-sunken"
+                        >
+                          <Trash2 size={14} /> Delete
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
+          </div>
 
-            <div
-              style={{
-                borderTop: "1px solid var(--border-light)",
-                padding: 8,
-                flexShrink: 0,
+          <div className="border-t border-line p-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full border-dashed border-[var(--primary-border)] bg-primary-soft text-primary hover:bg-primary-soft"
+              onClick={() => {
+                setOpen(false);
+                onCreateNew();
               }}
             >
-              <button
-                type="button"
-                onClick={() => {
-                  setOpen(false);
-                  onCreateNew();
-                }}
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  padding: "10px 12px",
-                  borderRadius: 10,
-                  border: "1.5px dashed rgba(108,99,255,0.4)",
-                  background: "rgba(108,99,255,0.06)",
-                  color: "#6c63ff",
-                  fontFamily: "Outfit",
-                  fontWeight: 700,
-                  fontSize: 13,
-                  cursor: "pointer",
-                }}
-              >
-                <Plus size={16} /> Create new roadmap
-              </button>
-            </div>
-          </div>,
-          document.body,
-        )
-      : null;
+              <Plus size={16} /> Create new roadmap
+            </Button>
+          </div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
+  );
 
-  return (
+  const body = children ? (
+    children({ open, trigger, list })
+  ) : (
     <>
-      <button
-        ref={buttonRef}
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        title="Switch roadmap"
-        aria-expanded={open}
-        aria-haspopup="listbox"
-        style={
-          embedded
-            ? {
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                maxWidth: 200,
-                padding: "2px 6px 2px 2px",
-                margin: "-2px 0",
-                borderRadius: 10,
-                border: "none",
-                background: "transparent",
-                cursor: "pointer",
-                color: "var(--text-main)",
-              }
-            : {
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                maxWidth: 280,
-                padding: "8px 12px",
-                borderRadius: 12,
-                border: "1.5px solid var(--border-light)",
-                background: "rgba(var(--bg-card-rgb, 255, 255, 255), 0.92)",
-                backdropFilter: "blur(12px)",
-                boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
-                cursor: "pointer",
-                color: "var(--text-main)",
-              }
-        }
-      >
-        <div
-          style={{
-            width: embedded ? 28 : 32,
-            height: embedded ? 28 : 32,
-            borderRadius: 9,
-            background: "rgba(108,99,255,0.12)",
-            display: "grid",
-            placeItems: "center",
-            flexShrink: 0,
-          }}
-        >
-          <Route size={embedded ? 14 : 16} color="#6c63ff" />
-        </div>
-        <span
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-start",
-            minWidth: 0,
-            gap: 3,
-          }}
-        >
-          {embedded ? (
-            <span
-              style={{
-                fontFamily: "Fira Code, monospace",
-                fontSize: 10,
-                fontWeight: 600,
-                letterSpacing: "0.06em",
-                color: "var(--text-muted)",
-                lineHeight: 1,
-              }}
-            >
-              ROADMAP
-            </span>
-          ) : null}
-          <span
-            style={{
-              fontFamily: "Outfit",
-              fontWeight: 700,
-              fontSize: embedded ? 14 : 13,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              maxWidth: embedded ? 148 : 220,
-              lineHeight: 1.15,
-            }}
-          >
-            {activeTitle || "My roadmap"}
-          </span>
-        </span>
-        <ChevronDown size={15} color="var(--text-muted)" />
-      </button>
-      {panel}
+      {trigger}
+      {list}
     </>
   );
-}
 
-const menuItemStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  width: "100%",
-  padding: "10px 12px",
-  border: "none",
-  background: "transparent",
-  cursor: "pointer",
-  fontFamily: "Outfit",
-  fontSize: 13,
-  fontWeight: 600,
-  color: "var(--text-main)",
-  textAlign: "left",
-};
+  return (
+    <div ref={rootRef} className="contents">
+      {body}
+    </div>
+  );
+}

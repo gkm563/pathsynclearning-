@@ -3,6 +3,8 @@
 import React from "react";
 import type { RoadmapNode } from "@/types/roadmap";
 import { computeRoadmapStats } from "@/lib/roadmap/stats";
+import { Progress } from "@/components/ui";
+import { cn } from "@/lib/cn";
 import RoadmapSwitcher from "./RoadmapSwitcher";
 
 export default function RoadmapOverview({
@@ -13,6 +15,7 @@ export default function RoadmapOverview({
   progress,
   onSwitched,
   onCreateNew,
+  onBusyChange,
 }: {
   roadmapId: string;
   roadmapTitle: string;
@@ -21,165 +24,124 @@ export default function RoadmapOverview({
   progress: Map<string, string>;
   onSwitched?: () => void | Promise<void>;
   onCreateNew?: () => void;
+  onBusyChange?: (busy: boolean) => void;
 }) {
   const stats = computeRoadmapStats(nodes, progress);
 
-  return (
-    <div
-      style={{
-        position: "absolute",
-        top: 20,
-        left: "50%",
-        transform: "translateX(-50%)",
-        zIndex: 10,
-        width: "max-content",
-        maxWidth: "calc(100% - 32px)",
-        background: "rgba(var(--bg-card-rgb, 255, 255, 255), 0.94)",
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
-        border: "1.5px solid var(--border-light)",
-        borderRadius: 18,
-        padding: "12px 18px",
-        display: "flex",
-        alignItems: "center",
-        gap: 0,
-        boxShadow: "0 8px 28px rgba(15, 23, 42, 0.08)",
-        overflowX: "auto",
-        overflowY: "hidden",
-        scrollbarWidth: "none",
-      }}
-    >
-      {onSwitched && onCreateNew ? (
-        <>
-          <div style={colStyle}>
-            <RoadmapSwitcher
-              activeRoadmapId={roadmapId}
-              activeTitle={roadmapTitle}
-              onSwitched={onSwitched}
-              onCreateNew={onCreateNew}
-              embedded
-            />
-          </div>
-          <Divider />
-        </>
-      ) : null}
+  if (!onSwitched || !onCreateNew) {
+    return (
+      <div className="absolute top-3 right-3 left-3 z-10 flex items-center rounded-[var(--radius-lg)] border border-line bg-surface/94 px-3 py-2 shadow-[var(--shadow-md)] backdrop-blur-md lg:top-5 lg:right-auto lg:left-1/2 lg:w-max lg:max-w-[calc(100%-32px)] lg:-translate-x-1/2 lg:px-[18px] lg:py-3">
+        <Stats
+          stats={stats}
+          targetCompany={targetCompany}
+          compact={false}
+        />
+      </div>
+    );
+  }
 
-      {targetCompany ? (
+  return (
+    <RoadmapSwitcher
+      activeRoadmapId={roadmapId}
+      activeTitle={roadmapTitle}
+      onSwitched={onSwitched}
+      onCreateNew={onCreateNew}
+      onBusyChange={onBusyChange}
+      embedded
+    >
+      {({ open, trigger, list }) => (
+        <div
+          className={cn(
+            "absolute top-3 right-3 left-3 z-10 flex flex-col overflow-hidden rounded-[var(--radius-lg)] border border-line bg-surface/94 shadow-[var(--shadow-md)] backdrop-blur-md",
+            "lg:top-5 lg:right-auto lg:left-1/2 lg:max-w-[calc(100%-32px)] lg:-translate-x-1/2",
+            open ? "lg:w-[min(28rem,calc(100%-32px))]" : "lg:w-max",
+          )}
+        >
+          <div className="flex min-w-0 items-center px-3 py-2 lg:px-[18px] lg:py-3">
+            <div className="flex min-w-0 shrink flex-col justify-center">{trigger}</div>
+            <Divider />
+            <Stats stats={stats} targetCompany={targetCompany} compact={false} />
+          </div>
+          {list}
+        </div>
+      )}
+    </RoadmapSwitcher>
+  );
+}
+
+function Stats({
+  stats,
+  targetCompany,
+  compact,
+}: {
+  stats: ReturnType<typeof computeRoadmapStats>;
+  targetCompany?: string | null;
+  compact: boolean;
+}) {
+  return (
+    <>
+      {targetCompany && !compact ? (
         <>
-          <div style={colStyle}>
-            <span style={labelStyle}>COMPANY</span>
-            <div style={{ ...valueStyle, marginTop: 4, maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis" }}>
+          <div className="hidden shrink-0 flex-col justify-center sm:flex">
+            <span className="type-overline text-muted">Company</span>
+            <div className="type-h4 mt-1 max-w-[140px] overflow-hidden text-ellipsis whitespace-nowrap text-ink">
               {targetCompany}
             </div>
           </div>
-          <Divider />
+          <Divider className="hidden sm:block" />
         </>
       ) : null}
 
-      <div style={{ ...colStyle, minWidth: 148 }}>
-        <span style={labelStyle}>PROGRESS</span>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
-          <span
-            style={{
-              fontFamily: "Outfit",
-              fontSize: 18,
-              fontWeight: 800,
-              color: "#00c9a7",
-              lineHeight: 1,
-              letterSpacing: "-0.02em",
-              minWidth: 40,
-            }}
-          >
+      <div className="flex min-w-0 shrink-0 flex-col justify-center">
+        <span className="type-overline text-muted">Progress</span>
+        <div className="mt-1 flex items-center gap-2.5">
+          <span className="type-numeric min-w-8 text-base font-extrabold leading-none tracking-[-0.02em] text-success lg:min-w-10 lg:text-lg">
             {stats.completionPercent}%
           </span>
-          <div
-            style={{
-              width: 84,
-              height: 7,
-              background: "var(--bg-alt)",
-              borderRadius: 999,
-              overflow: "hidden",
-              flexShrink: 0,
-            }}
-          >
-            <div
-              style={{
-                width: `${stats.completionPercent}%`,
-                height: "100%",
-                background: "linear-gradient(90deg, #00c9a7, #2dd4bf)",
-                borderRadius: 999,
-                transition: "width 0.35s ease",
-              }}
-            />
+          <Progress
+            value={stats.completionPercent}
+            tone="success"
+            size="sm"
+            className="hidden w-[84px] shrink-0 sm:block"
+          />
+        </div>
+      </div>
+
+      {!compact ? (
+        <>
+          <Divider className="hidden md:block" />
+
+          <div className="hidden shrink-0 flex-col justify-center md:flex">
+            <span className="type-overline text-muted">Nodes</span>
+            <div className="type-h4 mt-1 whitespace-nowrap">
+              <span className="text-ink">{stats.completedNodes}</span>
+              <span className="font-semibold text-muted"> / {stats.totalNodes}</span>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <Divider />
+          <Divider className="hidden md:block" />
 
-      <div style={colStyle}>
-        <span style={labelStyle}>NODES</span>
-        <div style={{ ...valueStyle, marginTop: 4 }}>
-          <span style={{ color: "var(--text-main)" }}>{stats.completedNodes}</span>
-          <span style={{ color: "var(--text-muted)", fontWeight: 600 }}>
-            {" "}
-            / {stats.totalNodes}
-          </span>
-        </div>
-      </div>
-
-      <Divider />
-
-      <div style={colStyle}>
-        <span style={labelStyle}>TIME LEFT</span>
-        <div style={{ ...valueStyle, marginTop: 4 }}>
-          ~{stats.remainingHours}
-          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)" }}>
-            {" "}
-            hrs
-          </span>
-        </div>
-      </div>
-    </div>
+          <div className="hidden shrink-0 flex-col justify-center md:flex">
+            <span className="type-overline text-muted">Time left</span>
+            <div className="type-h4 mt-1 whitespace-nowrap text-ink">
+              ~{stats.remainingHours}
+              <span className="type-small font-semibold text-muted"> hrs</span>
+            </div>
+          </div>
+        </>
+      ) : null}
+    </>
   );
 }
 
-function Divider() {
+function Divider({ className }: { className?: string }) {
   return (
     <div
       aria-hidden
-      style={{
-        width: 1,
-        height: 36,
-        background: "var(--border-light)",
-        margin: "0 16px",
-        flexShrink: 0,
-      }}
+      className={cn(
+        "mx-3 h-8 w-px shrink-0 bg-[var(--border-light)] lg:mx-4 lg:h-9",
+        className,
+      )}
     />
   );
 }
-
-const colStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "center",
-  flexShrink: 0,
-};
-
-const labelStyle: React.CSSProperties = {
-  fontFamily: "Fira Code, monospace",
-  fontSize: 10,
-  fontWeight: 600,
-  letterSpacing: "0.06em",
-  color: "var(--text-muted)",
-  lineHeight: 1,
-};
-
-const valueStyle: React.CSSProperties = {
-  fontFamily: "Outfit",
-  fontSize: 16,
-  fontWeight: 700,
-  color: "var(--text-main)",
-  lineHeight: 1.15,
-  whiteSpace: "nowrap",
-};

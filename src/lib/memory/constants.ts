@@ -21,13 +21,13 @@ export const MEMORY_TYPE_META: Record<
   LEARNING_COMPLETED: {
     label: "Learning Completed",
     emoji: "📚",
-    color: "#6c63ff",
+    color: "#1b4540",
     filter: "learning",
   },
   ROADMAP_NODE_COMPLETED: {
     label: "Roadmap Node Completed",
     emoji: "🟢",
-    color: "#00c9a7",
+    color: "#1f6b48",
     filter: "learning",
   },
   SKILL_UNLOCKED: {
@@ -45,7 +45,7 @@ export const MEMORY_TYPE_META: Record<
   CHALLENGE_COMPLETED: {
     label: "Challenge Completed",
     emoji: "🏆",
-    color: "#8b5cf6",
+    color: "#1b4540",
     filter: "challenges",
   },
   CHALLENGE_PERSONAL_BEST: {
