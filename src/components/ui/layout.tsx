@@ -182,7 +182,7 @@ export function Prose({
     <div
       className={cn(
         "max-w-[var(--measure-prose)] text-ink",
-        article
+        ...(article
           ? [
               "text-[0.875rem] leading-[1.65] sm:text-[1rem] sm:leading-[1.7]",
               "[&_h2]:mt-7 [&_h2]:mb-2 [&_h2]:text-[1.0625rem] [&_h2]:leading-snug [&_h2]:font-semibold [&_h2]:tracking-[-0.03em] [&_h2]:text-ink sm:[&_h2]:mt-9 sm:[&_h2]:mb-3 sm:[&_h2]:text-[1.25rem]",
@@ -206,7 +206,7 @@ export function Prose({
               "[&_ul]:mt-0 [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:text-muted",
               "[&_ol]:mt-0 [&_ol]:mb-4 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:text-muted",
               "[&_li]:mb-1.5",
-            ],
+            ]),
         "[&_a]:text-primary [&_a]:underline [&_a]:underline-offset-4",
         "[&_strong]:font-semibold [&_strong]:text-ink",
         "[&_code]:type-code [&_code]:rounded [&_code]:bg-sunken [&_code]:px-1.5 [&_code]:py-0.5",

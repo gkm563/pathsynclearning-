@@ -359,7 +359,7 @@ export function NoteEditor({
 
       <div className="flex flex-wrap items-center gap-2.5">
         <span className="type-label text-muted">Visibility</span>
-        <Segmented
+        <Segmented<"private" | "public">
           size="sm"
           ariaLabel="Note visibility"
           value={visibility}
