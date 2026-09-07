@@ -28,9 +28,9 @@ const variantClass: Record<ButtonVariant, string> = {
 };
 
 const sizeClass: Record<ButtonSize, string> = {
-  sm: "h-9 gap-1.5 px-3 text-[13px]",
-  md: "h-10 gap-2 px-4 text-sm",
-  lg: "h-12 gap-2 px-5 text-[15px]",
+  sm: "h-9 gap-1.5 px-3 text-xs lg:text-[13px]",
+  md: "h-10 gap-2 px-4 text-xs lg:text-sm",
+  lg: "h-12 gap-2 px-5 text-sm lg:text-[15px]",
 };
 
 export const Button = forwardRef<
@@ -139,7 +139,7 @@ export const IconButton = forwardRef<
 });
 
 const fieldClass =
-  "w-full min-h-11 rounded-[var(--radius-md)] border border-[var(--border-strong)] bg-[var(--bg-card)] px-3.5 py-2.5 text-sm text-[var(--text-main)] transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--text-light)] focus-visible:border-[var(--primary)] focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_var(--ring-soft)] disabled:cursor-not-allowed disabled:opacity-60";
+  "w-full min-h-11 rounded-[var(--radius-md)] border border-[var(--border-strong)] bg-[var(--bg-card)] px-3.5 py-2.5 text-xs text-[var(--text-main)] transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--text-light)] focus-visible:border-[var(--primary)] focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_var(--ring-soft)] disabled:cursor-not-allowed disabled:opacity-60 lg:text-sm";
 
 export function Input({
   className,

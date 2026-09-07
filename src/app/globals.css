@@ -251,6 +251,12 @@
     font-optical-sizing: auto;
   }
 
+  @media (max-width: 1023px) {
+    body {
+      font-size: 14px;
+    }
+  }
+
   h1,
   h2,
   h3,
@@ -436,36 +442,40 @@
     letter-spacing: 0;
   }
 
-  /* Phones: one step smaller so cards, sheets, and tab chrome don't crowd. */
+  /* Phones: one more step down so sheets, cards, and chrome fit the screen. */
   @media (max-width: 1023px) {
+    .type-display {
+      font-size: clamp(1.5rem, 1.15rem + 1.8vw, 2rem);
+    }
+
     .type-h1 {
-      font-size: clamp(1.5rem, 1.15rem + 1.6vw, 2rem);
+      font-size: clamp(1.25rem, 1.05rem + 1.1vw, 1.6rem);
     }
 
     .type-h2 {
-      font-size: clamp(1.2rem, 1.05rem + 0.7vw, 1.5rem);
+      font-size: clamp(1.05rem, 0.95rem + 0.45vw, 1.25rem);
     }
 
     .type-h3 {
-      font-size: 1.0625rem;
+      font-size: 0.9375rem;
       line-height: 1.28;
     }
 
     .type-h4 {
-      font-size: 0.9375rem;
+      font-size: 0.8125rem;
     }
 
     .type-body-lg {
-      font-size: 0.9375rem;
+      font-size: 0.8125rem;
     }
 
     .type-body {
-      font-size: 0.875rem;
-      line-height: 1.55;
+      font-size: 0.75rem;
+      line-height: 1.5;
     }
 
     .type-small {
-      font-size: 0.75rem;
+      font-size: 0.6875rem;
     }
 
     .type-caption {
@@ -473,11 +483,15 @@
     }
 
     .type-label {
-      font-size: 0.75rem;
+      font-size: 0.6875rem;
     }
 
     .type-overline {
-      font-size: 0.625rem;
+      font-size: 0.5625rem;
+    }
+
+    .type-code {
+      font-size: 0.6875rem;
     }
   }
 
@@ -1440,5 +1454,90 @@
   .news-card:hover .news-cover-fallback,
   .news-featured-card:hover .news-cover-fallback {
     transform: none;
+  }
+}
+
+@layer utilities {
+  @media (max-width: 1023px) {
+    .text-xs {
+      font-size: 0.6875rem;
+      line-height: 1rem;
+    }
+
+    .text-sm {
+      font-size: 0.75rem;
+      line-height: 1.1rem;
+    }
+
+    .text-base {
+      font-size: 0.8125rem;
+      line-height: 1.25rem;
+    }
+
+    .text-lg {
+      font-size: 0.9375rem;
+      line-height: 1.35rem;
+    }
+
+    .text-xl {
+      font-size: 1.0625rem;
+      line-height: 1.4rem;
+    }
+
+    .text-2xl {
+      font-size: 1.2rem;
+      line-height: 1.45rem;
+    }
+
+    .text-3xl {
+      font-size: 1.4rem;
+      line-height: 1.5rem;
+    }
+  }
+}
+
+@media (max-width: 1023px) {
+  .tech-news-title {
+    font-size: clamp(22px, 6vw, 28px);
+  }
+
+  .tech-news-lead {
+    font-size: 14px;
+  }
+
+  .news-card-heading {
+    font-size: 15px;
+  }
+
+  .news-card-summary {
+    font-size: 12.5px;
+  }
+
+  .news-featured-card--hero .news-featured-title {
+    font-size: clamp(17px, 5vw, 22px);
+  }
+
+  .news-featured-card--row .news-featured-title {
+    font-size: 14px;
+  }
+
+  .news-featured-summary {
+    font-size: 13px;
+  }
+
+  .news-article-dek {
+    font-size: 15px;
+  }
+
+  .news-article-fallback {
+    font-size: 13.5px;
+  }
+
+  .news-article-body {
+    font-size: 15px;
+  }
+
+  .news-article-body pre {
+    font-size: 12px;
   }
 }

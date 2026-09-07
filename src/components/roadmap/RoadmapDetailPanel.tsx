@@ -55,6 +55,9 @@ const STUDY_FS_KEY = "pathed:study-room-fullscreen";
 const STUDY_RAIL_DEFAULT = 402;
 const STUDY_RAIL_MIN = 280;
 const STUDY_RAIL_MAX = 760;
+const SHEET_MID_PCT = 66;
+const SHEET_FULL_PCT = 90;
+const SHEET_SPRING = { type: "spring" as const, stiffness: 380, damping: 34, mass: 0.8 };
 
 function loadStudyFullscreenPref() {
   if (typeof window === "undefined") return false;
@@ -164,6 +167,9 @@ export default function RoadmapDetailPanel({
   const [studyBubble, setStudyBubble] = useState<StudyBubble | null>(null);
   const [sheetSnap, setSheetSnap] = useState<"mid" | "full">("mid");
   const sheetDragControls = useDragControls();
+  const sheetPct = useMotionValue(SHEET_MID_PCT);
+  const sheetHeightCss = useTransform(sheetPct, (v) => `${v}%`);
+  const sheetAnim = useRef<{ stop: () => void } | null>(null);
   const [activeVideo, setActiveVideo] = useState(0);
   const [railWidth, setRailWidth] = useState(STUDY_RAIL_DEFAULT);
   const [narrowStudy, setNarrowStudy] = useState(
@@ -195,6 +201,7 @@ export default function RoadmapDetailPanel({
     setSideRail("playlist");
     setStudyBubble(null);
     setSheetSnap("mid");
+    sheetPct.set(SHEET_MID_PCT);
     setMobileStudyTab("playlist");
     setActiveVideo(0);
   }, [node?.id]);
@@ -344,6 +351,11 @@ export default function RoadmapDetailPanel({
     persistBubbleSize();
   }
 
+  function springSheetPct(next: number) {
+    sheetAnim.current?.stop();
+    sheetAnim.current = animate(sheetPct, next, SHEET_SPRING);
+  }
+
   function openStudyBubble(kind: StudyBubble) {
     const targetH = bubbleHeightRef.current;
     const targetW = bubbleWidthRef.current;
@@ -462,24 +474,24 @@ export default function RoadmapDetailPanel({
   };
 
   const footerActions = (
-    <div className="flex flex-wrap gap-3">
+    <div className="flex gap-2 sm:gap-3">
       {!isCompleted && !isLocked && hasExam && onTakeAssessment && (
-        <Button className="min-w-[140px] flex-1" onClick={() => onTakeAssessment(node!.id)}>
+        <Button className="min-w-0 flex-1" onClick={() => onTakeAssessment(node!.id)}>
           <ClipboardCheck size={18} /> Take Assessment
         </Button>
       )}
       {!isCompleted && !isLocked && !needsExam && (
-        <Button className="min-w-[140px] flex-1" onClick={() => onStatusChange(node!.id, "completed")}>
+        <Button className="min-w-0 flex-1" onClick={() => onStatusChange(node!.id, "completed")}>
           <CheckCircle size={18} /> Mark Complete
         </Button>
       )}
       {!isInProgress && !isCompleted && !isLocked && (
-        <Button className="min-w-[140px] flex-1" onClick={() => void openStudyRoom(true)}>
+        <Button className="min-w-0 flex-1" onClick={() => void openStudyRoom(true)}>
           <Play size={18} /> Start Learning
         </Button>
       )}
       {isInProgress && !expanded && (
-        <Button className="min-w-[140px] flex-1" onClick={() => void openStudyRoom(false)}>
+        <Button className="min-w-0 flex-1" onClick={() => void openStudyRoom(false)}>
           <Maximize2 size={18} /> Open Study Room
         </Button>
       )}
@@ -497,16 +509,26 @@ export default function RoadmapDetailPanel({
 
   return (
     <AnimatePresence>
+      {node && !expanded && narrowStudy ? (
+        <motion.button
+          key="node-sheet-backdrop"
+          type="button"
+          aria-label="Close"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          className="absolute inset-0 z-[19] bg-[color-mix(in_srgb,var(--ink)_32%,transparent)]"
+          onClick={onClose}
+        />
+      ) : null}
       {node && !expanded && (
         <motion.div
-          initial={{ y: 48, opacity: 0 }}
-          animate={{
-            y: narrowStudy ? (sheetSnap === "full" ? 0 : "38%") : 0,
-            opacity: 1,
-            x: 0,
-          }}
-          exit={{ y: 80, opacity: 0 }}
-          transition={{ type: "spring", damping: 28, stiffness: 260 }}
+          key={node.id}
+          initial={narrowStudy ? { y: "100%" } : { x: 48, opacity: 0 }}
+          animate={narrowStudy ? { y: 0 } : { x: 0, opacity: 1 }}
+          exit={narrowStudy ? { y: "100%" } : { x: 48, opacity: 0 }}
+          transition={SHEET_SPRING}
           drag={narrowStudy ? "y" : false}
           dragControls={sheetDragControls}
           dragListener={false}
@@ -518,14 +540,19 @@ export default function RoadmapDetailPanel({
             const vy = info.velocity.y;
             if (sheetSnap === "full") {
               if (dy > 160 || vy > 900) onClose();
-              else if (dy > 56 || vy > 450) setSheetSnap("mid");
+              else if (dy > 56 || vy > 450) {
+                setSheetSnap("mid");
+                springSheetPct(SHEET_MID_PCT);
+              }
             } else if (dy > 90 || vy > 650) {
               onClose();
             } else if (dy < -48 || vy < -400) {
               setSheetSnap("full");
+              springSheetPct(SHEET_FULL_PCT);
             }
           }}
-          className="absolute inset-x-0 bottom-0 z-20 flex w-full flex-col overflow-hidden rounded-t-[var(--radius-xl)] border-t border-line bg-surface shadow-[var(--shadow-xl)] max-lg:top-16 lg:inset-y-0 lg:right-0 lg:left-auto lg:top-0 lg:w-[400px] lg:rounded-none lg:border-t-0 lg:border-l"
+          className="absolute inset-x-0 bottom-0 z-20 flex w-full flex-col overflow-hidden rounded-t-[var(--radius-xl)] border-t border-line bg-surface shadow-[var(--shadow-xl)] lg:inset-y-0 lg:right-0 lg:left-auto lg:top-0 lg:h-full lg:w-[400px] lg:rounded-none lg:border-t-0 lg:border-l"
+          style={narrowStudy ? { height: sheetHeightCss, maxHeight: "100%" } : undefined}
         >
           <div
             className="flex shrink-0 cursor-grab touch-none flex-col items-center pt-2 pb-1 active:cursor-grabbing lg:hidden"
@@ -586,7 +613,7 @@ export default function RoadmapDetailPanel({
             />
           </div>
 
-          <div className="flex shrink-0 flex-col gap-2 border-t border-line px-4 py-3 sm:gap-3 sm:p-6">
+          <div className="mt-auto flex shrink-0 flex-col gap-2 border-t border-line bg-surface px-4 py-3 sm:gap-3 sm:p-6">
             {lockedHint && (
               <Alert tone="warning">
                 {lockedHint}
