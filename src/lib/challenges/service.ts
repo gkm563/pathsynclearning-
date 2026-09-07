@@ -41,40 +41,66 @@ import type { RoadmapNode } from "@/types/roadmap";
  * - wallets.coins
  * challenge_progress.state holds packs/attempts; gamification is loaded from DB columns.
  */
+function ledgerFingerprint(state: ChallengeProgressState): string {
+  const { gamification: _economy, ...ledger } = state;
+  return JSON.stringify(ledger);
+}
+
+/** Packs/attempts/sync changed — economy lives on profiles/wallets and is ignored. */
+function challengeLedgerChanged(
+  previous: unknown,
+  next: ChallengeProgressState,
+): boolean {
+  if (!previous || typeof previous !== "object") return true;
+  try {
+    return (
+      ledgerFingerprint(previous as ChallengeProgressState) !==
+      ledgerFingerprint(next)
+    );
+  } catch {
+    return true;
+  }
+}
+
 export async function loadChallengeContext(userId: string) {
   const db = getDb();
   const dateKey = dateKeyNow();
 
-  const [progressRow] = await db
-    .select()
-    .from(challengeProgress)
-    .where(eq(challengeProgress.userId, userId))
-    .limit(1);
+  const [progressRows, profileRows, userProfileRows, walletRows, roadmapRows] =
+    await Promise.all([
+      db
+        .select()
+        .from(challengeProgress)
+        .where(eq(challengeProgress.userId, userId))
+        .limit(1),
+      db
+        .select()
+        .from(roadmapProfiles)
+        .where(eq(roadmapProfiles.userId, userId))
+        .limit(1),
+      db
+        .select()
+        .from(profiles)
+        .where(eq(profiles.userId, userId))
+        .limit(1),
+      db
+        .select()
+        .from(wallets)
+        .where(eq(wallets.userId, userId))
+        .limit(1),
+      db
+        .select()
+        .from(roadmaps)
+        .where(and(eq(roadmaps.userId, userId), eq(roadmaps.isActive, true)))
+        .orderBy(desc(roadmaps.createdAt))
+        .limit(1),
+    ]);
 
-  const [profile] = await db
-    .select()
-    .from(roadmapProfiles)
-    .where(eq(roadmapProfiles.userId, userId))
-    .limit(1);
-
-  const [userProfile] = await db
-    .select()
-    .from(profiles)
-    .where(eq(profiles.userId, userId))
-    .limit(1);
-
-  const [wallet] = await db
-    .select()
-    .from(wallets)
-    .where(eq(wallets.userId, userId))
-    .limit(1);
-
-  const [activeRoadmap] = await db
-    .select()
-    .from(roadmaps)
-    .where(and(eq(roadmaps.userId, userId), eq(roadmaps.isActive, true)))
-    .orderBy(desc(roadmaps.createdAt))
-    .limit(1);
+  const progressRow = progressRows[0];
+  const profile = profileRows[0];
+  const userProfile = userProfileRows[0];
+  const wallet = walletRows[0];
+  const activeRoadmap = roadmapRows[0];
 
   const nodes = (activeRoadmap?.nodes || []) as RoadmapNode[];
   const unfinished = nodes.filter(
@@ -135,6 +161,10 @@ export async function loadChallengeContext(userId: string) {
       `duel_${userId.slice(0, 6)}_${dateKey.replace(/-/g, "")}`,
   };
 
+  const progressExists = Boolean(progressRow);
+  const needsPersist =
+    !progressExists || challengeLedgerChanged(progressRow?.state, state);
+
   return {
     db,
     dateKey,
@@ -142,7 +172,8 @@ export async function loadChallengeContext(userId: string) {
     careerGoal,
     roadmapTopics,
     unfinishedNodes: unfinished,
-    progressExists: Boolean(progressRow),
+    progressExists,
+    needsPersist,
   };
 }
 

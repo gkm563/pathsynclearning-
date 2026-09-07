@@ -1,11 +1,11 @@
-import { clerkClient, currentUser } from "@clerk/nextjs/server";
+import { clerkClient } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { parseJson, errorResponse, jsonResponse } from "@/lib/api/http";
 import { AppError } from "@/lib/api/errors";
 import { getDb } from "@/lib/db/client";
 import { mapProfile } from "@/lib/db/mappers";
 import { profiles, users, wallets } from "@/lib/db/schema";
-import { requireDbUser } from "@/lib/db/users";
+import { getCachedClerkIdentity, requireDbUser } from "@/lib/db/users";
 import { profileUpdateSchema } from "@/lib/validation/schemas";
 
 function splitFullName(fullName: string) {
@@ -41,12 +41,9 @@ async function loadProfilePayload(userId: string) {
   const { profile, fullName, email, role, imageUrl, coins, createdAt } =
     rows[0];
 
-  // Prefer live Clerk email/image when available
-  const clerk = await currentUser().catch(() => null);
-  const liveEmail =
-    clerk?.primaryEmailAddress?.emailAddress ||
-    clerk?.emailAddresses?.[0]?.emailAddress ||
-    email;
+  // Prefer a Clerk identity already fetched in this process (no extra Clerk round trip)
+  const clerk = await getCachedClerkIdentity();
+  const liveEmail = clerk?.email || email;
   const liveImage = clerk?.imageUrl || imageUrl;
 
   return mapProfile(profile as unknown as Record<string, unknown>, {

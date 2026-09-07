@@ -10,7 +10,9 @@ export async function GET() {
   try {
     const user = await requireDbUser();
     const ctx = await loadChallengeContext(user.id);
-    await persistChallengeState(user.id, ctx.state, ctx.progressExists);
+    if (ctx.needsPersist) {
+      await persistChallengeState(user.id, ctx.state, ctx.progressExists);
+    }
     return jsonResponse(
       buildChallengesResponse({
         state: ctx.state,

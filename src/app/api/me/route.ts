@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       const parsed = meUpsertSchema.parse(raw);
       role = parsed.role;
     }
-    const user = await requireDbUser(role);
+    const user = await requireDbUser(role, { syncFromClerk: true });
     return jsonResponse({ user });
   } catch (e) {
     return errorResponse(e);

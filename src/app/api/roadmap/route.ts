@@ -1,7 +1,7 @@
 import { requireDbUser } from '@/lib/db/users';
 import { getDb } from '@/lib/db/client';
 import { roadmaps, roadmapProgress } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { errorResponse, jsonResponse } from '@/lib/api/http';
 import { isProgressSatisfied } from '@/lib/roadmap/progress';
 import { ensureNodeAssessments } from '@/lib/roadmap/assessment-bank';
@@ -22,6 +22,10 @@ async function reconcileProgress(
 ): Promise<RoadmapProgress[]> {
   const progressMap = new Map(progress.map((p) => [p.nodeId, p]));
   const nodeIds = nodes.map((n) => n.id as string);
+  const now = new Date();
+  const toInsert: Array<typeof roadmapProgress.$inferInsert> = [];
+  const unlockIds: string[] = [];
+  const unlockNodeIds: string[] = [];
 
   for (const nodeId of nodeIds) {
     const deps = edges.filter((e) => e.target === nodeId).map((e) => e.source);
@@ -30,30 +34,45 @@ async function reconcileProgress(
 
     if (!row) {
       const status = deps.length === 0 || depsMet ? 'available' : 'locked';
-      const [inserted] = await db
-        .insert(roadmapProgress)
-        .values({
-          id: crypto.randomUUID(),
-          userId,
-          roadmapId,
-          nodeId,
-          status,
-          updatedAt: new Date(),
-        })
-        .returning();
-      progressMap.set(nodeId, inserted);
+      const next = {
+        id: crypto.randomUUID(),
+        userId,
+        roadmapId,
+        nodeId,
+        status,
+        completedAt: null,
+        updatedAt: now,
+      } satisfies RoadmapProgress;
+      toInsert.push(next);
+      progressMap.set(nodeId, next);
       continue;
     }
 
     if (row.status === 'locked' && depsMet) {
-      const [updated] = await db
-        .update(roadmapProgress)
-        .set({ status: 'available', updatedAt: new Date() })
-        .where(eq(roadmapProgress.id, row.id))
-        .returning();
-      progressMap.set(nodeId, updated);
+      unlockIds.push(row.id);
+      unlockNodeIds.push(nodeId);
     }
   }
+
+  const jobs: Promise<unknown>[] = [];
+  if (toInsert.length) {
+    jobs.push(
+      db.insert(roadmapProgress).values(toInsert).onConflictDoNothing(),
+    );
+  }
+  if (unlockIds.length) {
+    jobs.push(
+      db
+        .update(roadmapProgress)
+        .set({ status: 'available', updatedAt: now })
+        .where(inArray(roadmapProgress.id, unlockIds)),
+    );
+    for (const nodeId of unlockNodeIds) {
+      const row = progressMap.get(nodeId);
+      if (row) progressMap.set(nodeId, { ...row, status: 'available', updatedAt: now });
+    }
+  }
+  if (jobs.length) await Promise.all(jobs);
 
   return Array.from(progressMap.values());
 }

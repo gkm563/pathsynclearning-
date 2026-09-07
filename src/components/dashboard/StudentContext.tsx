@@ -220,14 +220,13 @@ export function StudentProvider({ children }: { children: ReactNode }) {
   const load = useCallback(async (signal?: { cancelled: boolean }) => {
     if (!isLoaded) return;
     try {
-      await fetch("/api/me", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      }).catch(() => null);
-
-      const [profileRes, settingsRes, challengesRes] = await Promise.all([
+      const [, profileRes, settingsRes, challengesRes] = await Promise.all([
+        fetch("/api/me", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        }).catch(() => null),
         apiGet<{ profile: any }>("/api/me/profile").catch(() => null),
         apiGet<{ settings: any }>("/api/me/settings").catch(() => null),
         apiGet<ChallengesApiResponse>("/api/me/challenges").catch(() => null),
