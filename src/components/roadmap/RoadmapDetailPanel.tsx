@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence, useDragControls } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  animate,
+  useDragControls,
+  useMotionValue,
+  useTransform,
+} from "framer-motion";
 import {
   X,
   Clock,
@@ -79,29 +86,32 @@ function loadStudyRailWidth() {
 }
 
 const STUDY_BUBBLE_H_MIN = 0.42;
+const STUDY_BUBBLE_H_DEFAULT = 0.72;
 const STUDY_BUBBLE_W_MIN = 300;
 const STUDY_BUBBLE_W_MAX = 720;
+const STUDY_BUBBLE_W_DEFAULT = 420;
+const BUBBLE_SPRING = { type: "spring" as const, stiffness: 420, damping: 36, mass: 0.72 };
 
 function loadStudyBubbleHeight() {
-  if (typeof window === "undefined") return 0.72;
+  if (typeof window === "undefined") return STUDY_BUBBLE_H_DEFAULT;
   try {
     const h = Number(window.localStorage.getItem(STUDY_BUBBLE_H_KEY));
     if (Number.isFinite(h) && h >= STUDY_BUBBLE_H_MIN && h <= 1) return h;
   } catch {
     /* ignore */
   }
-  return 0.72;
+  return STUDY_BUBBLE_H_DEFAULT;
 }
 
 function loadStudyBubbleWidth() {
-  if (typeof window === "undefined") return 420;
+  if (typeof window === "undefined") return STUDY_BUBBLE_W_DEFAULT;
   try {
     const w = Number(window.localStorage.getItem(STUDY_BUBBLE_W_KEY));
     if (Number.isFinite(w) && w >= STUDY_BUBBLE_W_MIN && w <= STUDY_BUBBLE_W_MAX) return w;
   } catch {
     /* ignore */
   }
-  return 420;
+  return STUDY_BUBBLE_W_DEFAULT;
 }
 
 function youtubeId(url: string): string | null {
@@ -169,14 +179,15 @@ export default function RoadmapDetailPanel({
   const railRaf = useRef(0);
   railWidthRef.current = railWidth;
   const [tutorChrome, setTutorChrome] = useState<TutorChrome | null>(null);
-  const [bubbleHeight, setBubbleHeight] = useState(0.72);
-  const [bubbleWidth, setBubbleWidth] = useState(420);
   const [bubbleResizing, setBubbleResizing] = useState(false);
-  const bubbleHeightRef = useRef(0.72);
-  const bubbleWidthRef = useRef(420);
+  const bubbleHeightRef = useRef(STUDY_BUBBLE_H_DEFAULT);
+  const bubbleWidthRef = useRef(STUDY_BUBBLE_W_DEFAULT);
   const bubbleRaf = useRef(0);
-  bubbleHeightRef.current = bubbleHeight;
-  bubbleWidthRef.current = bubbleWidth;
+  const bubbleAnim = useRef<{ stop: () => void } | null>(null);
+  const bubbleHMv = useMotionValue(STUDY_BUBBLE_H_DEFAULT * 100);
+  const bubbleWMv = useMotionValue(STUDY_BUBBLE_W_DEFAULT);
+  const bubbleHeightCss = useTransform(bubbleHMv, (v) => `${v}%`);
+  const bubbleWidthCss = useTransform(bubbleWMv, (v) => `${v}px`);
 
   useEffect(() => {
     setExpanded(false);
@@ -264,10 +275,10 @@ export default function RoadmapDetailPanel({
     setRailWidth(loadStudyRailWidth());
     const h = loadStudyBubbleHeight();
     const w = loadStudyBubbleWidth();
-    setBubbleHeight(h);
     bubbleHeightRef.current = h;
-    setBubbleWidth(w);
+    bubbleHMv.set(h * 100);
     bubbleWidthRef.current = w;
+    bubbleWMv.set(w);
     const mq = window.matchMedia("(max-width: 1023px)");
     const sync = () => setNarrowStudy(mq.matches);
     sync();
@@ -303,14 +314,57 @@ export default function RoadmapDetailPanel({
     });
   };
 
+  function persistBubbleSize() {
+    try {
+      window.localStorage.setItem(STUDY_BUBBLE_H_KEY, String(bubbleHeightRef.current));
+      window.localStorage.setItem(STUDY_BUBBLE_W_KEY, String(bubbleWidthRef.current));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function springBubbleSize(nextH = bubbleHeightRef.current, nextW = bubbleWidthRef.current) {
+    bubbleAnim.current?.stop();
+    const h = animate(bubbleHMv, nextH * 100, {
+      ...BUBBLE_SPRING,
+      velocity: bubbleHMv.getVelocity(),
+    });
+    const w = animate(bubbleWMv, nextW, {
+      ...BUBBLE_SPRING,
+      velocity: bubbleWMv.getVelocity(),
+    });
+    bubbleAnim.current = {
+      stop: () => {
+        h.stop();
+        w.stop();
+      },
+    };
+    bubbleHeightRef.current = nextH;
+    bubbleWidthRef.current = nextW;
+    persistBubbleSize();
+  }
+
+  function openStudyBubble(kind: StudyBubble) {
+    const targetH = bubbleHeightRef.current;
+    const targetW = bubbleWidthRef.current;
+    bubbleAnim.current?.stop();
+    bubbleHMv.set(Math.max(STUDY_BUBBLE_H_MIN * 100, targetH * 78));
+    bubbleWMv.set(Math.max(STUDY_BUBBLE_W_MIN, targetW * 0.92));
+    setStudyBubble(kind);
+    requestAnimationFrame(() => {
+      springBubbleSize(targetH, targetW);
+    });
+  }
+
   function startBubbleResize(e: React.PointerEvent, axis: "height" | "width") {
     if (e.button !== 0) return;
     e.preventDefault();
     e.stopPropagation();
+    bubbleAnim.current?.stop();
     const startY = e.clientY;
     const startX = e.clientX;
-    const startH = bubbleHeightRef.current;
-    const startW = bubbleWidthRef.current;
+    const startH = bubbleHMv.get() / 100;
+    const startW = bubbleWMv.get();
     setBubbleResizing(true);
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
 
@@ -323,14 +377,14 @@ export default function RoadmapDetailPanel({
           if (!room || room.height <= 0) return;
           const next = Math.min(1, Math.max(STUDY_BUBBLE_H_MIN, startH + (startY - ev.clientY) / room.height));
           bubbleHeightRef.current = next;
-          setBubbleHeight(next);
+          bubbleHMv.set(next * 100);
         } else {
           const nextW = Math.min(
             STUDY_BUBBLE_W_MAX,
             Math.max(STUDY_BUBBLE_W_MIN, startW + (startX - ev.clientX)),
           );
           bubbleWidthRef.current = nextW;
-          setBubbleWidth(nextW);
+          bubbleWMv.set(nextW);
         }
       });
     };
@@ -341,12 +395,7 @@ export default function RoadmapDetailPanel({
       if (bubbleRaf.current) cancelAnimationFrame(bubbleRaf.current);
       bubbleRaf.current = 0;
       setBubbleResizing(false);
-      try {
-        window.localStorage.setItem(STUDY_BUBBLE_H_KEY, String(bubbleHeightRef.current));
-        window.localStorage.setItem(STUDY_BUBBLE_W_KEY, String(bubbleWidthRef.current));
-      } catch {
-        /* ignore */
-      }
+      springBubbleSize(bubbleHeightRef.current, bubbleWidthRef.current);
     };
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
@@ -1036,7 +1085,7 @@ export default function RoadmapDetailPanel({
               <button
                 type="button"
                 aria-label="Notes"
-                onClick={() => setStudyBubble("notes")}
+                onClick={() => openStudyBubble("notes")}
                 className="grid h-14 w-14 place-items-center rounded-full border border-line bg-surface text-primary shadow-[var(--shadow-lg)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
                 <StickyNote size={22} />
@@ -1044,7 +1093,7 @@ export default function RoadmapDetailPanel({
               <button
                 type="button"
                 aria-label="AI Tutor"
-                onClick={() => setStudyBubble("tutor")}
+                onClick={() => openStudyBubble("tutor")}
                 className="grid h-14 w-14 place-items-center rounded-full border border-line bg-surface text-primary shadow-[var(--shadow-lg)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
                 <Sparkles size={22} />
@@ -1062,6 +1111,7 @@ export default function RoadmapDetailPanel({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
+                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
                   className="absolute inset-0 z-30 bg-[color-mix(in_srgb,var(--ink)_28%,transparent)]"
                   onClick={() => setStudyBubble(null)}
                 />
@@ -1069,26 +1119,26 @@ export default function RoadmapDetailPanel({
                   key={studyBubble}
                   role="dialog"
                   aria-label={studyBubble === "tutor" ? "AI Tutor" : "Notes"}
-                  initial={{ y: 32, opacity: 0 }}
+                  initial={{ y: "32%", opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: 24, opacity: 0 }}
+                  exit={{ y: "28%", opacity: 0 }}
                   transition={
                     bubbleResizing
                       ? { duration: 0 }
-                      : { type: "spring", damping: 26, stiffness: 220 }
+                      : { type: "spring", stiffness: 380, damping: 34, mass: 0.8 }
                   }
                   className={cn(
                     "absolute bottom-0 z-30 flex flex-col overflow-hidden border-t border-line bg-surface shadow-[var(--shadow-xl)]",
                     narrowStudy
                       ? "inset-x-0 rounded-t-[var(--radius-xl)]"
                       : "right-6 rounded-[var(--radius-xl)] border",
-                    bubbleResizing ? "" : "transition-[height,width] duration-150",
                   )}
                   style={{
-                    height: `${Math.round(bubbleHeight * 100)}%`,
+                    height: bubbleHeightCss,
                     maxHeight: "calc(100% - 3rem)",
-                    width: narrowStudy ? "100%" : bubbleWidth,
+                    width: narrowStudy ? "100%" : bubbleWidthCss,
                     maxWidth: "100%",
+                    willChange: bubbleResizing ? "height, width" : undefined,
                   }}
                 >
                   <div
@@ -1097,18 +1147,17 @@ export default function RoadmapDetailPanel({
                     aria-label="Resize panel height"
                     title="Drag to resize · double-click to reset"
                     onPointerDown={(e) => startBubbleResize(e, "height")}
-                    onDoubleClick={() => {
-                      bubbleHeightRef.current = 0.72;
-                      setBubbleHeight(0.72);
-                      try {
-                        window.localStorage.setItem(STUDY_BUBBLE_H_KEY, "0.72");
-                      } catch {
-                        /* ignore */
-                      }
-                    }}
+                    onDoubleClick={() => springBubbleSize(STUDY_BUBBLE_H_DEFAULT, bubbleWidthRef.current)}
                     className="flex h-5 shrink-0 cursor-ns-resize items-center justify-center touch-none hover:bg-sunken"
                   >
-                    <span className="h-1 w-10 rounded-full bg-ink/20" />
+                    <motion.span
+                      className={cn(
+                        "h-1 w-10 rounded-full",
+                        bubbleResizing ? "bg-primary" : "bg-ink/20",
+                      )}
+                      animate={{ scaleX: bubbleResizing ? 1.35 : 1 }}
+                      transition={BUBBLE_SPRING}
+                    />
                   </div>
                   {!narrowStudy ? (
                     <div
@@ -1117,15 +1166,7 @@ export default function RoadmapDetailPanel({
                       aria-label="Resize panel width"
                       title="Drag to resize · double-click to reset"
                       onPointerDown={(e) => startBubbleResize(e, "width")}
-                      onDoubleClick={() => {
-                        bubbleWidthRef.current = 420;
-                        setBubbleWidth(420);
-                        try {
-                          window.localStorage.setItem(STUDY_BUBBLE_W_KEY, "420");
-                        } catch {
-                          /* ignore */
-                        }
-                      }}
+                      onDoubleClick={() => springBubbleSize(bubbleHeightRef.current, STUDY_BUBBLE_W_DEFAULT)}
                       className="absolute left-0 top-5 bottom-0 z-10 w-2 cursor-ew-resize touch-none hover:bg-ink/5"
                     />
                   ) : null}
