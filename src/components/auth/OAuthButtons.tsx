@@ -2,10 +2,7 @@
 
 import { cn } from "@/lib/cn";
 
-export type OAuthStrategy =
-  | "oauth_google"
-  | "oauth_github"
-  | "oauth_linkedin";
+export type OAuthStrategy = "oauth_google" | "oauth_github";
 
 function GoogleIcon({ size = 18 }: { size?: number }) {
   return (
@@ -49,26 +46,6 @@ function GithubIcon({ size = 18 }: { size?: number }) {
   );
 }
 
-function LinkedinIcon({ size = 18 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="#0a66c2"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-      <rect width="4" height="12" x="2" y="9" />
-      <circle cx="4" cy="4" r="2" />
-    </svg>
-  );
-}
-
 const PROVIDERS: Array<{
   strategy: OAuthStrategy;
   label: string;
@@ -76,7 +53,6 @@ const PROVIDERS: Array<{
 }> = [
   { strategy: "oauth_google", label: "Google", Icon: GoogleIcon },
   { strategy: "oauth_github", label: "GitHub", Icon: GithubIcon },
-  { strategy: "oauth_linkedin", label: "LinkedIn", Icon: LinkedinIcon },
 ];
 
 /**
@@ -94,7 +70,7 @@ export function OAuthButtons({
   verb: string;
 }) {
   return (
-    <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-3">
+    <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-2">
       {PROVIDERS.map(({ strategy, label, Icon }) => (
         <button
           key={strategy}
