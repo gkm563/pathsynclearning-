@@ -639,69 +639,83 @@ export default function RoadmapDetailPanel({
           transition={{ duration: 0.2 }}
           className="fixed inset-0 z-[var(--z-modal)] flex flex-col overflow-hidden bg-canvas pt-[env(safe-area-inset-top)] lg:absolute lg:z-40 lg:pt-0"
         >
-          <header className="flex h-12 shrink-0 items-center gap-2 border-b border-line bg-surface px-3 text-ink lg:h-14 lg:gap-4 lg:px-4">
-            <div className="flex min-w-0 flex-1 items-center gap-1.5 lg:gap-2.5">
-              <Button
-                size="sm"
-                variant="ghost"
-                className="shrink-0 px-2 lg:px-3"
-                onClick={() => setExpanded(false)}
-              >
-                <ChevronLeft size={20} />
-                <span className="hidden sm:inline">Roadmap</span>
-              </Button>
-              <div className="hidden h-5 w-px bg-[var(--border-light)] sm:block" />
-              <div className="min-w-0">
-                <div className="type-label truncate text-ink lg:max-w-[min(520px,45vw)]">
+          <header className="flex h-12 shrink-0 items-center gap-1.5 border-b border-line bg-surface px-2 text-ink lg:h-14 lg:gap-4 lg:px-4">
+            <div className="flex min-w-0 flex-1 items-center gap-1 lg:gap-2.5">
+              {narrowStudy ? (
+                <IconButton
+                  label="Back to roadmap"
+                  size="sm"
+                  onClick={() => setExpanded(false)}
+                >
+                  <ChevronLeft size={20} />
+                </IconButton>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="shrink-0 px-3"
+                  onClick={() => setExpanded(false)}
+                >
+                  <ChevronLeft size={20} />
+                  Roadmap
+                </Button>
+              )}
+              {!narrowStudy ? (
+                <div className="h-5 w-px shrink-0 bg-[var(--border-light)]" />
+              ) : null}
+              <div className="min-w-0 flex-1">
+                <div className="type-label truncate text-ink">
                   {node.title}
                 </div>
-                <div className="type-caption hidden truncate text-muted sm:block">
-                  {status.replace("_", " ")}
-                  {node.estimatedHours ? ` · ~${node.estimatedHours}h` : ""}
-                  {ytResources.length
-                    ? ` · ${ytResources.length} lesson${ytResources.length === 1 ? "" : "s"}`
-                    : ""}
-                </div>
+                {!narrowStudy ? (
+                  <div className="type-caption truncate text-muted">
+                    {status.replace("_", " ")}
+                    {node.estimatedHours ? ` · ~${node.estimatedHours}h` : ""}
+                    {ytResources.length
+                      ? ` · ${ytResources.length} lesson${ytResources.length === 1 ? "" : "s"}`
+                      : ""}
+                  </div>
+                ) : null}
               </div>
             </div>
 
-            <div className="flex shrink-0 items-center gap-1 lg:gap-2">
-              {!isCompleted && !isLocked && !needsExam && (
-                <>
-                  <Button
-                    size="sm"
-                    className="hidden sm:inline-flex"
-                    onClick={() => onStatusChange(node.id, "completed")}
-                  >
-                    <CheckCircle size={16} /> Mark complete
-                  </Button>
+            <div className="flex shrink-0 items-center gap-0.5 lg:gap-2">
+              {!isCompleted && !isLocked && !needsExam ? (
+                narrowStudy ? (
                   <IconButton
                     label="Mark complete"
-                    className="sm:hidden"
+                    size="sm"
                     onClick={() => onStatusChange(node.id, "completed")}
                   >
                     <CheckCircle size={18} />
                   </IconButton>
-                </>
-              )}
-              {!isCompleted && !isLocked && hasExam && onTakeAssessment && (
-                <>
+                ) : (
                   <Button
                     size="sm"
-                    className="hidden sm:inline-flex"
-                    onClick={() => onTakeAssessment(node.id)}
+                    onClick={() => onStatusChange(node.id, "completed")}
                   >
-                    <ClipboardCheck size={16} /> Assessment
+                    <CheckCircle size={16} /> Mark complete
                   </Button>
+                )
+              ) : null}
+              {!isCompleted && !isLocked && hasExam && onTakeAssessment ? (
+                narrowStudy ? (
                   <IconButton
                     label="Take assessment"
-                    className="sm:hidden"
+                    size="sm"
                     onClick={() => onTakeAssessment(node.id)}
                   >
                     <ClipboardCheck size={18} />
                   </IconButton>
-                </>
-              )}
+                ) : (
+                  <Button
+                    size="sm"
+                    onClick={() => onTakeAssessment(node.id)}
+                  >
+                    <ClipboardCheck size={16} /> Assessment
+                  </Button>
+                )
+              ) : null}
               {!narrowStudy ? (
                 <Button
                   size="sm"
@@ -714,6 +728,7 @@ export default function RoadmapDetailPanel({
               ) : null}
               <IconButton
                 label="Close study room"
+                size={narrowStudy ? "sm" : "md"}
                 onClick={() => {
                   setExpanded(false);
                   onClose();

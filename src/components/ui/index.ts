@@ -56,14 +56,10 @@ export {
 // Data display.
 export {
   Avatar,
-  DataTable,
   DescriptionList,
   LoadMore,
-  Pagination,
   Progress,
   StatCard,
-  type Column,
-  type SortState,
 } from "./data";
 
 // Page layout.

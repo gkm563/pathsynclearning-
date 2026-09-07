@@ -1,4 +1,3 @@
-export { HomeHero } from "./HomeHero";
 export { HeadlineStats } from "./HeadlineStats";
 export { NextMoveCard } from "./NextMoveCard";
 export { NewsTeaser } from "./NewsTeaser";
@@ -7,5 +6,4 @@ export { InsightPanel } from "./InsightPanel";
 export { ActivityHeatmap } from "./ActivityHeatmap";
 export { SkillJourney } from "./SkillJourney";
 export { ChallengeQueue } from "./ChallengeQueue";
-export { FocusAndNews } from "./FocusAndNews";
 export { HomeSection, HomeSkeleton } from "./shared";

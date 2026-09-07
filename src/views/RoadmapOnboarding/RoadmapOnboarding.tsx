@@ -13,7 +13,7 @@ import AIFollowUpQuestions, { FollowUpQuestion } from './AIFollowUpQuestions';
 import RoadmapGenerating from './RoadmapGenerating';
 import RoadmapTypeSelect, { type RoadmapGenerationMode } from './RoadmapTypeSelect';
 import RoadmapStartChoice from './RoadmapStartChoice';
-import { resolvedTargetCompany, resolvedTargetRole } from '@/lib/roadmap/target-companies';
+import { resolvedTargetCompany, resolvedTargetRole } from '@/lib/roadmap/hiring-catalog';
 import { setRoadmapDeferred } from '@/lib/roadmap/defer';
 import { progressFor, type RoadmapGenerationProgress } from '@/lib/roadmap/generation-progress';
 import { useRouter, usePathname } from 'next/navigation';

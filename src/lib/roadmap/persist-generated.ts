@@ -14,8 +14,10 @@ import {
   deactivateActiveRoadmaps,
   nextRoadmapVersion,
 } from "@/lib/roadmap/active";
-import { roadmapTitleForTarget } from "@/lib/roadmap/target-companies";
-import { companyOffersRole } from "@/lib/roadmap/hiring-catalog";
+import {
+  companyOffersRole,
+  roadmapTitleForTarget,
+} from "@/lib/roadmap/hiring-catalog";
 import {
   progressFor,
   type RoadmapGenerationProgress,

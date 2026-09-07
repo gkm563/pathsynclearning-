@@ -1,4 +1,4 @@
-import { routes, STUDENT_PORTAL_PREFIXES } from "@/lib/routes";
+import { routes } from "@/lib/routes";
 
 /**
  * Ensure DB user exists, then return where a signed-in user should land.
@@ -29,6 +29,3 @@ export async function resolvePostAuthPath(
   if (role !== "student") return routes.home;
   return routes.app.dashboard;
 }
-
-/** @deprecated Prefer STUDENT_PORTAL_PREFIXES from `@/lib/routes`. */
-export const STUDENT_APP_PREFIXES = STUDENT_PORTAL_PREFIXES;

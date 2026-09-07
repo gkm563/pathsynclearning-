@@ -38,32 +38,3 @@ export function usePlan(defaultPlan = "free") {
 
   return { plan, setPlan, ready };
 }
-
-/** Selected career from student profile. */
-export function useSelectedCareer(fallback = "Full-Stack Web Developer") {
-  const [career, setCareer] = useState(fallback);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const data = await apiGet<{
-          profile?: { objective?: string; passion?: string };
-        }>("/api/me/profile");
-        if (cancelled) return;
-        const next =
-          data.profile?.objective ||
-          data.profile?.passion ||
-          fallback;
-        setCareer(next);
-      } catch {
-        // keep fallback
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [fallback]);
-
-  return career;
-}

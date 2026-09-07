@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Building2, Compass, Search, ShieldCheck, TriangleAlert } from "lucide-react";
 import { apiGet, apiSend } from "@/lib/api";
-import { OTHER_COMPANY, OTHER_ROLE } from "@/lib/roadmap/target-companies";
+import { OTHER_COMPANY, OTHER_ROLE } from "@/lib/roadmap/hiring-catalog";
 import { Badge, Input } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import {

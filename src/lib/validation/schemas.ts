@@ -433,12 +433,6 @@ export const walletActionSchema = z.discriminatedUnion("action", [
     .strict(),
 ]);
 
-export const quoteRequestSchema = z
-  .object({
-    phase: z.string().trim().min(1).max(64).default("motivation"),
-  })
-  .strict();
-
 export const tutorMessageSchema = z
   .object({
     role: z.enum(["user", "assistant"]),

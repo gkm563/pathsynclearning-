@@ -15,6 +15,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { Avatar, Breadcrumb, IconButton, Menu } from "@/components/ui";
+import { BrandMark } from "@/components/ui/BrandMark";
 import { useDismiss } from "@/hooks/useOverlay";
 import { useNotifications } from "@/hooks/useNotifications";
 import { cn } from "@/lib/cn";
@@ -249,8 +250,13 @@ export default function AppNavbar({ onMenuOpen }: { onMenuOpen: () => void }) {
   return (
     <header className="sticky top-0 border-b border-line bg-[var(--overlay-bg)] backdrop-blur-xl" style={{ zIndex: "var(--z-header)" }}>
       <div className="flex h-14 items-center gap-2 px-3 sm:h-16 sm:gap-3 sm:px-5 lg:px-7">
-        {/* Desktop: breadcrumb. Mobile: tab bar owns navigation — no logo,
-            hamburger, or page title here. */}
+        {/* Phone/tablet: logo + name. Desktop: sidebar already shows the
+            brand, so this bar only needs the breadcrumb. */}
+        <BrandMark
+          href={routes.app.dashboard}
+          size="sm"
+          className="min-w-0 shrink-0 lg:hidden"
+        />
         <div className="hidden min-w-0 flex-1 lg:block">
           <Breadcrumb items={trail} />
         </div>

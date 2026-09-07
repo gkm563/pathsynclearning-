@@ -68,10 +68,3 @@ export const AUTH_ROLES: AuthRole[] = [
 export function findAuthRole(id: string): AuthRole {
   return AUTH_ROLES.find((role) => role.id === id) ?? AUTH_ROLES[0];
 }
-
-/** Narrows an arbitrary query-string value to a known role. */
-export function toAuthRoleId(value: string | null | undefined): AuthRoleId {
-  return AUTH_ROLES.some((role) => role.id === value)
-    ? (value as AuthRoleId)
-    : "student";
-}
