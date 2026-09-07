@@ -97,7 +97,7 @@ export default function ChallengeMcqIde({
   return (
     <>
       <div
-        className="fixed top-4 right-[72px]"
+        className="fixed top-4 right-[72px] hidden sm:block"
         style={{ zIndex: "var(--z-popover)" }}
       >
         <AddNoteButton

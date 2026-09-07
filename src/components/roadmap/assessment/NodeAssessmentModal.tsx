@@ -395,7 +395,7 @@ export default function NodeAssessmentModal({
   return (
     <>
       {active.type !== "coding" ? (
-        <div className="fixed top-4 right-[72px] z-[1300]">
+        <div className="fixed top-4 right-[72px] z-[1300] hidden sm:block">
           <AddNoteButton
             sourceType="roadmap_node"
             sourceId={nodeId}
@@ -432,7 +432,7 @@ export default function NodeAssessmentModal({
           onClose={onClose}
           onFailProctor={onFailProctor}
         >
-          {({ violations, secondsLeft }) =>
+          {({ violations, secondsLeft, requestClose }) =>
             active.type === "mcq" ? (
               <McqAssessment
                 assessment={active}
@@ -447,6 +447,8 @@ export default function NodeAssessmentModal({
                 nodeId={nodeId}
                 noteTitle={data.title}
                 submitting={submitting}
+                secondsLeft={secondsLeft}
+                onClose={requestClose}
                 onSubmit={({ code, language }) =>
                   submit({ code, language, violations })
                 }

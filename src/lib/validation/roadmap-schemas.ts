@@ -37,6 +37,9 @@ export const codingAssessmentSchema = z.object({
   constraints: z.array(z.string().max(240)).max(12).optional(),
   hints: z.array(z.string().max(400)).max(6).optional(),
   followUp: z.string().max(400).optional(),
+  topics: z.array(z.string().max(80)).max(16).optional(),
+  companies: z.array(z.string().max(80)).max(16).optional(),
+  editorial: z.string().max(4000).optional(),
 });
 
 export const nodeAssessmentSchema = z.object({

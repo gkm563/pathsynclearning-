@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import {
   CircleAlert,
+  Globe,
   Lock,
   Sparkles,
   StickyNote,
@@ -16,7 +17,7 @@ import {
   Dialog,
   EmptyState,
   Input,
-  Select,
+  Segmented,
   Textarea,
 } from "@/components/ui";
 import { RichStudyText } from "@/components/ai/RichStudyText";
@@ -75,13 +76,15 @@ export function AddNoteButton({
           aria-label={titleAttr}
           onClick={() => setOpen(true)}
           className={cn(
-            "inline-flex h-8 items-center gap-1.5 rounded-md border border-[#3e3e3e] bg-[#373737] px-2.5 text-xs font-semibold text-[#eff1f6]",
+            "inline-flex items-center gap-1.5 rounded-[var(--radius-md)] border border-line-strong bg-surface px-2.5 text-xs font-semibold text-ink",
+            "hover:bg-sunken",
+            compact ? "h-8 w-8 justify-center px-0" : "h-8",
             className,
           )}
           style={style}
         >
           <StickyNote size={14} aria-hidden />
-          Notes
+          {compact ? null : "Notes"}
         </button>
       ) : (
         <Button
@@ -354,19 +357,26 @@ export function NoteEditor({
         <p className="type-small m-0 text-muted">{contextLabel}</p>
       ) : null}
 
-      <div className="flex items-center gap-2">
-        <Lock size={14} className="text-muted" aria-hidden />
-        <Select
+      <div className="flex flex-wrap items-center gap-2.5">
+        <span className="type-label text-muted">Visibility</span>
+        <Segmented
+          size="sm"
+          ariaLabel="Note visibility"
           value={visibility}
-          onChange={(e) =>
-            setVisibility(e.target.value as "private" | "public")
-          }
-          aria-label="Note visibility"
-          className="w-auto"
-        >
-          <option value="private">Private</option>
-          <option value="public">Public</option>
-        </Select>
+          onChange={setVisibility}
+          items={[
+            {
+              id: "private",
+              label: "Private",
+              icon: <Lock size={12} aria-hidden />,
+            },
+            {
+              id: "public",
+              label: "Public",
+              icon: <Globe size={12} aria-hidden />,
+            },
+          ]}
+        />
       </div>
 
       {error ? (

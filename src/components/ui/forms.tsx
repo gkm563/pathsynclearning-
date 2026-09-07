@@ -7,7 +7,7 @@ import {
   type InputHTMLAttributes,
   type ReactNode,
 } from "react";
-import { Eye, EyeOff, Search, X } from "lucide-react";
+import { Check, Eye, EyeOff, Search, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 /**
@@ -204,28 +204,34 @@ export function Checkbox({
 }) {
   const id = useId();
   return (
-    <div className={cn("flex items-start gap-2.5", className)}>
-      <input
-        type="checkbox"
-        id={id}
-        checked={checked}
-        disabled={disabled}
-        onChange={(e) => onChange(e.target.checked)}
-        className={cn(
-          "mt-0.5 h-4.5 w-4.5 shrink-0 cursor-pointer appearance-none rounded-[5px] border border-line-strong bg-surface transition-colors",
-          "checked:border-primary checked:bg-primary",
-          // Tick drawn as a background image so it inherits the checked state
-          // without an extra element to keep in sync.
-          "checked:bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%223,8.5 6.5,12 13,4.5%22/></svg>')] checked:bg-center checked:bg-no-repeat",
-          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
-          "disabled:cursor-not-allowed disabled:opacity-50",
-        )}
-      />
-      <div className="min-w-0">
+    <div className={cn("flex items-start gap-3", className)}>
+      <span className="relative mt-[0.15em] inline-flex h-5 w-5 shrink-0 items-center justify-center">
+        <input
+          type="checkbox"
+          id={id}
+          checked={checked}
+          disabled={disabled}
+          onChange={(e) => onChange(e.target.checked)}
+          className={cn(
+            "peer h-5 w-5 shrink-0 cursor-pointer appearance-none rounded-[6px] border border-line-strong bg-surface",
+            "transition-[border-color,background-color,box-shadow] duration-[var(--duration-fast)]",
+            "checked:border-primary checked:bg-primary",
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+            "disabled:cursor-not-allowed disabled:opacity-50",
+          )}
+        />
+        <Check
+          size={13}
+          strokeWidth={3}
+          aria-hidden
+          className="pointer-events-none absolute text-on-primary opacity-0 peer-checked:opacity-100"
+        />
+      </span>
+      <div className="min-w-0 pt-px">
         <label
           htmlFor={id}
           className={cn(
-            "type-small block text-ink",
+            "type-small block leading-snug text-ink",
             disabled ? "opacity-60" : "cursor-pointer",
           )}
         >

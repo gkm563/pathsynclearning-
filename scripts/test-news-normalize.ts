@@ -57,6 +57,16 @@ assert.equal(
   }),
   null,
 );
+assert.equal(
+  resolveNewsImageUrl(
+    "https://media.dev.to/cdn-cgi/image/social_previews/article.png",
+    {
+      cover_image:
+        "https://media.dev.to/cdn-cgi/image/social_previews/article.png",
+    },
+  ),
+  null,
+);
 
 const html = renderNewsContent("# Hello\n\nThis is **bold** and `code`.");
 assert.match(html, /<h2>Hello<\/h2>/);

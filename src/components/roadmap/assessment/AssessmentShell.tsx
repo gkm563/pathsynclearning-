@@ -9,8 +9,9 @@ import {
   X,
 } from "lucide-react";
 import AnswerReview, { type AnswerReviewPayload } from "./AnswerReview";
-import { Alert, Button, Card, Checkbox, IconButton } from "@/components/ui";
+import { Alert, Badge, Button, Card, Checkbox, IconButton } from "@/components/ui";
 import { cn } from "@/lib/cn";
+import { useScrollLock } from "@/hooks/useOverlay";
 
 const MAX_VIOLATIONS = 3;
 const GRACE_MS = 2500;
@@ -57,6 +58,7 @@ export default function AssessmentShell({
   children: (ctx: {
     violations: ProctorViolation[];
     secondsLeft: number;
+    requestClose: () => void;
   }) => React.ReactNode;
 }) {
   const [phase, setPhase] = useState<Phase>("guidelines");
@@ -231,14 +233,14 @@ export default function AssessmentShell({
   const mm = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
   const ss = String(secondsLeft % 60).padStart(2, "0");
 
+  useScrollLock(true);
+
   return (
     <div
       ref={shellRef}
+      data-app-overlay
       className={cn(
-        "nokey fixed inset-0 z-[9999] flex flex-col",
-        assessmentType === "coding" && phase === "active"
-          ? "bg-inverse text-on-inverse"
-          : "bg-canvas text-ink",
+        "nokey fixed inset-0 z-[var(--z-fullscreen)] flex flex-col bg-canvas text-ink",
       )}
       style={{
         userSelect: phase === "active" && PROCTORING_ENABLED ? "none" : "auto",
@@ -246,38 +248,38 @@ export default function AssessmentShell({
     >
       <header
         className={cn(
-          "flex shrink-0 items-center justify-between border-b border-line px-4 py-2.5",
-          assessmentType === "coding" && phase === "active"
-            ? "bg-inverse text-on-inverse"
-            : "bg-surface",
+          "flex h-14 shrink-0 items-center justify-between border-b border-line bg-[var(--overlay-bg)] px-3 backdrop-blur-xl sm:h-16 sm:px-5",
+          assessmentType === "coding" && phase === "active" && "hidden min-[900px]:flex",
         )}
       >
-        <div>
-          <div
-            className={cn(
-              "type-overline",
+        <div className="flex min-w-0 items-center gap-2 pr-2">
+          <Badge
+            tone={
               phase === "active"
                 ? PROCTORING_ENABLED
-                  ? "text-danger"
-                  : "text-success"
-                : "text-primary",
-            )}
+                  ? "error"
+                  : "success"
+                : "accent"
+            }
+            className="shrink-0"
           >
             {phase === "active"
               ? PROCTORING_ENABLED
-                ? "Proctored assessment"
-                : "Practice mode"
-              : "Assessment setup"}
-          </div>
-          <h1 className="type-h4 m-0">{title}</h1>
+                ? "Proctored"
+                : "Practice"
+              : "Setup"}
+          </Badge>
+          <h1 className="type-h4 m-0 truncate">{title}</h1>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           {phase === "active" && (
             <>
               <div
                 className={cn(
-                  "type-numeric font-bold",
-                  secondsLeft < 60 ? "text-danger" : "text-ink",
+                  "type-numeric rounded-full border px-2.5 py-1 text-sm font-bold",
+                  secondsLeft < 60
+                    ? "border-danger/30 bg-danger-soft text-danger"
+                    : "border-line bg-sunken text-ink",
                 )}
               >
                 {mm}:{ss}
@@ -285,22 +287,17 @@ export default function AssessmentShell({
               {PROCTORING_ENABLED && (
                 <div
                   className={cn(
-                    "flex items-center gap-1.5 type-small",
+                    "hidden items-center gap-1.5 type-small sm:flex",
                     violations.length ? "text-danger" : "text-muted",
                   )}
                 >
                   <ShieldAlert size={16} />
-                  Violations {violations.length}/{MAX_VIOLATIONS}
-                </div>
-              )}
-              {!PROCTORING_ENABLED && (
-                <div className="type-caption font-semibold text-success">
-                  Copy/paste enabled · no violations
+                  {violations.length}/{MAX_VIOLATIONS}
                 </div>
               )}
             </>
           )}
-          <IconButton label="Exit" variant="secondary" size="sm" onClick={handleClose}>
+          <IconButton label="Exit" variant="ghost" size="sm" onClick={handleClose}>
             <X size={18} />
           </IconButton>
         </div>
@@ -452,7 +449,7 @@ export default function AssessmentShell({
 
       {phase === "active" && (
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-0">
-          {children({ violations, secondsLeft })}
+          {children({ violations, secondsLeft, requestClose: handleClose })}
         </div>
       )}
     </div>

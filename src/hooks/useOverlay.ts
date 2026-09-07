@@ -28,41 +28,82 @@ function focusableWithin(root: HTMLElement): HTMLElement[] {
 }
 
 /**
- * Locks body scroll while an overlay is open.
+ * Locks page scroll while an overlay is open.
  *
- * Compensates for the disappearing scrollbar with padding so the page behind
- * the overlay doesn't shift horizontally. Reference-counted, so nested
- * overlays (a confirm dialog opened from a drawer) don't unlock early.
+ * Body `overflow: hidden` is not enough: nested panes (`overflow: auto` on
+ * the dashboard, IDE, roadmap) still wheel-scroll underneath. We also block
+ * wheel/touch outside the top overlay and freeze `[data-app-overlay]` while a
+ * modal/drawer (`isolate`) is open so the layer below cannot move.
+ *
+ * Reference-counted, so nested overlays don't unlock early.
  */
 let lockCount = 0;
+let isolateCount = 0;
 let previousPaddingRight = "";
 let previousOverflow = "";
+let previousHtmlOverflow = "";
+let previousHtmlOverscroll = "";
 
-export function useScrollLock(active: boolean): void {
+function allowOverlayScroll(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) return false;
+  if (target.closest("[data-overlay-scroll]")) return true;
+  if (isolateCount === 0 && target.closest("[data-app-overlay]")) return true;
+  return false;
+}
+
+function onLockedScroll(event: WheelEvent | TouchEvent) {
+  if (allowOverlayScroll(event.target)) return;
+  event.preventDefault();
+}
+
+function syncOverlayLockAttrs() {
+  const html = document.documentElement;
+  if (lockCount > 0) html.setAttribute("data-overlay-lock", "");
+  else html.removeAttribute("data-overlay-lock");
+  if (isolateCount > 0) html.setAttribute("data-modal-open", "");
+  else html.removeAttribute("data-modal-open");
+}
+
+export function useScrollLock(active: boolean, isolate = false): void {
   useEffect(() => {
     if (!active) return;
 
     if (lockCount === 0) {
       const { body } = document;
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      const html = document.documentElement;
+      const scrollbarWidth = window.innerWidth - html.clientWidth;
       previousOverflow = body.style.overflow;
+      previousHtmlOverflow = html.style.overflow;
+      previousHtmlOverscroll = html.style.overscrollBehavior;
       previousPaddingRight = body.style.paddingRight;
       body.style.overflow = "hidden";
+      html.style.overflow = "hidden";
+      html.style.overscrollBehavior = "none";
       if (scrollbarWidth > 0) {
         const current = parseFloat(getComputedStyle(body).paddingRight) || 0;
         body.style.paddingRight = `${current + scrollbarWidth}px`;
       }
+      document.addEventListener("wheel", onLockedScroll, { passive: false });
+      document.addEventListener("touchmove", onLockedScroll, { passive: false });
     }
     lockCount += 1;
+    if (isolate) isolateCount += 1;
+    syncOverlayLockAttrs();
 
     return () => {
+      if (isolate) isolateCount -= 1;
       lockCount -= 1;
       if (lockCount === 0) {
         document.body.style.overflow = previousOverflow;
         document.body.style.paddingRight = previousPaddingRight;
+        document.documentElement.style.overflow = previousHtmlOverflow;
+        document.documentElement.style.overscrollBehavior = previousHtmlOverscroll;
+        document.removeEventListener("wheel", onLockedScroll);
+        document.removeEventListener("touchmove", onLockedScroll);
       }
+      syncOverlayLockAttrs();
     };
-  }, [active]);
+  }, [active, isolate]);
 }
 
 /**

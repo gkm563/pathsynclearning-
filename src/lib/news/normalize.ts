@@ -28,7 +28,11 @@ export function isGeneratedSocialCard(url: string | null | undefined): boolean {
     u.includes("social_previews") ||
     u.includes("article_social") ||
     u.includes("social-preview") ||
-    u.includes("/dynamic/screenshots")
+    u.includes("social_preview") ||
+    u.includes("/dynamic/screenshots") ||
+    u.includes("opengraph") ||
+    u.includes("og-image") ||
+    u.includes("/og/")
   );
 }
 
@@ -46,7 +50,7 @@ export function resolveNewsImageUrl(
 ): string | null {
   if (raw && "cover_image" in raw) {
     const cover = nonemptyUrl(typeof raw.cover_image === "string" ? raw.cover_image : null);
-    if (cover) return cover;
+    if (cover && !isGeneratedSocialCard(cover)) return cover;
     return null;
   }
   const stored = nonemptyUrl(imageUrl);

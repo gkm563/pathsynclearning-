@@ -103,18 +103,63 @@ export default function McqAssessment({
     onSubmit(answers);
   };
 
+  const mapButtons = questions.map((q, i) => {
+    const st = statusOf(q.id);
+    const active = i === index;
+    const isMarked = st === "marked" || st === "marked_answered";
+    const isAnswered = st === "answered" || st === "marked_answered";
+    return (
+      <button
+        key={q.id}
+        type="button"
+        onClick={() => setIndex(i)}
+        title={
+          isMarked
+            ? isAnswered
+              ? "Marked · answered"
+              : "Marked for review"
+            : isAnswered
+              ? "Answered"
+              : "Not answered"
+        }
+        className={cn(
+          "type-numeric shrink-0 rounded-[var(--radius-md)] text-xs font-extrabold",
+          "transition-colors duration-[var(--duration-fast)]",
+          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+          narrow ? "h-8 min-w-8 px-1.5" : "h-9",
+          active && "border border-primary-border bg-primary text-on-primary",
+          !active &&
+            isMarked &&
+            "border border-[color-mix(in_srgb,var(--warning)_42%,var(--border-light))] bg-warning-soft text-warning",
+          !active &&
+            !isMarked &&
+            isAnswered &&
+            "border border-primary-border bg-primary-soft text-primary",
+          !active &&
+            !isMarked &&
+            !isAnswered &&
+            "border border-line bg-sunken text-muted",
+        )}
+      >
+        {i + 1}
+      </button>
+    );
+  });
+
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col bg-canvas">
-      <div className="flex flex-wrap gap-2.5 border-b border-line bg-surface/85 px-[18px] py-2.5">
-        <Badge>
-          Answered {answeredCount}/{questions.length}
-        </Badge>
-        {markedCount > 0 && <Badge tone="warning">Marked {markedCount}</Badge>}
-        <Badge>Pass mark {assessment.passScore}%</Badge>
-        <Badge tone={secondsLeft !== undefined && secondsLeft <= 60 ? "error" : "neutral"}>
-          One question at a time · use the map to jump
-        </Badge>
-      </div>
+      {!narrow && (
+        <div className="flex flex-wrap gap-2 border-b border-line bg-[var(--overlay-bg)] px-[18px] py-2.5 backdrop-blur-xl">
+          <Badge>
+            Answered {answeredCount}/{questions.length}
+          </Badge>
+          {markedCount > 0 && <Badge tone="warning">Marked {markedCount}</Badge>}
+          <Badge>Pass mark {assessment.passScore}%</Badge>
+          <Badge tone={secondsLeft !== undefined && secondsLeft <= 60 ? "error" : "neutral"}>
+            One question at a time · use the map to jump
+          </Badge>
+        </div>
+      )}
 
       <div
         className="grid min-h-0 flex-1"
@@ -125,63 +170,66 @@ export default function McqAssessment({
       >
         <aside
           className={cn(
-            "overflow-auto bg-surface/80 p-4",
-            narrow ? "max-h-[180px] border-b border-line" : "border-r border-line",
+            "bg-surface",
+            narrow ? "border-b border-line px-3 py-2" : "overflow-auto border-r border-line p-4",
           )}
         >
-          <div className="type-label mb-2.5 text-ink">Question map</div>
-          <div className="grid grid-cols-5 gap-2">
-            {questions.map((q, i) => {
-              const st = statusOf(q.id);
-              const active = i === index;
-              const isMarked = st === "marked" || st === "marked_answered";
-              const isAnswered = st === "answered" || st === "marked_answered";
-              return (
-                <button
-                  key={q.id}
-                  type="button"
-                  onClick={() => setIndex(i)}
-                  title={
-                    isMarked
-                      ? isAnswered
-                        ? "Marked · answered"
-                        : "Marked for review"
-                      : isAnswered
-                        ? "Answered"
-                        : "Not answered"
-                  }
-                  className={cn(
-                    "type-numeric h-9 rounded-[var(--radius-md)] text-xs font-extrabold",
-                    active && "border-2 border-primary",
-                    !active && isMarked && "border-[1.5px] border-warning bg-warning-soft text-warning",
-                    !active && !isMarked && isAnswered && "border border-primary bg-primary-soft text-primary",
-                    !active && !isMarked && !isAnswered && "border border-line bg-sunken text-muted",
-                  )}
+          {narrow ? (
+            <div className="flex min-w-0 flex-col gap-2">
+              <div className="flex min-w-0 items-center gap-2">
+                <Badge className="shrink-0">
+                  {answeredCount}/{questions.length}
+                </Badge>
+                {markedCount > 0 && (
+                  <Badge tone="warning" className="shrink-0">
+                    {markedCount} marked
+                  </Badge>
+                )}
+                <Button
+                  size="sm"
+                  className="ml-auto shrink-0"
+                  onClick={() => setConfirmSubmit(true)}
                 >
-                  {i + 1}
-                </button>
-              );
-            })}
-          </div>
-          <div className="type-caption mt-4 grid gap-2 text-muted">
-            <Legend className="bg-primary-soft border-primary" label="Answered" />
-            <Legend className="bg-warning-soft border-warning" label="Marked for review" />
-            <Legend className="bg-sunken border-line" label="Not visited / blank" />
-          </div>
-          <Button className="mt-[18px] w-full" onClick={() => setConfirmSubmit(true)}>
-            <Flag size={14} /> Submit paper
-          </Button>
+                  <Flag size={14} /> Submit
+                </Button>
+              </div>
+              <div className="flex min-w-0 gap-1.5 overflow-x-auto py-0.5">
+                {mapButtons}
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="type-label mb-2.5 text-ink">Question map</div>
+              <div className="grid grid-cols-5 gap-2">{mapButtons}</div>
+              <div className="type-caption mt-4 grid gap-2 text-muted">
+                <Legend className="border-primary-border bg-primary-soft" label="Answered" />
+                <Legend
+                  className="border-[color-mix(in_srgb,var(--warning)_42%,var(--border-light))] bg-warning-soft"
+                  label="Marked for review"
+                />
+                <Legend className="border-line bg-sunken" label="Not visited / blank" />
+              </div>
+              <Button className="mt-[18px] w-full" onClick={() => setConfirmSubmit(true)}>
+                <Flag size={14} /> Submit paper
+              </Button>
+            </>
+          )}
         </aside>
 
-        <main className="flex min-w-0 flex-col overflow-auto px-7 py-[22px] pb-[18px]">
-          <div className="mb-3.5 flex justify-between gap-3">
-            <div className="type-caption type-numeric font-bold text-muted">
+        <main
+          className={cn(
+            "flex min-w-0 flex-col overflow-auto",
+            narrow ? "px-3 py-3" : "px-7 py-[22px] pb-[18px]",
+          )}
+        >
+          <div className={cn("flex items-center justify-between gap-3", narrow ? "mb-2" : "mb-3.5")}>
+            <div className="type-caption type-numeric font-semibold text-muted">
               Question {index + 1} of {questions.length}
             </div>
             {marked[current.id] && (
-              <div className="type-caption inline-flex items-center gap-1.5 font-bold text-warning">
-                <Bookmark size={13} /> Marked for review
-              </div>
+              <Badge tone="warning" className="gap-1 normal-case tracking-normal">
+                <Bookmark size={12} /> Marked
+              </Badge>
             )}
           </div>
 
@@ -193,36 +241,50 @@ export default function McqAssessment({
               exit={{ opacity: 0, x: -18 }}
               transition={{ duration: 0.22 }}
             >
-              <h2 className="type-h3 mb-[22px] text-ink">{current.prompt}</h2>
+              <h2 className={cn("type-h3 text-ink", narrow ? "mb-3" : "mb-[22px]")}>
+                {current.prompt}
+              </h2>
 
-              <div className="flex flex-col gap-2.5">
+              <div className={cn("flex flex-col", narrow ? "gap-2" : "gap-2.5")}>
                 {current.options.map((opt, oi) => {
                   const selected = answers[current.id] === oi;
                   return (
                     <button
                       key={oi}
                       type="button"
+                      aria-pressed={selected}
                       onClick={() => selectOption(oi)}
                       className={cn(
-                        "flex items-start gap-3.5 rounded-[var(--radius-lg)] px-4 py-3.5 text-left type-body text-ink",
+                        "flex items-start text-left type-body text-ink",
+                        "rounded-[var(--radius-lg)] border bg-surface shadow-[var(--shadow-sm)]",
+                        "transition-[border-color,background-color,box-shadow] duration-[var(--duration-fast)]",
+                        "hover:border-primary-border",
+                        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                        narrow
+                          ? "gap-2.5 px-3 py-2.5"
+                          : "gap-3.5 px-4 py-3.5",
                         selected
-                          ? "border-[1.5px] border-primary bg-primary-soft"
-                          : "border border-line bg-surface shadow-[var(--shadow-xs)]",
+                          ? "border-primary-border bg-primary-soft shadow-none"
+                          : "border-line",
                       )}
                     >
                       <span
                         className={cn(
-                          "grid h-7 w-7 shrink-0 place-items-center rounded-[9px] type-caption font-extrabold",
+                          "grid shrink-0 place-items-center rounded-[var(--radius-md)] type-caption font-extrabold",
+                          narrow ? "h-7 w-7" : "h-9 w-9",
                           selected
                             ? "bg-primary text-on-primary"
-                            : "bg-sunken text-muted",
+                            : "bg-primary-soft text-primary",
                         )}
                       >
                         {letters[oi] || oi + 1}
                       </span>
-                      <span className="pt-0.5">{opt}</span>
+                      <span className="min-w-0 flex-1 pt-0.5">{opt}</span>
                       {selected && (
-                        <CheckCircle2 size={16} className="mt-1 ml-auto text-primary" />
+                        <CheckCircle2
+                          size={16}
+                          className="mt-1 ml-auto shrink-0 text-primary"
+                        />
                       )}
                     </button>
                   );
@@ -231,34 +293,68 @@ export default function McqAssessment({
             </motion.div>
           </AnimatePresence>
 
-          <div className="mt-auto flex flex-wrap justify-between gap-3 border-t border-line pt-5">
-            <div className="flex flex-wrap gap-2">
-              <Button variant="secondary" size="sm" onClick={clearAnswer}>
-                <Eraser size={14} /> Clear
-              </Button>
-              <Button variant="secondary" size="sm" onClick={toggleMark}>
-                <Bookmark size={14} /> {marked[current.id] ? "Unmark" : "Mark"}
-              </Button>
+          {!narrow && (
+            <div className="mt-auto flex flex-wrap justify-between gap-3 border-t border-line pt-5">
+              <div className="flex flex-wrap gap-2">
+                <Button variant="secondary" size="sm" onClick={clearAnswer}>
+                  <Eraser size={14} /> Clear
+                </Button>
+                <Button variant="secondary" size="sm" onClick={toggleMark}>
+                  <Bookmark size={14} /> {marked[current.id] ? "Unmark" : "Mark"}
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="secondary" size="sm" onClick={goPrev} disabled={index === 0}>
+                  <ChevronLeft size={16} /> Prev
+                </Button>
+                <Button size="sm" onClick={goNext}>
+                  {index === questions.length - 1 ? (
+                    <>
+                      Review & submit <Flag size={14} />
+                    </>
+                  ) : (
+                    <>
+                      Save & next <ChevronRight size={16} />
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="secondary" size="sm" onClick={goPrev} disabled={index === 0}>
-                <ChevronLeft size={16} /> Prev
-              </Button>
-              <Button size="sm" onClick={goNext}>
-                {index === questions.length - 1 ? (
-                  <>
-                    Review & submit <Flag size={14} />
-                  </>
-                ) : (
-                  <>
-                    Save & next <ChevronRight size={16} />
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
+          )}
         </main>
       </div>
+
+      {narrow && (
+        <div
+          className="flex shrink-0 items-center justify-between gap-2 border-t border-line bg-[var(--overlay-bg)] px-3 py-2 backdrop-blur-xl"
+          style={{ paddingBottom: "max(8px, env(safe-area-inset-bottom))" }}
+        >
+          <div className="flex gap-1.5">
+            <Button variant="secondary" size="sm" onClick={clearAnswer} aria-label="Clear answer">
+              <Eraser size={14} /> Clear
+            </Button>
+            <Button variant="secondary" size="sm" onClick={toggleMark}>
+              <Bookmark size={14} /> {marked[current.id] ? "Unmark" : "Mark"}
+            </Button>
+          </div>
+          <div className="flex gap-1.5">
+            <Button variant="secondary" size="sm" onClick={goPrev} disabled={index === 0}>
+              <ChevronLeft size={16} /> Prev
+            </Button>
+            <Button size="sm" onClick={goNext}>
+              {index === questions.length - 1 ? (
+                <>
+                  Submit <Flag size={14} />
+                </>
+              ) : (
+                <>
+                  Next <ChevronRight size={16} />
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
 
       <Dialog
         open={confirmSubmit}

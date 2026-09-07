@@ -58,7 +58,7 @@ export function Drawer({
 
   useEffect(() => setTarget(document.body), []);
 
-  useScrollLock(open);
+  useScrollLock(open, true);
   useFocusTrap(panelRef, open);
   useDismiss({ ref: panelRef, active: open, onDismiss: onClose });
 
@@ -126,7 +126,10 @@ export function Drawer({
               </button>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5">
+            <div
+              className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5"
+              data-overlay-scroll
+            >
               {children}
             </div>
 

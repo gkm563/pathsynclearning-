@@ -9,8 +9,8 @@ const loadingStyle: React.CSSProperties = {
   flex: 1,
   minHeight: 200,
   height: "100%",
-  background: "var(--bg-inverse)",
-  color: "var(--text-inverse)",
+  background: "var(--surface)",
+  color: "var(--muted)",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -53,9 +53,9 @@ export default function LazyCodeEditor(props: CodeEditorProps) {
           style={{
             padding: "8px 14px",
             borderRadius: 8,
-            border: "1px solid color-mix(in srgb, var(--text-inverse) 18%, transparent)",
-            background: "color-mix(in srgb, var(--text-inverse) 12%, transparent)",
-            color: "var(--text-inverse)",
+            border: "1px solid var(--line-strong)",
+            background: "var(--surface)",
+            color: "var(--ink)",
             cursor: "pointer",
             fontWeight: 600,
           }}

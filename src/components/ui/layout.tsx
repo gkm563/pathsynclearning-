@@ -98,15 +98,17 @@ export function Breadcrumb({
             <li
               key={`${item.label}-${index}`}
               className={cn(
-                "flex min-w-0 items-center gap-1",
+                "flex items-center gap-1",
                 // Collapse everything except parent + current on phones.
                 !isLast && !isParent && "hidden sm:flex",
+                // Parent keeps its label; current crumb is the one that ellipsizes.
+                isLast ? "min-w-0 flex-1" : "shrink-0",
               )}
             >
               {item.href && !isLast ? (
                 <Link
                   href={item.href}
-                  className="type-caption truncate rounded-[var(--radius-sm)] text-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                  className="type-caption rounded-[var(--radius-sm)] text-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 >
                   {item.label}
                 </Link>
@@ -114,8 +116,8 @@ export function Breadcrumb({
                 <span
                   aria-current={isLast ? "page" : undefined}
                   className={cn(
-                    "type-caption truncate",
-                    isLast ? "font-semibold text-ink" : "text-muted",
+                    "type-caption",
+                    isLast ? "min-w-0 truncate font-semibold text-ink" : "text-muted",
                   )}
                 >
                   {item.label}
@@ -168,20 +170,43 @@ export function Toolbar({
 export function Prose({
   children,
   className,
+  variant = "default",
 }: {
   children: ReactNode;
   className?: string;
+  /** `article` uses a dedicated reading scale — smaller on phones, 16px from sm up. */
+  variant?: "default" | "article";
 }) {
+  const article = variant === "article";
   return (
     <div
       className={cn(
-        "type-body max-w-[var(--measure-prose)] text-ink",
-        "[&_h2]:type-h2 [&_h2]:mt-10 [&_h2]:mb-3",
-        "[&_h3]:type-h3 [&_h3]:mt-8 [&_h3]:mb-2",
-        "[&_p]:mt-0 [&_p]:mb-4 [&_p]:text-muted",
-        "[&_ul]:mt-0 [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:text-muted",
-        "[&_ol]:mt-0 [&_ol]:mb-4 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:text-muted",
-        "[&_li]:mb-1.5",
+        "max-w-[var(--measure-prose)] text-ink",
+        article
+          ? [
+              "text-[0.875rem] leading-[1.65] sm:text-[1rem] sm:leading-[1.7]",
+              "[&_h2]:mt-7 [&_h2]:mb-2 [&_h2]:text-[1.0625rem] [&_h2]:leading-snug [&_h2]:font-semibold [&_h2]:tracking-[-0.03em] [&_h2]:text-ink sm:[&_h2]:mt-9 sm:[&_h2]:mb-3 sm:[&_h2]:text-[1.25rem]",
+              "[&_h3]:mt-6 [&_h3]:mb-2 [&_h3]:text-[0.9375rem] [&_h3]:font-semibold [&_h3]:text-ink sm:[&_h3]:mt-7 sm:[&_h3]:text-[1.0625rem]",
+              "[&_h4]:mt-5 [&_h4]:mb-1.5 [&_h4]:text-[0.875rem] [&_h4]:font-semibold [&_h4]:text-ink sm:[&_h4]:mt-6 sm:[&_h4]:text-[1rem]",
+              "[&_p]:mt-0 [&_p]:mb-4 [&_p]:text-[length:inherit] [&_p]:leading-[inherit] [&_p]:text-ink sm:[&_p]:mb-5",
+              "[&_ul]:mt-0 [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:text-[length:inherit] [&_ul]:text-ink sm:[&_ul]:mb-5",
+              "[&_ol]:mt-0 [&_ol]:mb-4 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:text-[length:inherit] [&_ol]:text-ink sm:[&_ol]:mb-5",
+              "[&_li]:mb-1.5 [&_li]:leading-[1.6] sm:[&_li]:mb-2 sm:[&_li]:leading-[1.7]",
+              "[&_blockquote]:my-5 [&_blockquote]:rounded-[var(--radius-md)] [&_blockquote]:border-l-2 [&_blockquote]:border-primary [&_blockquote]:bg-sunken [&_blockquote]:px-4 [&_blockquote]:py-3 [&_blockquote]:text-ink",
+              "[&_pre]:my-5 [&_pre]:overflow-x-auto [&_pre]:rounded-[var(--radius-md)] [&_pre]:bg-sunken [&_pre]:p-4",
+              "[&_pre_code]:bg-transparent [&_pre_code]:p-0",
+              "[&_img]:my-5 [&_img]:h-auto [&_img]:w-full [&_img]:rounded-[var(--radius-md)]",
+              "[&_hr]:my-8 [&_hr]:border-0 [&_hr]:border-t [&_hr]:border-line",
+            ]
+          : [
+              "type-body",
+              "[&_h2]:type-h2 [&_h2]:mt-10 [&_h2]:mb-3",
+              "[&_h3]:type-h3 [&_h3]:mt-8 [&_h3]:mb-2",
+              "[&_p]:mt-0 [&_p]:mb-4 [&_p]:text-muted",
+              "[&_ul]:mt-0 [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:text-muted",
+              "[&_ol]:mt-0 [&_ol]:mb-4 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:text-muted",
+              "[&_li]:mb-1.5",
+            ],
         "[&_a]:text-primary [&_a]:underline [&_a]:underline-offset-4",
         "[&_strong]:font-semibold [&_strong]:text-ink",
         "[&_code]:type-code [&_code]:rounded [&_code]:bg-sunken [&_code]:px-1.5 [&_code]:py-0.5",

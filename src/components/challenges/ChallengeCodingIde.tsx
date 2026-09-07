@@ -45,10 +45,21 @@ export default function ChallengeCodingIde({
       timeLimitMinutes: Math.max(15, item.estMinutes || 45),
       coding: {
         prompt: item.prompt || item.description,
+        statement: item.description || item.prompt,
         starterCode: harness.starterCode,
         functionName: harness.functionName,
         examples: harness.examples,
         publicTests: harness.publicTests,
+        title: item.title,
+        difficulty: item.difficulty,
+        hints: item.hints,
+        topics: item.topics,
+        companies: item.companyTags,
+        editorial: item.solution?.editorial,
+        constraints: [
+          "Pass all public test cases before submit",
+          "Hidden tests are graded on submit",
+        ],
       },
     };
   }, [harness, item]);
@@ -110,13 +121,15 @@ export default function ChallengeCodingIde({
         setShowResult(true);
       }}
     >
-      {() => (
+      {({ secondsLeft, requestClose }) => (
         <CodingAssessment
           assessment={assessment}
           nodeId={item.id}
           runSource="challenge"
           noteTitle={item.title}
           submitting={submitting}
+          secondsLeft={secondsLeft}
+          onClose={requestClose}
           onSubmit={async ({ code, language }) => {
             setSubmitting(true);
             try {

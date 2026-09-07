@@ -106,6 +106,7 @@ export function RichStudyText({
       })}
       <style>{`
         .study-rich { font-family: Inter, sans-serif; font-size: 14px; line-height: 1.7; color: inherit; }
+        .study-rich-invert { font-size: inherit; line-height: inherit; }
         .study-rich-compact {
           max-height: 6.8em;
           overflow: hidden;

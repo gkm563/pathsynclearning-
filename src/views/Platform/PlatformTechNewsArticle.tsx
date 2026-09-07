@@ -2,23 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Bookmark, CheckCheck } from "lucide-react";
+import { Bookmark, CheckCheck, ChevronLeft } from "lucide-react";
 import { apiGet, apiSend } from "@/lib/api";
 import type { NewsArticleDto } from "@/lib/news/types";
 import { routes } from "@/lib/routes";
-import {
-  Badge,
-  Breadcrumb,
-  Button,
-  ErrorState,
-  PageSkeleton,
-} from "@/components/ui";
+import { Button, ErrorState, PageSkeleton } from "@/components/ui";
 import {
   ExternalSourceLink,
   ShareButton,
 } from "@/components/tech-news/NewsCard";
-import { formatNewsTime, NewsCover, newsDateTime } from "@/components/tech-news/shared";
+import {
+  formatNewsTime,
+  NewsCover,
+  newsDateTime,
+} from "@/components/tech-news/shared";
 import { NewsArticleBody } from "@/components/tech-news/NewsArticleBody";
+import Link from "next/link";
 
 export default function PlatformTechNewsArticle() {
   const params = useParams<{ id: string }>();
@@ -103,20 +102,25 @@ export default function PlatformTechNewsArticle() {
 
   return (
     <article className="mx-auto max-w-[var(--measure-prose)]">
-      <Breadcrumb
-        items={[
-          { label: "Tech News", href: routes.app.techNews },
-          { label: article.title },
-        ]}
-        className="mb-5"
-      />
+      <Link
+        href={routes.app.techNews}
+        className="type-label mb-5 inline-flex min-h-11 items-center gap-1 text-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      >
+        <ChevronLeft size={18} aria-hidden />
+        Tech News
+      </Link>
 
-      <div className="mb-6 overflow-hidden rounded-[var(--radius-lg)] border border-line">
-        <NewsCover src={article.imageUrl} alt="" />
-      </div>
+      <p className="type-overline m-0 text-primary">{article.category}</p>
 
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        <Badge tone="accent">{article.category}</Badge>
+      <h1 className="mt-2 mb-3 text-[1.25rem] leading-[1.25] font-semibold tracking-[-0.035em] text-ink sm:text-[1.85rem] sm:leading-[1.2]">
+        {article.title}
+      </h1>
+
+      {article.author ? (
+        <p className="type-small mt-0 mb-2 text-muted">By {article.author}</p>
+      ) : null}
+
+      <div className="mb-5 flex flex-wrap items-center gap-x-2 gap-y-1">
         <span className="type-caption text-faint">{article.sourceName}</span>
         <span className="type-caption text-faint" aria-hidden>
           ·
@@ -140,14 +144,20 @@ export default function PlatformTechNewsArticle() {
         ) : null}
       </div>
 
-      <h1 className="type-h2 mt-0 mb-3 text-ink">{article.title}</h1>
+      <NewsCover
+        src={article.imageUrl}
+        alt=""
+        fallback="hidden"
+        className="mb-6 aspect-[16/9] rounded-[var(--radius-lg)]"
+      />
 
-      {article.author ? (
-        <p className="type-small mt-0 mb-4 text-muted">By {article.author}</p>
-      ) : null}
-
-      <div className="mb-6 flex flex-wrap gap-2">
-        <Button variant="secondary" onClick={() => void toggleBookmark()}>
+      <div className="mb-6 flex flex-wrap items-center gap-1 border-y border-line py-1">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => void toggleBookmark()}
+          className="min-h-11"
+        >
           <Bookmark
             size={16}
             aria-hidden
@@ -162,13 +172,15 @@ export default function PlatformTechNewsArticle() {
       </div>
 
       {showDek ? (
-        <p className="type-body mt-0 mb-5 text-muted">{article.summary}</p>
+        <p className="mt-0 mb-4 text-[0.875rem] leading-[1.65] text-muted sm:mb-5 sm:text-[1rem] sm:leading-[1.7]">
+          {article.summary}
+        </p>
       ) : null}
 
       {article.content ? (
         <NewsArticleBody content={article.content} />
       ) : (
-        <p className="type-body text-muted">
+        <p className="text-[0.875rem] leading-[1.65] text-muted sm:text-[1rem] sm:leading-[1.7]">
           Full story is available on the original source.
         </p>
       )}

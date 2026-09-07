@@ -56,12 +56,15 @@ export function NewsCover({
   alt = "",
   className,
   zoomOnHover = false,
+  fallback = "placeholder",
 }: {
   src: string | null;
   alt?: string;
   className?: string;
   /** Applies a subtle scale when an ancestor marked `group` is hovered. */
   zoomOnHover?: boolean;
+  /** `hidden` omits the block when there is no real photograph. */
+  fallback?: "placeholder" | "hidden";
 }) {
   const [failed, setFailed] = useState(false);
   const photo = nonemptyUrl(src);
@@ -70,6 +73,8 @@ export function NewsCover({
   useEffect(() => {
     setFailed(false);
   }, [src]);
+
+  if (!showPhoto && fallback === "hidden") return null;
 
   const motionClass = zoomOnHover
     ? "transition-transform duration-[var(--duration-normal)] ease-[var(--ease-standard)] group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"

@@ -104,10 +104,12 @@ export function ShareButton({
   title,
   url,
   onCopied,
+  className,
 }: {
   title: string;
   url: string;
   onCopied?: () => void;
+  className?: string;
 }) {
   const share = async () => {
     try {
@@ -123,20 +125,34 @@ export function ShareButton({
   };
 
   return (
-    <Button variant="secondary" onClick={() => void share()} className="min-h-11">
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => void share()}
+      className={cn("min-h-11", className)}
+    >
       <Share2 size={15} aria-hidden /> Share
     </Button>
   );
 }
 
 /** Link out to the publisher's original story. */
-export function ExternalSourceLink({ href }: { href: string }) {
+export function ExternalSourceLink({
+  href,
+  className,
+}: {
+  href: string;
+  className?: string;
+}) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="type-label inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-md)] border border-line-strong bg-surface px-4 text-ink transition-colors duration-[var(--duration-fast)] hover:bg-sunken focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none"
+      className={cn(
+        "type-label inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-md)] px-3 text-muted transition-colors duration-[var(--duration-fast)] hover:bg-sunken hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none",
+        className,
+      )}
     >
       <ExternalLink size={15} aria-hidden /> Original
       <span className="sr-only">(opens in a new tab)</span>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import Editor, { type OnMount } from "@monaco-editor/react";
 import type { CodingLanguageId } from "@/lib/roadmap/coding-languages";
 import { getLanguageOption } from "@/lib/roadmap/coding-languages";
@@ -13,6 +13,11 @@ const MONACO_LANG: Record<CodingLanguageId, string> = {
   cpp: "cpp",
 };
 
+export type CodeEditorApi = {
+  undo: () => void;
+  redo: () => void;
+};
+
 type CodeEditorProps = {
   value: string;
   language: CodingLanguageId;
@@ -20,10 +25,14 @@ type CodeEditorProps = {
   onSave?: () => void;
   onFormat?: () => void;
   onCursorChange?: (pos: { line: number; col: number }) => void;
+  onReady?: (api: CodeEditorApi) => void;
   readOnly?: boolean;
   minHeight?: number;
   /** Flat LeetCode-style embedding (no outer chrome) */
   variant?: "default" | "leetcode";
+  /** Phone density — smaller gutters, no wheel-zoom. */
+  compact?: boolean;
+  fontSize?: number;
 };
 
 export default function CodeEditor({
@@ -33,9 +42,12 @@ export default function CodeEditor({
   onSave,
   onFormat,
   onCursorChange,
+  onReady,
   readOnly = false,
   minHeight = 280,
   variant = "default",
+  compact = false,
+  fontSize,
 }: CodeEditorProps) {
   const saveRef = useRef(onSave);
   saveRef.current = onSave;
@@ -43,42 +55,51 @@ export default function CodeEditor({
   formatRef.current = onFormat;
   const cursorRef = useRef(onCursorChange);
   cursorRef.current = onCursorChange;
+  const readyRef = useRef(onReady);
+  readyRef.current = onReady;
+  const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
+  const monacoRef = useRef<Parameters<OnMount>[1] | null>(null);
+
+  const resolvedSize = fontSize ?? (compact ? 12 : 14);
+  const lineHeight = Math.round(resolvedSize * 1.5);
 
   const langMeta = getLanguageOption(language);
   const monacoLang = langMeta.monaco || MONACO_LANG[language] || "javascript";
   const isLc = variant === "leetcode";
 
   const handleMount: OnMount = (ed, monaco) => {
-    monaco.editor.defineTheme("pathed-leetcode", {
-      base: "vs-dark",
+    monaco.editor.defineTheme("pathed-light", {
+      base: "vs",
       inherit: true,
       rules: [
-        { token: "comment", foreground: "6A9955", fontStyle: "italic" },
-        { token: "keyword", foreground: "569CD6" },
-        { token: "string", foreground: "CE9178" },
-        { token: "number", foreground: "B5CEA8" },
-        { token: "type", foreground: "4EC9B0" },
-        { token: "function", foreground: "DCDCAA" },
-        { token: "identifier", foreground: "D4D4D4" },
+        { token: "comment", foreground: "5d616a", fontStyle: "italic" },
+        { token: "keyword", foreground: "1b4540" },
+        { token: "string", foreground: "c45c26" },
+        { token: "number", foreground: "1f6b48" },
+        { token: "type", foreground: "2a5478" },
+        { token: "function", foreground: "143632" },
+        { token: "identifier", foreground: "16181d" },
       ],
       colors: {
-        "editor.background": "#1e1e1e",
-        "editor.foreground": "#D4D4D4",
-        "editorLineNumber.foreground": "#858585",
-        "editorLineNumber.activeForeground": "#C6C6C6",
-        "editor.selectionBackground": "#264F78",
-        "editor.inactiveSelectionBackground": "#3A3D41",
-        "editorCursor.foreground": "#AEAFAD",
-        "editor.lineHighlightBackground": "#2A2A2A",
-        "editorBracketMatch.background": "#0064001a",
-        "editorBracketMatch.border": "#888888",
-        "editorIndentGuide.background1": "#404040",
-        "editorIndentGuide.activeBackground1": "#707070",
-        "editorWidget.background": "#252526",
-        "editorSuggestWidget.background": "#252526",
-        "editorSuggestWidget.border": "#454545",
-        "scrollbarSlider.background": "#42424280",
-        "scrollbarSlider.hoverBackground": "#4F4F4F80",
+        "editor.background": "#fffcf6",
+        "editor.foreground": "#16181d",
+        "editorLineNumber.foreground": "#8a8e97",
+        "editorLineNumber.activeForeground": "#5d616a",
+        "editor.selectionBackground": "#1b454026",
+        "editor.inactiveSelectionBackground": "#1b454014",
+        "editorCursor.foreground": "#1b4540",
+        "editor.lineHighlightBackground": "#f4f1ea",
+        "editorBracketMatch.background": "#1b454014",
+        "editorBracketMatch.border": "#1b4540",
+        "editorIndentGuide.background1": "#e4dfd4",
+        "editorIndentGuide.activeBackground1": "#cfc8ba",
+        "editorWidget.background": "#fffcf6",
+        "editorSuggestWidget.background": "#fffcf6",
+        "editorSuggestWidget.border": "#e4dfd4",
+        "editorSuggestWidget.foreground": "#16181d",
+        "editorSuggestWidget.selectedBackground": "#1b45401a",
+        "scrollbarSlider.background": "#1b454028",
+        "scrollbarSlider.hoverBackground": "#1b454048",
       },
     });
 
@@ -86,35 +107,41 @@ export default function CodeEditor({
       base: "vs-dark",
       inherit: true,
       rules: [
-        { token: "comment", foreground: "6A9955", fontStyle: "italic" },
-        { token: "keyword", foreground: "C586C0" },
-        { token: "string", foreground: "CE9178" },
-        { token: "number", foreground: "B5CEA8" },
-        { token: "type", foreground: "4EC9B0" },
-        { token: "function", foreground: "DCDCAA" },
+        { token: "comment", foreground: "7d847f", fontStyle: "italic" },
+        { token: "keyword", foreground: "8fb8b1" },
+        { token: "string", foreground: "e08a52" },
+        { token: "number", foreground: "6dba94" },
+        { token: "type", foreground: "8fb4d4" },
+        { token: "function", foreground: "a4c7c1" },
+        { token: "identifier", foreground: "eeeae2" },
       ],
       colors: {
-        "editor.background": "#0f1117",
-        "editor.foreground": "#e6e6e6",
-        "editorLineNumber.foreground": "#5c6370",
-        "editorLineNumber.activeForeground": "#abb2bf",
-        "editor.selectionBackground": "#264f78",
-        "editor.inactiveSelectionBackground": "#3a3d41",
-        "editorCursor.foreground": "#1f6b48",
-        "editor.lineHighlightBackground": "#161b22",
-        "editorBracketMatch.background": "#3b4048",
-        "editorBracketMatch.border": "#1f6b48",
-        "editorIndentGuide.background1": "#2c313a",
-        "editorIndentGuide.activeBackground1": "#4b5263",
-        "editorWidget.background": "#1a1f2b",
-        "editorSuggestWidget.background": "#1a1f2b",
-        "editorSuggestWidget.border": "#2c313a",
-        "scrollbarSlider.background": "#3a3f4b66",
-        "scrollbarSlider.hoverBackground": "#4b526380",
+        "editor.background": "#171c1a",
+        "editor.foreground": "#eeeae2",
+        "editorLineNumber.foreground": "#7d847f",
+        "editorLineNumber.activeForeground": "#a8ada8",
+        "editor.selectionBackground": "#8fb8b133",
+        "editor.inactiveSelectionBackground": "#8fb8b11a",
+        "editorCursor.foreground": "#8fb8b1",
+        "editor.lineHighlightBackground": "#1c2220",
+        "editorBracketMatch.background": "#8fb8b114",
+        "editorBracketMatch.border": "#8fb8b1",
+        "editorIndentGuide.background1": "#ffffff14",
+        "editorIndentGuide.activeBackground1": "#ffffff29",
+        "editorWidget.background": "#171c1a",
+        "editorSuggestWidget.background": "#171c1a",
+        "editorSuggestWidget.border": "#ffffff14",
+        "editorSuggestWidget.foreground": "#eeeae2",
+        "editorSuggestWidget.selectedBackground": "#8fb8b124",
+        "scrollbarSlider.background": "#8fb8b134",
+        "scrollbarSlider.hoverBackground": "#8fb8b155",
       },
     });
 
-    monaco.editor.setTheme(isLc ? "pathed-leetcode" : "pathed-dark");
+    const dark = document.documentElement.getAttribute("data-theme") === "dark";
+    monaco.editor.setTheme(dark ? "pathed-dark" : "pathed-light");
+    editorRef.current = ed;
+    monacoRef.current = monaco;
 
     // Hard-disable IntelliSense / suggest widget (stops Ctrl+Space + Space-as-commit)
     ed.updateOptions({
@@ -211,8 +238,45 @@ export default function CodeEditor({
       cursorRef.current?.({ line: pos.lineNumber, col: pos.column });
     }
 
+    readyRef.current?.({
+      undo: () => ed.trigger("keyboard", "undo", null),
+      redo: () => ed.trigger("keyboard", "redo", null),
+    });
+
     ed.focus();
   };
+
+  useEffect(() => {
+    const apply = () => {
+      const dark = document.documentElement.getAttribute("data-theme") === "dark";
+      monacoRef.current?.editor.setTheme(dark ? "pathed-dark" : "pathed-light");
+    };
+    apply();
+    const mo = new MutationObserver(apply);
+    mo.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+    return () => mo.disconnect();
+  }, []);
+
+  useEffect(() => {
+    editorRef.current?.updateOptions({
+      fontSize: resolvedSize,
+      lineHeight,
+    });
+  }, [resolvedSize, lineHeight]);
+
+  useEffect(() => {
+    editorRef.current?.updateOptions({
+      lineNumbersMinChars: compact ? 2 : 3,
+      lineDecorationsWidth: compact ? 4 : 10,
+      folding: !compact,
+      showFoldingControls: compact ? "never" : "mouseover",
+      mouseWheelZoom: !compact,
+      padding: { top: compact ? 4 : 10, bottom: compact ? 4 : 10 },
+    });
+  }, [compact]);
 
   return (
     <div
@@ -224,7 +288,7 @@ export default function CodeEditor({
         borderRadius: isLc ? 0 : 12,
         border: isLc ? "none" : "1px solid var(--border-light)",
         overflow: "hidden",
-        background: isLc ? "var(--bg-inverse)" : "var(--bg-inverse)",
+        background: "var(--surface)",
       }}
     >
       <div style={{ position: "absolute", inset: 0 }}>
@@ -232,7 +296,7 @@ export default function CodeEditor({
           height="100%"
           language={monacoLang}
           value={value}
-          theme={isLc ? "pathed-leetcode" : "pathed-dark"}
+          theme="pathed-light"
           loading={
             <div
               style={{
@@ -240,9 +304,9 @@ export default function CodeEditor({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                color: "var(--text-inverse)",
+                color: "var(--muted)",
                 fontSize: 13,
-                background: isLc ? "var(--bg-inverse)" : "var(--bg-inverse)",
+                background: "var(--surface)",
               }}
             >
               Loading editor…
@@ -252,11 +316,11 @@ export default function CodeEditor({
           onMount={handleMount}
           options={{
             readOnly,
-            fontSize: 14,
+            fontSize: resolvedSize,
             fontFamily: "var(--font-code), ui-monospace, monospace",
             fontLigatures: true,
-            lineHeight: 22,
-            letterSpacing: 0.2,
+            lineHeight,
+            letterSpacing: compact ? 0 : 0.2,
             tabSize: 2,
             insertSpaces: true,
             detectIndentation: false,
@@ -295,20 +359,22 @@ export default function CodeEditor({
             renderWhitespace: "selection",
             minimap: { enabled: false },
             scrollbar: {
-              verticalScrollbarSize: 10,
-              horizontalScrollbarSize: 10,
+              verticalScrollbarSize: compact ? 6 : 10,
+              horizontalScrollbarSize: compact ? 6 : 10,
             },
-            padding: { top: 10, bottom: 10 },
-            folding: true,
-            foldingHighlight: true,
-            showFoldingControls: "mouseover",
+            padding: { top: compact ? 4 : 10, bottom: compact ? 4 : 10 },
+            folding: !compact,
+            foldingHighlight: !compact,
+            showFoldingControls: compact ? "never" : "mouseover",
             lineNumbers: "on",
+            lineNumbersMinChars: compact ? 2 : 3,
+            lineDecorationsWidth: compact ? 4 : 10,
             glyphMargin: false,
             overviewRulerLanes: 0,
             hideCursorInOverviewRuler: true,
             overviewRulerBorder: false,
             contextmenu: false,
-            mouseWheelZoom: true,
+            mouseWheelZoom: !compact,
             accessibilitySupport: "auto",
           }}
         />

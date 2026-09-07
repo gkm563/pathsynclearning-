@@ -65,6 +65,12 @@ export interface CodingAssessment {
   constraints?: string[];
   hints?: string[];
   followUp?: string;
+  /** Topic chips shown under the title (LeetCode-style). */
+  topics?: string[];
+  /** Company chips shown under the title. */
+  companies?: string[];
+  /** Editorial write-up for the Editorial tab. */
+  editorial?: string;
 }
 
 export interface ProjectStepSpec {

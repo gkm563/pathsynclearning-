@@ -7,7 +7,7 @@ export function NewsArticleBody({ content }: { content: string }) {
   const html = renderNewsContent(content);
   if (!html) return null;
   return (
-    <Prose>
+    <Prose variant="article">
       <div dangerouslySetInnerHTML={{ __html: html }} />
     </Prose>
   );

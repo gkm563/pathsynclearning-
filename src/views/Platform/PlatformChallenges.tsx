@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
 import { Coins, Flame, Shield, Sparkles, Trophy } from "lucide-react";
@@ -52,10 +52,17 @@ export default function PlatformChallenges() {
   const [reviewItem, setReviewItem] = useState<ChallengeSummary | null>(null);
   const [countdown, setCountdown] = useState(0);
   const [arenaSessionSolved, setArenaSessionSolved] = useState<string[]>([]);
+  const openedFromQuery = useRef<string | null>(null);
 
   const flash = (msg: string, tone: "success" | "error" | "info" = "info") => {
     toast[tone](msg);
   };
+
+  const clearOpenQuery = useCallback(() => {
+    openedFromQuery.current = null;
+    if (!openId) return;
+    router.replace(routes.app.challenges, { scroll: false });
+  }, [openId, router]);
 
   const load = useCallback(async () => {
     try {
@@ -107,6 +114,8 @@ export default function PlatformChallenges() {
 
   useEffect(() => {
     if (!data || !openId) return;
+    if (openedFromQuery.current === openId) return;
+    openedFromQuery.current = openId;
 
     const item =
       data.questions.find((q) => q.id === openId) ??
@@ -115,18 +124,20 @@ export default function PlatformChallenges() {
       (data.weekly.boss?.id === openId ? data.weekly.boss : undefined) ??
       data.weekly.parts.find((s) => s.id === openId);
 
+    if (!item) {
+      toast.info("That challenge isn't available");
+      clearOpenQuery();
+      return;
+    }
+
     const inDailyPack =
       data.daily.featured?.id === openId ||
       data.daily.side.some((s) => s.id === openId) ||
       data.weekly.boss?.id === openId ||
       data.weekly.parts.some((s) => s.id === openId);
-    if (item) setTab(inDailyPack ? "cotd" : "all");
-
-    if (item) openItem(item);
-    else toast.info("That challenge isn't available");
-
-    router.replace(routes.app.challenges, { scroll: false });
-  }, [data, openId, openItem, router, toast]);
+    setTab(inDailyPack ? "cotd" : "all");
+    openItem(item);
+  }, [data, openId, openItem, toast, clearOpenQuery]);
 
   const submitAttempt = async (
     item: ChallengeSummary,
@@ -465,7 +476,10 @@ export default function PlatformChallenges() {
         {reviewItem && (
           <ChallengeReviewModal
             item={reviewItem}
-            onClose={() => setReviewItem(null)}
+            onClose={() => {
+              setReviewItem(null);
+              clearOpenQuery();
+            }}
             onRetry={() => {
               const item = reviewItem;
               setReviewItem(null);
@@ -479,7 +493,10 @@ export default function PlatformChallenges() {
         {codingItem && (
           <ChallengeCodingIde
             item={codingItem}
-            onClose={() => setCodingItem(null)}
+            onClose={() => {
+              setCodingItem(null);
+              clearOpenQuery();
+            }}
             onFinished={onCodingFinished}
           />
         )}
@@ -488,7 +505,10 @@ export default function PlatformChallenges() {
         {mcqItem && (
           <ChallengeMcqIde
             item={mcqItem}
-            onClose={() => setMcqItem(null)}
+            onClose={() => {
+              setMcqItem(null);
+              clearOpenQuery();
+            }}
             onFinished={onMcqFinished}
           />
         )}
@@ -499,6 +519,7 @@ export default function PlatformChallenges() {
             item={projectItem}
             onClose={() => {
               setProjectItem(null);
+              clearOpenQuery();
               void load();
             }}
             onFinished={onProjectFinished}

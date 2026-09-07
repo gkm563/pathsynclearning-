@@ -23,7 +23,7 @@ export default function PortalShell({ children }: { children: ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-dvh bg-canvas text-ink">
+    <div className="flex min-h-dvh bg-canvas text-ink" data-app-overlay>
       <DesktopSidebar />
 
       {/* Drawer navigation for < lg. Renders in a portal; the empty state

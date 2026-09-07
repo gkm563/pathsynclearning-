@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import type { ProjectRubricBreakdownItem } from "@/lib/projects/types";
 import { ProjectRubricList } from "@/components/projects/ProjectWorkspace";
 import { Badge, Button, Card } from "@/components/ui";
+import { useScrollLock } from "@/hooks/useOverlay";
 
 /**
  * Same PASSED / score% overlay used by roadmap assessments, for Challenges.
@@ -37,6 +38,8 @@ export default function ChallengeResultScreen({
   const finish = useCallback(() => {
     onDone();
   }, [onDone]);
+
+  useScrollLock(true);
 
   useEffect(() => {
     if (!passed) return;

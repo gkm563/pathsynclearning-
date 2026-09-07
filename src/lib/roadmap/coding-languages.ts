@@ -331,6 +331,32 @@ export function loadCodeHistory(nodeId: string): CodeHistoryEntry[] {
   }
 }
 
+const FONT_KEY = "pathed:coding-font-size:v1";
+export const IDE_FONT_MIN = 10;
+export const IDE_FONT_MAX = 20;
+export const IDE_FONT_DEFAULT = 14;
+export const IDE_FONT_COMPACT_DEFAULT = 12;
+
+export function loadIdeFontSize(): number | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const n = Number(localStorage.getItem(FONT_KEY));
+    if (Number.isFinite(n) && n >= IDE_FONT_MIN && n <= IDE_FONT_MAX) return n;
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+export function saveIdeFontSize(size: number): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(FONT_KEY, String(size));
+  } catch {
+    /* ignore */
+  }
+}
+
 /** Format code with language-aware indentation (brace languages + Python). */
 export function formatByIndent(
   code: string,
