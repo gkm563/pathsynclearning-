@@ -4,13 +4,19 @@ import Link from "next/link";
 import { ArrowUpRight, ListChecks, Play } from "lucide-react";
 import type { DailyChallengeCard } from "@/components/dashboard/StudentContext";
 import { Badge, EmptyState, Progress } from "@/components/ui";
-import { routes } from "@/lib/routes";
+import { challengeOpenPath, routes } from "@/lib/routes";
 import { homeUi } from "./tokens";
 
 type Props = {
   challenges: DailyChallengeCard[];
   streak: number;
 };
+
+function actionLabel(task: DailyChallengeCard) {
+  if (task.status === "solved") return "Continue";
+  if (task.isStarted || task.status === "attempted") return "Resume";
+  return "Start";
+}
 
 /**
  * Today's challenge queue.
@@ -54,11 +60,16 @@ export function ChallengeQueue({ challenges, streak }: Props) {
         />
       ) : (
         <ul className="m-0 flex list-none flex-col gap-2 p-0">
-          {queue.map((task, idx) => (
-            <li
-              key={`${task.title}-${idx}`}
-              className="flex min-w-0 flex-col gap-3 rounded-[var(--radius-md)] border border-line bg-sunken p-3 sm:flex-row sm:items-center sm:gap-4"
-            >
+          {queue.map((task, idx) => {
+            const label = actionLabel(task);
+            const href = task.id
+              ? challengeOpenPath(task.id)
+              : routes.app.challenges;
+            return (
+              <li
+                key={task.id || `${task.title}-${idx}`}
+                className="flex min-w-0 flex-col gap-3 rounded-[var(--radius-md)] border border-line bg-sunken p-3 sm:flex-row sm:items-center sm:gap-4"
+              >
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="type-code type-numeric rounded-[var(--radius-sm)] border border-line bg-surface px-1.5 py-0.5 text-muted">
@@ -85,15 +96,16 @@ export function ChallengeQueue({ challenges, streak }: Props) {
               </div>
 
               <Link
-                href={routes.app.challenges}
+                href={href}
                 className="type-label inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-[var(--radius-md)] border border-primary-border bg-primary-soft px-4 text-primary transition-colors duration-[var(--duration-fast)] hover:bg-primary hover:text-on-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                aria-label={`${task.isStarted ? "Resume" : "Start"} ${task.title}`}
+                aria-label={`${label} ${task.title}`}
               >
                 <Play size={14} aria-hidden />
-                {task.isStarted ? "Resume" : "Start"}
+                {label}
               </Link>
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
     </div>

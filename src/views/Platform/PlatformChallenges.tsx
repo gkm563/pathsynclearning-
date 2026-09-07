@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
 import { Coins, Flame, Shield, Sparkles, Trophy } from "lucide-react";
 import { apiGet, apiSend } from "@/lib/api";
@@ -37,6 +37,8 @@ type TabId = "cotd" | "all" | "arena" | "progress" | "sync";
 
 export default function PlatformChallenges() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const openId = searchParams.get("open")?.trim() || "";
   const toast = useToast();
   const [tab, setTab] = useState<TabId>("cotd");
   const [data, setData] = useState<ChallengesApiResponse | null>(null);
@@ -80,25 +82,51 @@ export default function PlatformChallenges() {
     return () => window.clearInterval(t);
   }, [data?.daily.dateKey]);
 
-  const openItem = (item: ChallengeSummary) => {
-    if (item.type === "mcq") {
-      setMcqItem(item);
-      return;
-    }
-    if (item.project || item.type === "project") {
-      if (!item.project) {
-        flash("This project is not fully configured yet", "info");
+  const openItem = useCallback(
+    (item: ChallengeSummary) => {
+      if (item.type === "mcq") {
+        setMcqItem(item);
         return;
       }
-      setProjectItem(item);
-      return;
-    }
-    if (item.coding || item.type === "coding") {
-      setCodingItem(item);
-      return;
-    }
-    flash("Open a coding, MCQ, or project challenge to earn XP", "info");
-  };
+      if (item.project || item.type === "project") {
+        if (!item.project) {
+          toast.info("This project is not fully configured yet");
+          return;
+        }
+        setProjectItem(item);
+        return;
+      }
+      if (item.coding || item.type === "coding") {
+        setCodingItem(item);
+        return;
+      }
+      toast.info("Open a coding, MCQ, or project challenge to earn XP");
+    },
+    [toast],
+  );
+
+  useEffect(() => {
+    if (!data || !openId) return;
+
+    const item =
+      data.questions.find((q) => q.id === openId) ??
+      (data.daily.featured?.id === openId ? data.daily.featured : undefined) ??
+      data.daily.side.find((s) => s.id === openId) ??
+      (data.weekly.boss?.id === openId ? data.weekly.boss : undefined) ??
+      data.weekly.parts.find((s) => s.id === openId);
+
+    const inDailyPack =
+      data.daily.featured?.id === openId ||
+      data.daily.side.some((s) => s.id === openId) ||
+      data.weekly.boss?.id === openId ||
+      data.weekly.parts.some((s) => s.id === openId);
+    if (item) setTab(inDailyPack ? "cotd" : "all");
+
+    if (item) openItem(item);
+    else toast.info("That challenge isn't available");
+
+    router.replace(routes.app.challenges, { scroll: false });
+  }, [data, openId, openItem, router, toast]);
 
   const submitAttempt = async (
     item: ChallengeSummary,

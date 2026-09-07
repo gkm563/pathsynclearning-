@@ -79,6 +79,11 @@ export function techNewsArticlePath(id: string): string {
   return `${routes.app.techNews}/${encodeURIComponent(id)}`;
 }
 
+/** Open a specific challenge in the Challenges IDE (home Start / Resume / Continue). */
+export function challengeOpenPath(id: string): string {
+  return `${routes.app.challenges}?open=${encodeURIComponent(id)}`;
+}
+
 export type AppRoute = (typeof routes.app)[keyof typeof routes.app];
 export type MarketingRoute = (typeof routes.marketing)[keyof typeof routes.marketing];
 

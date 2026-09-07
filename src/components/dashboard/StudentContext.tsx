@@ -12,7 +12,10 @@ import React, {
 import { useUser } from "@clerk/nextjs";
 import { apiGet } from "@/lib/api";
 import { levelFromXp } from "@/lib/challenges/progress";
-import type { ChallengesApiResponse } from "@/lib/challenges/types";
+import type {
+  AttemptStatus,
+  ChallengesApiResponse,
+} from "@/lib/challenges/types";
 import type { PreferencesFormState } from "@/lib/profile/types";
 import {
   EMPTY_PREFERENCES,
@@ -31,6 +34,7 @@ export type StudentGoal = {
 export type SkillProgress = { label: string; pct: number; col: string };
 
 export type DailyChallengeCard = {
+  id?: string;
   icon: string;
   title: string;
   category: string;
@@ -39,6 +43,7 @@ export type DailyChallengeCard = {
   xp: number;
   pct: number;
   isStarted: boolean;
+  status: AttemptStatus;
   col: string;
   bg: string;
   border: string;
@@ -76,6 +81,7 @@ const FALLBACK_CHALLENGES: DailyChallengeCard[] = [
     xp: 150,
     pct: 68,
     isStarted: true,
+    status: "attempted",
     col: "#1b4540",
     bg: "rgba(27,69,64,0.08)",
     border: "#1b454040",
@@ -89,6 +95,7 @@ const FALLBACK_CHALLENGES: DailyChallengeCard[] = [
     xp: 80,
     pct: 0,
     isStarted: false,
+    status: "todo",
     col: "#f7971e",
     bg: "rgba(247,151,30,0.08)",
     border: "#f7971e40",
@@ -102,6 +109,7 @@ const FALLBACK_CHALLENGES: DailyChallengeCard[] = [
     xp: 300,
     pct: 0,
     isStarted: false,
+    status: "todo",
     col: "#1f6b48",
     bg: "rgba(31,107,72,0.08)",
     border: "#1f6b4840",
@@ -115,6 +123,7 @@ const FALLBACK_CHALLENGES: DailyChallengeCard[] = [
     xp: 60,
     pct: 0,
     isStarted: false,
+    status: "todo",
     col: "#c45c26",
     bg: "rgba(196,92,38,0.08)",
     border: "#c45c2640",
@@ -160,6 +169,7 @@ function mapDailyFromApi(
     const colors = palette[idx % palette.length];
     const pct = c.status === "solved" ? 100 : c.status === "attempted" ? 40 : 0;
     return {
+      id: c.id,
       icon: String(c.icon || c.category || "CH").slice(0, 4).toUpperCase(),
       title: c.title || "Challenge",
       category: c.category || "DSA",
@@ -168,6 +178,7 @@ function mapDailyFromApi(
       xp: Number(c.xp) || 100,
       pct,
       isStarted: pct > 0,
+      status: c.status,
       ...colors,
     };
   });

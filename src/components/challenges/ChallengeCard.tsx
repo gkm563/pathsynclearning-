@@ -9,6 +9,7 @@ import {
   Building2,
   ClipboardList,
   RotateCcw,
+  Clock,
 } from "lucide-react";
 import type { ChallengeSummary } from "@/lib/challenges/types";
 import { HINT_COST } from "@/lib/challenges/progress";
@@ -27,6 +28,21 @@ const DIFF_LABEL = {
   medium: "Medium",
   hard: "Hard",
 } as const;
+
+function typeLabel(item: ChallengeSummary) {
+  if (item.legacyType === "MILESTONE") return "Milestone";
+  if (item.type === "mcq") return "MCQ";
+  if (item.type === "coding") return "Coding";
+  return "Project";
+}
+
+function formatEstMinutes(mins: number) {
+  if (mins >= 60 && mins % 60 === 0) {
+    const hours = mins / 60;
+    return hours === 1 ? "1 hr" : `${hours} hrs`;
+  }
+  return `${mins} min`;
+}
 
 export default function ChallengeCard({
   item,
@@ -56,7 +72,7 @@ export default function ChallengeCard({
   return (
     <Card
       className={cn(
-        "relative flex h-full min-w-0 flex-col gap-3 transition-[border-color,box-shadow] duration-[var(--duration-fast)]",
+        "flex h-full min-w-0 flex-col gap-3 transition-[border-color,box-shadow] duration-[var(--duration-fast)]",
         "hover:border-primary-border hover:shadow-[var(--shadow-md)]",
         featured && "border-primary-border",
         boss &&
@@ -67,43 +83,46 @@ export default function ChallengeCard({
           "border-[color-mix(in_srgb,var(--success)_36%,var(--border-light))]",
       )}
     >
-      {(featured || boss) && (
-        <Badge
-          tone={boss ? "warning" : "accent"}
-          className="absolute top-4 right-4"
-        >
-          {boss ? "Weekly Boss" : "Challenge of the Day"}
-        </Badge>
-      )}
-      {done && !featured && !boss && (
-        <Badge tone="success" className="absolute top-4 right-4">
-          Solved
-        </Badge>
-      )}
-
-      <div className="flex flex-wrap items-center gap-2">
-        <span
-          className={cn(
-            "grid place-items-center rounded-[var(--radius-md)] bg-primary-soft text-primary",
-            featured ? "h-11 w-11" : "h-9 w-9",
-          )}
-        >
-          <ChallengeIcon name={item.icon} size={featured ? 22 : 18} />
-        </span>
-        <Badge tone={DIFF_TONE[item.difficulty]}>
-          {DIFF_LABEL[item.difficulty]}
-        </Badge>
-        <Badge>{item.type}</Badge>
-        <span className="type-caption type-numeric text-muted">+{item.xp} XP</span>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <span
+            className={cn(
+              "grid shrink-0 place-items-center rounded-[var(--radius-md)] bg-primary-soft text-primary",
+              featured ? "h-11 w-11" : "h-9 w-9",
+            )}
+          >
+            <ChallengeIcon name={item.icon} size={featured ? 22 : 18} />
+          </span>
+          <Badge tone={DIFF_TONE[item.difficulty]}>
+            {DIFF_LABEL[item.difficulty]}
+          </Badge>
+          <Badge>{typeLabel(item)}</Badge>
+          <span className="type-caption type-numeric text-muted">
+            +{item.xp} XP
+          </span>
+          {item.estMinutes > 0 ? (
+            <span className="type-caption inline-flex items-center gap-1 text-muted">
+              <Clock size={12} aria-hidden />
+              {formatEstMinutes(item.estMinutes)}
+            </span>
+          ) : null}
+        </div>
+        {(featured || boss) && (
+          <Badge
+            tone={boss ? "warning" : "accent"}
+            className="shrink-0 whitespace-nowrap"
+          >
+            {boss ? "Weekly Boss" : "Challenge of the Day"}
+          </Badge>
+        )}
+        {done && !featured && !boss && (
+          <Badge tone="success" className="shrink-0 whitespace-nowrap">
+            Solved
+          </Badge>
+        )}
       </div>
 
-      <h3
-        className={cn(
-          "m-0 text-ink",
-          featured ? "type-h3 pr-28" : "type-h4",
-          (featured || boss) && "pr-32",
-        )}
-      >
+      <h3 className={cn("m-0 text-ink", featured ? "type-h3" : "type-h4")}>
         {item.title}
       </h3>
       <p className="type-small m-0 text-muted">{item.description}</p>

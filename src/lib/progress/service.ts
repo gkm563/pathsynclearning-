@@ -35,7 +35,7 @@ import type {
   ProgressRange,
 } from "@/lib/progress/types";
 import { getNodeAssessments, isAssessableNode } from "@/lib/roadmap/assessment";
-import { routes } from "@/lib/routes";
+import { challengeOpenPath, routes } from "@/lib/routes";
 import type { RoadmapNode } from "@/types/roadmap";
 
 const TRACK_META: Record<
@@ -552,7 +552,7 @@ export async function getProgressPayload(
           : `${q?.title ?? a.questionId} attempted`,
         description: q?.description ?? null,
         occurredAt: a.createdAt.toISOString(),
-        href: routes.app.challenges,
+        href: challengeOpenPath(a.questionId),
       });
     }
     for (const a of assessmentAttemptRows.slice(0, 10)) {
@@ -708,7 +708,7 @@ function resolveNextAction(input: {
       kind: "project",
       title: q?.title ?? "Project in progress",
       subtitle: `${Math.max(0, 100 - (inProgressProject.checklistPct || 0))}% remaining`,
-      href: routes.app.challenges,
+      href: challengeOpenPath(inProgressProject.refId),
       remainingTasks: null,
     };
   }
@@ -735,7 +735,7 @@ function resolveNextAction(input: {
       kind: "challenge",
       title: nextChallenge.title,
       subtitle: nextChallenge.description.slice(0, 120),
-      href: routes.app.challenges,
+      href: challengeOpenPath(nextChallenge.id),
       remainingTasks: 1,
     };
   }

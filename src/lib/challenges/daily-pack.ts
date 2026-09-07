@@ -1,10 +1,15 @@
-import { listCatalog } from "@/lib/challenges/catalog";
+import { getChallengeById, listCatalog } from "@/lib/challenges/catalog";
 import type {
   ChallengeDailyPack,
   ChallengeDifficulty,
   ChallengeQuestion,
   ChallengeType,
 } from "@/lib/challenges/types";
+
+/** Capstones belong in Weekly Boss / Milestones, not the daily pack. */
+function isDailyEligible(q: ChallengeQuestion): boolean {
+  return q.legacyType !== "MILESTONE";
+}
 
 function hashString(input: string): number {
   let h = 2166136261;
@@ -76,7 +81,8 @@ export function filterEligible(
   roadmapTopics: string[],
   syncEnabled: boolean,
 ): ChallengeQuestion[] {
-  const catalog = listCatalog();
+  const daily = listCatalog().filter(isDailyEligible);
+  const catalog = daily.length >= 3 ? daily : listCatalog();
   const g = normalizeGoal(goal);
 
   let pool = catalog.filter((q) => matchesCareer(q, g));
@@ -136,11 +142,14 @@ export function mergeDailyPack(
   next: ChallengeDailyPack,
 ): ChallengeDailyPack {
   if (existing && existing.dateKey === next.dateKey && existing.featuredId) {
-    return {
-      ...existing,
-      // keep chosen pack stable for the day
-      completedIds: existing.completedIds || [],
-    };
+    const featured = getChallengeById(existing.featuredId);
+    if (featured && isDailyEligible(featured)) {
+      return {
+        ...existing,
+        // keep chosen pack stable for the day
+        completedIds: existing.completedIds || [],
+      };
+    }
   }
   return next;
 }
