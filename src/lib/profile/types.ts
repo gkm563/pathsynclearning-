@@ -20,6 +20,7 @@ export type ProfileFormState = {
   imageUrl: string;
   accountStatus: string;
   role: string;
+  studentRegistrationId: string;
 };
 
 export type PreferencesFormState = {
@@ -65,6 +66,7 @@ export const EMPTY_PROFILE: ProfileFormState = {
   imageUrl: "",
   accountStatus: "active",
   role: "student",
+  studentRegistrationId: "",
 };
 
 export const EMPTY_PREFERENCES: PreferencesFormState = {
@@ -98,6 +100,7 @@ export function mapApiProfile(
     imageUrl: String(p.image_url ?? ""),
     accountStatus: String(p.account_status ?? "active"),
     role: String(p.role ?? "student"),
+    studentRegistrationId: String(p.student_registration_id ?? ""),
   };
 }
 

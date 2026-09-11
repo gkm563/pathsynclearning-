@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -8,6 +9,7 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -20,10 +22,53 @@ export const users = pgTable(
     role: text("role").notNull().default("student"),
     fullName: text("full_name"),
     imageUrl: text("image_url"),
+    /**
+     * Permanent public Student ID (e.g. PED-A3F1-9C20-B7E4).
+     * Random — does not encode how many students exist. Assigned once; never updated.
+     */
+    studentRegistrationId: text("student_registration_id"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("idx_users_clerk_id").on(t.clerkId), index("idx_users_email").on(t.email)],
+  (t) => [
+    index("idx_users_clerk_id").on(t.clerkId),
+    index("idx_users_email").on(t.email),
+    uniqueIndex("users_student_registration_id_unique").on(
+      t.studentRegistrationId,
+    ),
+  ],
+);
+
+/** Unused leftover table; Student IDs are random, not yearly sequences. */
+export const studentRegistrationCounters = pgTable(
+  "student_registration_counters",
+  {
+    year: integer("year").primaryKey(),
+    lastSequence: integer("last_sequence").notNull(),
+  },
+);
+
+/**
+ * Issued Student Registration IDs for living accounts.
+ * The row is deleted when the student deletes their account.
+ */
+export const issuedStudentRegistrationIds = pgTable(
+  "issued_student_registration_ids",
+  {
+    registrationId: text("registration_id").primaryKey(),
+    year: integer("year").notNull(),
+    sequenceNumber: integer("sequence_number").notNull(),
+    userId: uuid("user_id"),
+    issuedAt: timestamp("issued_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("issued_student_registration_ids_user_id_unique")
+      .on(t.userId)
+      .where(sql`${t.userId} IS NOT NULL`),
+    index("idx_issued_student_registration_ids_user").on(t.userId),
+  ],
 );
 
 export const profiles = pgTable("profiles", {

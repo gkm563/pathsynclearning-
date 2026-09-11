@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { Camera, Mail, MapPin, Pencil, Shield, UserRound, X } from "lucide-react";
 import type { ProfileFormState, ProfileSectionId } from "@/lib/profile/types";
 import { Avatar, Badge, Button, Card } from "@/components/ui";
+import { StudentRegistrationIdDisplay } from "@/components/profile/StudentRegistrationIdDisplay";
 
 function Meta({
   icon: Icon,
@@ -64,6 +65,15 @@ export function ProfileIdentityCard({
           ) : null}
           <Meta icon={Shield}>{profile.role}</Meta>
         </div>
+
+        {profile.studentRegistrationId ? (
+          <div className="mt-3">
+            <StudentRegistrationIdDisplay
+              value={profile.studentRegistrationId}
+              compact
+            />
+          </div>
+        ) : null}
 
         {profile.bio ? (
           <p className="type-small mt-3 mb-0 max-w-prose text-muted">

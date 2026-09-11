@@ -175,6 +175,7 @@ export function useProfileEditor() {
 
   const updateProfile = useCallback(
     <K extends keyof ProfileFormState>(key: K, value: ProfileFormState[K]) => {
+      if (key === "studentRegistrationId") return;
       setDraftProfile((prev) => ({ ...prev, [key]: value }));
       setFieldErrors((prev) => {
         if (!prev[key]) return prev;
@@ -256,6 +257,7 @@ export function useProfileEditor() {
           image_url: draftProfile.imageUrl,
           account_status: draftProfile.accountStatus,
           role: draftProfile.role,
+          student_registration_id: draftProfile.studentRegistrationId,
         };
         const mapped = mapApiProfile(payload);
         setSavedProfile(mapped);

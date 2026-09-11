@@ -2,6 +2,7 @@
 
 import { Pencil } from "lucide-react";
 import type { ProfileFormState } from "@/lib/profile/types";
+import { StudentRegistrationIdDisplay } from "@/components/profile/StudentRegistrationIdDisplay";
 import {
   Alert,
   Button,
@@ -157,6 +158,9 @@ export function PersonalInfoForm({
 
   return (
     <section id="personal" className="flex flex-col gap-4">
+      {draft.studentRegistrationId ? (
+        <StudentRegistrationIdDisplay value={draft.studentRegistrationId} />
+      ) : null}
       {disabled ? (
         <Alert tone="info" title="You're viewing your details">
           <div className="flex flex-wrap items-center gap-3">

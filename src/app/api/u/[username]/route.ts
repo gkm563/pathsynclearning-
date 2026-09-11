@@ -28,6 +28,7 @@ export async function GET(_request: Request, { params }: Params) {
         fullName: users.fullName,
         imageUrl: users.imageUrl,
         role: users.role,
+        studentRegistrationId: users.studentRegistrationId,
         visibility: userSettings.profileVisibility,
       })
       .from(profiles)
@@ -51,6 +52,7 @@ export async function GET(_request: Request, { params }: Params) {
         full_name: row.fullName,
         image_url: row.imageUrl,
         role: row.role,
+        student_registration_id: row.studentRegistrationId,
         username: row.profile.username,
         profile_visibility: visibility,
         is_owner: isOwner,

@@ -6,6 +6,7 @@ import { getDb } from "@/lib/db/client";
 import { mapProfile } from "@/lib/db/mappers";
 import { profiles, users, wallets } from "@/lib/db/schema";
 import { getCachedClerkIdentity, requireDbUser } from "@/lib/db/users";
+import { sanitizeUserUpdatePatch } from "@/lib/identity/student-registration-id";
 import { profileUpdateSchema } from "@/lib/validation/schemas";
 
 function splitFullName(fullName: string) {
@@ -27,6 +28,7 @@ async function loadProfilePayload(userId: string) {
       email: users.email,
       role: users.role,
       imageUrl: users.imageUrl,
+      studentRegistrationId: users.studentRegistrationId,
       coins: wallets.coins,
       createdAt: users.createdAt,
     })
@@ -38,7 +40,16 @@ async function loadProfilePayload(userId: string) {
 
   if (!rows[0]) return null;
 
-  const { profile, fullName, email, role, imageUrl, coins, createdAt } =
+  const {
+    profile,
+    fullName,
+    email,
+    role,
+    imageUrl,
+    studentRegistrationId,
+    coins,
+    createdAt,
+  } =
     rows[0];
 
   // Prefer a Clerk identity already fetched in this process (no extra Clerk round trip)
@@ -51,6 +62,7 @@ async function loadProfilePayload(userId: string) {
     email: liveEmail,
     role,
     image_url: liveImage,
+    student_registration_id: studentRegistrationId,
     coins,
     account_status: "active",
     created_at: createdAt,
@@ -92,9 +104,11 @@ export async function PUT(request: Request) {
       }
     }
 
-    const userPatch: Record<string, unknown> = { updatedAt: now };
-    if (body.fullName !== undefined) userPatch.fullName = body.fullName;
-    if (body.imageUrl !== undefined) userPatch.imageUrl = body.imageUrl;
+    const userPatch = sanitizeUserUpdatePatch({
+      updatedAt: now,
+      ...(body.fullName !== undefined ? { fullName: body.fullName } : {}),
+      ...(body.imageUrl !== undefined ? { imageUrl: body.imageUrl } : {}),
+    });
 
     if (Object.keys(userPatch).length > 1) {
       await db.update(users).set(userPatch).where(eq(users.id, user.id));
@@ -114,7 +128,10 @@ export async function PUT(request: Request) {
       }
     }
 
-    const patch: Record<string, unknown> = { updatedAt: now };
+    const patch = sanitizeUserUpdatePatch({ updatedAt: now } as Record<
+      string,
+      unknown
+    >);
     const assign = <K extends keyof typeof body>(key: K, column: string) => {
       const value = body[key];
       if (value !== undefined) patch[column] = value;

@@ -3,6 +3,7 @@
 import { ArrowRight } from "lucide-react";
 import type { PreferencesFormState, ProfileFormState, ProfileSectionId } from "@/lib/profile/types";
 import { Button, Card, DescriptionList } from "@/components/ui";
+import { StudentRegistrationIdDisplay } from "@/components/profile/StudentRegistrationIdDisplay";
 
 const VISIBILITY_LABEL: Record<PreferencesFormState["profileVisibility"], string> = {
   public: "Public — anyone signed in can find you",
@@ -67,6 +68,11 @@ export function ProfileOverview({
 }) {
   return (
     <div className="grid gap-4 xl:grid-cols-2">
+      {profile.studentRegistrationId ? (
+        <div className="xl:col-span-2">
+          <StudentRegistrationIdDisplay value={profile.studentRegistrationId} />
+        </div>
+      ) : null}
       <OverviewCard
         title="Personal details"
         description="How you appear to mentors, recruiters and peers."

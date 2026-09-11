@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import { parseJson, errorResponse, jsonResponse } from "@/lib/api/http";
 import { AppError } from "@/lib/api/errors";
 import { getDb } from "@/lib/db/client";
-import { users } from "@/lib/db/schema";
+import { issuedStudentRegistrationIds, users } from "@/lib/db/schema";
 import { requireDbUser } from "@/lib/db/users";
 import { accountDeleteSchema } from "@/lib/validation/schemas";
 
@@ -27,7 +27,10 @@ export async function POST(request: Request) {
       throw AppError.badRequest(message);
     }
 
-    // Cascade deletes profiles, settings, wallets, etc.
+    // Remove the Student Registration ID, then cascade the rest of the account.
+    await db
+      .delete(issuedStudentRegistrationIds)
+      .where(eq(issuedStudentRegistrationIds.userId, user.id));
     await db.delete(users).where(eq(users.id, user.id));
 
     return jsonResponse({ ok: true });

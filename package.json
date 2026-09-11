@@ -22,9 +22,11 @@
     "db:migrate:profile": "npx tsx scripts/migrate-profile-management.ts",
     "db:migrate:roadmap-company": "npx tsx scripts/migrate-roadmap-target-company.ts",
     "db:migrate:notifications": "npx tsx scripts/migrate-notifications.ts",
+    "db:migrate:student-id": "npx tsx scripts/migrate-student-registration-id.ts",
     "db:sync": "npx tsx scripts/sync-db.ts",
     "test:progress": "npx tsx scripts/test-progress-calc.ts",
     "test:news": "npx tsx scripts/test-news-normalize.ts",
+    "test:student-id": "npx tsx scripts/test-student-registration-id.ts",
     "db:seed": "npx tsx scripts/seed.ts",
     "db:studio": "drizzle-kit studio"
   },

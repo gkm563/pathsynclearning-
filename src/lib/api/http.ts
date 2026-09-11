@@ -1,5 +1,6 @@
 import { ZodError, type ZodType } from "zod";
 import { AppError, type ErrorCode } from "@/lib/api/errors";
+import { rejectImmutableStudentIdentityFields } from "@/lib/identity/student-registration-id";
 import { logger } from "@/lib/logger";
 
 export type ApiSuccess<T> = {
@@ -45,6 +46,8 @@ export async function parseJson<T>(
   } catch {
     throw AppError.badRequest("Invalid JSON body");
   }
+
+  rejectImmutableStudentIdentityFields(raw);
 
   try {
     return schema.parse(raw);

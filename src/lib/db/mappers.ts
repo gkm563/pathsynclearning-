@@ -19,6 +19,7 @@ export function mapUser(row: {
   role: string;
   fullName: string | null;
   imageUrl: string | null;
+  studentRegistrationId?: string | null;
 }) {
   return {
     id: row.id,
@@ -27,6 +28,7 @@ export function mapUser(row: {
     role: row.role,
     full_name: row.fullName,
     image_url: row.imageUrl,
+    student_registration_id: row.studentRegistrationId ?? null,
   };
 }
 

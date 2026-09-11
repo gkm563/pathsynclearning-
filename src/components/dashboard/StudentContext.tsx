@@ -65,6 +65,7 @@ export type StudentSnapshot = {
   skillsProgress: SkillProgress[];
   dailyChallenges: DailyChallengeCard[];
   plan: string;
+  studentRegistrationId: string;
   preferences: PreferencesFormState;
   refresh: () => Promise<void>;
 };
@@ -219,6 +220,7 @@ const DEFAULT_SNAPSHOT: Omit<StudentSnapshot, "loading" | "refresh"> = {
   ],
   dailyChallenges: FALLBACK_CHALLENGES,
   plan: "free",
+  studentRegistrationId: "",
   preferences: { ...EMPTY_PREFERENCES },
 };
 
@@ -313,6 +315,7 @@ export function StudentProvider({ children }: { children: ReactNode }) {
         skillsProgress,
         dailyChallenges: mapDailyFromApi(challengesRes),
         plan: (settingsRes?.settings?.plan as string) || "free",
+        studentRegistrationId: String(p?.student_registration_id ?? ""),
         preferences: prefs,
       });
     } catch {

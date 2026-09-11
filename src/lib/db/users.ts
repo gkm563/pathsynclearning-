@@ -13,6 +13,7 @@ import {
   users,
   wallets,
 } from "@/lib/db/schema";
+import { issueStudentRegistrationId } from "@/lib/identity/assign-student-registration-id";
 
 export type AppRole = "student" | "teacher" | "recruiter";
 
@@ -23,6 +24,7 @@ export interface DbUser {
   role: AppRole;
   full_name: string | null;
   image_url: string | null;
+  student_registration_id: string | null;
 }
 
 export type RequireDbUserOptions = {
@@ -54,7 +56,18 @@ type UserRow = {
   role: string;
   fullName: string | null;
   imageUrl: string | null;
+  studentRegistrationId: string | null;
 };
+
+const USER_COLUMNS = {
+  id: users.id,
+  clerkId: users.clerkId,
+  email: users.email,
+  role: users.role,
+  fullName: users.fullName,
+  imageUrl: users.imageUrl,
+  studentRegistrationId: users.studentRegistrationId,
+} as const;
 
 const CLERK_SYNC_TTL_MS = 10 * 60 * 1000;
 const MEMO_LIMIT = 500;
@@ -157,14 +170,7 @@ async function applyClerkIdentity(
       updatedAt: new Date(),
     })
     .where(eq(users.id, row.id))
-    .returning({
-      id: users.id,
-      clerkId: users.clerkId,
-      email: users.email,
-      role: users.role,
-      fullName: users.fullName,
-      imageUrl: users.imageUrl,
-    });
+    .returning(USER_COLUMNS);
 
   rememberDbSync(row.clerkId);
   return updated ?? { ...row, email, imageUrl };
@@ -239,6 +245,12 @@ async function ensureMissingRelatedRows(
   if (jobs.length) await Promise.all(jobs);
 }
 
+async function ensureStudentRegistration(row: UserRow): Promise<UserRow> {
+  if (row.role !== "student" || row.studentRegistrationId) return row;
+  const issued = await issueStudentRegistrationId(row.id);
+  return { ...row, studentRegistrationId: issued };
+}
+
 async function createUserFromClerk(
   clerkId: string,
   roleHint?: AppRole,
@@ -269,14 +281,7 @@ async function createUserFromClerk(
         updatedAt: new Date(),
       },
     })
-    .returning({
-      id: users.id,
-      clerkId: users.clerkId,
-      email: users.email,
-      role: users.role,
-      fullName: users.fullName,
-      imageUrl: users.imageUrl,
-    });
+    .returning(USER_COLUMNS);
 
   rememberDbSync(clerkId);
   await ensureMissingRelatedRows(inserted.id, {
@@ -285,7 +290,7 @@ async function createUserFromClerk(
     wallet: false,
     challenge: false,
   });
-  return inserted;
+  return ensureStudentRegistration(inserted);
 }
 
 /**
@@ -302,12 +307,7 @@ const resolveAuthenticatedUser = cache(async (roleHint: string): Promise<UserRow
   const db = getDb();
   const [row] = await db
     .select({
-      id: users.id,
-      clerkId: users.clerkId,
-      email: users.email,
-      role: users.role,
-      fullName: users.fullName,
-      imageUrl: users.imageUrl,
+      ...USER_COLUMNS,
       profileUserId: profiles.userId,
       settingsUserId: userSettings.userId,
       walletUserId: wallets.userId,
@@ -335,14 +335,15 @@ const resolveAuthenticatedUser = cache(async (roleHint: string): Promise<UserRow
     challenge: Boolean(row.challengeUserId),
   });
 
-  return {
+  return ensureStudentRegistration({
     id: row.id,
     clerkId: row.clerkId,
     email: row.email,
     role: row.role,
     fullName: row.fullName,
     imageUrl: row.imageUrl,
-  };
+    studentRegistrationId: row.studentRegistrationId,
+  });
 });
 
 export async function requireDbUser(

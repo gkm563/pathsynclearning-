@@ -1,6 +1,7 @@
 import { errorResponse, jsonResponse } from "@/lib/api/http";
 import { AppError } from "@/lib/api/errors";
 import { requireDbUser } from "@/lib/db/users";
+import { rejectImmutableStudentIdentityFields } from "@/lib/identity/student-registration-id";
 import { meUpsertSchema } from "@/lib/validation/schemas";
 
 export async function GET() {
@@ -23,6 +24,7 @@ export async function POST(request: Request) {
       } catch {
         throw AppError.badRequest("Invalid JSON body");
       }
+      rejectImmutableStudentIdentityFields(raw);
       const parsed = meUpsertSchema.parse(raw);
       role = parsed.role;
     }

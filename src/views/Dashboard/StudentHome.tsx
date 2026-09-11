@@ -24,6 +24,7 @@ import { HeadlineStats } from "@/components/dashboard/home/HeadlineStats";
 import { NextMoveCard } from "@/components/dashboard/home/NextMoveCard";
 import { NewsTeaser } from "@/components/dashboard/home/NewsTeaser";
 import { PageHeader } from "@/components/ui";
+import { StudentRegistrationIdDisplay } from "@/components/profile/StudentRegistrationIdDisplay";
 
 type Insight = {
   icon: "target" | "zap" | "rocket" | "book" | "code" | "shield";
@@ -164,6 +165,14 @@ export default function StudentHome() {
           student.goal.role
             ? `Working toward ${student.goal.role}${student.institute ? ` · ${student.institute}` : ""}.`
             : "Your readiness, next move, and today's work — in one place."
+        }
+        actions={
+          student.studentRegistrationId ? (
+            <StudentRegistrationIdDisplay
+              value={student.studentRegistrationId}
+              compact
+            />
+          ) : null
         }
       />
 

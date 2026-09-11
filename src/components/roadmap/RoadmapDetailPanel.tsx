@@ -40,11 +40,11 @@ import {
 } from "@/lib/roadmap/assessment";
 import { AddNoteButton, NotesForSource } from "@/components/memory-lane/AddNoteButton";
 import StudyRoomTutor, { type TutorChrome } from "@/components/roadmap/StudyRoomTutor";
-import { Alert, Badge, Button, Card, IconButton, Tabs } from "@/components/ui";
+import { Alert, Badge, Button, Card, IconButton, Segmented, Tabs } from "@/components/ui";
 import { cn } from "@/lib/cn";
 
 type PanelTab = "overview" | "resources";
-type SideRail = "playlist";
+type SideRail = "playlist" | "notes" | "tutor";
 type MobileStudyTab = "playlist" | "overview" | "resources";
 type StudyBubble = "tutor" | "notes";
 
@@ -213,6 +213,12 @@ export default function RoadmapDetailPanel({
   useEffect(() => {
     if (!node) onExpandedChange?.(false);
   }, [node, onExpandedChange]);
+
+  useEffect(() => {
+    if (narrowStudy || !studyBubble) return;
+    setSideRail(studyBubble);
+    setStudyBubble(null);
+  }, [narrowStudy, studyBubble]);
 
   useEffect(() => {
     if (!expanded) return;
@@ -1063,67 +1069,122 @@ export default function RoadmapDetailPanel({
                   alignSelf: "start",
                 }}
               >
-                <div className="type-overline flex items-center gap-2 border-b border-line bg-sunken px-3 py-2.5 text-muted">
-                  <Video size={14} />
-                  Playlist
-                  {ytResources.length ? (
-                    <span className="type-caption text-ink">{ytResources.length}</span>
-                  ) : null}
+                <div className="shrink-0 border-b border-line bg-sunken p-2">
+                  <Segmented
+                    size="sm"
+                    fullWidth
+                    ariaLabel="Study sidebar"
+                    value={sideRail}
+                    onChange={(id) => setSideRail(id as SideRail)}
+                    items={[
+                      { id: "playlist", label: "Playlist", icon: <Video size={14} /> },
+                      { id: "notes", label: "Notes", icon: <StickyNote size={14} /> },
+                      { id: "tutor", label: "AI", icon: <Sparkles size={14} /> },
+                    ]}
+                  />
                 </div>
-                <div className="min-h-0 flex-1 overflow-auto" style={{ overscrollBehavior: "contain" }}>
-                  {ytResources.length === 0 ? (
-                    <p className="type-small m-0 p-4 leading-relaxed text-muted">
-                      No video playlist for this topic. Use the notes or AI bubbles while you read.
-                    </p>
-                  ) : (
-                    <>
-                      {ytLessons.length > 0 ? (
-                        <div className="type-overline border-b border-line bg-sunken px-3 py-2.5 text-muted">
-                          Lessons
-                        </div>
-                      ) : null}
-                      {ytLessons.map((res, i) => (
-                        <PlaylistRow
-                          key={`${res.url}-${i}`}
-                          res={res}
-                          index={i}
-                          active={i === activeVideo}
-                          onSelect={() => setActiveVideo(i)}
-                        />
-                      ))}
-                      {ytSuggested.length > 0 ? (
-                        <div className="type-overline border-b border-line bg-sunken px-3 py-2.5 text-muted">
-                          Suggested · other channels
-                        </div>
-                      ) : null}
-                      {ytSuggested.map((res, i) => {
-                        const idx = ytLessons.length + i;
-                        return (
-                          <PlaylistRow
-                            key={`${res.url}-s-${i}`}
-                            res={res}
-                            index={idx}
-                            active={idx === activeVideo}
-                            onSelect={() => setActiveVideo(idx)}
-                            suggested
-                          />
-                        );
-                      })}
-                    </>
+                {sideRail === "tutor" && tutorChrome ? (
+                  <div className="flex shrink-0 items-center justify-end gap-0.5 border-b border-line px-1.5 py-1">
+                    <IconButton
+                      size="sm"
+                      label={tutorChrome.showHistory ? "Back to chat" : "Chat history"}
+                      variant={tutorChrome.showHistory ? "secondary" : "ghost"}
+                      onClick={tutorChrome.toggleHistory}
+                    >
+                      <History size={16} />
+                    </IconButton>
+                    <IconButton
+                      size="sm"
+                      label="New chat"
+                      onClick={tutorChrome.startNewChat}
+                      disabled={tutorChrome.busy}
+                    >
+                      <Plus size={16} />
+                    </IconButton>
+                  </div>
+                ) : null}
+                <div
+                  className={cn(
+                    "min-h-0 flex-1",
+                    sideRail === "tutor"
+                      ? "flex flex-col overflow-hidden"
+                      : "overflow-auto",
                   )}
+                  style={{ overscrollBehavior: "contain" }}
+                >
+                  {sideRail === "playlist" ? (
+                    ytResources.length === 0 ? (
+                      <p className="type-small m-0 p-4 leading-relaxed text-muted">
+                        No video playlist for this topic. Open Notes or AI in this sidebar while you
+                        read.
+                      </p>
+                    ) : (
+                      <>
+                        {ytLessons.length > 0 ? (
+                          <div className="type-overline border-b border-line bg-sunken px-3 py-2.5 text-muted">
+                            Lessons
+                          </div>
+                        ) : null}
+                        {ytLessons.map((res, i) => (
+                          <PlaylistRow
+                            key={`${res.url}-${i}`}
+                            res={res}
+                            index={i}
+                            active={i === activeVideo}
+                            onSelect={() => setActiveVideo(i)}
+                          />
+                        ))}
+                        {ytSuggested.length > 0 ? (
+                          <div className="type-overline border-b border-line bg-sunken px-3 py-2.5 text-muted">
+                            Suggested · other channels
+                          </div>
+                        ) : null}
+                        {ytSuggested.map((res, i) => {
+                          const idx = ytLessons.length + i;
+                          return (
+                            <PlaylistRow
+                              key={`${res.url}-s-${i}`}
+                              res={res}
+                              index={idx}
+                              active={idx === activeVideo}
+                              onSelect={() => setActiveVideo(idx)}
+                              suggested
+                            />
+                          );
+                        })}
+                      </>
+                    )
+                  ) : null}
+                  {sideRail === "notes" ? (
+                    <div className="p-3">
+                      <NotesForSource
+                        sourceType="roadmap_node"
+                        sourceId={node.id}
+                        defaultTitle={node.title}
+                        contextLabel={`Roadmap · ${node.title}`}
+                        links={[{ entityType: "roadmap_node", entityId: node.id }]}
+                        emptyHint="Capture takeaways while you watch — notes stay linked to this node."
+                        inline
+                      />
+                    </div>
+                  ) : null}
+                  {sideRail === "tutor" ? (
+                    <StudyRoomTutor
+                      node={node}
+                      videoTitle={currentVideo?.title}
+                      videoChannel={currentVideo?.channel}
+                      embedded
+                      onChrome={setTutorChrome}
+                    />
+                  ) : null}
                 </div>
               </aside>
             </div>
             )}
           </div>
 
-          {!studyBubble ? (
-            <div
-              className="absolute bottom-4 left-3 z-40 flex items-end justify-between"
-              style={{
-                right: narrowStudy ? 12 : railWidth + 20,
-              }}
-            >
+          {narrowStudy && !studyBubble ? (
+            <div className="absolute bottom-4 left-3 right-3 z-40 flex items-end justify-between">
               <button
                 type="button"
                 aria-label="Notes"
@@ -1144,7 +1205,7 @@ export default function RoadmapDetailPanel({
           ) : null}
 
           <AnimatePresence>
-            {studyBubble ? (
+            {narrowStudy && studyBubble ? (
               <>
                 <motion.button
                   key="study-bubble-backdrop"

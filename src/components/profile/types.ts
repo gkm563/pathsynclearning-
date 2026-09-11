@@ -34,6 +34,7 @@ export type ApiProfile = {
   image_url?: string | null;
   account_status?: string | null;
   role?: string | null;
+  student_registration_id?: string | null;
 };
 
 export type ApiSettings = {
