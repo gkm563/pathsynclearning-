@@ -101,7 +101,7 @@ export default function PlatformTechNewsArticle() {
       .includes(article.summary.replace(/\s+/g, " ").toLowerCase().slice(0, 80));
 
   return (
-    <article className="mx-auto max-w-[var(--measure-prose)]">
+    <article className="min-w-0 w-full">
       <Link
         href={routes.app.techNews}
         className="type-label mb-5 inline-flex min-h-11 items-center gap-1 text-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"

@@ -32,7 +32,7 @@ export default function ProgressExtrasPanel({
   const bar = xpProgress(gamification.xp);
 
   return (
-    <div className="flex max-w-4xl flex-col gap-4">
+    <div className="flex min-w-0 w-full flex-col gap-4">
       <Card>
         <div className="mb-3 flex items-center gap-2">
           <TrendingUp size={16} className="text-primary" aria-hidden />

@@ -41,7 +41,7 @@ export default function PortalShell({ children }: { children: ReactNode }) {
 
         <main
           id="main"
-          className="mx-auto w-full min-w-0 max-w-[var(--measure-content)] flex-1 px-4 pt-5 pb-[calc(var(--mobile-tabbar-height)+1rem+env(safe-area-inset-bottom,0px))] sm:px-6 sm:pt-6 lg:px-8 lg:pb-14"
+          className="w-full min-w-0 flex-1 px-4 pt-5 pb-[calc(var(--mobile-tabbar-height)+1rem+env(safe-area-inset-bottom,0px))] sm:px-5 sm:pt-6 lg:px-6 lg:pb-14"
         >
           {children}
         </main>

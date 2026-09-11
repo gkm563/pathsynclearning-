@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { apiGet, apiSend } from "@/lib/api";
 import type { RoadmapSummary } from "@/types/roadmap";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Button, IconButton, Input } from "@/components/ui";
 import { cn } from "@/lib/cn";
 
@@ -47,6 +47,9 @@ export default function RoadmapSwitcher({
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const rootRef = useRef<HTMLDivElement>(null);
+  const reduceMotion = useReducedMotion();
+  const panelEase = [0.32, 0.72, 0, 1] as const;
+  const panelDuration = reduceMotion ? 0 : 0.34;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -142,49 +145,58 @@ export default function RoadmapSwitcher({
   };
 
   const trigger = (
-    <button
+    <motion.button
       type="button"
       onClick={() => setOpen((v) => !v)}
       title="Switch roadmap"
       aria-expanded={open}
       aria-haspopup="listbox"
+      whileTap={reduceMotion ? undefined : { scale: 0.985 }}
+      transition={{ duration: 0.16, ease: [0.2, 0, 0.13, 1] }}
       className={cn(
-        "inline-flex min-w-0 max-w-full items-center gap-2 text-ink",
+        "min-w-0 max-w-full text-ink",
         embedded
-          ? "my-[-2px] rounded-[10px] border-0 bg-transparent py-0.5 pr-1.5 pl-0.5"
-          : "rounded-[var(--radius-md)] border border-line bg-surface/92 px-3 py-2 shadow-[var(--shadow-sm)] backdrop-blur-md",
+          ? "grid w-full grid-cols-[28px_minmax(0,1fr)_28px] items-center gap-x-2.5 rounded-[10px] border-0 bg-transparent py-0"
+          : "inline-flex items-center gap-2 rounded-[var(--radius-md)] border border-line bg-surface/92 px-3 py-2 shadow-[var(--shadow-sm)] backdrop-blur-md",
       )}
     >
       <div
-        className="grid shrink-0 place-items-center rounded-[9px] bg-primary-soft"
-        style={{
-          width: embedded ? 28 : 32,
-          height: embedded ? 28 : 32,
-        }}
+        className="col-start-1 row-start-1 row-span-2 grid size-7 shrink-0 place-items-center self-center rounded-[9px] bg-primary-soft"
+        style={
+          embedded
+            ? undefined
+            : { width: 32, height: 32 }
+        }
       >
         <Route size={embedded ? 14 : 16} color="var(--primary)" />
       </div>
-      <span className="flex min-w-0 flex-col items-start gap-0.5">
-        {embedded ? (
-          <span className="type-overline leading-none text-muted">Roadmap</span>
-        ) : null}
-        <span
-          className={cn(
-            "overflow-hidden text-ellipsis whitespace-nowrap font-bold leading-tight",
-            embedded ? "type-label max-w-[min(220px,48vw)]" : "type-small max-w-[220px]",
-          )}
-        >
-          {activeTitle || "My roadmap"}
+      {embedded ? (
+        <span className="type-overline col-start-2 row-start-1 min-w-0 self-end leading-none text-muted">
+          Roadmap
         </span>
-      </span>
-      <ChevronDown
-        size={15}
+      ) : null}
+      <span
         className={cn(
-          "shrink-0 text-muted transition-transform duration-[var(--duration-slow)] ease-[var(--ease-standard)] motion-reduce:transition-none",
-          open && "rotate-180",
+          "min-w-0 truncate font-bold leading-none",
+          embedded
+            ? "type-label col-start-2 row-start-2 self-start pt-0.5"
+            : "type-small max-w-[220px] leading-tight",
         )}
-      />
-    </button>
+      >
+        {activeTitle || "My roadmap"}
+      </span>
+      <motion.span
+        aria-hidden
+        animate={{ rotate: open ? 180 : 0 }}
+        transition={{ duration: reduceMotion ? 0 : 0.28, ease: [0.2, 0, 0.13, 1] }}
+        className={cn(
+          "grid shrink-0 place-items-center self-center text-muted",
+          embedded ? "col-start-3 row-start-1 row-span-2 size-7" : "",
+        )}
+      >
+        <ChevronDown size={15} />
+      </motion.span>
+    </motion.button>
   );
 
   const list = (
@@ -194,14 +206,21 @@ export default function RoadmapSwitcher({
           key="roadmap-list"
           role="listbox"
           aria-label="Your roadmaps"
-          initial={{ height: 0 }}
-          animate={{ height: "auto" }}
-          exit={{ height: 0 }}
+          initial={reduceMotion ? { height: "auto" } : { height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          exit={reduceMotion ? { height: 0 } : { height: 0, opacity: 0 }}
           transition={{
-            height: { duration: 0.32, ease: [0.32, 0.72, 0, 1] },
+            height: { duration: panelDuration, ease: panelEase },
+            opacity: { duration: reduceMotion ? 0 : 0.2, ease: "easeOut" },
           }}
           className="min-w-0 w-full overflow-hidden border-t border-line"
         >
+          <motion.div
+            initial={reduceMotion ? false : { opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduceMotion ? undefined : { opacity: 0, y: -4 }}
+            transition={{ duration: reduceMotion ? 0 : 0.24, delay: reduceMotion ? 0 : 0.04, ease: [0.05, 0.7, 0.1, 1] }}
+          >
           <div className="type-overline px-3.5 pt-3 pb-2 text-muted">Your roadmaps</div>
 
           <div className="max-h-[min(50dvh,22rem)] overflow-y-auto px-2 pb-2">
@@ -216,12 +235,19 @@ export default function RoadmapSwitcher({
               </div>
             ) : null}
 
-            {items.map((item) => {
+            {items.map((item, index) => {
               const active = item.id === activeRoadmapId;
               const renaming = renamingId === item.id;
               return (
-                <div
+                <motion.div
                   key={item.id}
+                  initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: reduceMotion ? 0 : 0.22,
+                    delay: reduceMotion ? 0 : 0.05 + index * 0.035,
+                    ease: [0.05, 0.7, 0.1, 1],
+                  }}
                   className={cn(
                     "mb-0.5 flex items-start gap-1.5 rounded-[var(--radius-md)] px-1.5 py-2",
                     active && "bg-primary-soft",
@@ -308,7 +334,7 @@ export default function RoadmapSwitcher({
                       </div>
                     ) : null}
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
@@ -326,6 +352,7 @@ export default function RoadmapSwitcher({
               <Plus size={16} /> Create new roadmap
             </Button>
           </div>
+          </motion.div>
         </motion.div>
       ) : null}
     </AnimatePresence>

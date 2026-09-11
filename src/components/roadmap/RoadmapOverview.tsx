@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { RoadmapNode } from "@/types/roadmap";
 import { computeRoadmapStats } from "@/lib/roadmap/stats";
 import { Progress } from "@/components/ui";
@@ -27,6 +28,8 @@ export default function RoadmapOverview({
   onBusyChange?: (busy: boolean) => void;
 }) {
   const stats = computeRoadmapStats(nodes, progress);
+  const reduceMotion = useReducedMotion();
+  const toggleEase = [0.32, 0.72, 0, 1] as const;
 
   if (!onSwitched || !onCreateNew) {
     return (
@@ -57,10 +60,34 @@ export default function RoadmapOverview({
             open ? "lg:w-[min(28rem,calc(100%-32px))]" : "lg:w-max",
           )}
         >
-          <div className="flex min-w-0 items-center px-3 py-2 lg:px-[18px] lg:py-3">
-            <div className="flex min-w-0 shrink flex-col justify-center">{trigger}</div>
-            <Divider />
-            <Stats stats={stats} targetCompany={targetCompany} compact={false} />
+          <div className="flex min-w-0 items-center px-3 py-2.5 lg:px-[18px] lg:py-3">
+            <div className="flex min-w-0 flex-1 items-center overflow-hidden">
+              {trigger}
+            </div>
+            <AnimatePresence initial={false}>
+              {!open ? (
+                <motion.div
+                  key="roadmap-stats"
+                  initial={reduceMotion ? false : { opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: "auto" }}
+                  exit={
+                    reduceMotion
+                      ? { width: 0, opacity: 0 }
+                      : { opacity: 0, width: 0 }
+                  }
+                  transition={{
+                    duration: reduceMotion ? 0 : 0.28,
+                    ease: toggleEase,
+                  }}
+                  className="flex min-w-0 shrink-0 items-center overflow-hidden"
+                >
+                  <Divider />
+                  <div className="flex min-w-0 shrink-0 items-center">
+                    <Stats stats={stats} targetCompany={targetCompany} compact={false} />
+                  </div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
           </div>
           {list}
         </div>

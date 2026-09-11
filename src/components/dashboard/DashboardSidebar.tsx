@@ -290,7 +290,7 @@ export function DesktopSidebar() {
           MOTION,
           collapsed
             ? "h-auto flex-col justify-center gap-1 px-2 pt-2 pb-1"
-            : "h-16 flex-row justify-between gap-2 px-3",
+            : "h-16 flex-row items-center justify-between gap-2 px-3",
         )}
       >
         <BrandMark

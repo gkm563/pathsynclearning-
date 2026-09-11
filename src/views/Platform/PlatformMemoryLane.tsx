@@ -214,7 +214,7 @@ export default function PlatformMemoryLane() {
   const noteMeta = noteDefaults(section);
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="min-w-0 w-full">
       <MemoryLaneHeader
         onOpenSettings={() => setSettingsOpen(true)}
         onExport={() => void exportJourney()}

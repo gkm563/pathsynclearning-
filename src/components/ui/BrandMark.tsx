@@ -10,9 +10,9 @@ type BrandMarkProps = {
 };
 
 const sizes = {
-  sm: { mark: "h-8 w-8", word: "text-[17px]" },
-  md: { mark: "h-9 w-9", word: "text-[20px]" },
-  lg: { mark: "h-11 w-11", word: "text-[22px]" },
+  sm: { mark: "h-8 w-8", word: "text-[20px]", optical: "translate-y-px" },
+  md: { mark: "h-9 w-9", word: "text-[24px]", optical: "translate-y-0.5" },
+  lg: { mark: "h-11 w-11", word: "text-[28px]", optical: "translate-y-0.5" },
 } as const;
 
 export function BrandMark({
@@ -28,7 +28,9 @@ export function BrandMark({
       href={href}
       aria-label="PathEd"
       className={cn(
-        "inline-flex items-center gap-2 no-underline",
+        "flex h-8 items-center gap-2 no-underline",
+        size === "md" && "h-9",
+        size === "lg" && "h-11",
         className,
       )}
     >
@@ -37,14 +39,15 @@ export function BrandMark({
         alt=""
         width={44}
         height={44}
-        className={cn("shrink-0 object-contain", s.mark)}
+        className={cn("block shrink-0 object-contain object-center", s.mark)}
         aria-hidden
       />
       {showWordmark ? (
         <span
           className={cn(
-            "font-bold tracking-[-0.045em]",
+            "leading-none font-bold tracking-[-0.045em]",
             s.word,
+            s.optical,
           )}
         >
           <span
