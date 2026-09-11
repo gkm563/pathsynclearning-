@@ -16,11 +16,11 @@ type ButtonSize = "sm" | "md" | "lg";
 
 const variantClass: Record<ButtonVariant, string> = {
   primary:
-    "bg-[var(--primary)] text-[var(--text-on-primary)] shadow-[0_1px_0_rgba(255,255,255,0.12)_inset] hover:bg-[var(--primary-hover)] disabled:opacity-50",
+    "bg-[var(--primary)] text-[var(--text-on-primary)] hover:bg-[var(--primary-hover)] active:bg-[var(--primary-active)] disabled:opacity-50",
   secondary:
-    "bg-[var(--bg-card)] text-[var(--text-main)] border border-[var(--border-strong)] hover:bg-[var(--bg-alt)] disabled:opacity-50",
+    "bg-[var(--bg-card)] text-[var(--text-main)] border border-[var(--border-light)] hover:bg-[var(--bg-alt)] disabled:opacity-50",
   outline:
-    "bg-transparent text-[var(--text-main)] border border-[var(--border-strong)] hover:bg-[var(--bg-alt)] disabled:opacity-50",
+    "bg-transparent text-[var(--text-main)] border border-[var(--border-light)] hover:bg-[var(--bg-alt)] disabled:opacity-50",
   ghost:
     "bg-transparent text-[var(--text-muted)] hover:bg-[var(--bg-alt)] hover:text-[var(--text-main)] disabled:opacity-50",
   danger:
@@ -139,7 +139,7 @@ export const IconButton = forwardRef<
 });
 
 const fieldClass =
-  "w-full min-h-11 rounded-[var(--radius-md)] border border-[var(--border-strong)] bg-[var(--bg-card)] px-3.5 py-2.5 text-xs text-[var(--text-main)] transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--text-light)] focus-visible:border-[var(--primary)] focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_var(--ring-soft)] disabled:cursor-not-allowed disabled:opacity-60 lg:text-sm";
+  "w-full min-h-11 rounded-[var(--radius-md)] border border-[var(--border-light)] bg-[var(--bg-card)] px-3.5 py-2.5 text-xs text-[var(--text-main)] transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--text-placeholder)] focus-visible:border-[var(--border-focus)] focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_var(--ring-soft)] disabled:cursor-not-allowed disabled:opacity-60 lg:text-sm";
 
 export function Input({
   className,
@@ -215,7 +215,7 @@ export function Badge({
     accent:
       "bg-[var(--primary-soft)] text-[var(--primary)] border-[var(--primary-border)]",
     success:
-      "bg-[var(--success-soft)] text-[var(--success)] border-[color-mix(in_srgb,var(--success)_28%,transparent)]",
+      "bg-[var(--success-soft)] text-[var(--brand-secondary-dark)] border-[var(--success-soft)]",
     warning:
       "bg-[var(--warning-soft)] text-[var(--warning)] border-[color-mix(in_srgb,var(--warning)_28%,transparent)]",
     error:

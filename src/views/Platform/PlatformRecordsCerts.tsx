@@ -74,8 +74,8 @@ const CERTIFICATES: Certificate[] = [
     idCode: "PE-CRT-2026-X839A",
     status: "Verified & Active",
     skills: ["DSA (72%)", "OOP Fundamentals (90%)", "Web Dev (88%)"],
-    bgGradient: "linear-gradient(135deg, rgba(27, 69, 64, 0.08), rgba(31, 107, 72, 0.06))",
-    borderCol: "#1b454050",
+    bgGradient: "linear-gradient(135deg, rgba(6, 107, 211, 0.08), rgba(20, 184, 166, 0.06))",
+    borderCol: "#066BD350",
     icon: "🎓",
   },
   {
@@ -86,8 +86,8 @@ const CERTIFICATES: Certificate[] = [
     idCode: "PE-CRT-2026-D104B",
     status: "Verified & Active",
     skills: ["Trees & Graphs", "Dynamic Programming", "Time Complexity Optimization"],
-    bgGradient: "linear-gradient(135deg, rgba(31, 107, 72, 0.08), rgba(56, 189, 248, 0.06))",
-    borderCol: "#1f6b4850",
+    bgGradient: "linear-gradient(135deg, rgba(20, 184, 166, 0.08), rgba(6, 107, 211, 0.06))",
+    borderCol: "#14B8A650",
     icon: "🌳",
   },
   {
@@ -98,21 +98,21 @@ const CERTIFICATES: Certificate[] = [
     idCode: "PE-CRT-2026-F982C",
     status: "Verified & Active",
     skills: ["React Frontend", "REST API Development", "Redis Caching"],
-    bgGradient: "linear-gradient(135deg, rgba(224, 64, 251, 0.08), rgba(27, 69, 64, 0.06))",
-    borderCol: "#e040fb50",
+    bgGradient: "linear-gradient(135deg, rgba(10, 65, 147, 0.08), rgba(6, 107, 211, 0.06))",
+    borderCol: "#0A419350",
     icon: "⚛️",
   },
 ];
 
 const BADGES: SkillBadge[] = [
-  { name: "Recursion Wizard", icon: "🪄", desc: "Solve 15 recursion-based challenges without errors", color: "#1b4540" },
-  { name: "React Architect", icon: "⚛️", desc: "Build a responsive web application with 90%+ modularity", color: "#1f6b48" },
-  { name: "SQL Optimizer", icon: "🗄️", desc: "Reduce indexing query latency by 45% in DBMS", color: "#e040fb" },
-  { name: "7-Day Streak Warrior", icon: "🔥", desc: "Maintain a 7-day coding and evaluation streak", color: "#f7971e" },
-  { name: "Hackathon Finalist", icon: "⚔️", desc: "Finish in the top 5% of the Google AI Hackathon", color: "#ef4444" },
-  { name: "Clean Coder", icon: "✨", desc: "Achieve an average of 95% on verified mentor reviews", color: "#38bdf8" },
-  { name: "Graph Navigator", icon: "🕸️", desc: "Master all graph search and shortest path algorithms", color: "#1b4540" },
-  { name: "Memory Guardian", icon: "🛡️", desc: "Successfully prevent all memory leaks in C++ reviews", color: "#ec4899" },
+  { name: "Recursion Wizard", icon: "🪄", desc: "Solve 15 recursion-based challenges without errors", color: "#066BD3" },
+  { name: "React Architect", icon: "⚛️", desc: "Build a responsive web application with 90%+ modularity", color: "#14B8A6" },
+  { name: "SQL Optimizer", icon: "🗄️", desc: "Reduce indexing query latency by 45% in DBMS", color: "#0A4193" },
+  { name: "7-Day Streak Warrior", icon: "🔥", desc: "Maintain a 7-day coding and evaluation streak", color: "#D97706" },
+  { name: "Hackathon Finalist", icon: "⚔️", desc: "Finish in the top 5% of the Google AI Hackathon", color: "#DC4A5A" },
+  { name: "Clean Coder", icon: "✨", desc: "Achieve an average of 95% on verified mentor reviews", color: "#22D3A7" },
+  { name: "Graph Navigator", icon: "🕸️", desc: "Master all graph search and shortest path algorithms", color: "#066BD3" },
+  { name: "Memory Guardian", icon: "🛡️", desc: "Successfully prevent all memory leaks in C++ reviews", color: "#0A4193" },
 ];
 
 const ACADEMIC_RECORDS: AcademicRecord[] = [

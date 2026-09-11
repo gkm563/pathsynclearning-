@@ -1,4 +1,5 @@
 import type { MemoryFilter, MemoryType } from "@/lib/memory/types";
+import { palette } from "@/lib/theme/palette";
 
 export const FILTER_TO_TYPES: Record<Exclude<MemoryFilter, "all" | "notes">, MemoryType[]> = {
   learning: ["LEARNING_COMPLETED", "ROADMAP_NODE_COMPLETED"],
@@ -21,91 +22,91 @@ export const MEMORY_TYPE_META: Record<
   LEARNING_COMPLETED: {
     label: "Learning Completed",
     emoji: "📚",
-    color: "#1b4540",
+    color: palette.primary,
     filter: "learning",
   },
   ROADMAP_NODE_COMPLETED: {
     label: "Roadmap Node Completed",
     emoji: "🟢",
-    color: "#1f6b48",
+    color: palette.success,
     filter: "learning",
   },
   SKILL_UNLOCKED: {
     label: "Skill Unlocked",
     emoji: "💻",
-    color: "#38bdf8",
+    color: palette.info,
     filter: "skills",
   },
   PROJECT_COMPLETED: {
     label: "Project Completed",
     emoji: "🚀",
-    color: "#f59e0b",
+    color: palette.warning,
     filter: "projects",
   },
   CHALLENGE_COMPLETED: {
     label: "Challenge Completed",
     emoji: "🏆",
-    color: "#1b4540",
+    color: palette.primary,
     filter: "challenges",
   },
   CHALLENGE_PERSONAL_BEST: {
     label: "Personal Best",
     emoji: "🔥",
-    color: "#ec4899",
+    color: palette.error,
     filter: "challenges",
   },
   MENTORSHIP_SESSION: {
     label: "Mentorship Session",
     emoji: "👨‍🏫",
-    color: "#10b981",
+    color: palette.success,
     filter: "mentorship",
   },
   COLLABORATION: {
     label: "Collaboration",
     emoji: "🤝",
-    color: "#06b6d4",
+    color: palette.secondary,
     filter: "collaboration",
   },
   HACKATHON: {
     label: "Hackathon",
     emoji: "🏆",
-    color: "#f59e0b",
+    color: palette.warning,
     filter: "events",
   },
   EVENT_ATTENDED: {
     label: "Event Attended",
     emoji: "🎤",
-    color: "#6366f1",
+    color: palette.primary,
     filter: "events",
   },
   ACHIEVEMENT: {
     label: "Achievement",
     emoji: "⭐",
-    color: "#eab308",
+    color: palette.warning,
     filter: "achievements",
   },
   CAREER_EVENT: {
     label: "Career Event",
     emoji: "🎯",
-    color: "#f97316",
+    color: palette.warning,
     filter: "career",
   },
   CERTIFICATION: {
     label: "Certification",
     emoji: "🎓",
-    color: "#0ea5e9",
+    color: palette.primary,
     filter: "certifications",
   },
   PERSONAL_NOTE: {
     label: "Personal Note",
     emoji: "📝",
-    color: "#64748b",
+    color: palette.faint,
     filter: "notes",
   },
   MILESTONE: {
     label: "Milestone",
     emoji: "🌱",
-    color: "#22c55e",
+    color: palette.success,
     filter: "milestones",
   },
 };

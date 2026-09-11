@@ -1,11 +1,13 @@
 import type { AlumniProfile, ChatHistories } from "./types";
 
+import { palette } from "@/lib/theme/palette";
+
 export const COLS = {
-  primary: "#1b4540",
-  success: "#1f6b48",
-  warning: "#f59e0b",
-  danger: "#ec4899",
-  info: "#38bdf8",
+  primary: palette.primary,
+  success: palette.success,
+  warning: palette.warning,
+  danger: palette.error,
+  info: palette.info,
 };
 
 export const ALUMNI_POOL: readonly AlumniProfile[] = [

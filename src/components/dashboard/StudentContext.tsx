@@ -21,6 +21,7 @@ import {
   EMPTY_PREFERENCES,
   mapApiSettings,
 } from "@/lib/profile/types";
+import { palette } from "@/lib/theme/palette";
 
 export type StudentGoal = {
   role: string;
@@ -70,7 +71,12 @@ export type StudentSnapshot = {
   refresh: () => Promise<void>;
 };
 
-const SKILL_COLORS = ["#0f766e", "#0369a1", "#d97706", "#0ea5e9"];
+const SKILL_COLORS = [
+  palette.primary,
+  palette.primaryActive,
+  palette.success,
+  palette.secondary,
+];
 
 const FALLBACK_CHALLENGES: DailyChallengeCard[] = [
   {
@@ -83,9 +89,9 @@ const FALLBACK_CHALLENGES: DailyChallengeCard[] = [
     pct: 68,
     isStarted: true,
     status: "attempted",
-    col: "#1b4540",
-    bg: "rgba(27,69,64,0.08)",
-    border: "#1b454040",
+    col: palette.primary,
+    bg: "rgba(6,107,211,0.08)",
+    border: `${palette.primary}40`,
   },
   {
     icon: "LL",
@@ -97,9 +103,9 @@ const FALLBACK_CHALLENGES: DailyChallengeCard[] = [
     pct: 0,
     isStarted: false,
     status: "todo",
-    col: "#f7971e",
-    bg: "rgba(247,151,30,0.08)",
-    border: "#f7971e40",
+    col: palette.secondary,
+    bg: "rgba(34,211,167,0.10)",
+    border: `${palette.secondary}40`,
   },
   {
     icon: "SYS",
@@ -111,9 +117,9 @@ const FALLBACK_CHALLENGES: DailyChallengeCard[] = [
     pct: 0,
     isStarted: false,
     status: "todo",
-    col: "#1f6b48",
-    bg: "rgba(31,107,72,0.08)",
-    border: "#1f6b4840",
+    col: palette.success,
+    bg: "rgba(20,184,166,0.10)",
+    border: `${palette.success}40`,
   },
   {
     icon: "WEB",
@@ -125,9 +131,9 @@ const FALLBACK_CHALLENGES: DailyChallengeCard[] = [
     pct: 0,
     isStarted: false,
     status: "todo",
-    col: "#c45c26",
-    bg: "rgba(196,92,38,0.08)",
-    border: "#c45c2640",
+    col: palette.primaryActive,
+    bg: "rgba(10,65,147,0.08)",
+    border: `${palette.primaryActive}40`,
   },
 ];
 
@@ -165,16 +171,16 @@ function mapDailyFromApi(
   });
   if (!pack.length) return FALLBACK_CHALLENGES;
 
-  const palette = [
-    { col: "#0f766e", bg: "rgba(15,118,110,0.08)", border: "#0f766e40" },
-    { col: "#d97706", bg: "rgba(217,119,6,0.08)", border: "#d9770640" },
-    { col: "#0369a1", bg: "rgba(3,105,161,0.08)", border: "#0369a140" },
-    { col: "#0ea5e9", bg: "rgba(14,165,233,0.08)", border: "#0ea5e940" },
+  const tones = [
+    { col: palette.primary, bg: "rgba(6,107,211,0.08)", border: `${palette.primary}40` },
+    { col: palette.success, bg: "rgba(20,184,166,0.10)", border: `${palette.success}40` },
+    { col: palette.primaryActive, bg: "rgba(10,65,147,0.08)", border: `${palette.primaryActive}40` },
+    { col: palette.secondary, bg: "rgba(34,211,167,0.10)", border: `${palette.secondary}40` },
   ];
   const diffLabel = { easy: "Easy", medium: "Medium", hard: "Hard" } as const;
 
   return pack.slice(0, 4).map((c, idx) => {
-    const colors = palette[idx % palette.length];
+    const colors = tones[idx % tones.length];
     const pct = c.status === "solved" ? 100 : c.status === "attempted" ? 40 : 0;
     return {
       id: c.slug || c.id,
@@ -220,10 +226,10 @@ const DEFAULT_SNAPSHOT: Omit<StudentSnapshot, "loading" | "refresh"> = {
     outcome: "Industry-ready with strong fundamentals and portfolio projects",
   },
   skillsProgress: [
-    { label: "DSA", pct: 20, col: "#1b4540" },
-    { label: "System Design", pct: 10, col: "#1f6b48" },
-    { label: "Web Dev", pct: 25, col: "#f7971e" },
-    { label: "Algorithms", pct: 15, col: "#c45c26" },
+    { label: "DSA", pct: 20, col: palette.primary },
+    { label: "System Design", pct: 10, col: palette.success },
+    { label: "Web Dev", pct: 25, col: palette.secondary },
+    { label: "Algorithms", pct: 15, col: palette.primaryActive },
   ],
   dailyChallenges: FALLBACK_CHALLENGES,
   plan: "free",

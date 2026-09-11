@@ -67,7 +67,7 @@ export default function RootLayout({
             variables: {
               fontFamily: "var(--font-sans), sans-serif",
               fontFamilyButtons: "var(--font-sans), sans-serif",
-              colorPrimary: "#1b4540",
+              colorPrimary: "#066BD3",
               borderRadius: "12px",
             },
           }}

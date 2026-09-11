@@ -136,8 +136,8 @@ export function passwordStrength(password: string): {
   if (/[0-9]/.test(password)) score += 1;
   if (/[^A-Za-z0-9]/.test(password)) score += 1;
 
-  if (score <= 1) return { score, label: "Weak", color: "#ef4444" };
-  if (score <= 3) return { score, label: "Fair", color: "#f59e0b" };
-  if (score === 4) return { score, label: "Strong", color: "#10b981" };
-  return { score, label: "Excellent", color: "#1f6b48" };
+  if (score <= 1) return { score, label: "Weak", color: "#DC4A5A" };
+  if (score <= 3) return { score, label: "Fair", color: "#D97706" };
+  if (score === 4) return { score, label: "Strong", color: "#14B8A6" };
+  return { score, label: "Excellent", color: "#066BD3" };
 }

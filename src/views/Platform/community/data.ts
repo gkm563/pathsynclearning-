@@ -152,28 +152,28 @@ export const CONTRIBUTORS: readonly Contributor[] = [
     name: "Dr. Arpan Mukherjee",
     title: "Professor @ IIT Kanpur",
     points: "2,450",
-    color: "#f59e0b",
+    color: "#D97706",
   },
   {
     rank: 2,
     name: "David Vance",
     title: "Principal @ Stripe",
     points: "1,980",
-    color: "#1b4540",
+    color: "#066BD3",
   },
   {
     rank: 3,
     name: "Meera Nair",
     title: "Leetcode Elite",
     points: "1,540",
-    color: "#1f6b48",
+    color: "#14B8A6",
   },
   {
     rank: 4,
     name: "Rohan Verma",
     title: "SDE @ Google",
     points: "1,220",
-    color: "#38bdf8",
+    color: "#22D3A7",
   },
 ];
 

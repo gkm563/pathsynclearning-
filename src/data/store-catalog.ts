@@ -22,7 +22,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=600",
     desc: "Complete semester-wise course layouts, syllabus breakdowns, and exam prep trackers tailored for AKTU.",
     meta: "Academic Roadmap",
-    col: "#1b4540",
+    col: "#066BD3",
     included: ["Semester-wise curriculum mapping", "Curated NPTEL/YouTube lectures links", "Standard question papers & notes templates", "AI credit checkpoints tracking"]
   },
   {
@@ -34,7 +34,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=600",
     desc: "Curated lectures, rigorous assignments, and projects matching standard IIT Bombay CSE syllabus.",
     meta: "Academic Roadmap",
-    col: "#1f6b48",
+    col: "#14B8A6",
     included: ["IIT Bombay CS equivalent syllabus", "Advanced problem sets & laboratory tests", "Open-source research projects references", "Self-evaluation scoring templates"]
   },
   {
@@ -46,7 +46,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=600",
     desc: "End-to-end guide: frontend frameworks, backend microservices, DB scaling, systems and cloud deployment.",
     meta: "Career Roadmap",
-    col: "#ec4899",
+    col: "#DC4A5A",
     included: ["HTML/CSS/React frontend guides", "Node.js & Go backend architecture models", "Redis, PostgreSQL database scaling tutorials", "Vercel, AWS deployment roadmaps"]
   },
   {
@@ -58,7 +58,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1527474305487-b87b222841cc?auto=format&fit=crop&q=80&w=600",
     desc: "Mathematics, model building, neural networks, PyTorch, LLM fine-tuning, and model hosting.",
     meta: "Career Roadmap",
-    col: "#a855f7",
+    col: "#0A4193",
     included: ["Linear algebra & calculus notebooks", "PyTorch deep learning model blueprints", "HuggingFace, LangChain API guides", "Production MLOps deployment pipelines"]
   },
   {
@@ -70,7 +70,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1572021335469-31706a17aaef?auto=format&fit=crop&q=80&w=600",
     desc: "Targeted calendar mapping DSA topics, high-concurrency designs, and Google mock interview checkpoints.",
     meta: "Placement Roadmap",
-    col: "#eab308",
+    col: "#D97706",
     included: ["Advanced graphs & DP pattern list", "Google L4 system design case studies", "Googler resume optimization templates", "Mock test checkpoints schedules"]
   },
 
@@ -84,7 +84,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1507146426996-ef05306b995a?auto=format&fit=crop&q=80&w=600",
     desc: "Blueprints containing complete system documentation, UI prototypes, ER diagrams, template source code, and PPT.",
     meta: "Project Blueprint",
-    col: "#06b6d4",
+    col: "#22D3A7",
     included: ["Face-recognition model templates", "Express.js backend, MongoDB schema layouts", "Figma prototype link & ER diagrams", "Printable project synopsis & PPT templates"]
   },
   {
@@ -96,7 +96,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=600",
     desc: "Smart contracts, React frontend templates, testing scripts, and system flow architectures.",
     meta: "Project Blueprint",
-    col: "#10b981",
+    col: "#14B8A6",
     included: ["Solidity smart contracts templates", "Hardhat test scripts & setups", "React.js Web3 connector hooks code", "Presentation slide decks templates"]
   },
 
@@ -110,7 +110,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1607799279861-4dd421887fb3?auto=format&fit=crop&q=80&w=600",
     desc: "Day-by-day practice tracker targeting top 100 interview questions on arrays, trees, graphs, and DP.",
     meta: "Planner Pack",
-    col: "#f97316",
+    col: "#D97706",
     included: ["Daily coding patterns schedule", "LeetCode checklist tracker", "Space/time complexity reference sheet", "C++ & Java implementation code templates"]
   },
   {
@@ -122,7 +122,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=600",
     desc: "Syllabus checkpoints, micro-tasks, portfolio projects timeline, and state management coverage guide.",
     meta: "Planner Pack",
-    col: "#0284c7",
+    col: "#066BD3",
     included: ["Daily react concepts roadmap", "Hooks & custom hook projects list", "Redux Toolkit & Zustand configurations", "Deployment checklists & templates"]
   },
 
@@ -162,7 +162,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1521737711867-e3b904737c88?auto=format&fit=crop&q=80&w=600",
     desc: "Pre-filled DSA patterns, leadership questions, resume tips, and real mock interview experience sheets.",
     meta: "Interview Pack",
-    col: "#eab308",
+    col: "#D97706",
     included: ["Google-specific DSA problem banks", "Googley Leadership principles guide", "Resume templates & metrics samples", "Past interviewer evaluation sheets"]
   },
   {
@@ -174,7 +174,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=600",
     desc: "Emphasis on object-oriented designs, SQL query sets, and system architecture fundamentals.",
     meta: "Interview Pack",
-    col: "#2563eb",
+    col: "#066BD3",
     included: ["OOD patterns & class designs", "SQL query preparation files", "Microsoft hiring manager AMA templates", "System design mock structures"]
   },
 
@@ -188,7 +188,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=600",
     desc: "Pitch templates, interactive prototype UI kits, system layout shapes, and slides checklist.",
     meta: "Hackathon Kit",
-    col: "#d946ef",
+    col: "#0A4193",
     included: ["Slide deck layouts & outlines", "Interactive prototype Figma components", "Judging scorecard templates", "Live pitch scripts & templates"]
   },
 
@@ -202,7 +202,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=600",
     desc: "Unlock 1-on-1 monthly sessions with senior engineers from Tier-1 tech firms.",
     meta: "Premium Unlocks",
-    col: "#1b4540",
+    col: "#066BD3",
     included: ["One monthly 1-on-1 video call pass", "Direct resume review check", "Unlimited slack chat channels access", "Priority mock interview scheduler"]
   },
   {
@@ -214,7 +214,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&q=80&w=600",
     desc: "Form and lead your own hackathon team with priority recruitment matching.",
     meta: "Premium Unlocks",
-    col: "#ef4444",
+    col: "#DC4A5A",
     included: ["Team organizer badge icon on profile", "Direct invite systems code", "Priority matching to top recruiters", "Hackathon server moderator badges"]
   },
   {
@@ -226,7 +226,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1511556532299-8f662fc26c06?auto=format&fit=crop&q=80&w=600",
     desc: "Direct referral channel to 500+ placed alumni across global MNCs.",
     meta: "Premium Unlocks",
-    col: "#1f6b48",
+    col: "#14B8A6",
     included: ["Referral directory search access", "Automated referral requests messenger", "Alumni newsletter refer patterns", "Private alumni meet channels"]
   },
   {
@@ -252,7 +252,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1501504905252-473c47e087f8?auto=format&fit=crop&q=80&w=600",
     desc: "Auto-calibrates dashboard: daily GATE questions, syllabus checkpoints, and mock test schedules.",
     meta: "AI Plugin Module",
-    col: "#1b4540",
+    col: "#066BD3",
     included: ["Daily GATE computer science tasks", "Syllabus checkpoints tracker", "Test series calendar integration", "CRI scoring GATE weights calibration"]
   },
   {
@@ -264,7 +264,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=600",
     desc: "Swaps dashboard themes, challenges, and mock interview setups to target Google expectations.",
     meta: "AI Plugin Module",
-    col: "#10b981",
+    col: "#14B8A6",
     included: ["Google SDE mock interview profiles", "Advanced logic challenges injection", "Google specific tags filter", "Dashboard design layouts theme swap"]
   },
   {
@@ -276,7 +276,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=600",
     desc: "Syncs IIT Bombay assignments, peer projects, grading systems, and CS semester tasks.",
     meta: "AI Plugin Module",
-    col: "#ef4444",
+    col: "#DC4A5A",
     included: ["IITB equivalent laboratory tasks", "Peer projects recommendation guides", "Relative grading scale indicators", "Academic timeline calendars"]
   },
   {
@@ -288,7 +288,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=600",
     desc: "Unlocks IEEE layout modules, literature review trackers, and paper publication timelines.",
     meta: "AI Plugin Module",
-    col: "#ec4899",
+    col: "#DC4A5A",
     included: ["IEEE markdown layout templates", "Literature review tracking cards", "Publication calendars recommendation", "Research community directory logs"]
   }
 ];
