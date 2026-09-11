@@ -134,7 +134,7 @@ export const wallets = pgTable("wallets", {
   userId: uuid("user_id")
     .primaryKey()
     .references(() => users.id, { onDelete: "cascade" }),
-  coins: integer("coins").notNull().default(3480),
+  coins: integer("coins").notNull().default(0),
   cashBalance: numeric("cash_balance", { precision: 12, scale: 2 }).notNull().default("0"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

@@ -10,9 +10,9 @@ type BrandMarkProps = {
 };
 
 const sizes = {
-  sm: { mark: "h-8 w-8 text-[13px]", word: "text-[17px]" },
-  md: { mark: "h-9 w-9 text-sm", word: "text-[20px]" },
-  lg: { mark: "h-10 w-10 text-base", word: "text-[22px]" },
+  sm: { mark: "h-8 w-8", word: "text-[17px]" },
+  md: { mark: "h-9 w-9", word: "text-[20px]" },
+  lg: { mark: "h-11 w-11", word: "text-[22px]" },
 } as const;
 
 export function BrandMark({
@@ -26,30 +26,35 @@ export function BrandMark({
   return (
     <Link
       href={href}
+      aria-label="PathEd"
       className={cn(
-        "inline-flex items-center gap-2.5 no-underline",
+        "inline-flex items-center gap-2 no-underline",
         className,
       )}
     >
-      <span
-        className={cn(
-          "inline-flex items-center justify-center rounded-[10px] font-bold tracking-tight text-[var(--text-on-primary)]",
-          "bg-[var(--primary)] shadow-[0_1px_0_rgba(255,255,255,0.12)_inset]",
-          s.mark,
-        )}
+      <img
+        src="/brand/pathed-logo.png"
+        alt=""
+        width={44}
+        height={44}
+        className={cn("shrink-0 object-contain", s.mark)}
         aria-hidden
-      >
-        P
-      </span>
+      />
       {showWordmark ? (
         <span
           className={cn(
-            "font-semibold tracking-[-0.04em]",
+            "font-bold tracking-[-0.045em]",
             s.word,
-            inverted ? "text-[var(--text-inverse)]" : "text-[var(--text-main)]",
           )}
         >
-          PathEd
+          <span
+            className={
+              inverted ? "text-[var(--text-inverse)]" : "text-[var(--brand-ink)]"
+            }
+          >
+            Path
+          </span>
+          <span className="text-[var(--brand)]">Ed</span>
         </span>
       ) : (
         <span className="sr-only">PathEd</span>

@@ -30,7 +30,13 @@ export const metadata: Metadata = {
   description:
     "Career readiness platform bridging academic theory and industry demands.",
   icons: {
-    icon: "/favicon.svg",
+    icon: [
+      { url: "/favicon.ico", sizes: "48x48" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.png", type: "image/png", sizes: "32x32" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon.png",
   },
 };
 

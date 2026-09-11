@@ -71,6 +71,13 @@
       "when": 1788930000000,
       "tag": "0009_problems_catalog",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1788940000000,
+      "tag": "0010_wallet_starting_coins",
+      "breakpoints": true
     }
   ]
 }

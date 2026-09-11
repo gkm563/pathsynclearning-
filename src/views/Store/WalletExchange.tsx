@@ -160,7 +160,7 @@ export default function WalletExchange() {
   const router = useRouter();
   const toast = useToast();
 
-  const [coins, setCoins] = useState(3480);
+  const [coins, setCoins] = useState(0);
   const [cashWallet, setCashWallet] = useState(45.0);
   const [transactions, setTransactions] = useState<WalletTx[]>(DEFAULT_TRANSACTIONS);
 

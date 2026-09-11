@@ -14,6 +14,7 @@ import {
   wallets,
 } from "@/lib/db/schema";
 import { issueStudentRegistrationId } from "@/lib/identity/assign-student-registration-id";
+import { STARTING_WALLET_COINS } from "@/lib/wallet/constants";
 
 export type AppRole = "student" | "teacher" | "recruiter";
 
@@ -235,7 +236,12 @@ async function ensureMissingRelatedRows(
     );
   }
   if (!present.wallet) {
-    jobs.push(db.insert(wallets).values({ userId }).onConflictDoNothing());
+    jobs.push(
+      db
+        .insert(wallets)
+        .values({ userId, coins: STARTING_WALLET_COINS })
+        .onConflictDoNothing(),
+    );
   }
   if (!present.challenge) {
     jobs.push(

@@ -79,6 +79,8 @@
   --text-main: var(--ink);
   --text-muted: var(--muted);
   --text-light: var(--subtle);
+  --brand: #0670d4;
+  --brand-ink: #0a4193;
   --border-light: var(--line);
   --border-strong: var(--line-strong);
   --roadmap-edge: #8a9a96;
@@ -134,6 +136,8 @@
   --text-main: var(--ink);
   --text-muted: var(--muted);
   --text-light: var(--subtle);
+  --brand: #4da3ff;
+  --brand-ink: #dce8f8;
   --border-light: var(--line);
   --border-strong: var(--line-strong);
   --roadmap-edge: rgba(143, 184, 177, 0.55);

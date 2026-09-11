@@ -45,7 +45,7 @@ export default function Store() {
   const [catalog, setCatalog] = useState<StoreProduct[]>(STORE_CATALOG);
   const [loadingCatalog, setLoadingCatalog] = useState(true);
   const [catalogError, setCatalogError] = useState<string | null>(null);
-  const [coins, setCoins] = useState(3480);
+  const [coins, setCoins] = useState(0);
   const [purchasedIds, setPurchasedIds] = useState<string[]>([]);
   const [activePlugin, setActivePlugin] = useState("None");
   const [cashWallet, setCashWallet] = useState(0);

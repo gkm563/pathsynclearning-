@@ -105,7 +105,7 @@ export function NewsCover({
           )}
         >
           <img
-            src="/favicon.svg"
+            src="/brand/pathed-logo.png"
             alt=""
             loading="lazy"
             decoding="async"
