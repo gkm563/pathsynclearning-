@@ -1,6 +1,6 @@
 /** Challenge catalog domain types (phase 1 + extras). */
 
-export type ChallengeType = "coding" | "mcq" | "project";
+export type ChallengeType = "coding" | "mcq" | "project" | "system_design";
 export type ChallengeDifficulty = "easy" | "medium" | "hard";
 export type AttemptStatus = "todo" | "attempted" | "solved";
 export type ChallengeIconKey =
@@ -39,6 +39,9 @@ export type ChallengeSolution = {
 
 export type ChallengeQuestion = {
   id: string;
+  /** URL slug — same as id for new problems; legacy rows keep old ids */
+  slug: string;
+  number: number;
   type: ChallengeType;
   difficulty: ChallengeDifficulty;
   title: string;
@@ -62,10 +65,28 @@ export type ChallengeQuestion = {
   coding?: import("@/lib/challenges/coding-harness").ChallengeCodingHarness;
   /** Guided project assessment (steps + rubric) */
   project?: import("@/lib/projects/types").ProjectAssessmentSpec;
+  /** Structured system-design rubric (no code judge) */
+  design?: ChallengeDesignSpec;
   questions?: ChallengeMcqItem[];
   weeklyBossEligible?: boolean;
+  monthlyEligible?: boolean;
   /** Legacy runner type used by existing Pro IDE / MCQ UI */
   legacyType: "CODE" | "MCQ" | "PROJECT" | "MILESTONE";
+};
+
+export type ChallengeDesignDimension = {
+  id: string;
+  label: string;
+  weight: number;
+  prompt: string;
+};
+
+export type ChallengeDesignSpec = {
+  passScore: number;
+  requirements: string[];
+  nonFunctional: string[];
+  apiSketch: string;
+  dimensions: ChallengeDesignDimension[];
 };
 
 export type ChallengeAttemptPayload = {
@@ -78,6 +99,9 @@ export type ChallengeAttemptPayload = {
   repoUrl?: string;
   reflection?: string;
   breakdown?: unknown[];
+  /** System design writeup */
+  writeup?: string;
+  dimensionIds?: string[];
 };
 
 export type ChallengeAttempt = {
@@ -190,8 +214,18 @@ export type ChallengesApiResponse = {
     boss: ChallengeSummary | null;
     parts: ChallengeSummary[];
     progress: number;
+    refreshInSeconds: number;
+    cleared: boolean;
   };
+  monthly: {
+    monthKey: string;
+    featured: ChallengeSummary | null;
+    refreshInSeconds: number;
+    cleared: boolean;
+  };
+  /** Referenced pack items only — full catalog lives on /problems */
   questions: ChallengeSummary[];
+  forYou: ChallengeSummary[];
   gamification: ChallengeGamification;
   catalogMeta: {
     total: number;

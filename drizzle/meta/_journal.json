@@ -64,6 +64,13 @@
       "when": 1788920000000,
       "tag": "0008_student_id_random",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1788930000000,
+      "tag": "0009_problems_catalog",
+      "breakpoints": true
     }
   ]
 }

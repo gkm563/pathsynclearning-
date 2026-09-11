@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
 import { Coins, Flame, Shield, Sparkles, Trophy } from "lucide-react";
 import { apiGet, apiSend } from "@/lib/api";
-import { routes } from "@/lib/routes";
+import { routes, problemPath } from "@/lib/routes";
 import { SHIELD_COST, xpProgress } from "@/lib/challenges/progress";
 import type {
   ChallengesApiResponse,
@@ -24,16 +24,13 @@ import {
   useToast,
 } from "@/components/ui";
 import ChallengeOfDayPanel from "@/components/challenges/ChallengeOfDayPanel";
-import AllQuestionsPanel from "@/components/challenges/AllQuestionsPanel";
+import ForYouPanel from "@/components/challenges/ForYouPanel";
 import RoadmapSyncPanel from "@/components/challenges/RoadmapSyncPanel";
 import ArenaPanel from "@/components/challenges/ArenaPanel";
 import ProgressExtrasPanel from "@/components/challenges/ProgressExtrasPanel";
-import ChallengeCodingIde from "@/components/challenges/ChallengeCodingIde";
-import ChallengeMcqIde from "@/components/challenges/ChallengeMcqIde";
-import ChallengeProjectIde from "@/components/challenges/ChallengeProjectIde";
 import ChallengeReviewModal from "@/components/challenges/ChallengeReviewModal";
 
-type TabId = "cotd" | "all" | "arena" | "progress" | "sync";
+type TabId = "cotd" | "foryou" | "arena" | "progress" | "sync";
 
 export default function PlatformChallenges() {
   const router = useRouter();
@@ -46,23 +43,13 @@ export default function PlatformChallenges() {
   const [error, setError] = useState("");
   const [syncSaving, setSyncSaving] = useState(false);
   const [hintBusy, setHintBusy] = useState(false);
-  const [codingItem, setCodingItem] = useState<ChallengeSummary | null>(null);
-  const [mcqItem, setMcqItem] = useState<ChallengeSummary | null>(null);
-  const [projectItem, setProjectItem] = useState<ChallengeSummary | null>(null);
   const [reviewItem, setReviewItem] = useState<ChallengeSummary | null>(null);
   const [countdown, setCountdown] = useState(0);
   const [arenaSessionSolved, setArenaSessionSolved] = useState<string[]>([]);
-  const openedFromQuery = useRef<string | null>(null);
 
   const flash = (msg: string, tone: "success" | "error" | "info" = "info") => {
     toast[tone](msg);
   };
-
-  const clearOpenQuery = useCallback(() => {
-    openedFromQuery.current = null;
-    if (!openId) return;
-    router.replace(routes.app.challenges, { scroll: false });
-  }, [openId, router]);
 
   const load = useCallback(async () => {
     try {
@@ -82,6 +69,11 @@ export default function PlatformChallenges() {
   }, [load]);
 
   useEffect(() => {
+    if (!openId) return;
+    router.replace(problemPath(openId));
+  }, [openId, router]);
+
+  useEffect(() => {
     if (!data?.daily.dateKey) return;
     const t = window.setInterval(() => {
       setCountdown((s) => Math.max(0, s - 1));
@@ -91,133 +83,10 @@ export default function PlatformChallenges() {
 
   const openItem = useCallback(
     (item: ChallengeSummary) => {
-      if (item.type === "mcq") {
-        setMcqItem(item);
-        return;
-      }
-      if (item.project || item.type === "project") {
-        if (!item.project) {
-          toast.info("This project is not fully configured yet");
-          return;
-        }
-        setProjectItem(item);
-        return;
-      }
-      if (item.coding || item.type === "coding") {
-        setCodingItem(item);
-        return;
-      }
-      toast.info("Open a coding, MCQ, or project challenge to earn XP");
+      router.push(problemPath(item.slug || item.id));
     },
-    [toast],
+    [router],
   );
-
-  useEffect(() => {
-    if (!data || !openId) return;
-    if (openedFromQuery.current === openId) return;
-    openedFromQuery.current = openId;
-
-    const item =
-      data.questions.find((q) => q.id === openId) ??
-      (data.daily.featured?.id === openId ? data.daily.featured : undefined) ??
-      data.daily.side.find((s) => s.id === openId) ??
-      (data.weekly.boss?.id === openId ? data.weekly.boss : undefined) ??
-      data.weekly.parts.find((s) => s.id === openId);
-
-    if (!item) {
-      toast.info("That challenge isn't available");
-      clearOpenQuery();
-      return;
-    }
-
-    const inDailyPack =
-      data.daily.featured?.id === openId ||
-      data.daily.side.some((s) => s.id === openId) ||
-      data.weekly.boss?.id === openId ||
-      data.weekly.parts.some((s) => s.id === openId);
-    setTab(inDailyPack ? "cotd" : "all");
-    openItem(item);
-  }, [data, openId, openItem, toast, clearOpenQuery]);
-
-  const submitAttempt = async (
-    item: ChallengeSummary,
-    body: {
-      answers?: Record<string, number>;
-      code?: string;
-      language?: string;
-    },
-  ) => {
-    try {
-      const res = await apiSend<
-        ChallengesApiResponse & {
-          ok: boolean;
-          passed: boolean;
-          score: number;
-          awarded?: boolean;
-          xpAwarded?: number;
-          coinsAwarded?: number;
-        }
-      >("/api/me/challenges/attempt", "POST", {
-        questionId: item.id,
-        ...body,
-      });
-      setData(res);
-      setCountdown(res.daily.refreshInSeconds);
-      if (res.passed) {
-        setArenaSessionSolved((ids) =>
-          ids.includes(item.id) ? ids : [...ids, item.id],
-        );
-        if (res.awarded) {
-          // Memory Lane is written server-side via domain events
-        }
-      }
-    } catch (e) {
-      flash(e instanceof Error ? e.message : "Could not save attempt", "error");
-    }
-  };
-
-  const onMcqFinished = (payload: {
-    score: number;
-    passed: boolean;
-    answers: Record<string, number>;
-  }) => {
-    if (!mcqItem) return;
-    void submitAttempt(mcqItem, { answers: payload.answers });
-  };
-
-  const onCodingFinished = (payload: {
-    score: number;
-    passed: boolean;
-    code: string;
-    language: string;
-  }) => {
-    if (!codingItem) return;
-    void submitAttempt(codingItem, {
-      code: payload.code,
-      language: payload.language,
-    });
-  };
-
-  const onProjectFinished = (payload: {
-    score: number;
-    passed: boolean;
-    challengesPayload?: unknown;
-  }) => {
-    if (!projectItem) return;
-    const res = payload.challengesPayload as ChallengesApiResponse | undefined;
-    if (res && "questions" in res) {
-      setData(res);
-      setCountdown(res.daily.refreshInSeconds);
-    } else {
-      void load();
-    }
-    if (payload.passed) {
-      setArenaSessionSolved((ids) =>
-        ids.includes(projectItem.id) ? ids : [...ids, projectItem.id],
-      );
-      // Memory Lane project memories are created server-side on submit
-    }
-  };
 
   const toggleSync = async (enabled: boolean) => {
     setSyncSaving(true);
@@ -283,7 +152,6 @@ export default function PlatformChallenges() {
 
   const g = data?.gamification;
   const levelBar = xpProgress(g?.xp || 0);
-  const solved = data?.questions.filter((q) => q.status === "solved").length || 0;
 
   if (loading) {
     return <PageSkeleton />;
@@ -318,6 +186,9 @@ export default function PlatformChallenges() {
         description={goalBits.join(" · ")}
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            <Button variant="secondary" onClick={() => router.push(routes.app.problems)}>
+              Problem list
+            </Button>
             <span className="type-caption inline-flex items-center gap-1.5 text-muted">
               <Coins size={13} aria-hidden />
               {g?.coins ?? 0} coins
@@ -343,9 +214,9 @@ export default function PlatformChallenges() {
           hint={`${levelBar.pct}% to next level`}
         />
         <StatCard
-          label="Solved"
-          value={`${solved}/${data.catalogMeta.total}`}
-          hint="Across the catalogue"
+          label="Catalog"
+          value={data.catalogMeta.total}
+          hint="Problems you can solve"
           icon={<Trophy size={16} />}
         />
         <StatCard
@@ -364,8 +235,12 @@ export default function PlatformChallenges() {
 
       <Tabs<TabId>
         items={[
-          { id: "cotd", label: "Challenge of the Day" },
-          { id: "all", label: "All Questions", badge: data.questions.length },
+          { id: "cotd", label: "Featured" },
+          {
+            id: "foryou",
+            label: "For you",
+            badge: (data.forYou?.length || data.daily.side.length) || undefined,
+          },
           { id: "arena", label: "Timed Arena" },
           { id: "progress", label: "Milestones" },
           { id: "sync", label: "Roadmap Sync" },
@@ -379,8 +254,8 @@ export default function PlatformChallenges() {
       <TabPanel active={tab === "cotd"}>
         <ChallengeOfDayPanel
           featured={data.daily.featured}
-          side={data.daily.side}
           weekly={data.weekly}
+          monthly={data.monthly}
           refreshInSeconds={countdown || data.daily.refreshInSeconds}
           careerGoal={data.careerGoal}
           cleared={data.daily.cleared}
@@ -404,15 +279,15 @@ export default function PlatformChallenges() {
         />
       </TabPanel>
 
-      <TabPanel active={tab === "all"}>
-        <AllQuestionsPanel
-          questions={data.questions}
+      <TabPanel active={tab === "foryou"}>
+        <ForYouPanel
+          items={data.forYou?.length ? data.forYou : data.daily.side}
           careerGoal={data.careerGoal}
-          companies={data.companies}
-          roadmapOnlyDefault={data.sync.enabled}
+          syncEnabled={data.sync.enabled}
           onOpen={openItem}
           onReview={setReviewItem}
           onUnlockHint={(item) => void unlockHint(item)}
+          onOpenRoadmap={() => router.push(routes.app.roadmapPersonalize)}
           hintBusy={hintBusy}
         />
       </TabPanel>
@@ -476,53 +351,12 @@ export default function PlatformChallenges() {
         {reviewItem && (
           <ChallengeReviewModal
             item={reviewItem}
-            onClose={() => {
-              setReviewItem(null);
-              clearOpenQuery();
-            }}
+            onClose={() => setReviewItem(null)}
             onRetry={() => {
               const item = reviewItem;
               setReviewItem(null);
-              openItem(item);
+              if (item) openItem(item);
             }}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {codingItem && (
-          <ChallengeCodingIde
-            item={codingItem}
-            onClose={() => {
-              setCodingItem(null);
-              clearOpenQuery();
-            }}
-            onFinished={onCodingFinished}
-          />
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {mcqItem && (
-          <ChallengeMcqIde
-            item={mcqItem}
-            onClose={() => {
-              setMcqItem(null);
-              clearOpenQuery();
-            }}
-            onFinished={onMcqFinished}
-          />
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {projectItem && (
-          <ChallengeProjectIde
-            item={projectItem}
-            onClose={() => {
-              setProjectItem(null);
-              clearOpenQuery();
-              void load();
-            }}
-            onFinished={onProjectFinished}
           />
         )}
       </AnimatePresence>

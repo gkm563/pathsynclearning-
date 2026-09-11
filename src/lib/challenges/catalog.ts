@@ -6,6 +6,7 @@ import type {
 } from "@/lib/challenges/types";
 import type { ChallengeCodingHarness } from "@/lib/challenges/coding-harness";
 import type { ProjectAssessmentSpec } from "@/lib/projects/types";
+import { EXTRA_PROBLEMS } from "@/lib/problems/bank";
 
 type RawChallenge = {
   id: string;
@@ -777,10 +778,35 @@ const RAW: RawChallenge[] = [
   },
 ];
 
-function toQuestion(raw: RawChallenge): ChallengeQuestion {
+function slugify(label: string, id: string): string {
+  const s = label
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return s || id;
+}
+
+const LEGACY_SLUGS: Record<string, string> = {
+  m_capstone: "distributed-event-cache",
+  c_dsa_1: "binary-search",
+  c_dsa_2: "reverse-array",
+  c_arrays_1: "two-sum",
+  c_sys_1: "sliding-window-rate-limit",
+  t_mcq_1: "osi-networking-fundamentals",
+  t_mcq_2: "dbms-indexing-quiz",
+  t_mcq_3: "postgres-connection-pooling",
+  p_task_1: "cli-memory-uploader",
+  c_dp_1: "climbing-stairs",
+};
+
+function toQuestion(raw: RawChallenge, number: number): ChallengeQuestion {
   const type = mapType(raw.type);
+  const slug = LEGACY_SLUGS[raw.id] || slugify(raw.label, raw.id);
   return {
     id: raw.id,
+    slug,
+    number,
     type,
     difficulty: mapDiff(raw.diff),
     title: raw.label,
@@ -803,14 +829,29 @@ function toQuestion(raw: RawChallenge): ChallengeQuestion {
     testCases: raw.testCases,
     questions: raw.questions,
     weeklyBossEligible: raw.weeklyBossEligible,
+    monthlyEligible: raw.type === "MILESTONE" || raw.type === "PROJECT",
     legacyType: raw.type,
   };
 }
 
-export const CHALLENGE_CATALOG: ChallengeQuestion[] = RAW.map(toQuestion);
+const LEGACY_QUESTIONS: ChallengeQuestion[] = RAW.map((raw, i) =>
+  toQuestion(raw, i + 1),
+);
+
+export const CHALLENGE_CATALOG: ChallengeQuestion[] = [
+  ...LEGACY_QUESTIONS,
+  ...EXTRA_PROBLEMS(LEGACY_QUESTIONS.length),
+];
 
 export function getChallengeById(id: string): ChallengeQuestion | undefined {
-  return CHALLENGE_CATALOG.find((q) => q.id === id);
+  const key = id.trim();
+  return CHALLENGE_CATALOG.find(
+    (q) => q.id === key || q.slug === key || String(q.number) === key,
+  );
+}
+
+export function getChallengeBySlug(slug: string): ChallengeQuestion | undefined {
+  return getChallengeById(slug);
 }
 
 export function listCatalog(): ChallengeQuestion[] {

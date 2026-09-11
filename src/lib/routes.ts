@@ -39,6 +39,7 @@ export const routes = {
   /** Authenticated student product (portal). */
   app: {
     dashboard: "/dashboard",
+    problems: "/dashboard/problems",
     challenges: "/dashboard/challenges",
     roadmap: "/dashboard/roadmap",
     memoryLane: "/dashboard/memory-lane",
@@ -79,9 +80,13 @@ export function techNewsArticlePath(id: string): string {
   return `${routes.app.techNews}/${encodeURIComponent(id)}`;
 }
 
-/** Open a specific challenge in the Challenges IDE (home Start / Resume / Continue). */
+export function problemPath(slug: string): string {
+  return `${routes.app.problems}/${encodeURIComponent(slug)}`;
+}
+
+/** Open a problem workspace (legacy ?open= on Challenges redirects here). */
 export function challengeOpenPath(id: string): string {
-  return `${routes.app.challenges}?open=${encodeURIComponent(id)}`;
+  return problemPath(id);
 }
 
 export type AppRoute = (typeof routes.app)[keyof typeof routes.app];
@@ -138,6 +143,7 @@ export const STUDENT_PORTAL_PREFIXES = Object.values(routes.app);
 export const APP_NAV_BY_ID: Record<string, string> = {
   dashboard: routes.app.dashboard,
   roadmap: routes.app.roadmap,
+  problems: routes.app.problems,
   challenges: routes.app.challenges,
   "memory-lane": routes.app.memoryLane,
   progress: routes.app.progress,
@@ -175,6 +181,7 @@ export const LEGACY_REDIRECTS: ReadonlyArray<{
 
   // Old root-level portal paths
   { source: "/challenges", destination: routes.app.challenges, permanent: true },
+  { source: "/problems", destination: routes.app.problems, permanent: true },
   { source: "/roadmap", destination: routes.app.roadmap, permanent: true },
   { source: "/memory-lane", destination: routes.app.memoryLane, permanent: true },
   { source: "/progress", destination: routes.app.progress, permanent: true },
@@ -201,6 +208,7 @@ export const LEGACY_REDIRECTS: ReadonlyArray<{
 
   // Old /platform/* student URLs → portal
   { source: "/platform/challenges", destination: routes.app.challenges, permanent: true },
+  { source: "/platform/problems", destination: routes.app.problems, permanent: true },
   { source: "/platform/roadmap", destination: routes.app.roadmap, permanent: true },
   { source: "/platform/memory-lane", destination: routes.app.memoryLane, permanent: true },
   { source: "/platform/progress", destination: routes.app.progress, permanent: true },

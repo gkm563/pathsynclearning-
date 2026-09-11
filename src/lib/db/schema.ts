@@ -223,6 +223,65 @@ export const challengeProgress = pgTable("challenge_progress", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const problems = pgTable(
+  "problems",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    slug: text("slug").notNull().unique(),
+    number: integer("number").notNull().unique(),
+    title: text("title").notNull(),
+    kind: text("kind").notNull(),
+    difficulty: text("difficulty").notNull(),
+    statementMd: text("statement_md").notNull().default(""),
+    examplesJson: jsonb("examples_json").$type<unknown>().notNull().default([]),
+    constraintsMd: text("constraints_md").notNull().default(""),
+    topics: jsonb("topics").$type<string[]>().notNull().default([]),
+    companyTags: jsonb("company_tags").$type<string[]>().notNull().default([]),
+    careerTags: jsonb("career_tags").$type<string[]>().notNull().default([]),
+    xp: integer("xp").notNull().default(50),
+    coins: integer("coins").notNull().default(2),
+    estMinutes: integer("est_minutes").notNull().default(30),
+    icon: text("icon").notNull().default("code"),
+    category: text("category").notNull().default("DSA"),
+    isPublished: boolean("is_published").notNull().default(true),
+    weeklyEligible: boolean("weekly_eligible").notNull().default(false),
+    monthlyEligible: boolean("monthly_eligible").notNull().default(false),
+    legacyId: text("legacy_id"),
+    codingHarness: jsonb("coding_harness").$type<unknown>(),
+    mcqItems: jsonb("mcq_items").$type<unknown>(),
+    designRubric: jsonb("design_rubric").$type<unknown>(),
+    projectSpec: jsonb("project_spec").$type<unknown>(),
+    hints: jsonb("hints").$type<string[]>().notNull().default([]),
+    solution: jsonb("solution").$type<unknown>(),
+    extras: jsonb("extras").$type<Record<string, unknown>>().notNull().default({}),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("idx_problems_published_number").on(t.isPublished, t.number),
+    index("idx_problems_legacy_id").on(t.legacyId),
+  ],
+);
+
+export const challengeSchedule = pgTable(
+  "challenge_schedule",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    period: text("period").notNull(),
+    periodKey: text("period_key").notNull(),
+    problemId: uuid("problem_id")
+      .notNull()
+      .references(() => problems.id, { onDelete: "restrict" }),
+    problemSlug: text("problem_slug").notNull(),
+    startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+    endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("challenge_schedule_period_key").on(t.period, t.periodKey),
+    index("idx_challenge_schedule_window").on(t.period, t.startsAt, t.endsAt),
+  ],
+);
+
 /** Strict per-attempt ledger — XP/coins awarded at most once per question. */
 export const challengeAttempts = pgTable(
   "challenge_attempts",
@@ -232,6 +291,9 @@ export const challengeAttempts = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     questionId: text("question_id").notNull(),
+    problemId: uuid("problem_id").references(() => problems.id, {
+      onDelete: "set null",
+    }),
     challengeType: text("challenge_type").notNull(),
     passed: boolean("passed").notNull().default(false),
     score: integer("score").notNull().default(0),
@@ -243,6 +305,7 @@ export const challengeAttempts = pgTable(
   (t) => [
     index("idx_challenge_attempts_user").on(t.userId, t.createdAt),
     index("idx_challenge_attempts_user_q").on(t.userId, t.questionId),
+    index("idx_challenge_attempts_user_problem").on(t.userId, t.problemId),
   ],
 );
 

@@ -152,10 +152,17 @@ function mapDailyFromApi(
   res: ChallengesApiResponse | null,
 ): DailyChallengeCard[] {
   if (!res?.daily) return FALLBACK_CHALLENGES;
+  const seen = new Set<string>();
   const pack = [
     res.daily.featured,
     ...(res.daily.side || []),
-  ].filter(Boolean) as NonNullable<typeof res.daily.featured>[];
+  ].filter((c): c is NonNullable<typeof res.daily.featured> => {
+    if (!c) return false;
+    const key = c.slug || c.id;
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
   if (!pack.length) return FALLBACK_CHALLENGES;
 
   const palette = [
@@ -170,7 +177,7 @@ function mapDailyFromApi(
     const colors = palette[idx % palette.length];
     const pct = c.status === "solved" ? 100 : c.status === "attempted" ? 40 : 0;
     return {
-      id: c.id,
+      id: c.slug || c.id,
       icon: String(c.icon || c.category || "CH").slice(0, 4).toUpperCase(),
       title: c.title || "Challenge",
       category: c.category || "DSA",

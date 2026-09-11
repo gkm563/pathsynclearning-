@@ -36,14 +36,20 @@ export async function PUT(request: Request) {
         careerGoal: ctx.careerGoal,
         roadmapTopics: ctx.roadmapTopics,
         syncEnabled: enabled,
+        excludeIds: [
+          ctx.windows.daily.problem.id,
+          ctx.windows.weekly.problem.id,
+          ctx.windows.monthly.problem.id,
+        ],
       });
       next = {
         ...next,
         daily: {
-          ...generated,
-          completedIds: ctx.state.daily.completedIds.filter(
-            (id) =>
-              id === generated.featuredId || generated.sideIds.includes(id),
+          dateKey: ctx.windows.daily.periodKey,
+          featuredId: ctx.windows.daily.problem.id,
+          sideIds: generated.sideIds,
+          completedIds: ctx.state.daily.completedIds.filter((id) =>
+            generated.sideIds.includes(id),
           ),
         },
       };
@@ -57,6 +63,7 @@ export async function PUT(request: Request) {
         roadmapTopics: ctx.roadmapTopics,
         unfinishedNodes: ctx.unfinishedNodes,
         userId: user.id,
+        windows: ctx.windows,
       }),
     );
   } catch (e) {

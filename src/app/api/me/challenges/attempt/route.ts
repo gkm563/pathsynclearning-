@@ -5,6 +5,7 @@ import { getChallengeById } from "@/lib/challenges/catalog";
 import {
   gradeCodingSubmission,
   gradeMcqAnswers,
+  gradeSystemDesign,
 } from "@/lib/challenges/grading";
 import { applyFail, applySolve, levelFromXp } from "@/lib/challenges/progress";
 import {
@@ -24,6 +25,7 @@ import { requireDbUser } from "@/lib/db/users";
 import { recordChallengeMemory } from "@/lib/memory/processor";
 import { challengesAttemptSchema } from "@/lib/validation/schemas";
 import type { CodingLanguageId } from "@/lib/roadmap/coding-languages";
+import { resolveWindowProblem, windowBonus } from "@/lib/problems/schedule";
 
 export async function POST(request: Request) {
   try {
@@ -42,6 +44,8 @@ export async function POST(request: Request) {
       answers?: Record<string, number>;
       code?: string;
       language?: string;
+      writeup?: string;
+      dimensionIds?: string[];
     } = {};
 
     if (question.type === "mcq") {
@@ -52,6 +56,16 @@ export async function POST(request: Request) {
       score = graded.score;
       passed = graded.passed;
       payload.answers = body.answers;
+    } else if (question.type === "system_design" || question.design) {
+      const graded = gradeSystemDesign(
+        question,
+        body.dimensionIds,
+        body.writeup,
+      );
+      score = graded.score;
+      passed = graded.passed;
+      payload.writeup = body.writeup;
+      payload.dimensionIds = body.dimensionIds;
     } else if (question.type === "coding" || question.coding) {
       if (!body.code?.trim() || !body.language) {
         // Proctor fail / abandoned submit — record as failed attempt
@@ -97,17 +111,22 @@ export async function POST(request: Request) {
 
     if (passed) {
       if (!alreadySolved) {
+        const period = resolveWindowProblem(ctx.windows, question.id) ||
+          resolveWindowProblem(ctx.windows, question.slug);
+        const bonus = period
+          ? windowBonus(question.xp, question.coins)
+          : { xp: 0, coins: 0 };
         state = applySolve(
           state,
           question.id,
-          question.xp,
-          question.coins,
+          question.xp + bonus.xp,
+          question.coins + bonus.coins,
           score,
           { topics: question.topics, payload },
         );
         awarded = true;
-        xpAwarded = question.xp;
-        coinsAwarded = question.coins;
+        xpAwarded = question.xp + bonus.xp;
+        coinsAwarded = question.coins + bonus.coins;
       } else {
         state = {
           ...state,
@@ -240,6 +259,7 @@ export async function POST(request: Request) {
         roadmapTopics: ctx.roadmapTopics,
         unfinishedNodes: ctx.unfinishedNodes,
         userId: user.id,
+        windows: ctx.windows,
       }),
     });
   } catch (e) {

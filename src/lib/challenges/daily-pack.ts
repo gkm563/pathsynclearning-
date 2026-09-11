@@ -1,4 +1,4 @@
-import { getChallengeById, listCatalog } from "@/lib/challenges/catalog";
+import { listCatalog } from "@/lib/challenges/catalog";
 import type {
   ChallengeDailyPack,
   ChallengeDifficulty,
@@ -55,11 +55,30 @@ function matchesCareer(q: ChallengeQuestion, goal: string): boolean {
   });
 }
 
+function tokenize(values: string[]): string[] {
+  const out = new Set<string>();
+  for (const raw of values) {
+    const s = (raw || "").toLowerCase();
+    if (!s.trim()) continue;
+    out.add(s);
+    for (const word of s.split(/[^a-z0-9+#]+/)) {
+      if (word.length >= 3) out.add(word);
+    }
+  }
+  return [...out];
+}
+
 function matchesTopics(q: ChallengeQuestion, topics: string[]): boolean {
   if (!topics.length) return true;
-  const set = topics.map((t) => t.toLowerCase());
-  return q.topics.some((t) =>
-    set.some((s) => t.includes(s) || s.includes(t)),
+  const hay = tokenize([
+    ...q.topics,
+    q.category,
+    q.title,
+    ...(q.careerTags || []),
+  ]);
+  const needles = tokenize(topics);
+  return hay.some((t) =>
+    needles.some((s) => t === s || (s.length >= 4 && t.includes(s)) || (t.length >= 4 && s.includes(t))),
   );
 }
 
@@ -88,10 +107,10 @@ export function filterEligible(
   let pool = catalog.filter((q) => matchesCareer(q, g));
   if (syncEnabled && roadmapTopics.length) {
     const synced = pool.filter((q) => matchesTopics(q, roadmapTopics));
-    if (synced.length >= 3) pool = synced;
+    if (synced.length) pool = synced;
   }
-  if (pool.length < 3) pool = catalog.filter((q) => matchesCareer(q, g));
-  if (pool.length < 3) pool = catalog;
+  if (!pool.length) pool = catalog.filter((q) => matchesCareer(q, g));
+  if (!pool.length) pool = catalog;
   return pool;
 }
 
@@ -102,6 +121,7 @@ export function generateDailyPack(opts: {
   roadmapTopics: string[];
   syncEnabled: boolean;
   sideCount?: number;
+  excludeIds?: string[];
 }): ChallengeDailyPack {
   const sideCount = opts.sideCount ?? 4;
   const seed = hashString(
@@ -117,15 +137,39 @@ export function generateDailyPack(opts: {
 
   const wantType = rotateType(rng, dayIndex);
   const wantDiff = weightedDifficulty(rng);
+  const exclude = new Set(opts.excludeIds || []);
 
-  let featuredPool = pool.filter((q) => q.type === wantType);
-  if (!featuredPool.length) featuredPool = pool;
+  const usable = pool.filter((q) => !exclude.has(q.id) && !exclude.has(q.slug));
+  let pickPool = usable.length ? usable : pool;
+  if (pickPool.length < sideCount && opts.syncEnabled) {
+    const filler = listCatalog().filter(
+      (q) =>
+        isDailyEligible(q) &&
+        !exclude.has(q.id) &&
+        !exclude.has(q.slug) &&
+        !pickPool.some((p) => p.id === q.id),
+    );
+    pickPool = [...pickPool, ...rng.shuffle(filler)];
+  }
+
+  const matched = opts.syncEnabled
+    ? pickPool.filter((q) => matchesTopics(q, opts.roadmapTopics))
+    : [];
+  const unmatched = pickPool.filter(
+    (q) => !matched.some((m) => m.id === q.id),
+  );
+  const ranked = opts.syncEnabled
+    ? [...rng.shuffle(matched), ...rng.shuffle(unmatched)]
+    : rng.shuffle(pickPool);
+
+  let featuredPool = ranked.filter((q) => q.type === wantType);
+  if (!featuredPool.length) featuredPool = ranked;
   let featuredDiffPool = featuredPool.filter((q) => q.difficulty === wantDiff);
   if (!featuredDiffPool.length) featuredDiffPool = featuredPool;
 
-  const featured = rng.pick(featuredDiffPool) || pool[0];
-  const rest = rng
-    .shuffle(pool.filter((q) => q.id !== featured?.id))
+  const featured = rng.pick(featuredDiffPool) || ranked[0];
+  const rest = ranked
+    .filter((q) => q.id !== featured?.id && q.slug !== featured?.slug)
     .slice(0, sideCount);
 
   return {
@@ -136,20 +180,21 @@ export function generateDailyPack(opts: {
   };
 }
 
-/** Keep completedIds when refreshing same-day pack identity. */
+/** Keep completedIds when the UTC day has not rolled; always take the new pack identity. */
 export function mergeDailyPack(
   existing: ChallengeDailyPack | undefined,
   next: ChallengeDailyPack,
 ): ChallengeDailyPack {
-  if (existing && existing.dateKey === next.dateKey && existing.featuredId) {
-    const featured = getChallengeById(existing.featuredId);
-    if (featured && isDailyEligible(featured)) {
-      return {
-        ...existing,
-        // keep chosen pack stable for the day
-        completedIds: existing.completedIds || [],
-      };
-    }
+  if (existing && existing.dateKey === next.dateKey) {
+    const featuredKeys = new Set(
+      [next.featuredId, ...(next.sideIds || [])].filter(Boolean),
+    );
+    return {
+      ...next,
+      completedIds: (existing.completedIds || []).filter((id) =>
+        featuredKeys.has(id),
+      ),
+    };
   }
   return next;
 }

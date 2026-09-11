@@ -8,7 +8,6 @@ import {
   buildArenaPack,
   buildMilestones,
   buildWeaknessCoach,
-  generateWeeklyBoss,
   isDailyCleared,
   mergeWeekly,
 } from "@/lib/challenges/extras";
@@ -17,11 +16,12 @@ import {
   dateKeyNow,
   levelFromXp,
   normalizeProgressState,
-  secondsUntilNextUtcMidnight,
 } from "@/lib/challenges/progress";
 import { findLinkedNode, toSummary } from "@/lib/challenges/relevance";
 import type {
   ChallengeProgressState,
+  ChallengeQuestion,
+  ChallengeSummary,
   ChallengesApiResponse,
   ChallengeType,
 } from "@/lib/challenges/types";
@@ -33,6 +33,12 @@ import {
   roadmaps,
   wallets,
 } from "@/lib/db/schema";
+import { toPublicSummary } from "@/lib/problems/public";
+import {
+  featuredIds,
+  loadGlobalWindows,
+  type ChallengeWindow,
+} from "@/lib/problems/schedule";
 import type { RoadmapNode } from "@/types/roadmap";
 
 /**
@@ -143,19 +149,33 @@ export async function loadChallengeContext(userId: string) {
     },
   };
 
+  const windows = await loadGlobalWindows();
   const generated = generateDailyPack({
     userId,
     dateKey,
     careerGoal,
     roadmapTopics,
     syncEnabled: state.sync.enabled,
+    excludeIds: featuredIds(windows),
+    sideCount: 4,
   });
-  const weekly = generateWeeklyBoss({ userId, careerGoal });
+
+  const nextDaily = {
+    dateKey: windows.daily.periodKey,
+    featuredId: windows.daily.problem.id,
+    sideIds: generated.sideIds,
+    completedIds: [] as string[],
+  };
 
   state = {
     ...state,
-    daily: mergeDailyPack(state.daily, generated),
-    weekly: mergeWeekly(state.weekly, weekly),
+    daily: mergeDailyPack(state.daily, nextDaily),
+    weekly: mergeWeekly(state.weekly, {
+      weekKey: windows.weekly.periodKey,
+      bossId: windows.weekly.problem.id,
+      partIds: [],
+      completedIds: [],
+    }),
     duelCode:
       state.duelCode ||
       `duel_${userId.slice(0, 6)}_${dateKey.replace(/-/g, "")}`,
@@ -174,6 +194,7 @@ export async function loadChallengeContext(userId: string) {
     unfinishedNodes: unfinished,
     progressExists,
     needsPersist,
+    windows,
   };
 }
 
@@ -226,6 +247,11 @@ export function buildChallengesResponse(ctx: {
   roadmapTopics: string[];
   unfinishedNodes: RoadmapNode[];
   userId?: string;
+  windows: {
+    daily: ChallengeWindow;
+    weekly: ChallengeWindow;
+    monthly: ChallengeWindow;
+  };
 }): ChallengesApiResponse {
   const attempts = attemptMap(ctx.state);
   const catalog = listCatalog();
@@ -239,44 +265,81 @@ export function buildChallengesResponse(ctx: {
     ctx.state.hintUnlocks.map((h) => [h.questionId, h.levels]),
   );
 
-  const questions = catalog
-    .map((q) => {
-      const linked = findLinkedNode(q, nodeOpts);
-      return toSummary(q, attempts.get(q.id), {
+  const summarize = (q: ChallengeQuestion | undefined): ChallengeSummary | null => {
+    if (!q) return null;
+    const linked = findLinkedNode(q, nodeOpts);
+    const attempt =
+      attempts.get(q.id) || attempts.get(q.slug);
+    return toPublicSummary(
+      toSummary(q, attempt, {
         careerGoal: ctx.careerGoal,
         roadmapTopics: ctx.roadmapTopics,
         unfinishedBoostTopics: ctx.roadmapTopics,
         linkedNodeId: linked?.id,
         linkedNodeTitle: linked?.title,
-        hintsUnlocked: hintMap.get(q.id) || 0,
+        hintsUnlocked: hintMap.get(q.id) || hintMap.get(q.slug) || 0,
         solutionUnlocked:
-          attempts.get(q.id)?.status === "solved" ||
-          ctx.state.solvedIds.includes(q.id),
-      });
+          attempt?.status === "solved" ||
+          ctx.state.solvedIds.includes(q.id) ||
+          ctx.state.solvedIds.includes(q.slug),
+      }),
+    );
+  };
+
+  const byId = new Map<string, ChallengeQuestion>();
+  for (const q of catalog) {
+    byId.set(q.id, q);
+    byId.set(q.slug, q);
+  }
+
+  const featured = summarize(ctx.windows.daily.problem);
+  const featuredKeys = new Set(
+    [
+      ctx.windows.daily.problem.id,
+      ctx.windows.daily.problem.slug,
+      ctx.windows.weekly.problem.id,
+      ctx.windows.weekly.problem.slug,
+      ctx.windows.monthly.problem.id,
+      ctx.windows.monthly.problem.slug,
+    ].filter(Boolean),
+  );
+  const side = ctx.state.daily.sideIds
+    .map((id) => summarize(byId.get(id)))
+    .filter((item): item is ChallengeSummary => {
+      if (!item) return false;
+      return !featuredKeys.has(item.id) && !featuredKeys.has(item.slug);
     })
     .sort((a, b) => b.relevance - a.relevance);
 
-  const byId = new Map(questions.map((q) => [q.id, q]));
-  const featured = ctx.state.daily.featuredId
-    ? byId.get(ctx.state.daily.featuredId) || null
-    : null;
-  const side = ctx.state.daily.sideIds
-    .map((id) => byId.get(id))
-    .filter(Boolean) as typeof questions;
+  const boss = summarize(ctx.windows.weekly.problem);
+  const monthly = summarize(ctx.windows.monthly.problem);
 
-  const boss = ctx.state.weekly.bossId
-    ? byId.get(ctx.state.weekly.bossId) || null
-    : null;
-  const parts = ctx.state.weekly.partIds
-    .map((id) => byId.get(id))
-    .filter(Boolean) as typeof questions;
-  const weeklyTotal = 1 + parts.length;
-  const weeklyDone = ctx.state.weekly.completedIds.length;
+  const dailyCleared =
+    Boolean(featured) &&
+    (featured!.status === "solved" ||
+      isDailyCleared({
+        ...ctx.state,
+        daily: { ...ctx.state.daily, featuredId: ctx.windows.daily.problem.id },
+      }) ||
+      ctx.state.solvedIds.includes(ctx.windows.daily.problem.slug));
+
+  const weeklyCleared =
+    Boolean(boss) &&
+    (boss!.status === "solved" ||
+      ctx.state.solvedIds.includes(ctx.windows.weekly.problem.id) ||
+      ctx.state.solvedIds.includes(ctx.windows.weekly.problem.slug));
+
+  const monthlyCleared =
+    Boolean(monthly) &&
+    (monthly!.status === "solved" ||
+      ctx.state.solvedIds.includes(ctx.windows.monthly.problem.id) ||
+      ctx.state.solvedIds.includes(ctx.windows.monthly.problem.slug));
 
   const byType: Record<ChallengeType, number> = {
     coding: 0,
     mcq: 0,
     project: 0,
+    system_design: 0,
   };
   for (const q of catalog) byType[q.type] += 1;
 
@@ -285,28 +348,51 @@ export function buildChallengesResponse(ctx: {
     userId: ctx.userId || "anon",
     dateKey: ctx.state.daily.dateKey,
   });
+  const weakness = buildWeaknessCoach(ctx.state, nodeOpts);
+
+  const referenced = [
+    featured,
+    ...side,
+    boss,
+    monthly,
+    ...arenaIds.map((id) => summarize(byId.get(id))),
+    ...(weakness?.drillIds || []).map((id) => summarize(byId.get(id))),
+  ].filter(Boolean) as ChallengeSummary[];
+
+  const questions = [
+    ...new Map(referenced.map((q) => [q.id, q])).values(),
+  ];
 
   return {
     careerGoal: ctx.careerGoal,
     roadmapTopics: ctx.roadmapTopics,
     sync: ctx.state.sync,
     daily: {
-      dateKey: ctx.state.daily.dateKey,
+      dateKey: ctx.windows.daily.periodKey,
       featured,
       side,
-      refreshInSeconds: secondsUntilNextUtcMidnight(),
-      cleared: isDailyCleared(ctx.state),
+      refreshInSeconds: ctx.windows.daily.refreshInSeconds,
+      cleared: dailyCleared,
     },
     weekly: {
-      weekKey: ctx.state.weekly.weekKey,
+      weekKey: ctx.windows.weekly.periodKey,
       boss,
-      parts,
-      progress: weeklyTotal ? Math.round((weeklyDone / weeklyTotal) * 100) : 0,
+      parts: [],
+      progress: weeklyCleared ? 100 : 0,
+      refreshInSeconds: ctx.windows.weekly.refreshInSeconds,
+      cleared: weeklyCleared,
+    },
+    monthly: {
+      monthKey: ctx.windows.monthly.periodKey,
+      featured: monthly,
+      refreshInSeconds: ctx.windows.monthly.refreshInSeconds,
+      cleared: monthlyCleared,
     },
     questions,
+    forYou: side,
     gamification: ctx.state.gamification,
     catalogMeta: { total: catalog.length, byType, companies },
-    weakness: buildWeaknessCoach(ctx.state, nodeOpts),
+    weakness,
     milestones: buildMilestones(
       ctx.state.gamification.cotdClears,
       ctx.state.gamification.badges,

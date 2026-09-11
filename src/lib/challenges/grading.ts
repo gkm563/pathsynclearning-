@@ -6,6 +6,27 @@ import type { CodingLanguageId } from "@/lib/roadmap/coding-languages";
 export const MCQ_PASS_SCORE = 70;
 export const CODING_PASS_SCORE = 100;
 
+export function gradeSystemDesign(
+  question: ChallengeQuestion,
+  dimensionIds: string[] | undefined,
+  writeup: string | undefined,
+): { score: number; passed: boolean } {
+  const spec = question.design;
+  if (!spec) return { score: 0, passed: false };
+  const chosen = new Set((dimensionIds || []).map(String));
+  let earned = 0;
+  let total = 0;
+  for (const dim of spec.dimensions) {
+    total += dim.weight;
+    if (chosen.has(dim.id)) earned += dim.weight;
+  }
+  const text = (writeup || "").trim();
+  const writeupScore = text.length >= 240 ? 15 : text.length >= 80 ? 8 : 0;
+  const base = total ? (earned / total) * 85 : 0;
+  const score = Math.min(100, Math.round(base + writeupScore));
+  return { score, passed: score >= (spec.passScore || 70) };
+}
+
 /** Server-side MCQ grading — never trust client score/passed. */
 export function gradeMcqAnswers(
   question: ChallengeQuestion,

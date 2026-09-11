@@ -20,6 +20,7 @@ export async function GET() {
         roadmapTopics: ctx.roadmapTopics,
         unfinishedNodes: ctx.unfinishedNodes,
         userId: user.id,
+        windows: ctx.windows,
       }),
     );
   } catch (e) {

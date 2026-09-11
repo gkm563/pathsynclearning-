@@ -14,8 +14,8 @@ function formatCountdown(secs: number) {
 
 export default function ChallengeOfDayPanel({
   featured,
-  side,
   weekly,
+  monthly,
   refreshInSeconds,
   careerGoal,
   cleared,
@@ -29,8 +29,8 @@ export default function ChallengeOfDayPanel({
   hintBusy,
 }: {
   featured: ChallengeSummary | null;
-  side: ChallengeSummary[];
   weekly: ChallengesApiResponse["weekly"];
+  monthly: ChallengesApiResponse["monthly"];
   refreshInSeconds: number;
   careerGoal: string | null;
   cleared: boolean;
@@ -43,7 +43,6 @@ export default function ChallengeOfDayPanel({
   onBuyShield: () => void;
   hintBusy?: boolean;
 }) {
-  const sideDone = side.filter((s) => s.status === "solved").length;
   const featuredDone = featured?.status === "solved";
 
   return (
@@ -51,7 +50,7 @@ export default function ChallengeOfDayPanel({
       <Card className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="type-h4 m-0 text-ink">Today&apos;s pack</h3>
+            <h3 className="type-h4 m-0 text-ink">Daily · Weekly · Monthly</h3>
             {careerGoal ? <Badge tone="accent">{careerGoal}</Badge> : null}
             {cleared ? <Badge tone="success">Cleared</Badge> : null}
           </div>
@@ -68,8 +67,9 @@ export default function ChallengeOfDayPanel({
             <Shield size={13} aria-hidden /> Shields {shields}
           </Button>
           <span className="type-caption text-muted">
-            Featured {featuredDone ? "done" : "open"} · Side {sideDone}/
-            {side.length}
+            Daily {featuredDone ? "done" : "open"}
+            {weekly.cleared ? " · Weekly cleared" : ""}
+            {monthly.cleared ? " · Monthly cleared" : ""}
           </span>
         </div>
       </Card>
@@ -90,44 +90,41 @@ export default function ChallengeOfDayPanel({
         />
       )}
 
-      <Section title="Side questions">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {side.map((item) => (
-            <ChallengeCard
-              key={item.id}
-              item={item}
-              onOpen={() => onOpen(item)}
-              onReview={() => onReview(item)}
-              onUnlockHint={() => onUnlockHint(item)}
-              hintBusy={hintBusy}
-            />
-          ))}
-        </div>
+      <Section title={`Weekly · ${weekly.weekKey} · ${weekly.cleared ? "cleared" : `${weekly.progress}%`}`}>
+        {weekly.boss ? (
+          <ChallengeCard
+            item={weekly.boss}
+            boss
+            onOpen={() => onOpen(weekly.boss!)}
+            onReview={() => onReview(weekly.boss!)}
+            onUnlockHint={() => onUnlockHint(weekly.boss!)}
+            hintBusy={hintBusy}
+          />
+        ) : null}
+        <p className="type-caption mt-2 mb-0 text-muted">
+          Resets in {formatCountdown(weekly.refreshInSeconds)}
+        </p>
       </Section>
 
-      <Section title={`Weekly boss · ${weekly.weekKey} · ${weekly.progress}%`}>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {weekly.boss && (
-            <ChallengeCard
-              item={weekly.boss}
-              boss
-              onOpen={() => onOpen(weekly.boss!)}
-              onReview={() => onReview(weekly.boss!)}
-              onUnlockHint={() => onUnlockHint(weekly.boss!)}
-              hintBusy={hintBusy}
-            />
-          )}
-          {weekly.parts.map((item) => (
-            <ChallengeCard
-              key={item.id}
-              item={item}
-              onOpen={() => onOpen(item)}
-              onReview={() => onReview(item)}
-              onUnlockHint={() => onUnlockHint(item)}
-              hintBusy={hintBusy}
-            />
-          ))}
-        </div>
+      <Section title={`Monthly · ${monthly.monthKey} · ${monthly.cleared ? "cleared" : "open"}`}>
+        {monthly.featured ? (
+          <ChallengeCard
+            item={monthly.featured}
+            featured
+            onOpen={() => onOpen(monthly.featured!)}
+            onReview={() => onReview(monthly.featured!)}
+            onUnlockHint={() => onUnlockHint(monthly.featured!)}
+            hintBusy={hintBusy}
+          />
+        ) : (
+          <EmptyState
+            title="No monthly capstone"
+            description="The monthly window will appear once the catalogue is ready."
+          />
+        )}
+        <p className="type-caption mt-2 mb-0 text-muted">
+          Resets in {formatCountdown(monthly.refreshInSeconds)}
+        </p>
       </Section>
     </div>
   );

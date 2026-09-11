@@ -26,15 +26,17 @@ export default function RoadmapSyncPanel({
           <div className="min-w-0">
             <h3 className="type-h4 m-0 text-ink">Sync with roadmap</h3>
             <p className="type-small mt-1.5 mb-0 text-muted">
-              When enabled, Challenge of the Day and All Questions prefer topics
-              from your unfinished roadmap nodes
+              When enabled, the <span className="font-semibold text-ink">For you</span>{" "}
+              tab prefers problems that match unfinished roadmap skills and
+              topics
               {careerGoal ? (
                 <>
                   {" "}
                   for <span className="font-semibold text-ink">{careerGoal}</span>
                 </>
               ) : null}
-              .
+              . Daily, weekly, and monthly featured problems stay the same for
+              everyone.
             </p>
           </div>
           <Switch

@@ -247,6 +247,7 @@ export async function POST(request: Request) {
         roadmapTopics: ctx.roadmapTopics,
         unfinishedNodes: ctx.unfinishedNodes,
         userId: user.id,
+        windows: ctx.windows,
       }),
     });
   } catch (e) {

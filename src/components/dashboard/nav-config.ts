@@ -15,6 +15,7 @@ import {
   UserRound,
   Users,
   Wallet,
+  ListChecks,
   Zap,
   type LucideIcon,
 } from "lucide-react";
@@ -75,6 +76,12 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Learn",
     items: [
       { id: "roadmap", href: routes.app.roadmap, label: "Roadmap", icon: Map },
+      {
+        id: "problems",
+        href: routes.app.problems,
+        label: "Problems",
+        icon: ListChecks,
+      },
       {
         id: "challenges",
         href: routes.app.challenges,

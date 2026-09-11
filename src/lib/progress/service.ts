@@ -54,6 +54,10 @@ const TRACK_META: Record<
     name: "Project Assessments",
     description: "Guided projects with rubrics and evidence.",
   },
+  system_design: {
+    name: "System Design",
+    description: "Architecture prompts with scored design rubrics.",
+  },
 };
 
 function asNodes(raw: unknown): RoadmapNode[] {
@@ -267,7 +271,7 @@ export async function getProgressPayload(
 
   // ── Challenge tracks as assessments ──────────────────────────────
   const assessments: ProgressAssessment[] = [];
-  const types: ChallengeType[] = ["coding", "mcq", "project"];
+  const types: ChallengeType[] = ["coding", "mcq", "project", "system_design"];
 
   for (const type of types) {
     const questions = catalog.filter((q) => q.type === type);

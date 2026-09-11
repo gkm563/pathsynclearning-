@@ -149,12 +149,24 @@ export function buildWeaknessCoach(
   };
 }
 
+export function isIdSolved(
+  state: ChallengeProgressState,
+  id: string,
+  extra?: string,
+): boolean {
+  const keys = [id, extra].filter(Boolean) as string[];
+  return keys.some(
+    (k) =>
+      state.solvedIds.includes(k) || state.daily.completedIds.includes(k),
+  );
+}
+
 export function isDailyCleared(state: ChallengeProgressState): boolean {
-  const ids = [state.daily.featuredId, ...state.daily.sideIds].filter(Boolean);
-  if (!ids.length) return false;
-  return ids.every(
-    (id) =>
-      state.solvedIds.includes(id) || state.daily.completedIds.includes(id),
+  const featured = state.daily.featuredId;
+  if (!featured) return false;
+  return (
+    state.solvedIds.includes(featured) ||
+    state.daily.completedIds.includes(featured)
   );
 }
 

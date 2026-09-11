@@ -23,6 +23,8 @@
     "db:migrate:roadmap-company": "npx tsx scripts/migrate-roadmap-target-company.ts",
     "db:migrate:notifications": "npx tsx scripts/migrate-notifications.ts",
     "db:migrate:student-id": "npx tsx scripts/migrate-student-registration-id.ts",
+    "db:migrate:problems": "npx tsx scripts/migrate-problems-catalog.ts",
+    "db:seed:problems": "npx tsx scripts/seed-problems.ts",
     "db:sync": "npx tsx scripts/sync-db.ts",
     "test:progress": "npx tsx scripts/test-progress-calc.ts",
     "test:news": "npx tsx scripts/test-news-normalize.ts",

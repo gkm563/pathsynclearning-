@@ -160,6 +160,8 @@ export const challengesAttemptSchema = z
     answers: z.record(z.string(), z.number().int().min(0).max(20)).optional(),
     code: z.string().max(50000).optional(),
     language: z.enum(["javascript", "python", "java", "c", "cpp"]).optional(),
+    writeup: z.string().max(20000).optional(),
+    dimensionIds: z.array(z.string().trim().min(1).max(64)).max(20).optional(),
   })
   .strict();
 

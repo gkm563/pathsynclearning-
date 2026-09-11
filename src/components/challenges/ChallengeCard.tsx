@@ -33,6 +33,7 @@ function typeLabel(item: ChallengeSummary) {
   if (item.legacyType === "MILESTONE") return "Milestone";
   if (item.type === "mcq") return "MCQ";
   if (item.type === "coding") return "Coding";
+  if (item.type === "system_design") return "System design";
   return "Project";
 }
 

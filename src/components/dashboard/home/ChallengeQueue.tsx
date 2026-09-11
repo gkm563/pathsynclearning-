@@ -67,7 +67,7 @@ export function ChallengeQueue({ challenges, streak }: Props) {
               : routes.app.challenges;
             return (
               <li
-                key={task.id || `${task.title}-${idx}`}
+                key={task.id ? `${task.id}-${idx}` : `${task.title}-${idx}`}
                 className="flex min-w-0 flex-col gap-3 rounded-[var(--radius-md)] border border-line bg-sunken p-3 sm:flex-row sm:items-center sm:gap-4"
               >
               <div className="min-w-0 flex-1">
