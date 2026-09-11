@@ -111,17 +111,18 @@ export async function POST(request: Request) {
       });
 
       const inScope = parseInScope(raw);
-      if (inScope === false) {
+      const reply = asReply(raw);
+      // Local classifier already allowed this turn. Do not replace a real
+      // lesson answer with a canned refusal if the model was overly strict.
+      if (inScope === false && !reply) {
         return jsonResponse({
           reply: scopeRefusal(title, "off_topic"),
           refused: true,
           reason: "off_topic",
         });
       }
-
-      const reply = asReply(raw);
       if (reply) {
-        return jsonResponse({ reply });
+        return jsonResponse({ reply, refused: inScope === false });
       }
     } catch {
       // fall through to local tutor

@@ -14,6 +14,7 @@ import {
   Trophy,
   UserRound,
 } from "lucide-react";
+import { CopilotLaunchButton } from "@/components/copilot/CopilotProvider";
 import { Avatar, Breadcrumb, IconButton, Menu } from "@/components/ui";
 import { BrandMark } from "@/components/ui/BrandMark";
 import { useDismiss } from "@/hooks/useOverlay";
@@ -269,6 +270,7 @@ export default function AppNavbar({ onMenuOpen }: { onMenuOpen: () => void }) {
           >
             Store
           </Link>
+          <CopilotLaunchButton />
           <NotificationBell />
           <AccountMenu />
         </div>

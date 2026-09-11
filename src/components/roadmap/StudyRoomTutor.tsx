@@ -69,7 +69,7 @@ function formatDay(iso?: string) {
 function greetingMsg(title: string): TutorChatMsg {
   return {
     role: "assistant",
-    text: `I tutor this lesson only: **${title}**. Ask me to ==explain it==, quiz you, or prep interview questions. I will not answer general chat or topics outside this node and your roadmap.`,
+    text: `I tutor **${title}** — ask about the idea, how to implement it, examples, complexity, or interview follow-ups. Related learning that helps this node is fair game. I will not do general chat or unrelated topics.`,
     at: isoNow(),
   };
 }

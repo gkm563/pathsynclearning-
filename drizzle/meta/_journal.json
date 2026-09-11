@@ -78,6 +78,13 @@
       "when": 1788940000000,
       "tag": "0010_wallet_starting_coins",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1788960000000,
+      "tag": "0011_copilot_chat",
+      "breakpoints": true
     }
   ]
 }

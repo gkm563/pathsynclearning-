@@ -521,3 +521,50 @@ export const newsPreferencesUpdateSchema = z
     categories: z.array(newsCategorySchema).max(8),
   })
   .strict();
+
+export const copilotHistorySchema = z
+  .object({
+    role: z.enum(["user", "assistant"]),
+    content: z.string().trim().min(1).max(4000),
+  })
+  .strict();
+
+export const copilotChatSchema = z
+  .object({
+    message: z.string().trim().min(1).max(2000),
+    threadId: z.string().uuid().nullable().optional(),
+    history: z.array(copilotHistorySchema).max(16).optional().default([]),
+    pathname: z.string().trim().max(240).optional().default("/dashboard"),
+  })
+  .strict();
+
+export const copilotCreateNoteActionSchema = z
+  .object({
+    type: z.literal("create_note"),
+    title: z.string().trim().min(1).max(200),
+    content: z.string().trim().min(1).max(12000),
+    threadId: z.string().uuid().optional(),
+    messageId: z.string().uuid().optional(),
+  })
+  .strict();
+
+export const copilotBookmarkActionSchema = z
+  .object({
+    type: z.literal("bookmark_news"),
+    articleId: z.string().uuid(),
+    bookmarked: z.boolean().optional().default(true),
+    threadId: z.string().uuid().optional(),
+    messageId: z.string().uuid().optional(),
+  })
+  .strict();
+
+export const copilotActionSchema = z.discriminatedUnion("type", [
+  copilotCreateNoteActionSchema,
+  copilotBookmarkActionSchema,
+]);
+
+export const copilotThreadCreateSchema = z
+  .object({
+    title: z.string().trim().min(1).max(80).optional(),
+  })
+  .strict();

@@ -778,3 +778,45 @@ export type NewsArticle = typeof newsArticles.$inferSelect;
 export type NewsBookmark = typeof newsBookmarks.$inferSelect;
 export type NewsRead = typeof newsReads.$inferSelect;
 export type NewsPreferences = typeof newsPreferences.$inferSelect;
+
+/** PathED Copilot conversation threads (portal-wide assistant). */
+export const copilotThreads = pgTable(
+  "copilot_threads",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    title: text("title").notNull().default("New chat"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("idx_copilot_threads_user").on(t.userId, t.updatedAt)],
+);
+
+export const copilotMessages = pgTable(
+  "copilot_messages",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    threadId: uuid("thread_id")
+      .notNull()
+      .references(() => copilotThreads.id, { onDelete: "cascade" }),
+    role: text("role").notNull(),
+    content: text("content").notNull(),
+    meta: jsonb("meta")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("idx_copilot_messages_thread").on(t.threadId, t.createdAt)],
+);
+
+export type CopilotThread = typeof copilotThreads.$inferSelect;
+export type CopilotMessage = typeof copilotMessages.$inferSelect;

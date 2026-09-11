@@ -25,6 +25,7 @@
     "db:migrate:student-id": "npx tsx scripts/migrate-student-registration-id.ts",
     "db:migrate:problems": "npx tsx scripts/migrate-problems-catalog.ts",
     "db:migrate:wallet-coins": "npx tsx scripts/migrate-wallet-starting-coins.ts",
+    "db:migrate:copilot": "npx tsx scripts/migrate-copilot-chat.ts",
     "db:seed:problems": "npx tsx scripts/seed-problems.ts",
     "db:sync": "npx tsx scripts/sync-db.ts",
     "test:progress": "npx tsx scripts/test-progress-calc.ts",

@@ -15,7 +15,7 @@ const FIELDS: Array<{ key: keyof MemorySettingsDto; label: string }> = [
   { key: "includeEvents", label: "Events" },
   { key: "includeCareer", label: "Career" },
   { key: "includePrivateNotes", label: "Private Notes" },
-  { key: "allowAiNotes", label: "Allow AI to use notes (future)" },
+  { key: "allowAiNotes", label: "Allow Copilot to use notes" },
 ];
 
 export function MemorySettingsPanel({

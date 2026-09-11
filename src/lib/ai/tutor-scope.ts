@@ -131,8 +131,8 @@ const OFF_TOPIC =
 const SMALLTALK =
   /^(hi|hello|hey|yo|sup|hiya|thanks|thank you|ok|okay|bye|good morning|good evening)[\s!.]*$/i;
 
-const STUDY_INTENT =
-  /\b(explain|eli5|simplif|quiz|test me|interview|takeaway|summar|hint|analog(?:y|ies)?|example|why (is|does|do) this|what (is|are|does) this|how (does|do|is) (this|a|an|the)|how to (study|learn|remember)|difference between|trade-?off|practice|revise|review|confused|stuck|prerequisite|roadmap|this (node|topic|lesson|video)|assessment|coding (problem|question))\b/i;
+const LEARNING_INTENT =
+  /\b(explain|eli5|simplif|quiz|test me|interview|takeaway|summar|hint|analog(?:y|ies)?|example|implement|implementation|complexity|big-?o|runtime|debug|trace|dry[- ]run|walk(?:\s+me)? through|approach|understand|confused|stuck|why|how (do|does|can|should|would|is)|how to|what (is|are|does|do|if)|when (do|would|should|to)|difference|versus|vs|compare|trade-?off|practice|revise|review|prerequisite|roadmap|this (node|topic|lesson|video)|assessment|coding|code|function|algorithm|data structure|edge case|base case|recursive|recursion|iterate|loop|pointer|array|tree|graph|stack|queue|hash|sort|search|proof|intuition|visuali[sz]e|step[- ]by[- ]step|solution|solve|pseudo[- ]?code)\b/i;
 
 function isLessonToken(t: string): boolean {
   if (!t || STOP.has(t)) return false;
@@ -206,16 +206,19 @@ export function classifyTutorMessage(message: string, lexicon: Set<string>): Tut
   if (JAILBREAK.test(q)) return { ok: false, reason: "jailbreak" };
 
   const overlap = [...tokenizeLesson(q)].filter((t) => lexicon.has(t)).length;
-  if (SMALLTALK.test(q) && overlap === 0) return { ok: false, reason: "smalltalk" };
+  const learning = LEARNING_INTENT.test(q);
 
-  const offTopic = OFF_TOPIC.test(q);
-  if (offTopic && overlap === 0) return { ok: false, reason: "off_topic" };
-
-  if (STUDY_INTENT.test(q) || overlap >= 1) {
-    return { ok: true, reason: overlap >= 1 ? "overlap" : "study" };
+  if (SMALLTALK.test(q) && overlap === 0 && !learning) {
+    return { ok: false, reason: "smalltalk" };
   }
 
-  return { ok: false, reason: "off_topic" };
+  // Lifestyle / general-chat with no lesson tokens.
+  if (OFF_TOPIC.test(q) && overlap === 0) {
+    return { ok: false, reason: "off_topic" };
+  }
+
+  if (overlap >= 1) return { ok: true, reason: "overlap" };
+  return { ok: true, reason: "study" };
 }
 
 export function scopeRefusal(title: string, reason: TutorScopeVerdict["reason"] = "off_topic"): string {
