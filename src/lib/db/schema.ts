@@ -820,3 +820,83 @@ export const copilotMessages = pgTable(
 
 export type CopilotThread = typeof copilotThreads.$inferSelect;
 export type CopilotMessage = typeof copilotMessages.$inferSelect;
+
+/** AI mock-interview sessions (student practice, Chakra-style). */
+export const interviewSessions = pgTable(
+  "interview_sessions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    status: text("status").notNull().default("live"),
+    track: text("track").notNull(),
+    mode: text("mode").notNull().default("voice"),
+    targetRole: text("target_role").notNull(),
+    targetCompany: text("target_company"),
+    durationMinutes: integer("duration_minutes").notNull().default(20),
+    livekitRoom: text("livekit_room"),
+    plan: jsonb("plan").$type<Record<string, unknown>>().notNull().default({}),
+    integrity: jsonb("integrity").$type<unknown[]>().notNull().default([]),
+    codeSnapshot: text("code_snapshot"),
+    startedAt: timestamp("started_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    endedAt: timestamp("ended_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("idx_interview_sessions_user").on(t.userId, t.createdAt)],
+);
+
+export const interviewTurns = pgTable(
+  "interview_turns",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    sessionId: uuid("session_id")
+      .notNull()
+      .references(() => interviewSessions.id, { onDelete: "cascade" }),
+    role: text("role").notNull(),
+    content: text("content").notNull(),
+    source: text("source").notNull().default("text"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("idx_interview_turns_session").on(t.sessionId, t.createdAt)],
+);
+
+export const interviewReports = pgTable(
+  "interview_reports",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    sessionId: uuid("session_id")
+      .notNull()
+      .unique()
+      .references(() => interviewSessions.id, { onDelete: "cascade" }),
+    overall: integer("overall").notNull().default(0),
+    scores: jsonb("scores")
+      .$type<Record<string, number>>()
+      .notNull()
+      .default({}),
+    summary: text("summary").notNull().default(""),
+    quotes: jsonb("quotes").$type<unknown[]>().notNull().default([]),
+    nextPractice: jsonb("next_practice")
+      .$type<unknown[]>()
+      .notNull()
+      .default([]),
+    raw: jsonb("raw").$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("idx_interview_reports_session").on(t.sessionId)],
+);
+
+export type InterviewSession = typeof interviewSessions.$inferSelect;
+export type InterviewTurn = typeof interviewTurns.$inferSelect;
+export type InterviewReport = typeof interviewReports.$inferSelect;

@@ -1609,3 +1609,340 @@
     font-size: 12px;
   }
 }
+
+/* Cinematic AI interview stage — tokens so light + dark both work. */
+.interview-stage {
+  --iv-ink: var(--text-main);
+  --iv-muted: var(--text-muted);
+  --iv-line: color-mix(in srgb, var(--text-main) 10%, transparent);
+  --iv-card: color-mix(in srgb, var(--primary) 42%, #102038);
+  --iv-card-deep: color-mix(in srgb, var(--primary) 62%, #071018);
+  --iv-bubble: color-mix(in srgb, var(--bg-card) 88%, var(--primary) 12%);
+  --iv-dock: color-mix(in srgb, var(--bg-card) 72%, transparent);
+  --iv-glow: color-mix(in srgb, var(--primary) 28%, transparent);
+  background: var(--bg);
+  color: var(--iv-ink);
+}
+
+[data-theme="dark"] .interview-stage {
+  --iv-card: #1a2a6b;
+  --iv-card-deep: #0d1640;
+  --iv-bubble: #2a2a2e;
+  --iv-dock: rgba(18, 18, 20, 0.72);
+  --iv-glow: rgba(91, 159, 239, 0.32);
+  background: #050505;
+}
+
+.interview-horizon {
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 118%, var(--iv-glow), transparent 58%),
+    repeating-linear-gradient(
+      to right,
+      transparent 0,
+      transparent 46px,
+      color-mix(in srgb, var(--text-main) 6%, transparent) 47px
+    ),
+    repeating-linear-gradient(
+      to top,
+      transparent 0,
+      transparent 28px,
+      color-mix(in srgb, var(--text-main) 5%, transparent) 29px
+    );
+  mask-image: linear-gradient(to top, black 8%, transparent 78%);
+  transform: perspective(480px) rotateX(58deg);
+  transform-origin: center bottom;
+}
+
+.interview-orb {
+  box-shadow: none;
+}
+
+.interview-dock {
+  --iv-aura: color-mix(in srgb, #06101c 70%, var(--brand-primary-active));
+  --iv-aura-deep: color-mix(in srgb, #03080f 55%, var(--brand-primary-active));
+  position: relative;
+  isolation: isolate;
+}
+
+.interview-dock-bar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--text-main) 8%, transparent);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-md);
+  transition: box-shadow 220ms ease, border-color 220ms ease;
+}
+
+[data-theme="dark"] .interview-dock-bar {
+  background: #111215;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.interview-stage[data-speaking="true"] .interview-dock-bar {
+  border-color: color-mix(in srgb, var(--iv-aura) 75%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 1px color-mix(in srgb, var(--iv-aura-deep) 70%, transparent),
+    0 0 calc(14px + var(--iv-level) * 22px) calc(var(--iv-level) * 4px)
+      color-mix(in srgb, var(--iv-aura) 55%, transparent),
+    0 12px 32px rgba(3, 8, 16, 0.5);
+}
+
+.interview-dock-halo,
+.interview-dock-glow,
+.interview-dock-sheen,
+.interview-dock-ring {
+  pointer-events: none;
+}
+
+.interview-dock-halo {
+  position: absolute;
+  inset: -36px -56px;
+  border-radius: 999px;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--iv-aura-deep) 80%, #000) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  filter: blur(28px);
+  transform: scale(0.92);
+  transition: opacity 280ms ease;
+}
+
+.interview-stage[data-speaking="true"] .interview-dock-halo {
+  opacity: calc(0.35 + var(--iv-level) * 0.5);
+  animation: interview-dock-breathe 2.8s ease-in-out infinite;
+}
+
+.interview-dock-glow {
+  position: absolute;
+  inset: -16px -28px;
+  border-radius: 999px;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--iv-aura) 90%, #000) 0%,
+    color-mix(in srgb, var(--iv-aura-deep) 40%, transparent) 48%,
+    transparent 74%
+  );
+  opacity: 0;
+  filter: blur(16px);
+  transition: opacity 200ms ease;
+}
+
+.interview-stage[data-speaking="true"] .interview-dock-glow {
+  opacity: calc(0.3 + var(--iv-level) * 0.7);
+}
+
+.interview-dock-sheen {
+  position: absolute;
+  inset: -3px -6px;
+  border-radius: 999px;
+  background: conic-gradient(
+    from 180deg,
+    transparent 0deg,
+    color-mix(in srgb, var(--iv-aura) 0%, transparent) 40deg,
+    color-mix(in srgb, var(--iv-aura) 85%, #02060c) 90deg,
+    transparent 150deg,
+    transparent 230deg,
+    color-mix(in srgb, #0a1a30 70%, var(--iv-aura)) 290deg,
+    transparent 340deg
+  );
+  opacity: 0;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 1.5px;
+}
+
+.interview-stage[data-speaking="true"] .interview-dock-sheen {
+  opacity: 0.85;
+  animation: interview-dock-spin 3.6s linear infinite;
+}
+
+.interview-dock-ring {
+  position: absolute;
+  inset: -8px -14px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--iv-aura) 75%, #000);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--iv-aura-deep) 40%, transparent);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.interview-stage[data-speaking="true"] .interview-dock-ring {
+  animation: interview-dock-ring 2.4s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+}
+
+.interview-dock-ring--a {
+  animation-delay: 0s;
+}
+
+.interview-dock-ring--b {
+  animation-delay: 0.6s;
+}
+
+.interview-dock-ring--c {
+  animation-delay: 1.2s;
+}
+
+.interview-dock-ring--d {
+  animation-delay: 1.8s;
+}
+
+@keyframes interview-dock-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.72);
+    opacity: 0;
+  }
+}
+
+@keyframes interview-dock-breathe {
+  0%,
+  100% {
+    transform: scale(0.94);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+@keyframes interview-dock-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.interview-chat {
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+.interview-chat-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--iv-muted);
+}
+
+.interview-chat-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.interview-chat-dots span {
+  width: 0.32rem;
+  height: 0.32rem;
+  border-radius: 999px;
+  background: currentColor;
+  animation: interview-chat-dot 1.05s ease-in-out infinite;
+}
+
+.interview-chat-dots span:nth-child(2) {
+  animation-delay: 0.14s;
+}
+
+.interview-chat-dots span:nth-child(3) {
+  animation-delay: 0.28s;
+}
+
+@keyframes interview-chat-dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.28;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+.interview-end-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.interview-end-mark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 5.75rem;
+  height: 5.75rem;
+}
+
+.interview-end-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 2px solid color-mix(in srgb, var(--primary) 16%, transparent);
+  border-top-color: var(--primary);
+  animation: interview-end-spin 0.85s linear infinite;
+}
+
+.interview-end-ring--soft {
+  inset: -0.55rem;
+  border-color: color-mix(in srgb, var(--primary) 8%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--primary) 50%, transparent);
+  animation-duration: 1.55s;
+  animation-direction: reverse;
+}
+
+@keyframes interview-end-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .interview-stage[data-speaking="true"] .interview-dock-halo,
+  .interview-stage[data-speaking="true"] .interview-dock-sheen,
+  .interview-stage[data-speaking="true"] .interview-dock-ring {
+    animation: none;
+  }
+
+  .interview-end-ring {
+    animation: none;
+    border-color: color-mix(in srgb, var(--primary) 28%, transparent);
+    border-top-color: var(--primary);
+  }
+
+  .interview-chat-dots span {
+    animation: none;
+    opacity: 0.6;
+  }
+}

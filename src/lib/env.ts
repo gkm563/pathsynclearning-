@@ -38,6 +38,37 @@ export const env = {
     if (!key || key === "YOUR_GROQ_API_KEY") return undefined;
     return key;
   },
+  /** Ollama Cloud — used only by AI interview (not roadmap / tutor / copilot). */
+  get ollamaApiKey() {
+    return optional("OLLAMA_API_KEY");
+  },
+  get ollamaBaseUrl() {
+    return optional("OLLAMA_BASE_URL") || "https://ollama.com/v1";
+  },
+  get ollamaInterviewModel() {
+    return optional("OLLAMA_INTERVIEW_MODEL") || "gpt-oss:120b";
+  },
+  /**
+   * WebSocket URL for LiveKit (Cloud or self-hosted).
+   * Dev: wss://<project>.livekit.cloud
+   * Later VPS: wss://livekit.your-domain.com
+   */
+  get livekitUrl() {
+    return optional("LIVEKIT_URL");
+  },
+  get livekitApiKey() {
+    return optional("LIVEKIT_API_KEY");
+  },
+  get livekitApiSecret() {
+    return optional("LIVEKIT_API_SECRET");
+  },
+  get livekitAgentName() {
+    return optional("LIVEKIT_AGENT_NAME") || "pathed-interviewer";
+  },
+  /** Shared secret so the Python interviewer can persist turns/reports. */
+  get interviewAgentSecret() {
+    return optional("INTERVIEW_AGENT_SECRET");
+  },
   /** Optional NewsAPI.org key — Dev.to remains the primary free source. */
   get newsApiKey() {
     const key = optional("NEWS_API_KEY");
@@ -68,6 +99,8 @@ export function getEnvStatus() {
     CLERK_SECRET_KEY: Boolean(process.env.CLERK_SECRET_KEY),
     GEMINI_API_KEY: Boolean(env.geminiApiKey),
     GROQ_API_KEY: Boolean(env.groqApiKey),
+    OLLAMA_API_KEY: Boolean(env.ollamaApiKey),
+    LIVEKIT: Boolean(env.livekitUrl && env.livekitApiKey && env.livekitApiSecret),
     NEWS_API_KEY: Boolean(env.newsApiKey),
     YOUTUBE_API_KEY: Boolean(env.youtubeApiKey),
   };

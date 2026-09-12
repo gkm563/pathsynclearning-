@@ -11,6 +11,7 @@ import {
   Map,
   Newspaper,
   Radio,
+  Mic,
   ShoppingBag,
   UserRound,
   Users,
@@ -143,6 +144,13 @@ export const NAV_GROUPS: NavGroup[] = [
         href: routes.app.mentorship,
         label: "Mentorship",
         icon: UserRound,
+      },
+      {
+        id: "interview",
+        href: routes.app.interview,
+        label: "AI Interview",
+        shortLabel: "Interview",
+        icon: Mic,
       },
       {
         id: "records-certs",

@@ -25,6 +25,13 @@ export function isAllowedCopilotHref(href: string): boolean {
     return Boolean(id) && !id.includes("/");
   }
 
+  const interviewPrefix = `${routes.app.interview}/`;
+  if (path.startsWith(interviewPrefix)) {
+    const rest = path.slice(interviewPrefix.length);
+    const parts = rest.split("/").filter(Boolean);
+    return parts.length >= 1 && parts.length <= 2;
+  }
+
   return false;
 }
 

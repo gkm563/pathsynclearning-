@@ -85,6 +85,13 @@
       "when": 1788960000000,
       "tag": "0011_copilot_chat",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1788970000000,
+      "tag": "0012_ai_interview",
+      "breakpoints": true
     }
   ]
 }

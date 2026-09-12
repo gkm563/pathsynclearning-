@@ -30,5 +30,7 @@ tsconfig.tsbuildinfo
 *.sln
 *.sw?
 
-# clerk configuration (can include secrets)
-/.clerk/
+# Agent worker
+agents/**/.venv
+agents/**/__pycache__
+*.pyc

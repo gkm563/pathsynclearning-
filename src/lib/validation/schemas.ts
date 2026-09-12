@@ -568,3 +568,59 @@ export const copilotThreadCreateSchema = z
     title: z.string().trim().min(1).max(80).optional(),
   })
   .strict();
+
+export const interviewTrackSchema = z.enum([
+  "dsa_behavioral",
+  "dsa",
+  "behavioral",
+]);
+
+export const interviewModeSchema = z.enum(["voice", "text"]);
+
+export const interviewCreateSchema = z
+  .object({
+    track: interviewTrackSchema.optional().default("dsa_behavioral"),
+    mode: interviewModeSchema.optional().default("voice"),
+    targetRole: z.string().trim().min(2).max(80).optional(),
+    targetCompany: z.string().trim().max(80).nullable().optional(),
+    durationMinutes: z
+      .number()
+      .int()
+      .refine((n): n is 15 | 20 | 30 => n === 15 || n === 20 || n === 30)
+      .optional(),
+  })
+  .strict();
+
+export const interviewTurnSchema = z
+  .object({
+    message: z.string().trim().min(1).max(8000),
+    source: z.enum(["text", "voice"]).optional().default("text"),
+  })
+  .strict();
+
+export const interviewBrowserTranscriptSchema = z
+  .object({
+    transcript: z.string().trim().min(1).max(8000),
+  })
+  .strict();
+
+export const interviewIntegritySchema = z
+  .object({
+    type: z.enum(["tab_hidden", "tab_visible", "paste", "fullscreen_exit"]),
+  })
+  .strict();
+
+export const interviewCodeSchema = z
+  .object({
+    code: z.string().max(80_000),
+  })
+  .strict();
+
+export const interviewInternalTurnSchema = z
+  .object({
+    sessionId: z.string().uuid(),
+    role: z.enum(["interviewer", "student"]),
+    content: z.string().trim().min(1).max(8000),
+    source: z.enum(["text", "voice"]).optional().default("voice"),
+  })
+  .strict();

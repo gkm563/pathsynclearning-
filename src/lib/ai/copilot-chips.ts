@@ -68,6 +68,14 @@ export function copilotChipsForPath(pathname: string): CopilotChip[] {
     ];
   }
 
+  if (path.startsWith(routes.app.interview)) {
+    return [
+      { label: "Start a mock", prompt: "Start an AI mock interview for my target role." },
+      { label: "What is this?", prompt: "Explain the AI Interview feature and how to prepare." },
+      { label: "Weak spots", prompt: "What should I practice before my next mock interview?" },
+    ];
+  }
+
   return [
     { label: "What next?", prompt: "What should I do next on PathED?" },
     { label: "Explain my CRI", prompt: "Explain my Career Readiness Index and how to raise it." },

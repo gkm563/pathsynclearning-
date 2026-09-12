@@ -61,6 +61,7 @@ export const routes = {
     placementInsights: "/dashboard/placement-insights",
     recordsCerts: "/dashboard/records-certs",
     liveClass: "/dashboard/live-class",
+    interview: "/dashboard/interview",
     community: "/dashboard/student-community",
     advancedCareer: "/dashboard/advanced-career",
     roadmapPersonalize: "/dashboard/roadmap/personalize",
@@ -82,6 +83,14 @@ export function techNewsArticlePath(id: string): string {
 
 export function problemPath(slug: string): string {
   return `${routes.app.problems}/${encodeURIComponent(slug)}`;
+}
+
+export function interviewPath(id: string): string {
+  return `${routes.app.interview}/${encodeURIComponent(id)}`;
+}
+
+export function interviewReportPath(id: string): string {
+  return `${interviewPath(id)}/report`;
 }
 
 /** Open a problem workspace (legacy ?open= on Challenges redirects here). */
@@ -167,6 +176,7 @@ export const APP_NAV_BY_ID: Record<string, string> = {
   settings: routes.app.settings,
   profile: routes.app.profile,
   "live-class": routes.app.liveClass,
+  interview: routes.app.interview,
 };
 
 /** Legacy URLs → permanent destinations (next.config redirects). */
