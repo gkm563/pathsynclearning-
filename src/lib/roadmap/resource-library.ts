@@ -71,7 +71,7 @@ export const RESOURCE_PACKS: ResourcePack[] = [
   },
   {
     id: "dsa",
-    match: /\b(dsa|data structure|algorithm|leetcode|arrays?|hash|linked list|tree|graph|dp|dynamic programming)\b/,
+    match: /\b(dsa|data structures?|leetcode|neetcode|linked lists?|hash maps?|dynamic programming|big[\s-]?o|arrays and hashing)\b/,
     resources: [
       { title: "DSA Easy to Advanced", url: "https://www.youtube.com/watch?v=RBSGKlAvoiM", type: "video", channel: "freeCodeCamp / William Fiset" },
       { title: "NeetCode roadmap intro", url: "https://www.youtube.com/watch?v=8hly31x25fI", type: "video", channel: "freeCodeCamp" },
@@ -135,8 +135,26 @@ export const RESOURCE_PACKS: ResourcePack[] = [
     ],
   },
   {
+    id: "crypto",
+    match: /\b(crypto(?:graphy)?|encryption|aes|rsa|public[- ]key|hash functions?|sha-?\d*|hmac|diffie[- ]hellman)\b/,
+    resources: [
+      { title: "Cryptography — Crash Course Computer Science #33", url: "https://www.youtube.com/watch?v=jhXCTbFnK8o", type: "video", channel: "CrashCourse" },
+      { title: "Hashing Algorithms and Security", url: "https://www.youtube.com/watch?v=b4b8ktEV4Bg", type: "video", channel: "Computerphile" },
+      { title: "SHA: Secure Hashing Algorithm", url: "https://www.youtube.com/watch?v=DMtFhACPnTY", type: "video", channel: "Computerphile" },
+      { title: "CryptoHack — Interactive Challenges", url: "https://cryptohack.org/", type: "practice", channel: "CryptoHack" },
+    ],
+  },
+  {
+    id: "networking",
+    match: /\b(osi|tcp\/?ip|network(?:ing)? fundamentals|sockets?|dns resolver|http protocol)\b/,
+    resources: [
+      { title: "HTTP Crash Course", url: "https://www.youtube.com/watch?v=iYM2zFP3Zn0", type: "video", channel: "Traversy Media" },
+      { title: "MDN HTTP", url: "https://developer.mozilla.org/en-US/docs/Web/HTTP", type: "documentation", channel: "MDN" },
+    ],
+  },
+  {
     id: "security",
-    match: /\b(security|cyber|owasp|appsec)\b/,
+    match: /\b(security|cybersecurity|owasp|appsec|pentest)\b/,
     resources: [
       { title: "Cybersecurity Course", url: "https://www.youtube.com/watch?v=U_P23SqJaDc", type: "video", channel: "freeCodeCamp" },
       { title: "OWASP Top 10", url: "https://owasp.org/www-project-top-ten/", type: "documentation", channel: "OWASP" },
@@ -163,7 +181,14 @@ export const RESOURCE_PACKS: ResourcePack[] = [
 
 export function packsForText(text: string): ResourcePack[] {
   const hay = text.toLowerCase();
-  return RESOURCE_PACKS.filter((p) => p.match.test(hay));
+  const scored = RESOURCE_PACKS.map((pack) => {
+    const m = hay.match(pack.match);
+    return m ? { pack, score: m[0].length } : null;
+  }).filter((row): row is { pack: ResourcePack; score: number } => Boolean(row));
+  scored.sort((a, b) => b.score - a.score);
+  if (!scored.length) return [];
+  const best = scored[0].score;
+  return scored.filter((row) => row.score >= best * 0.65).slice(0, 2).map((row) => row.pack);
 }
 
 export function curatedResourcesForNode(title: string, extra = ""): CuratedResource[] {

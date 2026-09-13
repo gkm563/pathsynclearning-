@@ -585,6 +585,16 @@ export default function RoadmapDetailPanel({
                   : ""}
               </Badge>
               <h2 className="type-h3 mt-2 mb-0 text-ink lg:mt-3">{node.title}</h2>
+              {node.source === "loop_refresh" ? (
+                <p className="type-caption mt-2 mb-0 text-primary">
+                  Review again — new materials. Previous assessment attempts do not count.
+                </p>
+              ) : null}
+              {node.source === "remediation" ? (
+                <p className="type-caption mt-2 mb-0 text-primary">
+                  Added after interview to close a weak topic.
+                </p>
+              ) : null}
               <div className="mt-2 hidden flex-wrap gap-2 lg:flex">
                 <AddNoteButton
                   sourceType="roadmap_node"

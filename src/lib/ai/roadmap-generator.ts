@@ -6,6 +6,12 @@ import { ensureNodeAssessments } from '@/lib/roadmap/assessment-bank';
 import { hiringBrief } from '@/lib/roadmap/hiring-catalog';
 import { enrichNodeResources } from '@/lib/roadmap/validate-resources';
 
+export type RoadmapAdaptationContext = {
+  overall: number;
+  summary: string;
+  failedTopics: string[];
+};
+
 /** Keep the profile payload small — DB rows include ids/timestamps the model does not need. */
 function compactProfile(profile: RoadmapProfile) {
   return {
@@ -36,6 +42,7 @@ export async function generateRoadmap(
   profile: RoadmapProfile,
   userId: string,
   onProgress?: (p: { step: string; percent: number; message: string }) => void,
+  adaptationContext?: RoadmapAdaptationContext,
 ): Promise<{ title: string; targetRole: string; estimatedWeeks: number; nodes: RoadmapNode[]; edges: RoadmapEdge[] }> {
   const hiring = hiringBrief(profile.targetCompany, profile.targetRole);
   const companyMode = Boolean(profile.targetCompany);
@@ -58,8 +65,8 @@ DETAILED NODE CONTENT (required for skill/topic/project/checkpoint):
 - interviewFocus: 1-2 sentences on how this shows up in interviews${companyMode ? ' at the target company' : ' for this role'}.
 - topics: 4-8 specific subtopics.
 - skills: 2-5 skill tags.
-- resources: 4-6 items mixing types. MUST include at least 3 YouTube videos from DIFFERENT channels (freeCodeCamp, Fireship, Traversy, NeetCode, TechWorld with Nana, StatQuest, 3Blue1Brown, Abdul Bari, Bro Code, NetworkChuck, etc.). Also include official docs and one practice site when relevant.
-- Only use real https URLs. Never invent video IDs. Prefer well-known public catalog URLs. Resources will be validated; broken/private links are dropped.
+- resources: 2-4 official docs / articles / practice sites that match THIS node's title. Do not invent URLs.
+- Do NOT invent YouTube video IDs or paste a generic DSA/course video on unrelated nodes. Verified lesson videos are attached after generation and must match the node topic.
 - project field: null unless type is project.
 
 ${companyMode ? `COMPANY-TARGETED HIRING PATH
@@ -117,7 +124,9 @@ Return ONLY JSON:
   "edges": [{"id":"string","source":"string","target":"string","label":"string"}]
 }`;
 
-  const prompt = `Generate a personalized roadmap for this student profile:\n${JSON.stringify(compactProfile(profile))}`;
+  const prompt = adaptationContext
+    ? `Generate a personalized roadmap for this student profile:\n${JSON.stringify(compactProfile(profile))}\n\nREBUILD FROM A FAILED CERTIFICATION INTERVIEW (score ${adaptationContext.overall}).\nWeak topics: ${adaptationContext.failedTopics.join("; ") || "entire curriculum"}.\nInterviewer notes: ${adaptationContext.summary}\nStart from foundations with more checkpoints, easier scaffolding, and DIFFERENT resources than a typical path. Do not assume they retained the previous curriculum.`
+    : `Generate a personalized roadmap for this student profile:\n${JSON.stringify(compactProfile(profile))}`;
 
   try {
     onProgress?.({ step: 'graph', percent: 35, message: 'Writing detailed nodes with the AI…' });
@@ -125,10 +134,11 @@ Return ONLY JSON:
       prompt,
       systemInstruction,
       userId,
-      timeoutMs: 90000,
-      maxTokens: 12288,
+      primary: 'groq',
+      timeoutMs: 120000,
+      maxTokens: 32768,
       temperature: 0.7,
-      reasoningEffort: 'medium',
+      reasoningEffort: 'low',
     });
 
     const loose = roadmapSchema.safeParse(result);

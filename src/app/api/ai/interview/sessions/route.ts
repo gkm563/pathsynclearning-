@@ -20,6 +20,11 @@ export async function POST(request: Request) {
       targetRole: body.targetRole,
       targetCompany: body.targetCompany,
       durationMinutes: body.durationMinutes,
+      difficulty: body.difficulty,
+      style: body.style,
+      focus: body.focus,
+      purpose: body.purpose,
+      roadmapId: body.roadmapId,
     });
     return jsonResponse({ session }, 201);
   } catch (e) {

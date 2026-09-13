@@ -27,11 +27,13 @@
     "db:migrate:wallet-coins": "npx tsx scripts/migrate-wallet-starting-coins.ts",
     "db:migrate:copilot": "npx tsx scripts/migrate-copilot-chat.ts",
     "db:migrate:interview": "npx tsx scripts/migrate-interview.ts",
+    "db:migrate:roadmap-certification": "npx tsx scripts/migrate-roadmap-certification.ts",
     "interview:agent": "node scripts/run-interview-agent.mjs",
     "db:seed:problems": "npx tsx scripts/seed-problems.ts",
     "db:sync": "npx tsx scripts/sync-db.ts",
     "test:progress": "npx tsx scripts/test-progress-calc.ts",
     "test:news": "npx tsx scripts/test-news-normalize.ts",
+    "test:video-recommend": "npx tsx scripts/test-video-recommend.ts",
     "test:student-id": "npx tsx scripts/test-student-registration-id.ts",
     "db:seed": "npx tsx scripts/seed.ts",
     "db:studio": "drizzle-kit studio"

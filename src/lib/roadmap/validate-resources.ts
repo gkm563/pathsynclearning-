@@ -3,6 +3,14 @@ import "server-only";
 import { env } from "@/lib/env";
 import type { RoadmapNode, RoadmapNodeResource } from "@/types/roadmap";
 import { curatedResourcesForNode } from "@/lib/roadmap/resource-library";
+import {
+  durationFitsLesson,
+  isVideoOnTopic,
+  nodeSearchHaystack,
+  parseIsoDuration,
+  videoRelevanceScore,
+  youtubeSearchQuery,
+} from "@/lib/roadmap/video-recommend";
 
 const OEMBED = "https://www.youtube.com/oembed?format=json&url=";
 
@@ -58,7 +66,7 @@ async function isHttpOk(url: string): Promise<boolean> {
   }
 }
 
-type YtSearchHit = { title: string; url: string; channel: string };
+type YtSearchHit = { title: string; url: string; channel: string; seconds: number };
 
 async function youtubeSearch(query: string, max = 5): Promise<YtSearchHit[]> {
   const key = env.youtubeApiKey;
@@ -67,11 +75,12 @@ async function youtubeSearch(query: string, max = 5): Promise<YtSearchHit[]> {
     part: "snippet",
     q: query,
     type: "video",
-    maxResults: String(Math.min(10, max * 2)),
+    maxResults: String(Math.min(12, Math.max(8, max * 2))),
     videoEmbeddable: "true",
     videoSyndicated: "true",
     safeSearch: "strict",
     relevanceLanguage: "en",
+    videoDefinition: "any",
     key,
   });
   const searchRes = await fetch(`https://www.googleapis.com/youtube/v3/search?${params.toString()}`);
@@ -96,12 +105,13 @@ async function youtubeSearch(query: string, max = 5): Promise<YtSearchHit[]> {
       id: string;
       status?: { privacyStatus?: string; embeddable?: boolean; uploadStatus?: string };
       snippet?: { title?: string; channelTitle?: string; channelId?: string; publishedAt?: string; liveBroadcastContent?: string };
+      contentDetails?: { duration?: string };
     }>;
   };
 
   const seenChannels = new Set<string>();
   const hits: YtSearchHit[] = [];
-  const twoYearsAgo = Date.now() - 1000 * 60 * 60 * 24 * 800;
+  const twoYearsAgo = Date.now() - 1000 * 60 * 60 * 24 * 1200;
 
   for (const item of details.items || []) {
     const status = item.status;
@@ -110,9 +120,10 @@ async function youtubeSearch(query: string, max = 5): Promise<YtSearchHit[]> {
     if (status?.embeddable === false) continue;
     if (status?.uploadStatus && status.uploadStatus !== "processed") continue;
     if (snippet?.liveBroadcastContent && snippet.liveBroadcastContent !== "none") continue;
+    const seconds = parseIsoDuration(item.contentDetails?.duration);
+    if (!durationFitsLesson(seconds, "any")) continue;
     const published = snippet?.publishedAt ? Date.parse(snippet.publishedAt) : Date.now();
-    if (Number.isFinite(published) && published < twoYearsAgo && hits.length >= 2) {
-      // Prefer fresher videos after we already have a couple of classics.
+    if (Number.isFinite(published) && published < twoYearsAgo && hits.length >= 3) {
       continue;
     }
     const channelId = snippet?.channelId || snippet?.channelTitle || item.id;
@@ -122,6 +133,7 @@ async function youtubeSearch(query: string, max = 5): Promise<YtSearchHit[]> {
       title: snippet?.title || "YouTube lesson",
       url: `https://www.youtube.com/watch?v=${item.id}`,
       channel: snippet?.channelTitle || "YouTube",
+      seconds,
     });
     if (hits.length >= max) break;
   }
@@ -153,31 +165,46 @@ async function mapPool<T, R>(items: T[], limit: number, fn: (item: T) => Promise
   return results;
 }
 
+function rankVideos(hay: string, videos: RoadmapNodeResource[]): RoadmapNodeResource[] {
+  return videos
+    .map((r) => ({ r, score: videoRelevanceScore(hay, r.title, r.channel) }))
+    .filter((row) => row.score >= 2)
+    .sort((a, b) => b.score - a.score)
+    .map(({ r }, i) => ({ ...r, suggested: i > 0 }));
+}
+
 export async function enrichNodeResources(nodes: RoadmapNode[]): Promise<RoadmapNode[]> {
   return mapPool(nodes, 4, async (node) => {
     if (!["skill", "topic", "project", "checkpoint", "resource"].includes(node.type)) {
       return node;
     }
 
-    const hay = `${node.title} ${node.skills?.join(" ") || ""} ${node.topics?.join(" ") || ""}`;
-    const curated = curatedResourcesForNode(hay).map((r) => ({ ...r, suggested: true as const }));
-    const existing = (node.resources || []).map((r) => ({
-      ...r,
-      suggested: r.suggested === true,
-    }));
-    const merged = uniqueResources([...existing, ...curated]).slice(0, 10);
+    const hay = nodeSearchHaystack(node);
+    const curated = curatedResourcesForNode(hay);
+    const existing = (node.resources || []).filter((r) => {
+      if (r.type !== "video") return true;
+      return isVideoOnTopic(hay, r.title, r.channel);
+    });
 
+    const merged = uniqueResources([...existing, ...curated]).slice(0, 12);
     const playableChecks = await mapPool(merged, 5, async (r) => ({ r, ok: await isHttpOk(r.url) }));
     let kept = playableChecks.filter((x) => x.ok).map((x) => x.r);
+    kept = kept.filter((r) => r.type !== "video" || isVideoOnTopic(hay, r.title, r.channel));
 
     const videoCount = kept.filter((r) => r.type === "video").length;
-    if (videoCount < 3) {
-      const query = `${node.title} tutorial programming`;
+    if (videoCount < 2) {
       try {
-        const extra = await youtubeSearch(query, 4);
-        for (const hit of extra) {
+        const extra = await youtubeSearch(youtubeSearchQuery(node), 8);
+        const ranked = extra
+          .map((hit) => ({
+            hit,
+            score: videoRelevanceScore(hay, hit.title, hit.channel),
+          }))
+          .filter((row) => row.score >= 2)
+          .sort((a, b) => b.score - a.score);
+        for (const { hit } of ranked) {
           kept.push({
-            title: `${hit.title} (${hit.channel})`,
+            title: hit.title,
             url: hit.url,
             type: "video",
             channel: hit.channel,
@@ -189,11 +216,22 @@ export async function enrichNodeResources(nodes: RoadmapNode[]): Promise<Roadmap
       }
     }
 
-    kept = uniqueResources(kept).slice(0, 8);
-    if (kept.length === 0 && curated.length) {
-      kept = curated.slice(0, 4);
+    const videos = rankVideos(
+      hay,
+      uniqueResources(kept).filter((r) => r.type === "video"),
+    );
+    const others = uniqueResources(kept)
+      .filter((r) => r.type !== "video")
+      .map((r) => ({ ...r, suggested: true as const }));
+
+    let resources = [...videos, ...others].slice(0, 8);
+    if (resources.length === 0 && curated.length) {
+      resources = curated.slice(0, 4).map((r, i) => ({
+        ...r,
+        suggested: r.type === "video" ? i > 0 : true,
+      }));
     }
 
-    return { ...node, resources: kept };
+    return { ...node, resources };
   });
 }

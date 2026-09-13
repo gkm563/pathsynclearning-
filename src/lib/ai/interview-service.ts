@@ -6,21 +6,55 @@ import {
   interviewReports,
   interviewSessions,
   interviewTurns,
+  roadmapProgress,
 } from "@/lib/db/schema";
-import { getActiveRoadmap } from "@/lib/roadmap/active";
+import { getOwnedRoadmap } from "@/lib/roadmap/active";
+import { resolveInterviewCodingProblem } from "./interview-coding-match";
+import {
+  allTrackableNodesSatisfied,
+  finalInterviewCoverage,
+  interviewPresetFromRoadmap,
+  studiedTopicsFromRoadmap,
+} from "./interview-roadmap";
+import { applyRoadmapInterviewOutcome } from "./roadmap-adapt";
+import { parseCertificationStatus } from "@/lib/roadmap/certification";
+import {
+  countProctorViolations,
+  isProctoringEnabled,
+  MAX_PROCTOR_VIOLATIONS,
+  PROCTOR_DEDUP_MS,
+} from "@/lib/proctoring";
 import { buildInterviewPlan } from "./interview-plan";
 import { createInterviewRoom, isLiveKitConfigured, livekitWsUrl } from "./interview-livekit";
 import { runInterviewOpening, runInterviewTurn, scoreInterview } from "./interview-engine";
 import {
+  interviewCodedInIde,
+  interviewerInvitedCode,
+  studentAskedToCheckCode,
+  studentAskedToCode,
+  studentAskedToEnd,
+  studentConfirmedEnd,
+  studentDeclinedEnd,
+} from "./interview-code";
+import {
+  alreadyLiveNudge,
   briefingReminder,
+  closingThanks,
   isStartInterviewPhrase,
+  looksLikeStartNoise,
   nextVarietySeed,
   pickQuestionAngle,
 } from "./interview-variety";
 import type {
+  InterviewDifficulty,
+  InterviewDurationMinutes,
   InterviewIntegrityEvent,
   InterviewMode,
+  InterviewNodeCoverage,
+  InterviewOutcome,
   InterviewPlan,
+  InterviewPurpose,
+  InterviewStyle,
   InterviewReportPublic,
   InterviewSessionPublic,
   InterviewSessionSummary,
@@ -29,15 +63,50 @@ import type {
   InterviewTurnPublic,
 } from "./interview-types";
 
+function parseNodeCoverage(raw: unknown): InterviewNodeCoverage[] {
+  if (!Array.isArray(raw)) return [];
+  const out: InterviewNodeCoverage[] = [];
+  for (const item of raw.slice(0, 40)) {
+    if (!item || typeof item !== "object") continue;
+    const rec = item as Record<string, unknown>;
+    const nodeId = typeof rec.nodeId === "string" ? rec.nodeId : "";
+    const title = typeof rec.title === "string" ? rec.title : "";
+    if (!nodeId || !title) continue;
+    out.push({
+      nodeId,
+      title: title.slice(0, 140),
+      topics: Array.isArray(rec.topics)
+        ? rec.topics.filter((t): t is string => typeof t === "string").slice(0, 8)
+        : [],
+    });
+  }
+  return out;
+}
+
 function asPlan(raw: unknown): InterviewPlan {
   const plan = (raw && typeof raw === "object" ? raw : {}) as InterviewPlan;
+  const purpose: InterviewPurpose = plan.purpose === "roadmap_final" ? "roadmap_final" : "practice";
+  const topicCap = purpose === "roadmap_final" ? 40 : 20;
   return {
     ...plan,
+    purpose,
     phase: plan.phase === "live" || plan.phase === "briefing" ? plan.phase : undefined,
     varietySeed: typeof plan.varietySeed === "number" ? plan.varietySeed : 1,
     askedAngles: Array.isArray(plan.askedAngles)
       ? plan.askedAngles.filter((item): item is string => typeof item === "string")
       : [],
+    awaitingEndConfirm: Boolean(plan.awaitingEndConfirm),
+    difficulty:
+      plan.difficulty === "easy" || plan.difficulty === "hard" ? plan.difficulty : "medium",
+    style:
+      plan.style === "supportive" || plan.style === "strict" ? plan.style : "balanced",
+    focus: typeof plan.focus === "string" ? plan.focus.slice(0, 120) : "",
+    roadmapId: typeof plan.roadmapId === "string" ? plan.roadmapId : null,
+    roadmapTitle: typeof plan.roadmapTitle === "string" ? plan.roadmapTitle : "",
+    studiedTopics: Array.isArray(plan.studiedTopics)
+      ? plan.studiedTopics.filter((item): item is string => typeof item === "string").slice(0, topicCap)
+      : [],
+    nodeCoverage: parseNodeCoverage(plan.nodeCoverage),
   };
 }
 
@@ -106,6 +175,8 @@ export async function listInterviewSessions(userId: string): Promise<InterviewSe
       targetRole: interviewSessions.targetRole,
       targetCompany: interviewSessions.targetCompany,
       durationMinutes: interviewSessions.durationMinutes,
+      startedAt: interviewSessions.startedAt,
+      endedAt: interviewSessions.endedAt,
       createdAt: interviewSessions.createdAt,
       overall: interviewReports.overall,
     })
@@ -124,6 +195,8 @@ export async function listInterviewSessions(userId: string): Promise<InterviewSe
     targetCompany: r.targetCompany,
     durationMinutes: r.durationMinutes,
     overall: r.overall ?? null,
+    startedAt: r.startedAt.toISOString(),
+    endedAt: r.endedAt ? r.endedAt.toISOString() : null,
     createdAt: r.createdAt.toISOString(),
   }));
 }
@@ -135,23 +208,99 @@ export async function createInterviewSession(input: {
   mode: InterviewMode;
   targetRole?: string;
   targetCompany?: string | null;
-  durationMinutes?: 15 | 20 | 30;
+  durationMinutes?: InterviewDurationMinutes;
+  difficulty?: InterviewDifficulty;
+  style?: InterviewStyle;
+  focus?: string;
+  roadmapId?: string | null;
+  purpose?: InterviewPurpose;
 }): Promise<InterviewSessionPublic> {
   const db = getDb();
-  const roadmap = await getActiveRoadmap(db, input.userId);
-  const targetRole =
-    input.targetRole?.trim() || roadmap?.targetRole || "Software Engineer intern";
-  const targetCompany =
-    input.targetCompany === undefined
-      ? roadmap?.targetCompany ?? null
-      : input.targetCompany;
-  const durationMinutes = input.durationMinutes ?? 20;
+  const purpose: InterviewPurpose = input.purpose === "roadmap_final" ? "roadmap_final" : "practice";
+  const selected = input.roadmapId
+    ? await getOwnedRoadmap(db, input.userId, input.roadmapId)
+    : null;
+  if (input.roadmapId && !selected) {
+    throw AppError.notFound("That roadmap was not found.");
+  }
+  if (purpose === "roadmap_final" && !selected) {
+    throw AppError.badRequest("A roadmap is required for the certification interview.");
+  }
+  if (selected && (selected.certifiedAt || parseCertificationStatus(selected.certificationStatus) === "certified") && purpose === "roadmap_final") {
+    throw AppError.conflict("This roadmap is already certified.");
+  }
+  const targetRole = selected
+    ? input.targetRole?.trim() || selected.targetRole || ""
+    : input.targetRole?.trim() || "";
+  const targetCompany = selected
+    ? input.targetCompany === undefined
+      ? selected.targetCompany ?? null
+      : input.targetCompany?.trim() || null
+    : input.targetCompany?.trim() || null;
+  let durationMinutes = input.durationMinutes ?? 20;
+  if (purpose === "roadmap_final") {
+    durationMinutes = durationMinutes === 30 ? 30 : 20;
+  }
+  let studiedTopics: string[] = [];
+  let nodeCoverage: InterviewNodeCoverage[] = [];
+  if (selected) {
+    const progressRows = await db
+      .select({
+        nodeId: roadmapProgress.nodeId,
+        status: roadmapProgress.status,
+      })
+      .from(roadmapProgress)
+      .where(
+        and(
+          eq(roadmapProgress.userId, input.userId),
+          eq(roadmapProgress.roadmapId, selected.id),
+        ),
+      );
+    const progressByNode = new Map(
+      progressRows.map((row) => [row.nodeId, row.status]),
+    );
+    if (purpose === "roadmap_final") {
+      if (!allTrackableNodesSatisfied(selected.nodes, progressByNode)) {
+        throw AppError.conflict(
+          "Finish every node on this roadmap before the final interview.",
+        );
+      }
+      nodeCoverage = finalInterviewCoverage(selected.nodes, progressByNode);
+      studiedTopics = nodeCoverage.map((item) => item.title);
+    } else {
+      studiedTopics = studiedTopicsFromRoadmap(selected.nodes, progressByNode);
+      if (!studiedTopics.length) {
+        throw AppError.conflict(
+          "This roadmap has no studied nodes yet. Complete or start a node, or pick None to customize.",
+        );
+      }
+    }
+    const preset = interviewPresetFromRoadmap(
+      selected.nodes,
+      progressByNode,
+      selected.generatedFromProfile && typeof selected.generatedFromProfile === "object"
+        ? selected.generatedFromProfile
+        : null,
+    );
+    input = { ...input, track: preset.track, difficulty: preset.difficulty, focus: preset.focus };
+  }
+  const track = input.track;
+  const difficulty = input.difficulty;
+  const focus = input.focus;
   const plan = buildInterviewPlan({
-    track: input.track,
+    track,
     targetRole,
     targetCompany,
     durationMinutes,
     studentName: input.studentName,
+    difficulty,
+    style: input.style,
+    focus,
+    purpose,
+    roadmapId: selected?.id ?? null,
+    roadmapTitle: selected?.title,
+    studiedTopics,
+    nodeCoverage,
   });
 
   const [row] = await db
@@ -159,7 +308,7 @@ export async function createInterviewSession(input: {
     .values({
       userId: input.userId,
       status: "live",
-      track: input.track,
+      track,
       mode: input.mode,
       targetRole,
       targetCompany,
@@ -248,9 +397,13 @@ export async function studentInterviewTurn(input: {
   sessionId: string;
   message: string;
   source: "text" | "voice";
+  code?: string;
 }) {
   const row = await loadOwned(input.userId, input.sessionId);
   if (row.status !== "live") throw AppError.conflict("This interview is already finished.");
+  if (input.code != null) {
+    await saveInterviewCode(input.userId, input.sessionId, input.code);
+  }
   const elapsedSec = Math.max(
     0,
     Math.floor((Date.now() - row.startedAt.getTime()) / 1000),
@@ -263,6 +416,71 @@ export async function studentInterviewTurn(input: {
     .orderBy(interviewTurns.createdAt)
     .limit(40);
 
+  let plan = asPlan(row.plan);
+  const studentMessages = prior
+    .filter((turn) => turn.role === "student")
+    .map((turn) => turn.content);
+  const phase = resolvePhase(plan, studentMessages);
+  const history = prior.map((t) => ({ role: t.role, content: t.content }));
+  const codeSnapshot = input.code ?? row.codeSnapshot;
+  const modelMessage = studentAskedToCheckCode(input.message)
+    ? `[The candidate submitted the editor for review. Review the attached editor code. Never ask them to paste.] ${input.message}`
+    : studentAskedToCode(input.message)
+      ? `[The candidate wants to write code now. Invite them to implement the problem you were just discussing. Set show_code true. Do not switch to a different problem.] ${input.message}`
+      : input.message;
+
+  let result;
+  if (phase === "live" && plan.awaitingEndConfirm) {
+    await appendInterviewTurn({
+      sessionId: input.sessionId,
+      role: "student",
+      content: input.message,
+      source: input.source,
+    });
+    if (studentDeclinedEnd(input.message)) {
+      plan = { ...plan, awaitingEndConfirm: false };
+      await savePlan(input.sessionId, plan);
+      result = {
+        reply: "No problem. We'll keep going — take the last question when you're ready.",
+        showCode: false,
+        endInterview: false,
+      };
+    } else if (studentConfirmedEnd(input.message) || studentAskedToEnd(input.message)) {
+      plan = { ...plan, awaitingEndConfirm: false };
+      await savePlan(input.sessionId, plan);
+      result = {
+        reply: closingThanks(plan.varietySeed),
+        showCode: false,
+        endInterview: true,
+      };
+    } else {
+      result = {
+        reply: "Just to confirm: do you want to end the interview? Say yes to finish, or no to continue.",
+        showCode: false,
+        endInterview: false,
+      };
+    }
+  } else if (phase === "live" && studentAskedToEnd(input.message)) {
+    await appendInterviewTurn({
+      sessionId: input.sessionId,
+      role: "student",
+      content: input.message,
+      source: input.source,
+    });
+    plan = { ...plan, awaitingEndConfirm: true };
+    await savePlan(input.sessionId, plan);
+    result = {
+      reply: "Do you want to end the interview? Say yes to finish, or no to continue.",
+      showCode: false,
+      endInterview: false,
+    };
+  } else if (phase === "live" && looksLikeStartNoise(input.message)) {
+    result = {
+      reply: alreadyLiveNudge(),
+      showCode: false,
+      endInterview: false,
+    };
+  } else {
   await appendInterviewTurn({
     sessionId: input.sessionId,
     role: "student",
@@ -270,14 +488,6 @@ export async function studentInterviewTurn(input: {
     source: input.source,
   });
 
-  let plan = asPlan(row.plan);
-  const studentMessages = prior
-    .filter((turn) => turn.role === "student")
-    .map((turn) => turn.content);
-  const phase = resolvePhase(plan, studentMessages);
-  const history = prior.map((t) => ({ role: t.role, content: t.content }));
-
-  let result;
   if (phase !== "live") {
     if (!isStartInterviewPhrase(input.message)) {
       result = {
@@ -286,7 +496,12 @@ export async function studentInterviewTurn(input: {
         endInterview: false,
       };
     } else {
-      const angle = pickQuestionAngle(plan.track, plan.varietySeed, plan.askedAngles);
+      const angle = pickQuestionAngle(
+        plan.track,
+        plan.varietySeed,
+        plan.askedAngles,
+        plan.studiedTopics,
+      );
       plan = {
         ...plan,
         phase: "live",
@@ -300,8 +515,8 @@ export async function studentInterviewTurn(input: {
         studentName: "Candidate",
         elapsedSec,
         history,
-        message: input.message,
-        codeSnapshot: row.codeSnapshot,
+        message: modelMessage,
+        codeSnapshot,
         firstQuestion: true,
         questionAngle: angle,
       });
@@ -311,6 +526,7 @@ export async function studentInterviewTurn(input: {
       plan.track,
       nextVarietySeed(plan.varietySeed + prior.length),
       plan.askedAngles,
+      plan.studiedTopics,
     );
     result = await runInterviewTurn({
       userId: input.userId,
@@ -318,8 +534,8 @@ export async function studentInterviewTurn(input: {
       studentName: "Candidate",
       elapsedSec,
       history,
-      message: input.message,
-      codeSnapshot: row.codeSnapshot,
+      message: modelMessage,
+      codeSnapshot,
       questionAngle: angle,
     });
     if (!plan.askedAngles.includes(angle)) {
@@ -330,6 +546,39 @@ export async function studentInterviewTurn(input: {
       };
       await savePlan(input.sessionId, plan);
     }
+  }
+  }
+
+  const overtimeSec = elapsedSec - plan.durationMinutes * 60;
+  if (!result.endInterview && phase === "live" && overtimeSec >= 8 * 60) {
+    result = {
+      reply: closingThanks(plan.varietySeed + prior.length),
+      showCode: false,
+      endInterview: true,
+    };
+  }
+
+  const reviewingCode = studentAskedToCheckCode(input.message);
+  const invitedCode =
+    !result.endInterview &&
+    !reviewingCode &&
+    plan.track !== "behavioral" &&
+    (result.showCode || interviewerInvitedCode(result.reply, plan.coding?.title));
+  if (reviewingCode) {
+    result = { ...result, showCode: false };
+  }
+  if (invitedCode) {
+    const nextCoding = resolveInterviewCodingProblem({
+      reply: result.reply,
+      history,
+      fallback: plan.coding,
+    });
+    if (nextCoding && nextCoding.slug !== plan.coding?.slug) {
+      plan = { ...plan, coding: nextCoding };
+      await savePlan(input.sessionId, plan);
+      await saveInterviewCode(input.userId, input.sessionId, nextCoding.starterCode || "");
+    }
+    result = { ...result, showCode: true, coding: nextCoding ?? plan.coding };
   }
 
   const assistant = await appendInterviewTurn({
@@ -386,13 +635,39 @@ export async function recordIntegrity(
   type: InterviewIntegrityEvent["type"],
 ) {
   const row = await loadOwned(userId, sessionId);
+  if (row.status !== "live" && row.status !== "scoring") {
+    const events = asIntegrity(row.integrity);
+    const violations = countProctorViolations(events);
+    return {
+      violations,
+      failed: isProctoringEnabled() && violations >= MAX_PROCTOR_VIOLATIONS,
+    };
+  }
   const events = asIntegrity(row.integrity);
+  const last = events[events.length - 1];
+  const now = Date.now();
+  if (
+    last &&
+    last.type === type &&
+    now - new Date(last.at).getTime() < PROCTOR_DEDUP_MS
+  ) {
+    const violations = countProctorViolations(events);
+    return {
+      violations,
+      failed: isProctoringEnabled() && violations >= MAX_PROCTOR_VIOLATIONS,
+    };
+  }
   events.push({ type, at: new Date().toISOString() });
   const db = getDb();
   await db
     .update(interviewSessions)
     .set({ integrity: events.slice(-80), updatedAt: new Date() })
     .where(eq(interviewSessions.id, sessionId));
+  const violations = countProctorViolations(events);
+  return {
+    violations,
+    failed: isProctoringEnabled() && violations >= MAX_PROCTOR_VIOLATIONS,
+  };
 }
 
 export async function saveInterviewCode(userId: string, sessionId: string, code: string) {
@@ -415,7 +690,38 @@ export async function abortInterviewSession(userId: string, sessionId: string) {
   return getInterviewSession(userId, sessionId);
 }
 
-export async function finishInterviewSession(userId: string, sessionId: string) {
+function proctorFailReport() {
+  return {
+    overall: 0,
+    scores: {
+      communication: 0,
+      problemSolving: 0,
+      codeQuality: 0,
+      depth: 0,
+    },
+    summary:
+      "This interview ended because of too many proctoring violations (leaving fullscreen, switching tabs, or using the clipboard). Start a new attempt when you can stay in a single fullscreen window.",
+    quotes: [] as Array<{ quote: string; note: string }>,
+    nextPractice: [
+      { label: "Try another interview", href: "/dashboard/interview" },
+      { label: "Back to roadmap", href: "/dashboard/roadmap" },
+    ],
+    raw: {
+      passed: false,
+      outcome: null,
+      proctorFailed: true,
+      codedInIde: false,
+      nodeDiagnoses: [],
+    },
+    outcome: null as InterviewOutcome | null,
+  };
+}
+
+export async function finishInterviewSession(
+  userId: string,
+  sessionId: string,
+  opts?: { proctorFailed?: boolean },
+) {
   const row = await loadOwned(userId, sessionId);
   if (row.status === "completed") {
     return getInterviewReport(userId, sessionId);
@@ -436,12 +742,26 @@ export async function finishInterviewSession(userId: string, sessionId: string) 
     .map((t) => `${t.role === "student" ? "Student" : "Interviewer"}: ${t.content}`)
     .join("\n");
 
-  const scored = await scoreInterview({
-    userId,
-    plan: asPlan(row.plan),
-    transcript,
-    integrityCount: asIntegrity(row.integrity).filter((e) => e.type !== "tab_visible").length,
-  });
+  const plan = asPlan(row.plan);
+  const integrity = asIntegrity(row.integrity);
+  const proctorFailed =
+    Boolean(opts?.proctorFailed) ||
+    (isProctoringEnabled() &&
+      countProctorViolations(integrity) >= MAX_PROCTOR_VIOLATIONS);
+
+  const scored = proctorFailed
+    ? proctorFailReport()
+    : await scoreInterview({
+        userId,
+        plan,
+        transcript,
+        integrityCount: countProctorViolations(integrity),
+        codedInIde: interviewCodedInIde({
+          turns: turns.map((turn) => ({ role: turn.role, content: turn.content })),
+          codeSnapshot: row.codeSnapshot,
+          starterCode: plan.coding?.starterCode,
+        }),
+      });
 
   const [report] = await db
     .insert(interviewReports)
@@ -472,11 +792,42 @@ export async function finishInterviewSession(userId: string, sessionId: string) 
     .set({ status: "completed", endedAt: new Date(), updatedAt: new Date() })
     .where(eq(interviewSessions.id, sessionId));
 
+  if (
+    !proctorFailed &&
+    plan.purpose === "roadmap_final" &&
+    plan.roadmapId &&
+    scored.outcome
+  ) {
+    try {
+      await applyRoadmapInterviewOutcome({
+        userId,
+        roadmapId: plan.roadmapId,
+        sessionId,
+        overall: scored.overall,
+        outcome: scored.outcome,
+        summary: scored.summary,
+      });
+    } catch (err) {
+      console.warn(
+        "[interview] roadmap certification update failed",
+        err instanceof Error ? err.message : err,
+      );
+    }
+  }
+
   return toReport(report);
 }
 
 function toReport(row: typeof interviewReports.$inferSelect): InterviewReportPublic {
-  const scores = (row.scores || {}) as Record<string, number>;
+  const scores = (row.scores || {}) as Record<string, unknown>;
+  const raw = (row.raw || {}) as Record<string, unknown>;
+  const outcome: InterviewOutcome | null =
+    raw.outcome === "certified" || raw.outcome === "remediate" || raw.outcome === "redesign"
+      ? raw.outcome
+      : null;
+  const nodeDiagnoses = Array.isArray(raw.nodeDiagnoses)
+    ? (raw.nodeDiagnoses as InterviewReportPublic["nodeDiagnoses"])
+    : [];
   return {
     id: row.id,
     sessionId: row.sessionId,
@@ -487,6 +838,7 @@ function toReport(row: typeof interviewReports.$inferSelect): InterviewReportPub
       codeQuality: Number(scores.codeQuality) || 0,
       depth: Number(scores.depth) || 0,
     },
+    codedInIde: Boolean(raw.codedInIde ?? scores.codedInIde),
     summary: row.summary,
     quotes: Array.isArray(row.quotes)
       ? (row.quotes as Array<{ quote: string; note: string }>)
@@ -495,6 +847,11 @@ function toReport(row: typeof interviewReports.$inferSelect): InterviewReportPub
       ? (row.nextPractice as Array<{ label: string; href: string }>)
       : [],
     createdAt: row.createdAt.toISOString(),
+    passed: Boolean(raw.passed),
+    outcome,
+    nodeDiagnoses,
+    adaptationStatus: outcome && outcome !== "certified" ? "pending" : "idle",
+    proctorFailed: Boolean(raw.proctorFailed),
   };
 }
 

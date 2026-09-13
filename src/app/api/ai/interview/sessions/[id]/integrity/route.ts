@@ -14,8 +14,8 @@ export async function POST(
     const user = await requireDbUser();
     const { id } = await ctx.params;
     const body = await parseJson(request, interviewIntegritySchema);
-    await recordIntegrity(user.id, id, body.type);
-    return jsonResponse({ ok: true });
+    const result = await recordIntegrity(user.id, id, body.type);
+    return jsonResponse({ ok: true, ...result });
   } catch (e) {
     return errorResponse(e);
   }

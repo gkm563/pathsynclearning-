@@ -57,6 +57,7 @@ export const routes = {
     notifications: "/dashboard/notifications",
     settings: "/dashboard/settings",
     profile: "/profile",
+    onboarding: "/onboarding",
     placementInbox: "/dashboard/placement-inbox",
     placementInsights: "/dashboard/placement-insights",
     recordsCerts: "/dashboard/records-certs",
@@ -91,6 +92,14 @@ export function interviewPath(id: string): string {
 
 export function interviewReportPath(id: string): string {
   return `${interviewPath(id)}/report`;
+}
+
+export function interviewFinalStartPath(roadmapId: string): string {
+  const params = new URLSearchParams({
+    purpose: "roadmap_final",
+    roadmapId,
+  });
+  return `${routes.app.interview}?${params.toString()}`;
 }
 
 /** Open a problem workspace (legacy ?open= on Challenges redirects here). */
@@ -253,6 +262,12 @@ export function hrefForNavId(id: string): string {
 
 export function dashboardTabPath(tabId: string): string {
   return `${routes.app.dashboard}?tab=${encodeURIComponent(tabId)}`;
+}
+
+export function roadmapStartPath(role?: string | null): string {
+  const params = new URLSearchParams({ start: "1" });
+  if (role?.trim()) params.set("role", role.trim());
+  return `${routes.app.roadmap}?${params.toString()}`;
 }
 
 export function ssoCallbackWithRole(role: string): string {

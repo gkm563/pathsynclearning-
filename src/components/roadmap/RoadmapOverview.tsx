@@ -2,8 +2,8 @@
 
 import React from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import type { RoadmapNode } from "@/types/roadmap";
-import { computeRoadmapStats } from "@/lib/roadmap/stats";
+import type { RoadmapCertificationStatus, RoadmapNode } from "@/types/roadmap";
+import { certificationLabel, computeRoadmapStats } from "@/lib/roadmap/stats";
 import { Progress } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import RoadmapSwitcher from "./RoadmapSwitcher";
@@ -14,6 +14,8 @@ export default function RoadmapOverview({
   targetCompany,
   nodes,
   progress,
+  certificationStatus,
+  certifiedAt,
   onSwitched,
   onCreateNew,
   onBusyChange,
@@ -23,6 +25,8 @@ export default function RoadmapOverview({
   targetCompany?: string | null;
   nodes: RoadmapNode[];
   progress: Map<string, string>;
+  certificationStatus?: RoadmapCertificationStatus | string | null;
+  certifiedAt?: string | null;
   onSwitched?: () => void | Promise<void>;
   onCreateNew?: () => void;
   onBusyChange?: (busy: boolean) => void;
@@ -38,6 +42,8 @@ export default function RoadmapOverview({
           stats={stats}
           targetCompany={targetCompany}
           compact={false}
+          certificationStatus={certificationStatus}
+          certifiedAt={certifiedAt}
         />
       </div>
     );
@@ -83,7 +89,13 @@ export default function RoadmapOverview({
                 >
                   <Divider />
                   <div className="flex min-w-0 shrink-0 items-center">
-                    <Stats stats={stats} targetCompany={targetCompany} compact={false} />
+                    <Stats
+                      stats={stats}
+                      targetCompany={targetCompany}
+                      compact={false}
+                      certificationStatus={certificationStatus}
+                      certifiedAt={certifiedAt}
+                    />
                   </div>
                 </motion.div>
               ) : null}
@@ -100,11 +112,21 @@ function Stats({
   stats,
   targetCompany,
   compact,
+  certificationStatus,
+  certifiedAt,
 }: {
   stats: ReturnType<typeof computeRoadmapStats>;
   targetCompany?: string | null;
   compact: boolean;
+  certificationStatus?: RoadmapCertificationStatus | string | null;
+  certifiedAt?: string | null;
 }) {
+  const label = certificationLabel({
+    certificationStatus,
+    certifiedAt,
+    completionPercent: stats.completionPercent,
+  });
+  const certified = Boolean(certifiedAt || certificationStatus === "certified");
   return (
     <>
       {targetCompany && !compact ? (
@@ -123,15 +145,18 @@ function Stats({
         <span className="type-overline text-muted">Progress</span>
         <div className="mt-1 flex items-center gap-2.5">
           <span className="type-numeric min-w-8 text-base font-extrabold leading-none tracking-[-0.02em] text-success lg:min-w-10 lg:text-lg">
-            {stats.completionPercent}%
+            {certified ? "Certified" : stats.completionPercent >= 100 ? label : `${stats.completionPercent}%`}
           </span>
           <Progress
-            value={stats.completionPercent}
+            value={certified ? 100 : stats.completionPercent}
             tone="success"
             size="sm"
             className="hidden w-[84px] shrink-0 sm:block"
           />
         </div>
+        {!certified && stats.completionPercent >= 100 ? (
+          <span className="type-caption mt-1 text-muted">{label}</span>
+        ) : null}
       </div>
 
       {!compact ? (

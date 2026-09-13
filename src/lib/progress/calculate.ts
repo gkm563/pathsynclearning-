@@ -42,7 +42,7 @@ export const JOURNEY_MILESTONE_DEFS: ReadonlyArray<{
   {
     id: "certification",
     title: "Certification",
-    description: "Finished all available assessments and tasks.",
+    description: "Passed the final interview and certified your roadmap.",
     threshold: 100,
   },
 ];

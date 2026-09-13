@@ -1,19 +1,9 @@
 "use client";
 
 import { Check, Settings } from "lucide-react";
+import { generationStageQuestionsFromForm } from "@/lib/roadmap/generation-questions";
+import type { RoadmapGenerationMode } from "@/lib/roadmap/generation-questions";
 import { OnboardingCard, Pill, StepHeader, labelClass } from "../onboarding-ui";
-
-const PREFERENCES = [
-  "Video tutorials",
-  "Documentation",
-  "Building projects",
-  "Reading",
-  "Interactive exercises",
-  "Coding challenges",
-  "Courses",
-  "Mentorship",
-  "Community/Open Source",
-];
 
 function asStringArray(value: unknown): string[] {
   return Array.isArray(value)
@@ -24,12 +14,19 @@ function asStringArray(value: unknown): string[] {
 export default function PreferencesSection({
   data,
   onChange,
+  mode = null,
 }: {
   data: Record<string, unknown>;
   onChange: (data: Record<string, unknown>) => void;
   hideRole?: boolean;
+  mode?: RoadmapGenerationMode | null;
 }) {
+  const stage = generationStageQuestionsFromForm(data, mode);
   const learningPreferences = asStringArray(data.learningPreferences);
+  const options = [
+    ...stage.preferences.options,
+    ...learningPreferences.filter((p) => !stage.preferences.options.includes(p)),
+  ];
 
   const togglePref = (pref: string) => {
     if (learningPreferences.includes(pref)) {
@@ -48,13 +45,13 @@ export default function PreferencesSection({
         icon={<Settings size={22} aria-hidden />}
         kicker="Format"
         title="How you learn"
-        subtitle="We bias resources toward videos, docs, or practice based on this."
+        subtitle={stage.preferences.subtitle}
       />
 
       <div>
-        <p className={labelClass}>How do you learn best?</p>
+        <p className={labelClass}>{stage.preferences.prompt}</p>
         <div className="flex flex-wrap gap-2.5">
-          {PREFERENCES.map((pref) => {
+          {options.map((pref) => {
             const selected = learningPreferences.includes(pref);
             return (
               <Pill key={pref} selected={selected} onClick={() => togglePref(pref)}>

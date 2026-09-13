@@ -2,8 +2,9 @@ import { RoadmapProfile, FollowUpQuestionsResponse, FollowUpQuestion } from '@/t
 import { callAIWithFallback } from './llm';
 import { followUpQuestionsResponseSchema } from '@/lib/validation/roadmap-schemas';
 import { hiringBrief } from '@/lib/roadmap/hiring-catalog';
-
-export type RoadmapGenerationMode = 'targeted' | 'general';
+import { generationStageQuestions } from '@/lib/roadmap/generation-questions';
+export type { RoadmapGenerationMode } from '@/lib/roadmap/generation-questions';
+import type { RoadmapGenerationMode } from '@/lib/roadmap/generation-questions';
 
 const COVERED: Array<{ test: (p: RoadmapProfile) => boolean; phrases: string[] }> = [
   { test: (p) => Boolean(p.targetCompany), phrases: ['company', 'employer', 'which org', 'target company', 'dream company'] },
@@ -63,31 +64,36 @@ function sanitizeQuestions(
 }
 
 function fallbackQuestions(profile: RoadmapProfile, mode: RoadmapGenerationMode): FollowUpQuestion[] {
-  const role = (profile.targetRole || '').toLowerCase();
-  const isMl = /ml|machine|data scien|ai /.test(role);
-  const isSec = /security|cyber/.test(role);
-  const isSde = /sde|software|backend|full stack|frontend/.test(role);
+  const stage = generationStageQuestions(mode, profile.targetRole, profile.targetCompany);
+  const brief = hiringBrief(profile.targetCompany, profile.targetRole);
+  const loop = brief.company?.interviewLoop ?? [];
+  const stacks = brief.company?.stacks ?? stage.skills.options.slice(0, 6);
+  const skillOptions = stage.skills.options.slice(0, 6);
 
   const targeted: FollowUpQuestion[] = [
     {
-      id: 'oa-dsa-comfort',
-      question: 'How comfortable are you with timed online assessments (LeetCode-style DSA)?',
+      id: 'hiring-round-priority',
+      question: loop.length
+        ? `Which ${stage.companyLabel} round should we optimize first?`
+        : 'Which interview track should this company path prioritize first?',
       type: 'single_choice',
-      options: ['Never tried', 'Can solve easy', 'Medium with hints', 'Medium consistently', 'Hard is fine'],
-      reason: 'Company OA difficulty should match your current DSA floor.',
-      required: true,
-    },
-    {
-      id: 'interview-track',
-      question: 'Which interview track should this company path prioritize first?',
-      type: 'single_choice',
-      options: ['Coding / DSA', 'Machine coding', 'System design', 'Domain + projects', 'Behavioral / values'],
+      options: loop.length ? loop : ['Coding / DSA', 'Domain + projects', 'Behavioral / values'],
       reason: 'Hiring loops weight these rounds differently by company.',
       required: true,
     },
     {
-      id: 'work-authorization',
-      question: 'What offer type are you aiming for at this company?',
+      id: 'stack-comfort',
+      question: stacks.length
+        ? `How comfortable are you with ${stacks.slice(0, 3).join(', ')}?`
+        : `How comfortable are you with the core ${stage.roleLabel} stack?`,
+      type: 'single_choice',
+      options: ['New to it', 'Course-level', 'Can build with docs', 'Interview-ready', 'Production experience'],
+      reason: 'Company paths should match the stack they actually screen.',
+      required: true,
+    },
+    {
+      id: 'offer-type',
+      question: `What offer type are you aiming for at ${stage.companyLabel || 'this company'}?`,
       type: 'single_choice',
       options: ['Internship', 'New-grad / full-time', 'Either', 'Lateral / experienced'],
       reason: 'Intern vs new-grad changes timeline and interview depth.',
@@ -98,52 +104,23 @@ function fallbackQuestions(profile: RoadmapProfile, mode: RoadmapGenerationMode)
   const general: FollowUpQuestion[] = [
     {
       id: 'first-build-focus',
-      question: 'If we had to pick one portfolio outcome for this role, what should it be?',
+      question: `If we pick one proof outcome for ${stage.roleLabel}, what should it be?`,
       type: 'single_choice',
-      options: ['Shipped web app', 'Strong DSA profile', 'ML / data project', 'Open source or intern-ready repo', 'Design / product case'],
-      reason: 'Role paths should end in proof, not only theory.',
+      options: stage.learning.options.slice(0, 5),
+      reason: 'Role paths should end in proof that matches this career, not a generic web app.',
       required: true,
     },
     {
       id: 'weak-foundation',
-      question: 'Which foundation feels weakest for this role right now?',
+      question: `Which foundation feels weakest for ${stage.roleLabel} right now?`,
       type: 'single_choice',
-      options: ['Programming fluency', 'CS fundamentals', 'Tools / Git / Linux', 'System thinking', 'Communication / interviews'],
-      reason: 'We skip advanced nodes until the weak layer is patched.',
+      options: skillOptions.length
+        ? [...skillOptions.slice(0, 4), 'Interviews / communication']
+        : ['Core fundamentals', 'Tools', 'Projects', 'Interviews / communication'],
+      reason: 'We skip advanced nodes until the weak layer for this path is patched.',
       required: true,
     },
   ];
-
-  if (isMl) {
-    general.push({
-      id: 'math-comfort',
-      question: 'How is your comfort with probability, linear algebra, and calculus for ML?',
-      type: 'single_choice',
-      options: ['Rusty / avoid', 'Course-level', 'Can use in notebooks', 'Can derive and explain'],
-      reason: 'ML hiring still tests math plus applied modeling.',
-      required: false,
-    });
-  }
-  if (isSec) {
-    general.push({
-      id: 'linux-network',
-      question: 'Have you used Linux networking / command line beyond classroom labs?',
-      type: 'single_choice',
-      options: ['No', 'A little', 'Weekly', 'Daily / intern level'],
-      reason: 'Security paths collapse without Linux comfort.',
-      required: false,
-    });
-  }
-  if (isSde && mode === 'general') {
-    general.push({
-      id: 'language-primary',
-      question: 'Which language should we treat as your interview language?',
-      type: 'single_choice',
-      options: ['Python', 'Java', 'C++', 'JavaScript / TypeScript', 'Not sure yet'],
-      reason: 'DSA and backend nodes should match the language you will code in interviews.',
-      required: false,
-    });
-  }
 
   return sanitizeQuestions(mode === 'targeted' ? targeted : general, profile, mode);
 }
@@ -154,31 +131,38 @@ export async function generateFollowUpQuestions(
   mode: RoadmapGenerationMode = profile.targetCompany ? 'targeted' : 'general',
 ): Promise<FollowUpQuestionsResponse> {
   const brief = hiringBrief(profile.targetCompany, profile.targetRole);
+  const stageForPath = generationStageQuestions(mode, profile.targetRole, profile.targetCompany);
   const alreadyCovered = COVERED.filter((c) => c.test(profile)).flatMap((c) => c.phrases);
 
   const systemInstruction =
     mode === 'targeted'
       ? `You write follow-up questions for a COMPANY-TARGETED hiring roadmap.
+Path: ${stageForPath.pathLabel}
 Company context: ${JSON.stringify(brief)}
+Relevant skills for this path: ${stageForPath.skills.options.join(', ')}
 Rules:
 - Generate 3-5 questions MAX. Zero is allowed if the profile is enough.
 - NEVER ask anything already known: ${alreadyCovered.join(', ') || 'n/a'}.
 - NEVER ask target company or target role again.
-- NEVER repeat the same idea twice (no two DSA questions, no two "why this company" questions).
-- Ask only gaps that change a hiring plan: OA/DSA floor, intern vs full-time, machine-coding vs system design, location, referral, domain depth for THIS company's loop.
-- Do not ask generic career-exploration questions (those belong to the general roadmap).
+- NEVER repeat the same idea twice.
+- NEVER ask generic web skills (HTML/CSS/React) unless this company's stack or role actually uses them.
+- Ask only gaps that change THIS hiring plan: rounds in their loop (${(brief.company?.interviewLoop || []).join(', ') || 'n/a'}), intern vs full-time, stack comfort (${(brief.company?.stacks || []).join(', ') || 'role stack'}), domain depth.
+- Do not ask generic career-exploration questions.
 Question types: single_choice, multi_choice, text, rating.
 Return JSON:
 { "needsMoreInformation": boolean, "questions": [{ "id": "kebab-case", "question": "string", "type": "single_choice|multi_choice|text|rating", "options": ["string"], "reason": "string", "required": boolean }] }`
       : `You write follow-up questions for a ROLE-BASED (not company) learning roadmap.
-Target role: ${profile.targetRole}
+Path: ${stageForPath.pathLabel}
+Relevant skills: ${stageForPath.skills.options.join(', ')}
+Learning outcomes: ${stageForPath.learning.options.join(', ')}
 Rules:
 - Generate 3-5 questions MAX. Zero is allowed if the profile is enough.
 - NEVER ask anything already known: ${alreadyCovered.join(', ') || 'n/a'}.
 - NEVER ask which company they want. This is not a company path.
 - NEVER ask target role again.
 - NEVER repeat the same idea twice.
-- Ask only gaps that change a role curriculum: interview language, weak foundation, portfolio outcome, math/linux/domain if relevant to the role.
+- NEVER ask unrelated skills (no HTML/React for cybersecurity, no Figma for SDE, no PyTorch for frontend unless the student asked).
+- Ask only gaps that change THIS role's curriculum: weak foundation from the skill list above, portfolio proof for this role, domain labs.
 Question types: single_choice, multi_choice, text, rating.
 Return JSON:
 { "needsMoreInformation": boolean, "questions": [{ "id": "kebab-case", "question": "string", "type": "single_choice|multi_choice|text|rating", "options": ["string"], "reason": "string", "required": boolean }] }`;

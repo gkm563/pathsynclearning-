@@ -39,11 +39,14 @@ import {
   recordLearningMemory,
   recordProjectMemory,
 } from "@/lib/memory/processor";
+import { promotePendingInterviewIfReady } from "@/lib/roadmap/certification";
+import {
+  isProctoringEnabled,
+  MAX_PROCTOR_VIOLATIONS,
+} from "@/lib/proctoring";
 
-const MAX_VIOLATIONS = 3;
-const PROCTORING_ENABLED =
-  process.env.NEXT_PUBLIC_ASSESSMENT_PROCTORING === "true" ||
-  process.env.ASSESSMENT_PROCTORING === "true";
+const MAX_VIOLATIONS = MAX_PROCTOR_VIOLATIONS;
+const PROCTORING_ENABLED = isProctoringEnabled();
 
 export async function POST(request: Request) {
   try {
@@ -412,6 +415,16 @@ export async function POST(request: Request) {
       }).catch(() => null);
     }
 
+    await promotePendingInterviewIfReady({
+      roadmapId: activeRoadmap.id,
+      nodes,
+      progressByNodeId: new Map(
+        Array.from(progressMap.entries()).map(([id, row]) => [id, row.status]),
+      ),
+      certifiedAt: activeRoadmap.certifiedAt,
+      certificationStatus: activeRoadmap.certificationStatus,
+    });
+
     return jsonResponse({
       passed: true,
       score,
@@ -423,7 +436,7 @@ export async function POST(request: Request) {
       unlockedNodeIds,
       message: unlockedNodeIds.length
         ? "All assessments passed. Starting next learning…"
-        : "All assessments passed. Roadmap complete for this path.",
+        : "All assessments passed. Take the final interview to certify this path.",
       attempt,
       allProgress: Array.from(progressMap.values()),
     });

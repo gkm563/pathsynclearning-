@@ -3,20 +3,9 @@
 import { useState, type FormEvent } from "react";
 import { Check, Compass, Plus } from "lucide-react";
 import { IconButton, Input, Textarea } from "@/components/ui";
+import { generationStageQuestionsFromForm } from "@/lib/roadmap/generation-questions";
+import type { RoadmapGenerationMode } from "@/lib/roadmap/generation-questions";
 import { OnboardingCard, Pill, StepHeader, labelClass } from "../onboarding-ui";
-
-const SUGGESTED_SKILLS = [
-  "React",
-  "Node.js",
-  "System Design",
-  "Machine Learning",
-  "AWS",
-  "GraphQL",
-  "TypeScript",
-  "Docker",
-  "Algorithms",
-  "UI/UX",
-];
 
 function asStringArray(value: unknown): string[] {
   return Array.isArray(value)
@@ -27,14 +16,21 @@ function asStringArray(value: unknown): string[] {
 export default function LearningGoalSection({
   data,
   onChange,
+  mode = null,
 }: {
   data: Record<string, unknown>;
   onChange: (data: Record<string, unknown>) => void;
   hideRole?: boolean;
+  mode?: RoadmapGenerationMode | null;
 }) {
+  const stage = generationStageQuestionsFromForm(data, mode);
   const learningGoals = asStringArray(data.learningGoals);
   const reason = typeof data.reason === "string" ? data.reason : "";
   const [customGoal, setCustomGoal] = useState("");
+  const options = [
+    ...stage.learning.options,
+    ...learningGoals.filter((g) => !stage.learning.options.includes(g)),
+  ];
 
   const toggleGoal = (goal: string) => {
     if (learningGoals.includes(goal)) {
@@ -56,15 +52,15 @@ export default function LearningGoalSection({
     <OnboardingCard>
       <StepHeader
         icon={<Compass size={22} aria-hidden />}
-        kicker="Role path"
+        kicker={stage.targeted ? "Hiring extras" : "Role path"}
         title="What else to learn"
-        subtitle="Only asked on the general role path, not on company hiring paths."
+        subtitle={stage.learning.subtitle}
       />
 
       <div>
-        <p className={labelClass}>What do you want to learn?</p>
+        <p className={labelClass}>{stage.learning.prompt}</p>
         <div className="flex flex-wrap gap-2.5">
-          {SUGGESTED_SKILLS.map((skill) => {
+          {options.map((skill) => {
             const selected = learningGoals.includes(skill);
             return (
               <Pill key={skill} selected={selected} onClick={() => toggleGoal(skill)}>
@@ -92,7 +88,7 @@ export default function LearningGoalSection({
         </label>
         <Textarea
           id="learn-reason"
-          placeholder="E.g. I want to build a full-stack SaaS app for my portfolio..."
+          placeholder={stage.learning.reasonPlaceholder}
           value={reason}
           onChange={(e) => onChange({ ...data, reason: e.target.value })}
         />

@@ -13,7 +13,7 @@ import AIFollowUpQuestions, { FollowUpQuestion } from './AIFollowUpQuestions';
 import RoadmapGenerating from './RoadmapGenerating';
 import RoadmapTypeSelect, { type RoadmapGenerationMode } from './RoadmapTypeSelect';
 import RoadmapStartChoice from './RoadmapStartChoice';
-import { resolvedTargetCompany, resolvedTargetRole } from '@/lib/roadmap/hiring-catalog';
+import { resolvedTargetCompany, resolvedTargetRole, findRoleByName, OTHER_ROLE } from '@/lib/roadmap/hiring-catalog';
 import { setRoadmapDeferred } from '@/lib/roadmap/defer';
 import { progressFor, type RoadmapGenerationProgress } from '@/lib/roadmap/generation-progress';
 import { useRouter, usePathname } from 'next/navigation';
@@ -40,18 +40,33 @@ const GENERAL_SECTIONS = [
 export default function RoadmapOnboarding({
   onComplete,
   onSkip,
+  seedRole,
+  startNow = false,
 }: {
   onComplete?: (roadmap: unknown) => void;
   onSkip?: () => void;
+  seedRole?: string;
+  startNow?: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const trimmedSeed = (seedRole || "").trim();
+  const catalogRole = findRoleByName(trimmedSeed);
+  const seededForm = trimmedSeed
+    ? catalogRole
+      ? { roleOfInterest: catalogRole.name }
+      : { roleOfInterest: OTHER_ROLE, customRole: trimmedSeed }
+    : {};
   const fromRoadmap = Boolean(pathname?.startsWith(routes.app.roadmap));
-  const [showStartChoice, setShowStartChoice] = useState(!fromRoadmap);
-  const [generationMode, setGenerationMode] = useState<RoadmapGenerationMode | null>(null);
-  const [showTypeSelect, setShowTypeSelect] = useState(fromRoadmap);
+  const skipStartChoice = fromRoadmap || startNow;
+  const skipTypeSelect = startNow && Boolean(trimmedSeed);
+  const [showStartChoice, setShowStartChoice] = useState(!skipStartChoice);
+  const [generationMode, setGenerationMode] = useState<RoadmapGenerationMode | null>(
+    skipTypeSelect ? "general" : null,
+  );
+  const [showTypeSelect, setShowTypeSelect] = useState(skipStartChoice && !skipTypeSelect);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [formData, setFormData] = useState<Record<string, unknown>>({});
+  const [formData, setFormData] = useState<Record<string, unknown>>(seededForm);
 
   const [aiQuestions, setAiQuestions] = useState<FollowUpQuestion[]>([]);
   const [aiAnswers, setAiAnswers] = useState<Record<string, unknown>>({});
@@ -99,28 +114,46 @@ export default function RoadmapOnboarding({
   };
 
   const mapFromApi = (profile: any) => {
-    return {
+    const target = typeof profile.targetRole === "string" ? profile.targetRole.trim() : "";
+    const catalogRole = findRoleByName(target);
+    const mapped: Record<string, unknown> = {
       currentStudy: profile.currentStudy,
       yearSemester: profile.yearSemester,
       academicBackground: profile.academicBackground,
       enjoyedSubjects: profile.enjoyedSubjects,
       struggledSubjects: profile.struggledSubjects,
       achieveGoal: profile.careerGoal,
-      roleOfInterest: profile.targetRole,
-      customRole: profile.targetRole,
-      targetCompany: profile.targetCompany || '',
-      skills: profile.knownSkills ? profile.knownSkills.map((s: any) => ({
-        skill: s.skill,
-        confidence: s.confidence === 'very_confident' ? 'Very confident' : s.confidence === 'never_used' ? 'Never used' : s.confidence.charAt(0).toUpperCase() + s.confidence.slice(1)
-      })) : undefined,
+      targetCompany: profile.targetCompany || "",
+      skills: profile.knownSkills
+        ? profile.knownSkills.map((s: any) => ({
+            skill: s.skill,
+            confidence:
+              s.confidence === "very_confident"
+                ? "Very confident"
+                : s.confidence === "never_used"
+                  ? "Never used"
+                  : s.confidence
+                    ? s.confidence.charAt(0).toUpperCase() + s.confidence.slice(1)
+                    : "Beginner",
+          }))
+        : undefined,
       hasProjects: profile.hasProjects,
-      projects: profile.projects ? profile.projects.map((p: any) => ({
-        name: p.name,
-        tech: p.technologies ? p.technologies.join(', ') : '',
-        difficulty: p.difficulty === 'easy' ? 'Beginner' : p.difficulty === 'medium' ? 'Intermediate' : 'Advanced',
-        deployed: !!p.deployed,
-        solo: !!p.solo
-      })) : undefined,
+      projects: profile.projects
+        ? profile.projects.map((p: any) => ({
+            name: p.name,
+            tech: p.technologies ? p.technologies.join(", ") : p.tech || "",
+            difficulty:
+              p.difficulty === "easy"
+                ? "Beginner"
+                : p.difficulty === "medium"
+                  ? "Intermediate"
+                  : p.difficulty === "hard"
+                    ? "Advanced"
+                    : p.difficulty,
+            deployed: !!p.deployed,
+            solo: !!p.solo,
+          }))
+        : undefined,
       realWorldExperience: profile.experienceLevel,
       learningGoals: profile.wantToLearn,
       reason: profile.learningMotivation,
@@ -130,14 +163,29 @@ export default function RoadmapOnboarding({
       timeline: profile.targetTimeline,
       priority: profile.topPriority,
     };
+    if (catalogRole) {
+      mapped.roleOfInterest = catalogRole.name;
+    } else if (target) {
+      mapped.roleOfInterest = OTHER_ROLE;
+      mapped.customRole = target;
+    }
+    return Object.fromEntries(
+      Object.entries(mapped).filter(([, value]) => {
+        if (value == null || value === "") return false;
+        if (Array.isArray(value) && value.length === 0) return false;
+        return true;
+      }),
+    );
   };
 
   useEffect(() => {
-    apiGet<{ profile: any }>('/api/roadmap/profile').then(res => {
-      if (res && res.profile) {
-        setFormData(prev => ({ ...prev, ...mapFromApi(res.profile) }));
-      }
-    }).catch(() => {});
+    apiGet<{ profile: any }>("/api/roadmap/profile")
+      .then((res) => {
+        if (res && res.profile) {
+          setFormData((prev) => ({ ...mapFromApi(res.profile), ...prev }));
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const roleReady = !!resolvedTargetRole(formData.roleOfInterest, formData.customRole);
@@ -361,6 +409,7 @@ export default function RoadmapOnboarding({
           data={formData}
           onChange={(d: Record<string, unknown>) => setFormData(d)}
           hideRole
+          mode={generationMode}
         />
       ) : (
         <AIFollowUpQuestions

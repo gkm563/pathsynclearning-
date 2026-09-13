@@ -110,6 +110,7 @@ export const profiles = pgTable("profiles", {
   projects: jsonb("projects").$type<unknown[]>().notNull().default([]),
   badges: jsonb("badges").$type<unknown[]>().notNull().default([]),
   additionalData: jsonb("additional_data").$type<Record<string, unknown>>().notNull().default({}),
+  /** True after the student finishes or skips optional account onboarding */
   additionalCompleted: boolean("additional_completed").notNull().default(false),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -613,6 +614,15 @@ export const roadmaps = pgTable(
       .notNull()
       .default({}),
     isActive: boolean("is_active").notNull().default(true),
+    certifiedAt: timestamp("certified_at", { withTimezone: true }),
+    certificationStatus: text("certification_status")
+      .notNull()
+      .default("in_progress"),
+    lastFinalInterviewId: uuid("last_final_interview_id"),
+    adaptation: jsonb("adaptation")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

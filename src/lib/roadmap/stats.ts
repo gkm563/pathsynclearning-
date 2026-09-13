@@ -68,3 +68,30 @@ export function computeRoadmapStats(
     remainingHours: Math.max(0, estimatedTotalHours - completedHours),
   };
 }
+
+export function allTrackableNodesSatisfied(
+  nodes: Array<Pick<RoadmapNode, "id" | "type"> & { status?: RoadmapNodeStatus | string }>,
+  progressByNodeId?: Map<string, string> | Record<string, string>,
+): boolean {
+  const trackable = nodes.filter(isTrackableRoadmapNode);
+  if (!trackable.length) return false;
+  const getStatus = (id: string, fallback?: string) => {
+    if (!progressByNodeId) return fallback;
+    if (progressByNodeId instanceof Map) return progressByNodeId.get(id) ?? fallback;
+    return progressByNodeId[id] ?? fallback;
+  };
+  return trackable.every((node) => isProgressSatisfied(getStatus(node.id, node.status)));
+}
+
+export function certificationLabel(input: {
+  certificationStatus?: string | null;
+  certifiedAt?: string | Date | null;
+  completionPercent?: number;
+}): string {
+  if (input.certifiedAt || input.certificationStatus === "certified") return "Certified";
+  if (input.certificationStatus === "pending_interview") return "Interview pending";
+  if (input.certificationStatus === "remediating") return "Review path";
+  if (input.certificationStatus === "redesigning") return "Rebuilding";
+  if ((input.completionPercent ?? 0) >= 100) return "Interview pending";
+  return `${input.completionPercent ?? 0}%`;
+}

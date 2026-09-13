@@ -25,6 +25,7 @@ import { NextMoveCard } from "@/components/dashboard/home/NextMoveCard";
 import { NewsTeaser } from "@/components/dashboard/home/NewsTeaser";
 import { PageHeader } from "@/components/ui";
 import { StudentRegistrationIdDisplay } from "@/components/profile/StudentRegistrationIdDisplay";
+import { OnboardingNudge } from "./OnboardingNudge";
 
 type Insight = {
   icon: "target" | "zap" | "rocket" | "book" | "code" | "shield";
@@ -175,6 +176,8 @@ export default function StudentHome() {
           ) : null
         }
       />
+
+      <OnboardingNudge />
 
       <HomeSection title="Where you stand" delay={0}>
         <HeadlineStats

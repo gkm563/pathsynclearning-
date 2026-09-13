@@ -1,27 +1,53 @@
 import { requireDbUser } from '@/lib/db/users';
 import { getDb } from '@/lib/db/client';
-import { roadmapProfiles } from '@/lib/db/schema';
+import { profiles, roadmapProfiles } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { errorResponse, jsonResponse, parseJson } from '@/lib/api/http';
 import { roadmapProfileUpdateSchema } from '@/lib/validation/roadmap-schemas';
 import { recordCareerGoalChange } from '@/lib/memory/processor';
+import {
+  deriveRoadmapFieldsFromAccount,
+  fillMissingRoadmapFields,
+} from '@/lib/roadmap/hydrate-from-account';
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const user = await requireDbUser();
-    const db = await getDb();
+    const db = getDb();
 
-    const [profile] = await db
-      .select()
-      .from(roadmapProfiles)
-      .where(eq(roadmapProfiles.userId, user.id))
-      .limit(1);
+    const [[profile], [account]] = await Promise.all([
+      db
+        .select()
+        .from(roadmapProfiles)
+        .where(eq(roadmapProfiles.userId, user.id))
+        .limit(1),
+      db
+        .select({
+          institute: profiles.institute,
+          degree: profiles.degree,
+          branch: profiles.branch,
+          gradYear: profiles.gradYear,
+          location: profiles.location,
+          semester: profiles.semester,
+          skills: profiles.skills,
+          projects: profiles.projects,
+          objective: profiles.objective,
+          passion: profiles.passion,
+          bio: profiles.bio,
+          additionalData: profiles.additionalData,
+        })
+        .from(profiles)
+        .where(eq(profiles.userId, user.id))
+        .limit(1),
+    ]);
 
-    if (!profile) {
-      return jsonResponse({ profile: null });
-    }
+    const derived = deriveRoadmapFieldsFromAccount(account ?? {});
+    const hydrated = fillMissingRoadmapFields(
+      profile as Record<string, unknown> | undefined,
+      derived,
+    );
 
-    return jsonResponse({ profile });
+    return jsonResponse({ profile: hydrated });
   } catch (e) {
     return errorResponse(e);
   }

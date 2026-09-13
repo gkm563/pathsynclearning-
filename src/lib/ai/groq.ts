@@ -74,7 +74,7 @@ export async function callGroq<T>(options: GroqOptions): Promise<T> {
     maxCompletionTokens = 4096,
     topP = 1,
     reasoningEffort = 'medium',
-    timeoutMs = 60000,
+    timeoutMs = 120000,
     stream = true,
   } = options;
 

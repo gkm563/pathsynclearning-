@@ -4,6 +4,7 @@ import { roadmaps, roadmapProgress } from '@/lib/db/schema';
 import { eq, inArray } from 'drizzle-orm';
 import { errorResponse, jsonResponse } from '@/lib/api/http';
 import { isProgressSatisfied } from '@/lib/roadmap/progress';
+import { promotePendingInterviewIfReady, parseAdaptation } from "@/lib/roadmap/certification";
 import { ensureNodeAssessments } from '@/lib/roadmap/assessment-bank';
 import { deactivateActiveRoadmaps, getActiveRoadmap } from '@/lib/roadmap/active';
 import type { RoadmapNode } from '@/types/roadmap';
@@ -127,6 +128,16 @@ export async function GET() {
     const mergedRoadmap = {
       ...activeRoadmap,
       nodes: nodesWithProgress,
+      certifiedAt: activeRoadmap.certifiedAt ? activeRoadmap.certifiedAt.toISOString() : null,
+      certificationStatus: await promotePendingInterviewIfReady({
+        roadmapId: activeRoadmap.id,
+        nodes: enrichedNodes,
+        progressByNodeId: new Map(progress.map((p) => [p.nodeId, p.status])),
+        certifiedAt: activeRoadmap.certifiedAt,
+        certificationStatus: activeRoadmap.certificationStatus,
+      }),
+      lastFinalInterviewId: activeRoadmap.lastFinalInterviewId ?? null,
+      adaptation: parseAdaptation(activeRoadmap.adaptation),
     };
 
     return jsonResponse({ roadmap: mergedRoadmap, progress });

@@ -197,7 +197,15 @@ export function useDismiss({
       const node = ref.current;
       if (!node) return;
       const path = event.composedPath();
-      if (!path.includes(node)) dismiss();
+      if (path.includes(node)) return;
+      // Portaled layers (custom select lists) sit outside their owner overlay.
+      if (
+        event.target instanceof Element &&
+        event.target.closest("[data-floating]")
+      ) {
+        return;
+      }
+      dismiss();
     };
 
     document.addEventListener("keydown", onKeyDown);

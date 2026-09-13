@@ -12,16 +12,16 @@ import AnswerReview, { type AnswerReviewPayload } from "./AnswerReview";
 import { Alert, Badge, Button, Card, Checkbox, IconButton } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { useScrollLock } from "@/hooks/useOverlay";
+import {
+  isProctoringEnabled,
+  MAX_PROCTOR_VIOLATIONS,
+  PROCTOR_DEDUP_MS,
+  PROCTOR_GRACE_MS,
+} from "@/lib/proctoring";
 
-const MAX_VIOLATIONS = 3;
-const GRACE_MS = 2500;
-
-/**
- * Proctoring (clipboard block, tab/blur violations, fullscreen required).
- * Disabled for local testing. Set NEXT_PUBLIC_ASSESSMENT_PROCTORING=true to re-enable.
- */
-const PROCTORING_ENABLED =
-  process.env.NEXT_PUBLIC_ASSESSMENT_PROCTORING === "true";
+const MAX_VIOLATIONS = MAX_PROCTOR_VIOLATIONS;
+const GRACE_MS = PROCTOR_GRACE_MS;
+const PROCTORING_ENABLED = isProctoringEnabled();
 
 export type ProctorViolation = { kind: string; at: string };
 
@@ -86,7 +86,7 @@ export default function AssessmentShell({
       if (
         last &&
         last.kind === kind &&
-        Date.now() - new Date(last.at).getTime() < 800
+        Date.now() - new Date(last.at).getTime() < PROCTOR_DEDUP_MS
       ) {
         return;
       }

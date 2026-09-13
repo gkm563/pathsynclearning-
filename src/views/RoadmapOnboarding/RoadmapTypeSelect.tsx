@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Building2, Compass, Search, ShieldCheck, TriangleAlert } from "lucide-react";
 import { apiGet, apiSend } from "@/lib/api";
 import { OTHER_COMPANY, OTHER_ROLE } from "@/lib/roadmap/hiring-catalog";
+import type { RoadmapGenerationMode } from "@/lib/roadmap/generation-questions";
 import { Badge, Input } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import {
@@ -15,7 +16,7 @@ import {
   labelClass,
 } from "./onboarding-ui";
 
-export type RoadmapGenerationMode = "targeted" | "general";
+export type { RoadmapGenerationMode } from "@/lib/roadmap/generation-questions";
 
 type CatalogCompany = {
   id: string;

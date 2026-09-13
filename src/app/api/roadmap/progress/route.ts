@@ -10,6 +10,7 @@ import {
   findNodesToUnlock,
   isProgressSatisfied,
 } from '@/lib/roadmap/progress';
+import { promotePendingInterviewIfReady } from "@/lib/roadmap/certification";
 import { allAssessmentsPassed, getNodeAssessments, isAssessableNode, nodeRequiresAssessment } from '@/lib/roadmap/assessment';
 import type { RoadmapEdge, RoadmapNode } from '@/types/roadmap';
 import crypto from 'crypto';
@@ -191,6 +192,13 @@ export async function PUT(request: Request) {
     }
 
     const progress = Array.from(progressMap.values());
+    await promotePendingInterviewIfReady({
+      roadmapId: activeRoadmap.id,
+      nodes,
+      progressByNodeId: new Map(progress.map((p) => [p.nodeId, p.status])),
+      certifiedAt: activeRoadmap.certifiedAt,
+      certificationStatus: activeRoadmap.certificationStatus,
+    });
     return jsonResponse({ progress: updatedProgress, allProgress: progress });
   } catch (e) {
     return errorResponse(e);

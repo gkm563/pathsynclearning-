@@ -21,7 +21,9 @@ export async function POST(
       const session = await abortInterviewSession(user.id, id);
       return jsonResponse({ session });
     }
-    const report = await finishInterviewSession(user.id, id);
+    const report = await finishInterviewSession(user.id, id, {
+      proctorFailed: url.searchParams.get("proctor") === "1",
+    });
     return jsonResponse({ report });
   } catch (e) {
     return errorResponse(e);

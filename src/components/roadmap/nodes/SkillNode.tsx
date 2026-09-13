@@ -72,8 +72,16 @@ export default function SkillNode({ data }: { data: any }) {
 
       <div className="mt-auto flex items-center justify-between">
         <span className="type-caption text-muted">
-          {resources ? `${resources} resources` : ""}
-          {outcomes ? ` · ${outcomes} outcomes` : ""}
+          {data.source === "remediation"
+            ? "Added after interview"
+            : data.source === "loop_refresh"
+              ? "Review again — new materials"
+              : resources
+                ? `${resources} resources`
+                : ""}
+          {outcomes && data.source !== "remediation" && data.source !== "loop_refresh"
+            ? ` · ${outcomes} outcomes`
+            : ""}
         </span>
         {estimatedHours ? (
           <span className="type-caption type-numeric rounded-full bg-sunken px-1.5 py-0.5 text-muted">

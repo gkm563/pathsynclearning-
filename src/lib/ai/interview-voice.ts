@@ -1,5 +1,7 @@
 "use client";
 
+import { isStartInterviewPhrase } from "./interview-variety";
+
 export type InterviewMediaPrefs = {
   audioInputId: string;
   videoInputId: string;
@@ -209,8 +211,6 @@ export type InterviewRecognition = {
 };
 
 const SHORT_ANSWER = /^(yes|yeah|yep|yup|no|nope|nah|ok|okay|sure|ready|thanks|thank you)$/i;
-const START_ANSWER =
-  /^(ok |okay |yes )?(please )?(let'?s )?(start|begin)( the)?( interview| mock)?$|^(i('m| am) )?ready$/i;
 
 function spokenWordCount(text: string) {
   return text.split(/\s+/).filter(Boolean).length;
@@ -219,7 +219,7 @@ function spokenWordCount(text: string) {
 function commitDelayMs(text: string) {
   const words = spokenWordCount(text);
   const compact = text.replace(/[^\w\s]/g, " ").replace(/\s+/g, " ").trim();
-  if (START_ANSWER.test(compact)) return 1400;
+  if (isStartInterviewPhrase(compact)) return 1400;
   if (SHORT_ANSWER.test(compact)) return 2800;
   if (words <= 1) return 6500;
   if (words <= 3) return 5000;
@@ -405,15 +405,31 @@ export function speakInterviewReply(
   utterance.rate = 1;
   utterance.pitch = 1;
   let finished = false;
+  let started = false;
+  const begunAt = Date.now();
   const done = () => {
     if (finished) return;
+    if (!started && Date.now() - begunAt < 500) return;
     finished = true;
     window.clearTimeout(safety);
+    window.clearTimeout(kickoff);
     handlers?.onEnd?.();
   };
-  const safety = window.setTimeout(done, Math.min(22000, spoken.length * 70 + 2500));
-  utterance.onstart = () => handlers?.onStart?.();
+  const safety = window.setTimeout(
+    done,
+    Math.min(28000, Math.max(4000, spoken.length * 85 + 2800)),
+  );
+  utterance.onstart = () => {
+    started = true;
+    handlers?.onStart?.();
+  };
   utterance.onend = done;
-  utterance.onerror = done;
-  window.speechSynthesis.speak(utterance);
+  utterance.onerror = () => {
+    if (started) done();
+  };
+  handlers?.onStart?.();
+  const kickoff = window.setTimeout(() => {
+    window.speechSynthesis.resume();
+    window.speechSynthesis.speak(utterance);
+  }, 80);
 }

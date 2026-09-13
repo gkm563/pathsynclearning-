@@ -1,8 +1,9 @@
 import { requireDbUser } from "@/lib/db/users";
 import { getDb } from "@/lib/db/client";
 import { roadmaps, roadmapProgress } from "@/lib/db/schema";
-import { eq, desc, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { errorResponse, jsonResponse } from "@/lib/api/http";
+import { interviewPresetFromRoadmap, studiedTopicsFromRoadmap } from "@/lib/ai/interview-roadmap";
 import { computeRoadmapStats } from "@/lib/roadmap/stats";
 import type { RoadmapNode } from "@/types/roadmap";
 
@@ -21,7 +22,10 @@ export async function GET() {
         estimatedWeeks: roadmaps.estimatedWeeks,
         isActive: roadmaps.isActive,
         createdAt: roadmaps.createdAt,
+        certifiedAt: roadmaps.certifiedAt,
+        certificationStatus: roadmaps.certificationStatus,
         nodes: roadmaps.nodes,
+        generatedFromProfile: roadmaps.generatedFromProfile,
       })
       .from(roadmaps)
       .where(eq(roadmaps.userId, user.id))
@@ -39,7 +43,9 @@ export async function GET() {
         status: roadmapProgress.status,
       })
       .from(roadmapProgress)
-      .where(inArray(roadmapProgress.roadmapId, ids));
+      .where(
+        and(eq(roadmapProgress.userId, user.id), inArray(roadmapProgress.roadmapId, ids)),
+      );
 
     const progressByRoadmap = new Map<string, Map<string, string>>();
     for (const p of progressRows) {
@@ -53,7 +59,15 @@ export async function GET() {
 
     const summaries = rows.map((r) => {
       const nodes = (Array.isArray(r.nodes) ? r.nodes : []) as RoadmapNode[];
-      const stats = computeRoadmapStats(nodes, progressByRoadmap.get(r.id));
+      const progress = progressByRoadmap.get(r.id) || new Map<string, string>();
+      const stats = computeRoadmapStats(nodes, progress);
+      const preset = interviewPresetFromRoadmap(
+        nodes,
+        progress,
+        r.generatedFromProfile && typeof r.generatedFromProfile === "object"
+          ? r.generatedFromProfile
+          : null,
+      );
       return {
         id: r.id,
         title: r.title,
@@ -67,6 +81,12 @@ export async function GET() {
         nodeCount: stats.totalNodes,
         completedNodes: stats.completedNodes,
         remainingHours: stats.remainingHours,
+        studiedNodes: studiedTopicsFromRoadmap(nodes, progress).length,
+        interviewTrack: preset.track,
+        interviewDifficulty: preset.difficulty,
+        interviewFocus: preset.focus,
+        certifiedAt: r.certifiedAt ? r.certifiedAt.toISOString() : null,
+        certificationStatus: r.certificationStatus || "in_progress",
       };
     });
 

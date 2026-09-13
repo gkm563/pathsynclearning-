@@ -27,6 +27,7 @@ import type {
   RoadmapProfile,
   SkillConfidence,
 } from "@/types/roadmap";
+import type { RoadmapAdaptationContext } from "@/lib/ai/roadmap-generator";
 
 export function assertProfileReadyForGeneration(
   profile: RoadmapProfileRow | undefined,
@@ -73,6 +74,7 @@ export async function persistGeneratedRoadmap(
   userId: string,
   profile: RoadmapProfileRow,
   onProgress?: (p: RoadmapGenerationProgress) => void,
+  adaptationContext?: RoadmapAdaptationContext,
 ) {
   const db = getDb();
   onProgress?.(progressFor("profile"));
@@ -86,7 +88,12 @@ export async function persistGeneratedRoadmap(
     onProgress?.(progressFor("hiring", "Mapping the role curriculum…"));
   }
 
-  const generatedData = await generateRoadmap(toRoadmapProfile(profile), userId, onProgress);
+  const generatedData = await generateRoadmap(
+    toRoadmapProfile(profile),
+    userId,
+    onProgress,
+    adaptationContext,
+  );
   onProgress?.(progressFor("save"));
   const newVersion = await nextRoadmapVersion(db, userId);
 
@@ -111,6 +118,7 @@ export async function persistGeneratedRoadmap(
       edges: generatedData.edges,
       generatedFromProfile: profile as unknown as Record<string, unknown>,
       isActive: true,
+      certificationStatus: "in_progress",
       createdAt: new Date(),
     })
     .returning();

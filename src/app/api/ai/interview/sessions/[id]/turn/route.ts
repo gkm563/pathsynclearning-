@@ -21,6 +21,7 @@ export async function POST(
       sessionId: id,
       message: body.message,
       source: body.source,
+      code: body.code,
     });
     return jsonResponse(result);
   } catch (e) {

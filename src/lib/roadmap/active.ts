@@ -16,6 +16,15 @@ export async function getActiveRoadmap(db: Db, userId: string) {
   return row ?? null;
 }
 
+export async function getOwnedRoadmap(db: Db, userId: string, roadmapId: string) {
+  const [row] = await db
+    .select()
+    .from(roadmaps)
+    .where(and(eq(roadmaps.id, roadmapId), eq(roadmaps.userId, userId)))
+    .limit(1);
+  return row ?? null;
+}
+
 /** Deactivate only currently active roadmaps for this user. Leaves inactive history alone. */
 export async function deactivateActiveRoadmaps(db: Db, userId: string) {
   await db

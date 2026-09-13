@@ -35,7 +35,8 @@ import type {
   ProgressRange,
 } from "@/lib/progress/types";
 import { getNodeAssessments, isAssessableNode } from "@/lib/roadmap/assessment";
-import { challengeOpenPath, routes } from "@/lib/routes";
+import { allTrackableNodesSatisfied } from "@/lib/roadmap/stats";
+import { challengeOpenPath, interviewFinalStartPath, routes } from "@/lib/routes";
 import type { RoadmapNode } from "@/types/roadmap";
 
 const TRACK_META: Record<
@@ -438,11 +439,39 @@ export async function getProgressPayload(
       solvedSet.has(q.id) || attemptStatus.get(q.id) === "solved",
   ).length;
 
-  const roadmapTotal = assessableNodes.length;
-  const roadmapCompleted = assessableNodes.filter((n) => {
+  const roadmapTotalBase = assessableNodes.length;
+  const roadmapCompletedBase = assessableNodes.filter((n) => {
     const s = progressByNode.get(n.id)?.status;
     return s === "completed" || s === "skipped" || latestAssessmentByNode.get(n.id)?.passed;
   }).length;
+  const certified = Boolean(activeRoadmap?.certifiedAt);
+  const nodesDone = activeRoadmap
+    ? allTrackableNodesSatisfied(
+        nodes,
+        new Map(nodeProgress.map((p) => [p.nodeId, p.status])),
+      )
+    : false;
+  const includeCertTask = Boolean(activeRoadmap && (certified || nodesDone));
+  const roadmapTotal = roadmapTotalBase + (includeCertTask ? 1 : 0);
+  const roadmapCompleted = roadmapCompletedBase + (certified ? 1 : 0);
+
+  if (includeCertTask) {
+    assessments.push({
+      id: `roadmap_final_${activeRoadmap!.id}`,
+      name: "Roadmap certification interview",
+      description: certified
+        ? "Final interview passed. This path is certified."
+        : "Finish the final interview to certify this roadmap.",
+      kind: "roadmap_node",
+      completion: certified ? 100 : 0,
+      score: null,
+      status: certified ? "passed" : "not_started",
+      completedTasks: certified ? 1 : 0,
+      totalTasks: 1,
+      lastAttemptAt: activeRoadmap!.certifiedAt?.toISOString() ?? null,
+      href: certified ? routes.app.roadmap : interviewFinalStartPath(activeRoadmap!.id),
+    });
+  }
 
   const totalTasks = challengeTotal + roadmapTotal;
   const completedTasks = challengeCompleted + roadmapCompleted;

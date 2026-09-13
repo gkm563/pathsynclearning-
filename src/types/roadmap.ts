@@ -25,6 +25,23 @@ export type RoadmapNodeStatus =
 
 export type RoadmapNodePriority = "low" | "medium" | "high" | "critical";
 
+export type RoadmapCertificationStatus =
+  | "in_progress"
+  | "pending_interview"
+  | "certified"
+  | "remediating"
+  | "redesigning";
+
+export type RoadmapAdaptation = {
+  round: number;
+  pendingOutcome?: "certified" | "remediate" | "redesign" | null;
+  appliedSessionIds: string[];
+  insertedNodeIds: string[];
+  loopedNodeIds: string[];
+  refreshedNodeIds: string[];
+  relockedNodeIds: string[];
+};
+
 export interface RoadmapNodeResource {
   title: string;
   url: string;
@@ -144,6 +161,11 @@ export interface RoadmapNode {
   assessments?: NodeAssessment[];
   /** Position — set by auto-layout, not by AI */
   position?: { x: number; y: number };
+  /** Parent topic this remedial node was spawned from. */
+  originNodeId?: string;
+  source?: "generated" | "remediation" | "loop_refresh";
+  /** Increments each time a loop-back rewrites this node's materials. */
+  revision?: number;
 }
 
 export interface RoadmapEdge {
@@ -168,6 +190,10 @@ export interface Roadmap {
   generatedFromProfile: Record<string, unknown>;
   isActive: boolean;
   createdAt: string;
+  certifiedAt: string | null;
+  certificationStatus: RoadmapCertificationStatus;
+  lastFinalInterviewId: string | null;
+  adaptation: RoadmapAdaptation;
 }
 
 /** Lightweight row for roadmap list / switcher. */
@@ -184,6 +210,12 @@ export interface RoadmapSummary {
   nodeCount: number;
   completedNodes?: number;
   remainingHours?: number;
+  studiedNodes?: number;
+  interviewTrack?: "dsa_behavioral" | "dsa" | "behavioral";
+  interviewDifficulty?: "easy" | "medium" | "hard";
+  interviewFocus?: string;
+  certifiedAt?: string | null;
+  certificationStatus?: RoadmapCertificationStatus;
 }
 
 /* ─── Progress ────────────────────────────────────────────────────── */

@@ -25,6 +25,8 @@ export default function RoadmapPage() {
   const searchParams = useSearchParams();
   const focusNodeId = searchParams.get("node") || undefined;
   const intentNew = searchParams.get("intent") === "new";
+  const startNow = searchParams.get("start") === "1";
+  const seedRole = searchParams.get("role") || undefined;
   const [view, setView] = useState<ViewState>("loading");
   const [roadmap, setRoadmap] = useState<Roadmap | null>(null);
   const [progress, setProgress] = useState<RoadmapNodeProgress[]>([]);
@@ -58,7 +60,7 @@ export default function RoadmapPage() {
     (async () => {
       const active = await fetchRoadmap();
       if (cancelled) return;
-      if (creatingNew) setView("onboarding");
+      if (creatingNew || startNow) setView("onboarding");
       else if (active) setView("canvas");
       else if (isRoadmapDeferred()) setView("empty");
       else setView("onboarding");
@@ -66,7 +68,7 @@ export default function RoadmapPage() {
     return () => {
       cancelled = true;
     };
-  }, [fetchRoadmap, creatingNew]);
+  }, [fetchRoadmap, creatingNew, startNow]);
 
   const handleOnboardingComplete = useCallback(async () => {
     setCreatingNew(false);
@@ -147,6 +149,8 @@ export default function RoadmapPage() {
           ) : null}
           <RoadmapOnboarding
             onComplete={handleOnboardingComplete}
+            seedRole={seedRole}
+            startNow={startNow}
           />
         </div>
       </React.Suspense>

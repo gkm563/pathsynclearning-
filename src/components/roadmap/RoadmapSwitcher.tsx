@@ -288,8 +288,14 @@ export default function RoadmapSwitcher({
                         </div>
                         <div className="type-caption mt-0.5 text-muted">
                           {item.targetCompany ? `${item.targetCompany} · ` : ""}
-                          {item.completionPercent}% · {item.completedNodes ?? 0}/
-                          {item.nodeCount} nodes
+                          {item.certifiedAt || item.certificationStatus === "certified"
+                            ? "Certified"
+                            : item.certificationStatus === "pending_interview"
+                              ? "Interview pending"
+                              : item.certificationStatus === "remediating"
+                                ? "Review path"
+                                : `${item.completionPercent}%`}{" "}
+                          · {item.completedNodes ?? 0}/{item.nodeCount} nodes
                           {typeof item.remainingHours === "number"
                             ? ` · ~${item.remainingHours}h left`
                             : item.estimatedWeeks

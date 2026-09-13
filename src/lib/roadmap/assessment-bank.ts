@@ -5,6 +5,7 @@ import {
   nodeAssessmentFromProjectSpec,
 } from "@/lib/projects/specs";
 import { curatedResourcesForNode } from "@/lib/roadmap/resource-library";
+import { isVideoOnTopic } from "@/lib/roadmap/video-recommend";
 import {
   BINARY_SEARCH,
   CLIMB_STAIRS,
@@ -237,7 +238,7 @@ const PACKS: TopicPack[] = [
   },
   {
     id: "networking-http",
-    match: /\b(http|https|rest|api|tcp|udp|network|dns|cors|websocket)\b/,
+    match: /\b(http|https|rest api|tcp|udp|networking|osi model|dns|cors|websocket)\b/,
     youtube: {
       title: "HTTP Crash Course — Traversy Media",
       url: "https://www.youtube.com/watch?v=iYM2zFP3Zn0",
@@ -253,8 +254,25 @@ const PACKS: TopicPack[] = [
     }),
   },
   {
+    id: "crypto",
+    match: /\b(crypto(?:graphy)?|encryption|aes|rsa|public[- ]key|hash functions?|sha-?\d*|hmac)\b/,
+    youtube: {
+      title: "Cryptography — Crash Course Computer Science #33",
+      url: "https://www.youtube.com/watch?v=jhXCTbFnK8o",
+    },
+    preferCoding: false,
+    mcq: (node) => ({
+      questions: [
+        q(node, 1, `In ${node.title}, a cryptographic hash is mainly used to…`, ["Encrypt so you can decrypt later", "Produce a fixed digest that is hard to reverse", "Compress files losslessly", "Replace TLS certificates"], 1),
+        q(node, 2, "Symmetric encryption means…", ["Different keys to encrypt and decrypt", "The same secret key encrypts and decrypts", "No keys are needed", "Only hashing is used"], 1),
+        q(node, 3, "Public-key cryptography is useful because…", ["You can publish a key used to encrypt without sharing the private key", "It is always faster than AES", "Hashes become reversible", "It removes the need for integrity checks"], 0),
+        q(node, 4, "Why not store passwords as plain SHA-1 of the password?", ["Hashes are too slow", "Unsalted fast hashes are easy to crack with rainbow tables/GPUs", "SHA-1 encrypts and can be decrypted", "Browsers reject hashed passwords"], 1),
+      ],
+    }),
+  },
+  {
     id: "algorithms-general",
-    match: /\b(algorithm|dsa|complexity|big[\s-]?o|leetcode|problem[- ]solving|dynamic\s*programming|recursion)\b/,
+    match: /\b(dsa|data structures?|leetcode|time complexity|big[\s-]?o|dynamic\s*programming|recursion)\b/,
     youtube: {
       title: "Data Structures Easy to Advanced — freeCodeCamp",
       url: "https://www.youtube.com/watch?v=RBSGKlAvoiM",
@@ -335,12 +353,14 @@ function fallbackMcq(node: RoadmapNode): NodeAssessment["mcq"] {
 
 function pickPack(node: RoadmapNode): TopicPack | null {
   const hay = ctx(node);
+  const title = (node.title || "").toLowerCase();
   let best: TopicPack | null = null;
   let bestScore = 0;
   for (const pack of PACKS) {
     const m = hay.match(pack.match);
     if (!m) continue;
-    const score = m[0].length + (hay.includes((pack.id || "").split("-")[0]) ? 2 : 0);
+    const inTitle = pack.match.test(title);
+    const score = m[0].length * (inTitle ? 4 : 1) + (hay.includes((pack.id || "").split("-")[0]) ? 2 : 0);
     if (score > bestScore) {
       best = pack;
       bestScore = score;
@@ -494,24 +514,33 @@ function isMisalignedAssessment(node: RoadmapNode, assessment: NodeAssessment): 
 function pickYt(node: RoadmapNode) {
   const pack = pickPack(node);
   if (pack) return pack.youtube;
-  return {
-    title: "Data Structures Easy to Advanced — freeCodeCamp",
-    url: "https://www.youtube.com/watch?v=RBSGKlAvoiM",
-  };
+  const curated = curatedResourcesForNode(
+    `${node.title} ${node.skills?.join(" ") || ""} ${node.topics?.join(" ") || ""}`,
+  ).find((r) => r.type === "video");
+  if (curated) return { title: curated.title, url: curated.url };
+  return null;
 }
 
 /** Attach / repair assessment + YouTube so they match node learning content. */
 export function ensureNodeAssessments(nodes: RoadmapNode[]): RoadmapNode[] {
   return nodes.map((node) => {
-    if (!ASSESSABLE_NODE_TYPES.includes(node.type)) return node;
+    if (ASSESSABLE_NODE_TYPES.includes(node.type) === false) return node;
+    if (node.source === "loop_refresh" || node.source === "remediation") {
+      return node;
+    }
 
+    const hay = `${node.title} ${node.skills?.join(" ") || ""} ${node.topics?.join(" ") || ""}`;
     const yt = pickYt(node);
-    const extras = curatedResourcesForNode(
-      `${node.title} ${node.skills?.join(" ") || ""} ${node.topics?.join(" ") || ""}`,
-    );
-    const resources = [...(node.resources || [])];
+    const extras = curatedResourcesForNode(hay);
+    const resources = [...(node.resources || [])].filter((r) => {
+      if (r.type !== "video") return true;
+      return isVideoOnTopic(hay, r.title, r.channel);
+    });
     const seen = new Set(resources.map((r) => r.url));
-    if (!resources.some((r) => r.type === "video" && /youtube\.com|youtu\.be/i.test(r.url || ""))) {
+    if (
+      yt &&
+      !resources.some((r) => r.type === "video" && /youtube\.com|youtu\.be/i.test(r.url || ""))
+    ) {
       resources.unshift({ title: yt.title, url: yt.url, type: "video", suggested: false });
       seen.add(yt.url);
     }

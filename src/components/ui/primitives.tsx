@@ -5,7 +5,6 @@ import {
   type ButtonHTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode,
-  type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
 } from "react";
 import { AlertCircle, Inbox, LoaderCircle } from "lucide-react";
@@ -138,7 +137,7 @@ export const IconButton = forwardRef<
   );
 });
 
-const fieldClass =
+export const fieldClass =
   "w-full min-h-11 rounded-[var(--radius-md)] border border-[var(--border-light)] bg-[var(--bg-card)] px-3.5 py-2.5 text-xs text-[var(--text-main)] transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--text-placeholder)] focus-visible:border-[var(--border-focus)] focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_var(--ring-soft)] disabled:cursor-not-allowed disabled:opacity-60 lg:text-sm";
 
 export function Input({
@@ -158,13 +157,6 @@ export function Textarea({
       {...props}
     />
   );
-}
-
-export function Select({
-  className,
-  ...props
-}: SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select className={cn(fieldClass, className)} {...props} />;
 }
 
 export function Field({

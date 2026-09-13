@@ -2,31 +2,29 @@
 
 import { Calendar } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { generationStageQuestionsFromForm } from "@/lib/roadmap/generation-questions";
+import type { RoadmapGenerationMode } from "@/lib/roadmap/generation-questions";
 import { OnboardingCard, StepHeader, labelClass } from "../onboarding-ui";
-
-const TIMELINES = ["1 month", "3 months", "6 months", "9 months", "1 year", "No fixed deadline"];
-const PRIORITIES = [
-  "Build skills",
-  "Get internship",
-  "Get job",
-  "Build portfolio",
-  "Improve coding",
-  "Prepare for interviews",
-  "Build projects",
-  "Earn through freelancing",
-  "Contribute to open source",
-];
 
 export default function TimelineSection({
   data,
   onChange,
+  mode = null,
 }: {
   data: Record<string, unknown>;
   onChange: (data: Record<string, unknown>) => void;
   hideRole?: boolean;
+  mode?: RoadmapGenerationMode | null;
 }) {
+  const stage = generationStageQuestionsFromForm(data, mode);
   const timeline = typeof data.timeline === "string" ? data.timeline : "";
   const priority = typeof data.priority === "string" ? data.priority : "";
+  const timelines = timeline && !stage.timeline.timelines.includes(timeline)
+    ? [...stage.timeline.timelines, timeline]
+    : stage.timeline.timelines;
+  const priorities = priority && !stage.timeline.priorities.includes(priority)
+    ? [...stage.timeline.priorities, priority]
+    : stage.timeline.priorities;
 
   return (
     <OnboardingCard>
@@ -34,13 +32,13 @@ export default function TimelineSection({
         icon={<Calendar size={22} aria-hidden />}
         kicker="Deadline"
         title="Timeline and priority"
-        subtitle="This sets estimated weeks and which nodes are marked critical."
+        subtitle={stage.timeline.subtitle}
       />
 
       <div>
         <p className={labelClass}>When do you want to achieve your goal?</p>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-2.5">
-          {TIMELINES.map((t) => (
+          {timelines.map((t) => (
             <button
               key={t}
               type="button"
@@ -60,9 +58,9 @@ export default function TimelineSection({
       </div>
 
       <div>
-        <p className={labelClass}>What is your biggest priority right now?</p>
+        <p className={labelClass}>{stage.timeline.priorityPrompt}</p>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-2.5">
-          {PRIORITIES.map((p) => (
+          {priorities.map((p) => (
             <button
               key={p}
               type="button"

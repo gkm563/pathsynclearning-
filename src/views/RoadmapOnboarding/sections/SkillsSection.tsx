@@ -1,16 +1,15 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Plus, Wrench, X } from "lucide-react";
 import { IconButton, Input } from "@/components/ui";
 import { cn } from "@/lib/cn";
+import {
+  generationStageQuestionsFromForm,
+  isCanonicalStageSkill,
+} from "@/lib/roadmap/generation-questions";
+import type { RoadmapGenerationMode } from "@/lib/roadmap/generation-questions";
 import { OnboardingCard, Pill, StepHeader, labelClass } from "../onboarding-ui";
-
-const COMMON_SKILLS = [
-  "HTML", "CSS", "JavaScript", "TypeScript", "Python", "C", "C++", "Java",
-  "React", "Next.js", "Node.js", "Express", "Flutter", "React Native",
-  "SQL", "MongoDB", "PostgreSQL", "Git", "Docker", "AWS", "Linux", "Figma",
-];
 
 const CONFIDENCE_LEVELS = [
   "Never used",
@@ -41,13 +40,32 @@ function asSkills(value: unknown): SkillRow[] {
 export default function SkillsSection({
   data,
   onChange,
+  mode = null,
 }: {
   data: Record<string, unknown>;
   onChange: (data: Record<string, unknown>) => void;
   hideRole?: boolean;
+  mode?: RoadmapGenerationMode | null;
 }) {
+  const stage = generationStageQuestionsFromForm(data, mode);
+  const options = stage.skills.options;
+  const optionSet = useMemo(
+    () => new Set(options.map((s) => s.toLowerCase())),
+    [options],
+  );
   const skills = asSkills(data.skills);
   const [customSkill, setCustomSkill] = useState("");
+
+  useEffect(() => {
+    const next = skills.filter(
+      (row) =>
+        optionSet.has(row.skill.toLowerCase()) || !isCanonicalStageSkill(row.skill),
+    );
+    if (next.length === skills.length) return;
+    onChange({ ...data, skills: next });
+    // Only prune when the path's skill catalog changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage.pathLabel, options.join("|")]);
 
   const toggleSkill = (skill: string) => {
     const existing = skills.find((s) => s.skill === skill);
@@ -81,14 +99,14 @@ export default function SkillsSection({
       <StepHeader
         icon={<Wrench size={22} aria-hidden />}
         kicker="Baseline"
-        title="Current skills"
-        subtitle="Rate what you already know so we skip advanced nodes you have already earned."
+        title={stage.skills.title}
+        subtitle={stage.skills.subtitle}
       />
 
       <div>
-        <p className={labelClass}>What skills do you already know?</p>
+        <p className={labelClass}>{stage.skills.prompt}</p>
         <div className="mb-4 flex flex-wrap gap-2">
-          {COMMON_SKILLS.map((skill) => (
+          {options.map((skill) => (
             <Pill
               key={skill}
               selected={Boolean(skills.find((s) => s.skill === skill))}

@@ -27,10 +27,10 @@ export {
   Input,
   PageHeader,
   PageSpinner,
-  Select,
   Skeleton,
   Textarea,
 } from "./primitives";
+export { Select } from "./Select";
 
 // Overlays.
 export { Dialog, ConfirmDialog } from "./Dialog";

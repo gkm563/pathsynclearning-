@@ -27,6 +27,7 @@ import RoadmapToolbar from './RoadmapToolbar';
 import RoadmapDetailPanel from './RoadmapDetailPanel';
 import RoadmapOverview from './RoadmapOverview';
 import NodeAssessmentModal from './assessment/NodeAssessmentModal';
+import FinalInterviewGate from './FinalInterviewGate';
 import { isAssessableNode } from '@/lib/roadmap/assessment';
 import { Focus } from 'lucide-react';
 import { Alert, IconButton } from '@/components/ui';
@@ -517,6 +518,8 @@ export default function RoadmapCanvas({
         targetCompany={roadmap.targetCompany}
         nodes={roadmap.nodes}
         progress={progressMap}
+        certificationStatus={roadmap.certificationStatus}
+        certifiedAt={roadmap.certifiedAt}
         onSwitched={async () => {
           didFitRef.current = false;
           await onRefresh?.();
@@ -650,6 +653,12 @@ export default function RoadmapCanvas({
           <Alert tone="error">{statusError}</Alert>
         </div>
       )}
+
+      <FinalInterviewGate
+        roadmapId={roadmap.id}
+        status={roadmap.certificationStatus}
+        certifiedAt={roadmap.certifiedAt}
+      />
 
       <RoadmapDetailPanel
         node={selectedNode}

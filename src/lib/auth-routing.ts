@@ -2,7 +2,7 @@ import { routes } from "@/lib/routes";
 
 /**
  * Ensure DB user exists, then return where a signed-in user should land.
- * Teachers/recruiters go home; students go straight to the dashboard.
+ * Teachers/recruiters go home; students go to optional onboarding when pending.
  */
 export async function resolvePostAuthPath(
   roleHint: string = "student",
@@ -27,5 +27,18 @@ export async function resolvePostAuthPath(
   }
 
   if (role !== "student") return routes.home;
+
+  try {
+    const onboarding = await fetch("/api/me/onboarding", {
+      credentials: "include",
+    });
+    if (onboarding.ok) {
+      const body = (await onboarding.json()) as { completed?: boolean };
+      if (!body.completed) return routes.app.onboarding;
+    }
+  } catch {
+    // dashboard is a safe fallback
+  }
+
   return routes.app.dashboard;
 }

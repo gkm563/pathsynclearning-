@@ -88,6 +88,32 @@ export const profileUpdateSchema = z
   })
   .strict();
 
+export const onboardingCareerPathSchema = z.enum(["decided", "help"]);
+
+export const onboardingSaveSchema = z
+  .object({
+    action: z.enum(["save", "complete", "skip"]),
+    basics: z
+      .object({
+        fullName: z.string().trim().min(1).max(120).optional(),
+        institute: optionalText(200),
+        degree: optionalText(120),
+        branch: optionalText(120),
+        gradYear: optionalText(16),
+        location: optionalText(120),
+      })
+      .optional(),
+    career: z
+      .object({
+        path: onboardingCareerPathSchema.nullable().optional(),
+        targetRole: optionalText(200),
+        interests: z.array(z.string().trim().min(1).max(80)).max(12).optional(),
+      })
+      .optional(),
+    generateRoadmap: z.boolean().optional(),
+  })
+  .strict();
+
 export const settingsUpdateSchema = z
   .object({
     theme: z.enum(["light", "dark"]).optional(),
@@ -576,6 +602,8 @@ export const interviewTrackSchema = z.enum([
 ]);
 
 export const interviewModeSchema = z.enum(["voice", "text"]);
+export const interviewDifficultySchema = z.enum(["easy", "medium", "hard"]);
+export const interviewStyleSchema = z.enum(["supportive", "balanced", "strict"]);
 
 export const interviewCreateSchema = z
   .object({
@@ -586,8 +614,15 @@ export const interviewCreateSchema = z
     durationMinutes: z
       .number()
       .int()
-      .refine((n): n is 15 | 20 | 30 => n === 15 || n === 20 || n === 30)
+      .refine((n): n is 5 | 10 | 15 | 20 | 30 =>
+        n === 5 || n === 10 || n === 15 || n === 20 || n === 30,
+      )
       .optional(),
+    difficulty: interviewDifficultySchema.optional().default("medium"),
+    style: interviewStyleSchema.optional().default("balanced"),
+    focus: z.string().trim().max(120).optional().default(""),
+    roadmapId: z.string().uuid().optional().nullable(),
+    purpose: z.enum(["practice", "roadmap_final"]).optional().default("practice"),
   })
   .strict();
 
@@ -595,6 +630,7 @@ export const interviewTurnSchema = z
   .object({
     message: z.string().trim().min(1).max(8000),
     source: z.enum(["text", "voice"]).optional().default("text"),
+    code: z.string().max(80_000).optional(),
   })
   .strict();
 
@@ -606,7 +642,14 @@ export const interviewBrowserTranscriptSchema = z
 
 export const interviewIntegritySchema = z
   .object({
-    type: z.enum(["tab_hidden", "tab_visible", "paste", "fullscreen_exit"]),
+    type: z.enum([
+      "tab_hidden",
+      "tab_visible",
+      "paste",
+      "fullscreen_exit",
+      "window_blur",
+      "clipboard_blocked",
+    ]),
   })
   .strict();
 

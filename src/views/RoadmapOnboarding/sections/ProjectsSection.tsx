@@ -3,17 +3,9 @@
 import { Briefcase, Plus, Trash2 } from "lucide-react";
 import { Button, Checkbox, IconButton, Input, Select } from "@/components/ui";
 import { cn } from "@/lib/cn";
+import { generationStageQuestionsFromForm } from "@/lib/roadmap/generation-questions";
+import type { RoadmapGenerationMode } from "@/lib/roadmap/generation-questions";
 import { OnboardingCard, StepHeader, labelClass } from "../onboarding-ui";
-
-const EXPERIENCE_LEVELS = [
-  "None",
-  "Personal projects",
-  "College projects",
-  "Open source",
-  "Internship",
-  "Freelance",
-  "Professional",
-];
 
 const DIFFICULTIES = ["Beginner", "Intermediate", "Advanced"];
 
@@ -45,15 +37,21 @@ function asProjects(value: unknown): ProjectRow[] {
 export default function ProjectsSection({
   data,
   onChange,
+  mode = null,
 }: {
   data: Record<string, unknown>;
   onChange: (data: Record<string, unknown>) => void;
   hideRole?: boolean;
+  mode?: RoadmapGenerationMode | null;
 }) {
+  const stage = generationStageQuestionsFromForm(data, mode);
   const hasProjects = Boolean(data.hasProjects);
   const projects = asProjects(data.projects);
   const realWorldExperience =
     typeof data.realWorldExperience === "string" ? data.realWorldExperience : "";
+  const experience = realWorldExperience && !stage.projects.experience.includes(realWorldExperience)
+    ? [...stage.projects.experience, realWorldExperience]
+    : stage.projects.experience;
 
   const addProject = () => {
     if (projects.length >= 5) return;
@@ -81,12 +79,12 @@ export default function ProjectsSection({
       <StepHeader
         icon={<Briefcase size={22} aria-hidden />}
         kicker="Proof"
-        title="Projects and experience"
-        subtitle="Existing work lets us skip beginner project nodes."
+        title={stage.projects.title}
+        subtitle={stage.projects.subtitle}
       />
 
       <div>
-        <p className={labelClass}>Have you built any projects?</p>
+        <p className={labelClass}>{stage.projects.prompt}</p>
         <div className="flex gap-2.5">
           {["Yes", "No"].map((opt) => {
             const isYes = opt === "Yes";
@@ -131,12 +129,12 @@ export default function ProjectsSection({
               </IconButton>
               <div className="mt-2 flex flex-col gap-3 pr-10">
                 <Input
-                  placeholder="Project Name"
+                  placeholder={stage.projects.namePlaceholder}
                   value={proj.name}
                   onChange={(e) => updateProject(idx, "name", e.target.value)}
                 />
                 <Input
-                  placeholder="Technologies (comma separated)"
+                  placeholder={stage.projects.techPlaceholder}
                   value={proj.tech}
                   onChange={(e) => updateProject(idx, "tech", e.target.value)}
                 />
@@ -178,7 +176,7 @@ export default function ProjectsSection({
       <div>
         <p className={labelClass}>Real-world experience</p>
         <div className="flex flex-wrap gap-2.5">
-          {EXPERIENCE_LEVELS.map((exp) => (
+          {experience.map((exp) => (
             <button
               key={exp}
               type="button"

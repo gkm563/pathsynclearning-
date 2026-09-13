@@ -5,18 +5,25 @@ import { useParams, useRouter } from "next/navigation";
 import {
   Camera,
   CameraOff,
+  Check,
+  CheckCircle2,
   Clock,
   Code2,
-  MessageSquare,
+  Maximize,
   Mic,
   MicOff,
-  Send,
+  Minimize2,
+  Monitor,
+  ShieldAlert,
   SlidersHorizontal,
-  X,
 } from "lucide-react";
 import CodeEditor from "@/components/roadmap/assessment/CodeEditor";
 import {
+  Alert,
+  Badge,
   Button,
+  Card,
+  Checkbox,
   Dialog,
   ErrorState,
   Field,
@@ -24,13 +31,18 @@ import {
   PageSpinner,
   Select,
   Switch,
-  Textarea,
   useToast,
 } from "@/components/ui";
 import { apiGet, apiSend } from "@/lib/api";
-import { interviewerInvitedCode } from "@/lib/ai/interview-code";
+import {
+  codingEditorShouldStayOpen,
+  interviewerAskedToWriteAgain,
+  interviewerInvitedCode,
+  studentAskedToCheckCode,
+} from "@/lib/ai/interview-code";
 import { interviewReportPath } from "@/lib/routes";
 import type {
+  InterviewIntegrityEvent,
   InterviewSessionPublic,
   InterviewTurnPublic,
 } from "@/lib/ai/interview-types";
@@ -51,6 +63,14 @@ import {
   type MediaDeviceOption,
 } from "@/lib/ai/interview-voice";
 import { cn } from "@/lib/cn";
+import {
+  isProctoringEnabled,
+  MAX_PROCTOR_VIOLATIONS,
+  PROCTOR_DEDUP_MS,
+  PROCTOR_GRACE_MS,
+} from "@/lib/proctoring";
+
+const PROCTORING_ENABLED = isProctoringEnabled();
 
 function formatClock(totalSec: number) {
   const m = Math.floor(totalSec / 60);
@@ -85,12 +105,13 @@ export default function PlatformInterviewRoom() {
   const toast = useToast();
   const [session, setSession] = useState<InterviewSessionPublic | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [ending, setEnding] = useState(false);
+  const [wrappingUp, setWrappingUp] = useState(false);
   const [code, setCode] = useState("");
   const [showCode, setShowCode] = useState(false);
   const [codeUnlocked, setCodeUnlocked] = useState(false);
+  const [checking, setChecking] = useState(false);
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
   const [agentLive, setAgentLive] = useState(false);
@@ -104,7 +125,6 @@ export default function PlatformInterviewRoom() {
   const [speechOk, setSpeechOk] = useState(true);
   const [interviewerSpeaking, setInterviewerSpeaking] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [composerOpen, setComposerOpen] = useState(false);
   const [opening, setOpening] = useState(false);
   const [prefs, setPrefs] = useState<InterviewMediaPrefs>(defaultPrefsSafe);
   const [audioInputs, setAudioInputs] = useState<MediaDeviceOption[]>([]);
@@ -134,6 +154,24 @@ export default function PlatformInterviewRoom() {
   );
   const committingRef = useRef(false);
   const openedRef = useRef(false);
+  const keepCodeOpenRef = useRef(false);
+  const [holdListen, setHoldListen] = useState(true);
+  const [proctorPhase, setProctorPhase] = useState<"guidelines" | "starting" | "ready">(
+    () => (PROCTORING_ENABLED ? "guidelines" : "ready"),
+  );
+  const [proctorAck, setProctorAck] = useState(!PROCTORING_ENABLED);
+  const [fsReady, setFsReady] = useState(false);
+  const [fsError, setFsError] = useState("");
+  const [violations, setViolations] = useState<Array<{ kind: string; at: string }>>([]);
+  const [countdown, setCountdown] = useState(3);
+  const shellRef = useRef<HTMLDivElement>(null);
+  const failedRef = useRef(false);
+  const violationsRef = useRef<Array<{ kind: string; at: string }>>([]);
+  const armedRef = useRef(false);
+  const graceUntilRef = useRef(0);
+  const finishRef = useRef<(opts?: { proctorFailed?: boolean }) => Promise<void>>(
+    async () => undefined,
+  );
 
   const load = useCallback(async () => {
     const res = await apiGet<{ session: InterviewSessionPublic }>(
@@ -172,8 +210,10 @@ export default function PlatformInterviewRoom() {
   }, []);
 
   useEffect(() => {
-    if (session?.status === "completed") router.replace(interviewReportPath(id));
-  }, [id, router, session?.status]);
+    if (session?.status === "completed" && !wrappingUp && !ending) {
+      router.replace(interviewReportPath(id));
+    }
+  }, [ending, id, router, session?.status, wrappingUp]);
 
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
@@ -181,12 +221,23 @@ export default function PlatformInterviewRoom() {
 
   useEffect(() => {
     if (!session || session.status !== "live" || openedRef.current) return;
+    if (PROCTORING_ENABLED && proctorPhase !== "ready") return;
     if (session.turns.some((turn) => turn.role === "interviewer")) {
       openedRef.current = true;
+      setHoldListen(false);
       return;
     }
     openedRef.current = true;
     setOpening(true);
+    setHoldListen(true);
+    setInterviewerSpeaking(true);
+    const unlockListen = () => {
+      window.setTimeout(() => {
+        setInterviewerSpeaking(false);
+        setOpening(false);
+        setHoldListen(false);
+      }, 500);
+    };
     void apiSend<{ session: InterviewSessionPublic; reply: string }>(
       `/api/ai/interview/sessions/${id}/open`,
       "POST",
@@ -197,16 +248,20 @@ export default function PlatformInterviewRoom() {
         if (res.session.mode === "voice" && prefsRef.current.speakReplies && res.reply) {
           speakInterviewReply(res.reply, {
             onStart: () => setInterviewerSpeaking(true),
-            onEnd: () => setInterviewerSpeaking(false),
+            onEnd: unlockListen,
           });
+          return;
         }
+        unlockListen();
       })
       .catch((err: Error) => {
         openedRef.current = false;
+        setInterviewerSpeaking(false);
+        setOpening(false);
+        setHoldListen(false);
         toast.error(err.message || "Could not start the interviewer.");
-      })
-      .finally(() => setOpening(false));
-  }, [id, session, toast]);
+      });
+  }, [id, session, toast, proctorPhase]);
 
   const elapsed = useMemo(() => {
     if (!session) return 0;
@@ -219,33 +274,116 @@ export default function PlatformInterviewRoom() {
 
   useEffect(() => {
     if (!session?.plan.coding) return;
-    const asked = session.turns.some(
-      (turn) =>
-        turn.role === "interviewer" &&
-        interviewerInvitedCode(turn.content, session.plan.coding?.title),
-    );
-    if (asked) setCodeUnlocked(true);
+    const stayOpen =
+      keepCodeOpenRef.current ||
+      codingEditorShouldStayOpen(session.turns, session.plan.coding.title);
+    setCodeUnlocked(stayOpen);
+    if (!stayOpen) setShowCode(false);
   }, [session]);
 
   useEffect(() => {
     if (!session || session.status !== "live") return;
+    if (proctorPhase !== "ready") return;
+
+    if (!PROCTORING_ENABLED) {
+      const onVis = () => {
+        void apiSend(`/api/ai/interview/sessions/${id}/integrity`, "POST", {
+          type: document.hidden ? "tab_hidden" : "tab_visible",
+        }).catch(() => {});
+      };
+      const onPaste = () => {
+        void apiSend(`/api/ai/interview/sessions/${id}/integrity`, "POST", {
+          type: "paste",
+        }).catch(() => {});
+      };
+      document.addEventListener("visibilitychange", onVis);
+      window.addEventListener("paste", onPaste);
+      return () => {
+        document.removeEventListener("visibilitychange", onVis);
+        window.removeEventListener("paste", onPaste);
+      };
+    }
+
+    armedRef.current = true;
+    graceUntilRef.current = Date.now() + PROCTOR_GRACE_MS;
+
+    const post = (type: InterviewIntegrityEvent["type"]) => {
+      void apiSend<{ failed?: boolean }>(
+        `/api/ai/interview/sessions/${id}/integrity`,
+        "POST",
+        { type },
+      )
+        .then((res) => {
+          if (res.failed && !failedRef.current) {
+            failedRef.current = true;
+            armedRef.current = false;
+            void finishRef.current({ proctorFailed: true });
+          }
+        })
+        .catch(() => {});
+    };
+
+    const pushViolation = (kind: InterviewIntegrityEvent["type"]) => {
+      if (failedRef.current || !armedRef.current) return;
+      if (Date.now() < graceUntilRef.current) return;
+      const last = violationsRef.current[violationsRef.current.length - 1];
+      if (
+        last &&
+        last.kind === kind &&
+        Date.now() - new Date(last.at).getTime() < PROCTOR_DEDUP_MS
+      ) {
+        return;
+      }
+      const next = [
+        ...violationsRef.current,
+        { kind, at: new Date().toISOString() },
+      ];
+      violationsRef.current = next;
+      setViolations(next);
+      post(kind);
+      if (next.length >= MAX_PROCTOR_VIOLATIONS) {
+        failedRef.current = true;
+        armedRef.current = false;
+        void finishRef.current({ proctorFailed: true });
+      }
+    };
+
+    const blockClipboard = (e: Event) => {
+      e.preventDefault();
+      pushViolation("clipboard_blocked");
+    };
     const onVis = () => {
-      void apiSend(`/api/ai/interview/sessions/${id}/integrity`, "POST", {
-        type: document.hidden ? "tab_hidden" : "tab_visible",
-      }).catch(() => {});
+      if (document.hidden) pushViolation("tab_hidden");
     };
-    const onPaste = () => {
-      void apiSend(`/api/ai/interview/sessions/${id}/integrity`, "POST", {
-        type: "paste",
-      }).catch(() => {});
+    const onBlur = () => {
+      const active = document.activeElement;
+      if (shellRef.current?.contains(active)) return;
+      pushViolation("window_blur");
     };
+    const onFs = () => {
+      setFsReady(Boolean(document.fullscreenElement));
+      if (!document.fullscreenElement) pushViolation("fullscreen_exit");
+    };
+
+    document.addEventListener("copy", blockClipboard);
+    document.addEventListener("cut", blockClipboard);
+    document.addEventListener("paste", blockClipboard);
+    document.addEventListener("contextmenu", blockClipboard);
     document.addEventListener("visibilitychange", onVis);
-    window.addEventListener("paste", onPaste);
+    window.addEventListener("blur", onBlur);
+    document.addEventListener("fullscreenchange", onFs);
+
     return () => {
+      armedRef.current = false;
+      document.removeEventListener("copy", blockClipboard);
+      document.removeEventListener("cut", blockClipboard);
+      document.removeEventListener("paste", blockClipboard);
+      document.removeEventListener("contextmenu", blockClipboard);
       document.removeEventListener("visibilitychange", onVis);
-      window.removeEventListener("paste", onPaste);
+      window.removeEventListener("blur", onBlur);
+      document.removeEventListener("fullscreenchange", onFs);
     };
-  }, [id, session]);
+  }, [id, session, proctorPhase]);
 
   const refreshDevices = useCallback(async () => {
     const next = await listMediaDevices();
@@ -284,6 +422,7 @@ export default function PlatformInterviewRoom() {
 
   useEffect(() => {
     if (!session || session.mode !== "voice" || session.status !== "live") return;
+    if (PROCTORING_ENABLED && proctorPhase !== "ready") return;
     let cancelled = false;
     (async () => {
       try {
@@ -340,7 +479,7 @@ export default function PlatformInterviewRoom() {
     };
     // Media device switches are applied via updatePrefs, not by restarting this effect.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, session?.id, session?.mode, session?.status, session?.livekitConfigured, session?.livekitRoom, toast, startMedia, refreshDevices]);
+  }, [id, session?.id, session?.mode, session?.status, session?.livekitConfigured, session?.livekitRoom, toast, startMedia, refreshDevices, proctorPhase]);
 
   const updatePrefs = async (patch: Partial<InterviewMediaPrefs>) => {
     const next = { ...prefs, ...patch };
@@ -375,12 +514,13 @@ export default function PlatformInterviewRoom() {
 
   const sendText = async (text: string, source: "text" | "voice" = "text") => {
     const message = text.trim();
-    if (!message || sending) return;
+    if (!message || sending || ending || checking) return;
     recognitionRef.current?.abort();
     setListening(false);
+    const reviewing = studentAskedToCheckCode(message);
+    if (reviewing) setChecking(true);
     setPendingSpeech(message);
     setSending(true);
-    setDraft("");
     setHeardFinal("");
     setHeardInterim("");
     try {
@@ -388,28 +528,73 @@ export default function PlatformInterviewRoom() {
         reply: string;
         showCode?: boolean;
         endInterview?: boolean;
+        coding?: InterviewSessionPublic["plan"]["coding"];
         turn: InterviewTurnPublic;
-      }>(`/api/ai/interview/sessions/${id}/turn`, "POST", { message, source });
-      if (
-        res.showCode ||
-        interviewerInvitedCode(res.reply, session?.plan.coding?.title)
-      ) {
+      }>(`/api/ai/interview/sessions/${id}/turn`, "POST", {
+        message,
+        source,
+        code: code || undefined,
+      });
+      if (res.coding) {
+        const prevSlug = session?.plan.coding?.slug;
+        setSession((prev) =>
+          prev ? { ...prev, plan: { ...prev.plan, coding: res.coding! } } : prev,
+        );
+        if (res.coding.slug !== prevSlug) {
+          setCode(res.coding.starterCode || "");
+        }
+      }
+      const writeAgain = interviewerAskedToWriteAgain(res.reply);
+      const invited =
+        !reviewing &&
+        (res.showCode ||
+          interviewerInvitedCode(res.reply, res.coding?.title || session?.plan.coding?.title));
+      if (reviewing && !writeAgain) {
+        keepCodeOpenRef.current = false;
+        setShowCode(false);
+        setCodeUnlocked(false);
+      } else if (invited || (reviewing && writeAgain)) {
+        keepCodeOpenRef.current = true;
         setCodeUnlocked(true);
         setShowCode(true);
       }
-      if (session?.mode === "voice" && prefs.speakReplies && res.reply) {
+      const shouldSpeak =
+        session?.mode === "voice" && prefs.speakReplies && Boolean(res.reply);
+      if (res.endInterview) {
+        setWrappingUp(true);
+        setHoldListen(true);
+      }
+      if (shouldSpeak) {
+        setInterviewerSpeaking(true);
+        setHoldListen(true);
         speakInterviewReply(res.reply, {
           onStart: () => setInterviewerSpeaking(true),
-          onEnd: () => setInterviewerSpeaking(false),
+          onEnd: () => {
+            if (res.endInterview) {
+              window.setTimeout(() => {
+                setEnding(true);
+                router.push(interviewReportPath(id));
+              }, 600);
+              return;
+            }
+            window.setTimeout(() => {
+              setInterviewerSpeaking(false);
+              setHoldListen(false);
+            }, 400);
+          },
         });
       }
       await load();
       setPendingSpeech("");
-      if (res.endInterview) router.push(interviewReportPath(id));
+      if (res.endInterview && !shouldSpeak) {
+        setEnding(true);
+        router.push(interviewReportPath(id));
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not send");
     } finally {
       setSending(false);
+      setChecking(false);
     }
   };
   sendTextRef.current = sendText;
@@ -505,13 +690,15 @@ export default function PlatformInterviewRoom() {
       speechOk &&
       !micError &&
       !sending &&
+      !checking &&
       !ending &&
+      !wrappingUp &&
       !interviewerSpeaking &&
+      !holdListen &&
       !settingsOpen &&
-      !opening &&
-      !composerOpen;
+      !opening;
     if (!shouldListen) {
-      if (sending || ending || interviewerSpeaking || !micOn) {
+      if (sending || checking || ending || wrappingUp || interviewerSpeaking || holdListen || opening || !micOn) {
         recognitionRef.current?.abort();
         setListening(false);
       }
@@ -524,45 +711,90 @@ export default function PlatformInterviewRoom() {
     return () => window.clearTimeout(retry);
   }, [
     interviewerSpeaking,
+    holdListen,
     listening,
     micError,
     micOn,
     micReady,
     prefs.autoListen,
     sending,
+    checking,
     ending,
+    wrappingUp,
     opening,
-    composerOpen,
     session,
     settingsOpen,
     speechOk,
     startListening,
   ]);
 
-  const finish = async () => {
+  const finish = async (opts?: { proctorFailed?: boolean }) => {
     if (ending) return;
     setEnding(true);
     recognitionRef.current?.abort();
     setListening(false);
     window.speechSynthesis?.cancel();
     try {
-      if (code.trim()) {
+      if (code.trim() && !opts?.proctorFailed) {
         await apiSend(`/api/ai/interview/sessions/${id}/code`, "POST", { code });
       }
-      await apiSend(`/api/ai/interview/sessions/${id}/finish`, "POST");
+      const q = opts?.proctorFailed ? "?proctor=1" : "";
+      await apiSend(`/api/ai/interview/sessions/${id}/finish${q}`, "POST");
+      if (document.fullscreenElement) {
+        document.exitFullscreen?.().catch(() => {});
+      }
       router.push(interviewReportPath(id));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not finish");
       setEnding(false);
     }
   };
+  finishRef.current = finish;
+
+  const enterFullscreen = useCallback(async () => {
+    setFsError("");
+    try {
+      const el = shellRef.current || document.documentElement;
+      if (!document.fullscreenElement) {
+        await el.requestFullscreen();
+      }
+      setFsReady(Boolean(document.fullscreenElement));
+    } catch {
+      setFsReady(false);
+      setFsError(
+        "Fullscreen was blocked. Allow fullscreen for this site, then click again.",
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    const onFs = () => setFsReady(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", onFs);
+    return () => document.removeEventListener("fullscreenchange", onFs);
+  }, []);
+
+  useEffect(() => {
+    if (proctorPhase !== "starting") return;
+    setCountdown(3);
+    const timer = window.setInterval(() => {
+      setCountdown((c) => {
+        if (c <= 1) {
+          window.clearInterval(timer);
+          setProctorPhase("ready");
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [proctorPhase]);
 
   if (error) {
     return <ErrorState title="Interview unavailable" description={error} />;
   }
   if (!session) return <PageSpinner label="Joining interview" />;
 
-  if (session.status === "completed") {
+  if (session.status === "completed" && !wrappingUp && !ending) {
     return <PageSpinner label="Opening report" />;
   }
 
@@ -575,6 +807,10 @@ export default function PlatformInterviewRoom() {
       !session.turns.some((turn) => turn.role === "student"));
   const chatStatus = ending
     ? "Ending interview…"
+    : wrappingUp
+      ? "Interviewer is wrapping up…"
+    : checking
+      ? "Checking your code…"
     : opening && session.turns.length === 0
       ? "Interviewer is joining…"
       : interviewerSpeaking
@@ -585,23 +821,28 @@ export default function PlatformInterviewRoom() {
             ? "Hearing you…"
             : listening
               ? "Listening…"
+              : session.plan.awaitingEndConfirm
+                ? "Say yes to end, or no to continue"
               : awaitingStart
                 ? 'Say "start interview" when you are ready'
               : micError
                 ? micError
                 : !speechOk && session.mode === "voice"
-                  ? "Voice unavailable — type your answer."
+                  ? "Voice unavailable — check microphone permissions."
                   : !micOn && session.mode === "voice"
                     ? "Mic muted"
                     : "";
   const showChatDots =
-    opening || sending || interviewerSpeaking || listening || userSpeaking || ending;
+    opening || sending || checking || interviewerSpeaking || listening || userSpeaking || ending || wrappingUp;
 
   return (
     <div
+      ref={shellRef}
       className="interview-stage fixed inset-0 flex flex-col overflow-hidden"
       style={{
         zIndex: "var(--z-fullscreen)",
+        userSelect:
+          PROCTORING_ENABLED && proctorPhase === "ready" ? "none" : "auto",
         ["--iv-level" as string]: userSpeaking
           ? String(Math.min(1, voiceLevel * 1.35))
           : "0",
@@ -612,20 +853,121 @@ export default function PlatformInterviewRoom() {
       <audio ref={remoteAudioRef} autoPlay className="sr-only" />
       {ending ? <InterviewEndLoader /> : null}
 
+      {PROCTORING_ENABLED && proctorPhase !== "ready" ? (
+        <div className="relative z-20 flex flex-1 items-center justify-center overflow-auto p-6">
+          {proctorPhase === "starting" ? (
+            <div className="flex flex-col items-center justify-center gap-3">
+              <div className="type-numeric text-[72px] font-extrabold text-[var(--primary)]">
+                {countdown || "Go"}
+              </div>
+              <p className="type-body text-[var(--iv-muted)]">
+                Proctoring begins now — stay in fullscreen
+              </p>
+            </div>
+          ) : (
+            <Card className="w-full max-w-[560px]">
+              <div className="mb-4 flex items-center gap-2.5">
+                <Monitor size={22} className="text-primary" />
+                <h2 className="type-h3 m-0">Before you start</h2>
+              </div>
+              <p className="type-small mt-0 text-muted">
+                This is a proctored {session.plan.purpose === "roadmap_final" ? "certification" : "practice"}{" "}
+                interview ({session.durationMinutes} min). Proctoring starts only after you
+                confirm the environment is ready.
+              </p>
+              <ul className="type-body mb-5 list-disc pl-[18px] text-ink">
+                <li>Stay in fullscreen for the whole interview</li>
+                <li>Do not switch tabs or leave this window</li>
+                <li>Copy, paste, and right-click are disabled</li>
+                <li>{MAX_PROCTOR_VIOLATIONS} proctoring violations = automatic fail</li>
+                <li>Close extra apps/notifications that may steal focus</li>
+              </ul>
+              <Button
+                type="button"
+                variant={fsReady ? "secondary" : "outline"}
+                className="mb-3 w-full"
+                onClick={() => void enterFullscreen()}
+              >
+                {fsReady ? <CheckCircle2 size={18} /> : <Maximize size={18} />}
+                {fsReady ? "Fullscreen ready" : "Enter fullscreen"}
+              </Button>
+              {fsError ? <p className="type-small m-0 text-danger">{fsError}</p> : null}
+              <Checkbox
+                checked={proctorAck}
+                onChange={setProctorAck}
+                label="I have read the guidelines and my environment is ready (fullscreen on, no other tabs needed)."
+                className="mb-4"
+              />
+              <Button
+                type="button"
+                disabled={!proctorAck || !fsReady}
+                className="w-full"
+                onClick={() => {
+                  if (!document.fullscreenElement) {
+                    void enterFullscreen().then(() => {
+                      if (document.fullscreenElement) setProctorPhase("starting");
+                    });
+                    return;
+                  }
+                  setProctorPhase("starting");
+                }}
+              >
+                Start interview
+              </Button>
+            </Card>
+          )}
+        </div>
+      ) : (
+        <>
       <header className="relative z-10 flex shrink-0 items-center justify-between px-5 pt-5 sm:px-8">
         <div className="inline-flex items-center gap-2 text-sm text-[var(--iv-muted)]">
-          <Clock size={15} className={remaining < 60 ? "text-[var(--error)]" : "text-[var(--success)]"} />
+          <Clock
+            size={15}
+            className={
+              remaining <= 0
+                ? "text-[var(--iv-muted)]"
+                : remaining < 60
+                  ? "text-[var(--error)]"
+                  : "text-[var(--success)]"
+            }
+          />
           <span className="tabular-nums">{formatClock(elapsed)}</span>
+          {PROCTORING_ENABLED ? (
+            <Badge tone="error" className="ml-2">
+              Proctored
+            </Badge>
+          ) : null}
+          {PROCTORING_ENABLED ? (
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 text-sm",
+                violations.length ? "text-[var(--error)]" : "",
+              )}
+            >
+              <ShieldAlert size={15} />
+              {violations.length}/{MAX_PROCTOR_VIOLATIONS}
+            </span>
+          ) : null}
         </div>
         <button
           type="button"
-          onClick={() => void finish()}
+          onClick={() => void sendText("I'd like to end the interview", "text")}
           disabled={sending || ending}
           className="rounded-full border border-[var(--iv-line)] px-4 py-1.5 text-sm text-[var(--iv-ink)] transition-colors hover:border-[var(--error)] hover:text-[var(--error)] disabled:opacity-60"
         >
           {ending ? "Ending…" : "End interview"}
         </button>
       </header>
+
+      {PROCTORING_ENABLED && violations.length > 0 ? (
+        <div className="relative z-10 mx-5 mt-3 sm:mx-8">
+          <Alert tone="error" title="Proctoring alert">
+            {violations[violations.length - 1]?.kind.replace(/_/g, " ")}.{" "}
+            {Math.max(0, MAX_PROCTOR_VIOLATIONS - violations.length)} warning(s)
+            left before auto-fail.
+          </Alert>
+        </div>
+      ) : null}
 
       <div className="relative z-10 mx-auto grid min-h-0 w-full max-w-6xl flex-1 grid-cols-1 grid-rows-[minmax(0,1fr)_auto] items-stretch gap-6 overflow-hidden px-5 py-6 sm:px-10 lg:grid-cols-[minmax(0,1fr)_minmax(280px,420px)] lg:grid-rows-1 lg:gap-8">
         <div
@@ -745,21 +1087,10 @@ export default function PlatformInterviewRoom() {
           >
             <SlidersHorizontal size={16} />
           </button>
-          <button
-            type="button"
-            aria-label={composerOpen ? "Close text reply" : "Type a reply"}
-            onClick={() => setComposerOpen((open) => !open)}
-            className={cn(
-              "inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-[var(--bg-alt)]",
-              composerOpen ? "text-[var(--primary)]" : "text-[var(--iv-ink)]",
-            )}
-          >
-            <MessageSquare size={16} />
-          </button>
           {codeUnlocked && session.plan.coding ? (
             <button
               type="button"
-              aria-label={showCode ? "Close editor" : "Open editor"}
+              aria-label={showCode ? "Minimize editor" : "Open editor"}
               onClick={() => setShowCode((open) => !open)}
               className={cn(
                 "inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-[var(--bg-alt)]",
@@ -797,32 +1128,6 @@ export default function PlatformInterviewRoom() {
           </button>
           </div>
         </div>
-        {composerOpen ? (
-          <div className="mt-3 flex w-full max-w-xl gap-2 px-5">
-            <Textarea
-              value={draft}
-              disabled={sending}
-              placeholder="Type your answer"
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  void sendText(draft).then(() => setComposerOpen(false));
-                }
-              }}
-              className="!min-h-[2.75rem] max-h-20 flex-1 resize-none overflow-y-auto"
-            />
-            <Button
-              onClick={() => {
-                void sendText(draft).then(() => setComposerOpen(false));
-              }}
-              loading={sending}
-              disabled={!draft.trim()}
-            >
-              <Send size={16} aria-hidden />
-            </Button>
-          </div>
-        ) : null}
       </div>
 
       {showCode && session.plan.coding ? (
@@ -831,21 +1136,44 @@ export default function PlatformInterviewRoom() {
             <div className="min-w-0">
               <p className="type-caption m-0 text-[var(--primary)]">Coding round</p>
               <h2 className="m-0 text-base font-semibold">{session.plan.coding.title}</h2>
+              {session.plan.coding.prompt ? (
+                <p className="type-caption m-0 mt-1 line-clamp-3 text-[var(--iv-muted)]">
+                  {session.plan.coding.prompt}
+                </p>
+              ) : null}
             </div>
-            <button
-              type="button"
-              aria-label="Close editor"
-              onClick={() => setShowCode(false)}
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--iv-ink)] hover:bg-[var(--bg-alt)]"
-            >
-              <X size={16} />
-            </button>
+            <div className="flex shrink-0 items-center gap-1">
+              <button
+                type="button"
+                aria-label="Check code"
+                disabled={checking || sending || ending}
+                onClick={() => void sendText("Please check the code in the editor.", "text")}
+                className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-sm text-[var(--iv-ink)] hover:bg-[var(--bg-alt)] disabled:opacity-50"
+              >
+                <Check size={16} />
+                {checking ? "Checking…" : "Check"}
+              </button>
+              <button
+                type="button"
+                aria-label="Minimize editor"
+                onClick={() => setShowCode(false)}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--iv-ink)] hover:bg-[var(--bg-alt)]"
+              >
+                <Minimize2 size={16} />
+              </button>
+            </div>
           </div>
-          <div className="h-[calc(100%-4.5rem)]">
+          <div className="relative h-[calc(100%-4.5rem)]">
+            {checking ? (
+              <div className="absolute inset-0 z-10 grid place-items-center bg-[color-mix(in_srgb,var(--bg-card)_78%,transparent)] backdrop-blur-[2px]">
+                <p className="m-0 text-sm font-medium text-[var(--iv-muted)]">Checking your code…</p>
+              </div>
+            ) : null}
             <CodeEditor
               value={code || session.plan.coding.starterCode || ""}
               language="javascript"
               onChange={setCode}
+              readOnly={checking}
               minHeight={280}
               variant="leetcode"
             />
@@ -959,6 +1287,8 @@ export default function PlatformInterviewRoom() {
           </FieldGroup>
         </div>
       </Dialog>
+        </>
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import type { InterviewTrack } from "./interview-types";
 
 const START_PHRASE =
-  /^(ok |okay |yes |yeah )?(please )?(let'?s )?(start|begin)( the)?( interview| mock)?$|^(i('m| am) )?ready$/;
+  /^((ok|okay|yes|yeah|yep|alright|sure|well|we'll|we will|please|let'?s|i('m| am) ready)\s+)*(start|begin)(\s+the)?(\s+(interview|mock))?$|^(i('m| am) )?ready$/;
 
 const DSA_ANGLES = [
   "a concrete debugging story with a failing edge case",
@@ -37,13 +37,55 @@ const REMINDERS = [
   'Take a second to get comfortable. Say "start interview" when you want to begin.',
 ];
 
-export function isStartInterviewPhrase(text: string): boolean {
-  const spoken = text
+function normalizeSpoken(text: string) {
+  return text
     .toLowerCase()
     .replace(/[^\w\s']/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-  return Boolean(spoken) && START_PHRASE.test(spoken);
+}
+
+export function isStartInterviewPhrase(text: string): boolean {
+  const spoken = normalizeSpoken(text);
+  if (!spoken) return false;
+  if (START_PHRASE.test(spoken)) return true;
+  const words = spoken.split(" ");
+  return (
+    words.length <= 10 &&
+    /\b(start|begin)\b/.test(spoken) &&
+    /\b(interview|mock)\b/.test(spoken)
+  );
+}
+
+/** After the mock is live, ignore start/enter/ready chatter so we do not restart. */
+export function looksLikeStartNoise(text: string): boolean {
+  const spoken = normalizeSpoken(text);
+  if (!spoken) return false;
+  if (isStartInterviewPhrase(spoken)) return true;
+  if (spoken.split(" ").length > 28) return false;
+  const leftover = spoken
+    .replace(
+      /\b(ok|okay|now|yes|yeah|yep|sure|well|we'll|we|will|can|could|please|let'?s|the|this|that|and|to|a|i|am|ready|start|begin|enter|join|handle|kick|off|interview|mock)\b/g,
+      " ",
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+  return leftover.length < 10 && /\b(interview|mock)\b/.test(spoken);
+}
+
+export function alreadyLiveNudge(): string {
+  return "We're already in the interview. Go ahead and answer the last question.";
+}
+
+const CLOSINGS = [
+  "Thanks for your time today. We'll stop here.",
+  "Appreciate you walking through that. That's a wrap.",
+  "Thank you — good practice. We'll end here.",
+  "Thanks for sitting with this. We'll stop here.",
+];
+
+export function closingThanks(seed: number): string {
+  return pickFromList(CLOSINGS, seed);
 }
 
 export function pickFromList<T>(items: T[], seed: number): T {
@@ -64,8 +106,9 @@ export function pickQuestionAngle(
   track: InterviewTrack,
   seed: number,
   used: string[] = [],
+  studiedTopics: string[] = [],
 ): string {
-  const pool = anglesForTrack(track);
+  const pool = studiedTopics.length ? studiedTopics : anglesForTrack(track);
   const unused = pool.filter((angle) => !used.includes(angle));
   return pickFromList(unused.length ? unused : pool, seed);
 }
