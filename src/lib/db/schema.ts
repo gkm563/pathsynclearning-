@@ -128,6 +128,11 @@ export const userSettings = pgTable("user_settings", {
   pushNotifications: boolean("push_notifications").notNull().default(true),
   productUpdates: boolean("product_updates").notNull().default(true),
   profileVisibility: text("profile_visibility").notNull().default("public"),
+  /** Student-chosen companion name; empty/null resolves to Nova. */
+  copilotName: text("copilot_name"),
+  /** Optional notes pasted from ChatGPT / Claude / Gemini. */
+  copilotMemory: text("copilot_memory"),
+  copilotMemorySource: text("copilot_memory_source"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

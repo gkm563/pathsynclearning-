@@ -36,7 +36,7 @@ export function OnboardingNudge() {
         <div>
           <p className="type-h4 m-0 text-ink">Finish optional setup</p>
           <p className="type-small mt-1 mb-0 text-muted">
-            Add basics, pick a career (or let us help), then generate a roadmap or skip.
+            Add basics, name your companion, pick a career (or skip that step), then generate a roadmap.
           </p>
         </div>
       </div>

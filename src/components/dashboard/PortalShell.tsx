@@ -3,6 +3,8 @@
 import { useState, type ReactNode } from "react";
 import { CopilotDrawer } from "@/components/copilot/CopilotDrawer";
 import { CopilotFab } from "@/components/copilot/CopilotFab";
+import { CompanionDirector } from "@/components/copilot/CompanionDirector";
+import { CompanionVoice } from "@/components/copilot/CompanionVoice";
 import { CopilotProvider } from "@/components/copilot/CopilotProvider";
 import AppNavbar from "./AppNavbar";
 import DashboardSidebar, { DesktopSidebar } from "./DashboardSidebar";
@@ -54,6 +56,8 @@ export default function PortalShell({ children }: { children: ReactNode }) {
         </div>
 
         <CopilotFab />
+        <CompanionVoice />
+        <CompanionDirector />
         <CopilotDrawer />
       </div>
     </CopilotProvider>

@@ -57,6 +57,7 @@ export type CopilotChatResponse = {
   threadId: string;
   messageId?: string;
   navigate?: CopilotNavigate[];
+  interact?: import("./copilot-interact").CopilotInteract[];
   proposedWrites?: CopilotProposedWrite[];
   refused?: boolean;
   fallback?: boolean;

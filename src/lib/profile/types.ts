@@ -1,3 +1,8 @@
+import {
+  DEFAULT_COPILOT_NAME,
+  isCopilotMemorySource,
+} from "@/lib/ai/copilot-identity";
+
 export type ProfileVisibility = "public" | "private" | "connections";
 export type ThemePreference = "light" | "dark";
 
@@ -29,6 +34,9 @@ export type PreferencesFormState = {
   pushNotifications: boolean;
   productUpdates: boolean;
   profileVisibility: ProfileVisibility;
+  copilotName: string;
+  copilotMemory: string;
+  copilotMemorySource: "" | "chatgpt" | "claude" | "gemini";
 };
 
 export type ProfileSession = {
@@ -75,6 +83,9 @@ export const EMPTY_PREFERENCES: PreferencesFormState = {
   pushNotifications: true,
   productUpdates: true,
   profileVisibility: "public",
+  copilotName: DEFAULT_COPILOT_NAME,
+  copilotMemory: "",
+  copilotMemorySource: "",
 };
 
 export function mapApiProfile(
@@ -121,6 +132,11 @@ export function mapApiSettings(
     pushNotifications: s.push_notifications !== false,
     productUpdates: s.product_updates !== false,
     profileVisibility: visibility,
+    copilotName: String(s.copilot_name || DEFAULT_COPILOT_NAME),
+    copilotMemory: String(s.copilot_memory || ""),
+    copilotMemorySource: isCopilotMemorySource(s.copilot_memory_source)
+      ? s.copilot_memory_source
+      : "",
   };
 }
 

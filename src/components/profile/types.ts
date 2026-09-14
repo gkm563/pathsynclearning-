@@ -43,6 +43,9 @@ export type ApiSettings = {
   push_notifications?: boolean | null;
   product_updates?: boolean | null;
   profile_visibility?: string | null;
+  copilot_name?: string | null;
+  copilot_memory?: string | null;
+  copilot_memory_source?: string | null;
 };
 
 export type ApiSession = {
@@ -101,7 +104,7 @@ export const PROFILE_SECTIONS: readonly ProfileSection[] = [
   {
     id: "preferences",
     label: "Preferences",
-    description: "Theme, notification channels and profile visibility.",
+    description: "Theme, companion, notification channels and profile visibility.",
     icon: Settings2,
   },
 ];

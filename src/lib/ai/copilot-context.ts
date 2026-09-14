@@ -8,12 +8,23 @@ import { getActiveRoadmap } from "@/lib/roadmap/active";
 import type { RoadmapNode } from "@/types/roadmap";
 import { parseCopilotPageEntity } from "./copilot-href";
 import type { CopilotPageEntity } from "./copilot-types";
+import {
+  firstNameFrom,
+  isCopilotMemorySource,
+  resolveCopilotName,
+} from "./copilot-identity";
 
 export type CopilotStudentContext = {
   page: string;
   pageEntity: CopilotPageEntity;
+  companion: {
+    name: string;
+    memory: string;
+    memorySource: string | null;
+  };
   student: {
     name: string;
+    firstName: string;
     cri: number;
     xp: number;
     coins: number;
@@ -129,12 +140,21 @@ export async function buildCopilotContext(
   }
 
   const degree = [profileRow?.degree, profileRow?.branch].filter(Boolean).join(" · ") || null;
+  const fullName = user.full_name || profileRow?.username || "Student";
 
   return {
     page,
     pageEntity: entity,
+    companion: {
+      name: resolveCopilotName(settingsRow?.copilotName),
+      memory: settingsRow?.copilotMemory || "",
+      memorySource: isCopilotMemorySource(settingsRow?.copilotMemorySource)
+        ? settingsRow.copilotMemorySource
+        : null,
+    },
     student: {
-      name: user.full_name || profileRow?.username || "Student",
+      name: fullName,
+      firstName: firstNameFrom(fullName),
       cri: profileRow?.cri ?? 0,
       xp: profileRow?.xp ?? 0,
       coins: walletRow?.coins ?? 0,

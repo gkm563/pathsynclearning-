@@ -106,6 +106,7 @@ export function ProfileOverview({
         onJump={onJump}
         cta={{ label: "Edit preferences", section: "preferences" }}
         items={[
+          { label: "Companion", value: prefs.copilotName || "Nova" },
           { label: "Theme", value: prefs.theme === "dark" ? "Dark" : "Light" },
           { label: "Notifications", value: channels(prefs) },
           {

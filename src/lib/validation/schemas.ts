@@ -115,6 +115,15 @@ export const onboardingSaveSchema = z
       })
       .optional(),
     generateRoadmap: z.boolean().optional(),
+    skipCareer: z.boolean().optional(),
+    companion: z
+      .object({
+        name: z.string().trim().max(24).optional(),
+        skipName: z.boolean().optional(),
+        memorySource: z.enum(["chatgpt", "claude", "gemini"]).nullable().optional(),
+        memoryText: z.string().max(8000).optional(),
+      })
+      .optional(),
   })
   .strict();
 
@@ -127,6 +136,12 @@ export const settingsUpdateSchema = z
     pushNotifications: z.boolean().optional(),
     productUpdates: z.boolean().optional(),
     profileVisibility: z.enum(["public", "private", "connections"]).optional(),
+    copilotName: z.string().trim().max(24).optional(),
+    copilotMemorySource: z
+      .enum(["chatgpt", "claude", "gemini"])
+      .nullable()
+      .optional(),
+    copilotMemory: z.string().max(8000).optional(),
   })
   .strict();
 
@@ -565,6 +580,20 @@ export const copilotChatSchema = z
     threadId: z.string().uuid().nullable().optional(),
     history: z.array(copilotHistorySchema).max(16).optional().default([]),
     pathname: z.string().trim().max(240).optional().default("/dashboard"),
+    ui: z
+      .array(
+        z
+          .object({
+            id: z.string().trim().min(1).max(80),
+            label: z.string().trim().min(1).max(80),
+            kind: z.enum(["link", "button", "tab", "input"]),
+            href: z.string().trim().max(240).optional(),
+          })
+          .strict(),
+      )
+      .max(80)
+      .optional()
+      .default([]),
   })
   .strict();
 

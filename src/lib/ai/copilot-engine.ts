@@ -1,6 +1,6 @@
 import "server-only";
 import { callAIWithFallback } from "@/lib/ai/llm";
-import { COPILOT_SYSTEM_INSTRUCTION, buildCopilotPrompt } from "./copilot-prompt";
+import { copilotSystemInstruction, buildCopilotPrompt } from "./copilot-prompt";
 import type { CopilotStudentContext } from "./copilot-context";
 import { normalizeCopilotHref } from "./copilot-href";
 import {
@@ -13,6 +13,7 @@ import type {
   CopilotNavigate,
   CopilotProposedWrite,
 } from "./copilot-types";
+import type { CopilotInteract, CopilotUiSnapshotItem } from "./copilot-interact";
 
 type ToolCall = { name: string; arguments: Record<string, unknown> };
 
@@ -21,6 +22,7 @@ type CopilotJson = {
   reply?: unknown;
   tool_calls?: unknown;
   navigate?: unknown;
+  interact?: unknown;
   proposed_writes?: unknown;
 };
 
@@ -88,6 +90,44 @@ function parseNavigate(raw: unknown, extra: ToolCall[]): CopilotNavigate[] {
   }
 
   return items.slice(0, 4);
+}
+
+function parseInteract(raw: unknown, extra: ToolCall[]): CopilotInteract[] {
+  const items: CopilotInteract[] = [];
+  const push = (id: unknown, label: unknown, href: unknown) => {
+    const next: CopilotInteract = { type: "click" };
+    if (typeof id === "string" && id.trim()) next.id = id.trim().slice(0, 80);
+    if (typeof label === "string" && label.trim()) next.label = label.trim().slice(0, 80);
+    if (typeof href === "string" && href.startsWith("/") && !href.startsWith("//")) {
+      next.href = href.trim().split("#")[0].slice(0, 240);
+    }
+    if (!next.id && !next.label && !next.href) return;
+    if (
+      items.some(
+        (item) =>
+          item.id === next.id && item.label === next.label && item.href === next.href,
+      )
+    ) {
+      return;
+    }
+    items.push(next);
+  };
+
+  if (Array.isArray(raw)) {
+    for (const item of raw.slice(0, 4)) {
+      const rec = asRecord(item);
+      if (!rec) continue;
+      push(rec.id, rec.label, rec.href);
+    }
+  }
+
+  for (const call of extra) {
+    if (call.name === "click_ui" || call.name === "click" || call.name === "press") {
+      push(call.arguments.id, call.arguments.label, call.arguments.href);
+    }
+  }
+
+  return items.slice(0, 3);
 }
 
 function parseProposedWrites(
@@ -183,6 +223,18 @@ const GEMINI_SCHEMA = {
         },
       },
     },
+    interact: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          type: { type: "string" },
+          id: { type: "string" },
+          label: { type: "string" },
+          href: { type: "string" },
+        },
+      },
+    },
     proposed_writes: {
       type: "array",
       items: {
@@ -206,9 +258,11 @@ export async function runCopilotTurn(input: {
   ctx: CopilotStudentContext;
   message: string;
   history: CopilotHistoryTurn[];
+  ui?: CopilotUiSnapshotItem[];
 }): Promise<{
   reply: string;
   navigate: CopilotNavigate[];
+  interact: CopilotInteract[];
   proposedWrites: CopilotProposedWrite[];
   refused?: boolean;
   fallback?: boolean;
@@ -221,13 +275,14 @@ export async function runCopilotTurn(input: {
       input.message,
       input.history,
       toolResults,
+      input.ui || [],
     );
 
     let raw: CopilotJson;
     try {
       raw = await callAIWithFallback<CopilotJson>({
         prompt,
-        systemInstruction: COPILOT_SYSTEM_INSTRUCTION,
+        systemInstruction: copilotSystemInstruction(input.ctx.companion.name),
         userId: input.userId,
         groqModel: "openai/gpt-oss-120b",
         geminiSchema: GEMINI_SCHEMA,
@@ -237,13 +292,20 @@ export async function runCopilotTurn(input: {
         reasoningEffort: "low",
       });
     } catch {
-      return { reply: copilotFallbackReply(), navigate: [], proposedWrites: [], fallback: true };
+      return {
+        reply: copilotFallbackReply(input.ctx.companion.name),
+        navigate: [],
+        interact: [],
+        proposedWrites: [],
+        fallback: true,
+      };
     }
 
     if (parseInScope(raw) === false) {
       return {
-        reply: copilotScopeRefusal("off_topic"),
+        reply: copilotScopeRefusal("off_topic", input.ctx.companion.name),
         navigate: [],
+        interact: [],
         proposedWrites: [],
         refused: true,
       };
@@ -274,14 +336,21 @@ export async function runCopilotTurn(input: {
       continue;
     }
 
-    const reply = asReply(raw) || copilotFallbackReply();
+    const reply = asReply(raw) || copilotFallbackReply(input.ctx.companion.name);
     return {
       reply,
       navigate: parseNavigate(raw.navigate, calls),
+      interact: parseInteract(raw.interact, calls),
       proposedWrites: parseProposedWrites(raw.proposed_writes, calls),
       fallback: !asReply(raw),
     };
   }
 
-  return { reply: copilotFallbackReply(), navigate: [], proposedWrites: [], fallback: true };
+  return {
+    reply: copilotFallbackReply(input.ctx.companion.name),
+    navigate: [],
+    interact: [],
+    proposedWrites: [],
+    fallback: true,
+  };
 }

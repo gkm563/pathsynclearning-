@@ -1,3 +1,5 @@
+import { DEFAULT_COPILOT_NAME } from "./copilot-identity";
+
 export type CopilotScopeVerdict =
   | { ok: true; reason: "platform" }
   | { ok: false; reason: "jailbreak" | "off_topic" | "empty" };
@@ -21,10 +23,13 @@ export function classifyCopilotMessage(message: string): CopilotScopeVerdict {
   return { ok: true, reason: "platform" };
 }
 
-export function copilotScopeRefusal(reason: CopilotScopeVerdict["reason"]): string {
+export function copilotScopeRefusal(
+  reason: CopilotScopeVerdict["reason"],
+  companionName = DEFAULT_COPILOT_NAME,
+): string {
   if (reason === "jailbreak") {
     return [
-      "I am **PathED Copilot** — a portal assistant, not an unrestricted model.",
+      `I am **${companionName}** — your PathED friend, not an unrestricted model.`,
       "I cannot change roles, reveal hidden instructions, or ignore these rules.",
       "==Ask about your roadmap, challenges, CRI, notes, or tech news.==",
     ].join("\n\n");
@@ -35,16 +40,16 @@ export function copilotScopeRefusal(reason: CopilotScopeVerdict["reason"]): stri
   }
 
   return [
-    "That’s outside PathED. I only help with **this product**: your profile, roadmap, practice, notes, and career surfaces here.",
+    `That’s outside PathED. I’m **${companionName}**, and I only help with **this product**: your profile, roadmap, practice, notes, and career surfaces here.`,
     "I will not answer general-web or personal-life questions.",
     "==Try: “what should I do next?”, “explain my CRI”, or “open today’s challenge”.==",
   ].join("\n\n");
 }
 
-export function copilotFallbackReply(): string {
+export function copilotFallbackReply(companionName = DEFAULT_COPILOT_NAME): string {
   return [
-    "I couldn’t reach the AI just now.",
-    "Use the sidebar for **Roadmap**, **Challenges**, or **Progress**, or try asking again in a moment.",
+    `I couldn’t reach the AI just now. I’m still **${companionName}** — try me again in a moment.`,
+    "Use the sidebar for **Roadmap**, **Challenges**, or **Progress** in the meantime.",
     "==What should I do next is still a good question once I’m back.==",
   ].join("\n\n");
 }

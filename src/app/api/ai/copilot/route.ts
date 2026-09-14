@@ -21,7 +21,8 @@ export async function POST(request: Request) {
 
     const verdict = classifyCopilotMessage(body.message);
     if (!verdict.ok) {
-      const reply = copilotScopeRefusal(verdict.reason);
+      const ctx = await buildCopilotContext(user, body.pathname || "/dashboard");
+      const reply = copilotScopeRefusal(verdict.reason, ctx.companion.name);
       const { threadId, assistantMessageId } = await appendCopilotTurn({
         userId: user.id,
         threadId: body.threadId,
@@ -34,6 +35,7 @@ export async function POST(request: Request) {
         messageId: assistantMessageId,
         navigate: [],
         proposedWrites: [],
+        interact: [],
         refused: true,
       });
     }
@@ -44,6 +46,7 @@ export async function POST(request: Request) {
       ctx,
       message: body.message,
       history: body.history || [],
+      ui: body.ui || [],
     });
 
     const { threadId, assistantMessageId } = await appendCopilotTurn({
@@ -61,6 +64,7 @@ export async function POST(request: Request) {
       messageId: assistantMessageId,
       navigate: result.navigate,
       proposedWrites: result.proposedWrites,
+      interact: result.interact,
       refused: result.refused,
       fallback: result.fallback,
     });

@@ -481,7 +481,6 @@ export default function PlatformInterviewRoom() {
       window.speechSynthesis?.cancel();
     };
     // Media device switches are applied via updatePrefs, not by restarting this effect.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, session?.id, session?.mode, session?.status, session?.livekitConfigured, session?.livekitRoom, toast, startMedia, refreshDevices, proctorPhase]);
 
   const updatePrefs = async (patch: Partial<InterviewMediaPrefs>) => {

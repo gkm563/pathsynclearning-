@@ -14,7 +14,6 @@ import {
   Trophy,
   UserRound,
 } from "lucide-react";
-import { CopilotLaunchButton } from "@/components/copilot/CopilotProvider";
 import { Avatar, Breadcrumb, IconButton, Menu } from "@/components/ui";
 import { BrandMark } from "@/components/ui/BrandMark";
 import { useDismiss } from "@/hooks/useOverlay";
@@ -266,11 +265,12 @@ export default function AppNavbar({ onMenuOpen }: { onMenuOpen: () => void }) {
         <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
           <Link
             href={routes.app.store}
+            data-companion-nav="store"
+            data-companion-href={routes.app.store}
             className="type-label hidden rounded-[var(--radius-md)] border border-line px-3 py-1.5 font-semibold text-muted transition-colors hover:bg-sunken hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:inline-flex"
           >
             Store
           </Link>
-          <CopilotLaunchButton />
           <NotificationBell />
           <AccountMenu />
         </div>

@@ -44,6 +44,8 @@ export default function MobileTabBar({ onMoreOpen }: { onMoreOpen: () => void })
               <Link
                 href={item.href}
                 aria-current={active ? "page" : undefined}
+                data-companion-nav={item.id}
+                data-companion-href={item.href}
                 className={cn(
                   itemClass,
                   // 48px minimum target height.

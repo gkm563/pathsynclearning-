@@ -64,7 +64,6 @@ export default function SkillsSection({
     if (next.length === skills.length) return;
     onChange({ ...data, skills: next });
     // Only prune when the path's skill catalog changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage.pathLabel, options.join("|")]);
 
   const toggleSkill = (skill: string) => {

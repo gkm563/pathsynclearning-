@@ -1,8 +1,9 @@
 import { eq } from "drizzle-orm";
+import { persistCopilotCompanion } from "@/lib/ai/copilot-companion-store";
 import { AppError } from "@/lib/api/errors";
 import { parseJson, errorResponse, jsonResponse } from "@/lib/api/http";
 import { getDb } from "@/lib/db/client";
-import { profiles, roadmapProfiles, users } from "@/lib/db/schema";
+import { profiles, roadmapProfiles, userSettings, users } from "@/lib/db/schema";
 import { requireDbUser } from "@/lib/db/users";
 import { recordCareerGoalChange } from "@/lib/memory/processor";
 import { isStudentOnboardingPending } from "@/lib/onboarding/status";
@@ -11,6 +12,7 @@ import {
 } from "@/lib/roadmap/hydrate-from-account";
 import {
   EMPTY_ONBOARDING_CAREER,
+  companionFromSettings,
   parseOnboardingMeta,
   type OnboardingMeta,
   type OnboardingStatus,
@@ -39,6 +41,16 @@ async function loadStatus(userId: string): Promise<OnboardingStatus> {
     .where(eq(profiles.userId, userId))
     .limit(1);
 
+  const [settings] = await db
+    .select({
+      copilotName: userSettings.copilotName,
+      copilotMemory: userSettings.copilotMemory,
+      copilotMemorySource: userSettings.copilotMemorySource,
+    })
+    .from(userSettings)
+    .where(eq(userSettings.userId, userId))
+    .limit(1);
+
   const meta = parseOnboardingMeta(row?.additionalData);
   const pending = await isStudentOnboardingPending(userId);
   return {
@@ -60,6 +72,7 @@ async function loadStatus(userId: string): Promise<OnboardingStatus> {
       outcome: meta?.outcome ?? "",
       followUps: meta?.followUps ?? {},
     },
+    companion: companionFromSettings(settings ?? null),
   };
 }
 
@@ -118,14 +131,31 @@ export async function POST(request: Request) {
           : (prevMeta?.outcome ?? null),
       followUps: body.career?.followUps ?? prevMeta?.followUps ?? {},
       generateNow: false,
-      skipped: body.action === "skip",
+      skipped: false,
+      careerSkipped: prevMeta?.careerSkipped === true,
     };
+
+    if (body.skipCareer) {
+      nextMeta.careerPath = null;
+      nextMeta.targetRole = null;
+      nextMeta.careerSkipped = true;
+    } else if (body.career?.path) {
+      nextMeta.careerSkipped = false;
+    }
+
     if (body.action === "complete") {
       nextMeta.generateNow = body.generateRoadmap === true;
-      nextMeta.skipped = false;
     } else if (body.action === "save") {
       nextMeta.generateNow = prevMeta?.generateNow === true;
-      nextMeta.skipped = false;
+    }
+
+    if (body.companion) {
+      await persistCopilotCompanion(user.id, {
+        name: body.companion.name,
+        skipName: body.companion.skipName === true,
+        memoryText: body.companion.memoryText,
+        memorySource: body.companion.memorySource ?? null,
+      });
     }
 
     const profilePatch: Record<string, unknown> = {
@@ -136,7 +166,7 @@ export async function POST(request: Request) {
       },
     };
 
-    if (body.action === "complete" || body.action === "skip") {
+    if (body.action === "complete") {
       profilePatch.additionalCompleted = true;
     }
 

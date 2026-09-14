@@ -99,6 +99,13 @@
       "when": 1788980000000,
       "tag": "0013_roadmap_certification",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1788990000000,
+      "tag": "0014_copilot_companion",
+      "breakpoints": true
     }
   ]
 }

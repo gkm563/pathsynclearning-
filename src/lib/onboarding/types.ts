@@ -1,3 +1,9 @@
+import {
+  DEFAULT_COPILOT_NAME,
+  isCopilotMemorySource,
+  type CopilotMemorySource,
+} from "@/lib/ai/copilot-identity";
+
 export type OnboardingCareerPath = "decided" | "help";
 
 export type OnboardingBasics = {
@@ -19,6 +25,13 @@ export type OnboardingCareer = {
   followUps: Record<string, string>;
 };
 
+export type OnboardingCompanion = {
+  name: string;
+  skipName: boolean;
+  memorySource: CopilotMemorySource | null;
+  memoryText: string;
+};
+
 export type OnboardingMeta = {
   version: 1;
   careerPath: OnboardingCareerPath | null;
@@ -30,12 +43,14 @@ export type OnboardingMeta = {
   followUps: Record<string, string>;
   generateNow: boolean;
   skipped: boolean;
+  careerSkipped: boolean;
 };
 
 export type OnboardingStatus = {
   completed: boolean;
   basics: OnboardingBasics;
   career: OnboardingCareer;
+  companion: OnboardingCompanion;
 };
 
 export const EMPTY_ONBOARDING_BASICS: OnboardingBasics = {
@@ -55,6 +70,13 @@ export const EMPTY_ONBOARDING_CAREER: OnboardingCareer = {
   strengths: [],
   outcome: "",
   followUps: {},
+};
+
+export const EMPTY_ONBOARDING_COMPANION: OnboardingCompanion = {
+  name: "",
+  skipName: false,
+  memorySource: null,
+  memoryText: "",
 };
 
 export function parseOnboardingMeta(data: unknown): OnboardingMeta | null {
@@ -88,5 +110,22 @@ export function parseOnboardingMeta(data: unknown): OnboardingMeta | null {
     followUps,
     generateNow: o.generateNow === true,
     skipped: o.skipped === true,
+    careerSkipped: o.careerSkipped === true,
+  };
+}
+
+export function companionFromSettings(row: {
+  copilotName?: string | null;
+  copilotMemory?: string | null;
+  copilotMemorySource?: string | null;
+} | null): OnboardingCompanion {
+  const name = row?.copilotName?.trim() || "";
+  return {
+    name: name && name !== DEFAULT_COPILOT_NAME ? name : name,
+    skipName: !name,
+    memorySource: isCopilotMemorySource(row?.copilotMemorySource)
+      ? row.copilotMemorySource
+      : null,
+    memoryText: row?.copilotMemory || "",
   };
 }

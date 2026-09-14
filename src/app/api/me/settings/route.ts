@@ -1,4 +1,8 @@
 import { eq } from "drizzle-orm";
+import {
+  resolveCopilotName,
+  sanitizeCopilotMemory,
+} from "@/lib/ai/copilot-identity";
 import { parseJson, errorResponse, jsonResponse } from "@/lib/api/http";
 import { getDb } from "@/lib/db/client";
 import { mapSettings } from "@/lib/db/mappers";
@@ -48,6 +52,16 @@ export async function PUT(request: Request) {
     }
     if (body.profileVisibility != null) {
       patch.profileVisibility = body.profileVisibility;
+    }
+    if (body.copilotName !== undefined) {
+      patch.copilotName = resolveCopilotName(body.copilotName);
+    }
+    if (body.copilotMemory !== undefined) {
+      const memory = sanitizeCopilotMemory(body.copilotMemory);
+      patch.copilotMemory = memory || null;
+    }
+    if (body.copilotMemorySource !== undefined) {
+      patch.copilotMemorySource = body.copilotMemorySource;
     }
 
     await db

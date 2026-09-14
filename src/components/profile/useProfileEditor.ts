@@ -274,6 +274,9 @@ export function useProfileEditor() {
             pushNotifications: draftPrefs.pushNotifications,
             productUpdates: draftPrefs.productUpdates,
             profileVisibility: draftPrefs.profileVisibility,
+            copilotName: draftPrefs.copilotName,
+            copilotMemory: draftPrefs.copilotMemory,
+            copilotMemorySource: draftPrefs.copilotMemorySource || null,
           },
         );
         const mapped = mapApiSettings(res.settings);

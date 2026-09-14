@@ -89,6 +89,8 @@ function NavLink({
         onClick={onNavigate}
         aria-current={active ? "page" : undefined}
         aria-label={collapsed ? item.label : undefined}
+        data-companion-nav={item.id}
+        data-companion-href={item.href}
         className={cn(
           "group relative flex items-center rounded-[var(--radius-md)]",
           "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring",
@@ -195,6 +197,8 @@ function SidebarFooter({
           onClick={onNavigate}
           aria-current={pathname === routes.app.profile ? "page" : undefined}
           aria-label={collapsed ? student.name || "Your profile" : undefined}
+          data-companion-nav="profile"
+          data-companion-href={routes.app.profile}
           className={cn(
             "flex items-center rounded-[var(--radius-md)] hover:bg-sunken",
             "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring",
@@ -229,6 +233,8 @@ function SidebarFooter({
           href={routes.app.settings}
           onClick={onNavigate}
           aria-label={collapsed ? "Settings" : undefined}
+          data-companion-nav="settings"
+          data-companion-href={routes.app.settings}
           className={cn(
             "type-small flex items-center font-medium text-muted hover:bg-sunken hover:text-ink",
             "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring",

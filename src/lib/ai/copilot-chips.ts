@@ -6,7 +6,17 @@ export type CopilotChip = {
   prompt: string;
 };
 
-export function copilotChipsForPath(pathname: string): CopilotChip[] {
+export function copilotChipsForPath(
+  pathname: string,
+  extra?: CopilotChip,
+): CopilotChip[] {
+  const base = copilotChipsForPathInner(pathname);
+  if (!extra) return base;
+  if (base.some((chip) => chip.label === extra.label)) return base;
+  return [extra, ...base].slice(0, 4);
+}
+
+function copilotChipsForPathInner(pathname: string): CopilotChip[] {
   const path = (pathname || "").split("?")[0];
   const { entity } = parseCopilotPageEntity(path);
 

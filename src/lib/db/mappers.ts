@@ -43,6 +43,9 @@ export function mapSettings(row: {
   pushNotifications?: boolean;
   productUpdates?: boolean;
   profileVisibility?: string;
+  copilotName?: string | null;
+  copilotMemory?: string | null;
+  copilotMemorySource?: string | null;
   updatedAt?: Date | null;
 }) {
   return {
@@ -56,6 +59,9 @@ export function mapSettings(row: {
     push_notifications: row.pushNotifications ?? true,
     product_updates: row.productUpdates ?? true,
     profile_visibility: row.profileVisibility ?? "public",
+    copilot_name: row.copilotName ?? null,
+    copilot_memory: row.copilotMemory ?? null,
+    copilot_memory_source: row.copilotMemorySource ?? null,
     updated_at: row.updatedAt,
   };
 }

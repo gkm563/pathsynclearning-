@@ -26,6 +26,7 @@
     "db:migrate:problems": "npx tsx scripts/migrate-problems-catalog.ts",
     "db:migrate:wallet-coins": "npx tsx scripts/migrate-wallet-starting-coins.ts",
     "db:migrate:copilot": "npx tsx scripts/migrate-copilot-chat.ts",
+    "db:migrate:copilot-companion": "npx tsx scripts/migrate-copilot-companion.ts",
     "db:migrate:interview": "npx tsx scripts/migrate-interview.ts",
     "db:migrate:roadmap-certification": "npx tsx scripts/migrate-roadmap-certification.ts",
     "interview:agent": "node scripts/run-interview-agent.mjs",

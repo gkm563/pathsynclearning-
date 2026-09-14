@@ -6,7 +6,15 @@ import {
   type ProfileVisibility,
   type ThemePreference,
 } from "@/lib/profile/types";
-import { Alert, Button, Card, Switch } from "@/components/ui";
+import {
+  COPILOT_NAME_MAX,
+  COPILOT_NAME_SUGGESTIONS,
+  DEFAULT_COPILOT_NAME,
+} from "@/lib/ai/copilot-identity";
+import { CompanionAvatar } from "@/components/copilot/CompanionAvatar";
+import { CopilotMemoryImport } from "@/components/copilot/CopilotMemoryImport";
+import { useCopilot } from "@/components/copilot/CopilotProvider";
+import { Alert, Button, Card, Input, Switch } from "@/components/ui";
 import { cn } from "@/lib/cn";
 
 const THEMES: { id: ThemePreference; label: string; hint: string }[] = [
@@ -36,6 +44,20 @@ const VISIBILITY: {
   },
 ];
 
+function CompanionVoiceToggle({ name }: { name: string }) {
+  const { voiceAlwaysOn, setVoiceAlwaysOn } = useCopilot();
+  return (
+    <div className="mt-5 border-t border-line pt-4">
+      <Switch
+        label="Always-on voice"
+        description={`Keep listening for “hey ${name}” even when chat is closed. Uses this device’s microphone. Turn off anytime.`}
+        checked={voiceAlwaysOn}
+        onChange={setVoiceAlwaysOn}
+      />
+    </div>
+  );
+}
+
 export function PreferencesSection({
   draft,
   disabled,
@@ -55,7 +77,7 @@ export function PreferencesSection({
       {disabled && onRequestEdit ? (
         <Alert tone="info" title="Preferences are locked">
           <div className="flex flex-wrap items-center gap-3">
-            <span>Switch to editing to change theme, notifications or visibility.</span>
+            <span>Switch to editing to change theme, companion, notifications or visibility.</span>
             <Button size="sm" className="min-h-11" onClick={onRequestEdit}>
               <Pencil size={14} aria-hidden />
               Edit profile
@@ -96,6 +118,55 @@ export function PreferencesSection({
             );
           })}
         </div>
+      </Card>
+
+      <Card>
+        <div className="mb-4 flex items-start gap-3">
+          <CompanionAvatar name={draft.copilotName || DEFAULT_COPILOT_NAME} size="lg" />
+          <div>
+            <h3 className="type-h4 m-0 text-ink">Your companion</h3>
+            <p className="type-small mt-1 mb-0 text-muted">
+              Name your PathED friend. Copy a prompt into ChatGPT, Claude, or Gemini, then paste the reply so they remember you.
+            </p>
+          </div>
+        </div>
+        <div className="mb-3 flex flex-wrap gap-2">
+          {COPILOT_NAME_SUGGESTIONS.map((name) => (
+            <button
+              key={name}
+              type="button"
+              disabled={disabled}
+              onClick={() => onChange("copilotName", name)}
+              className={cn(
+                "type-label rounded-full border px-3 py-1.5",
+                draft.copilotName === name
+                  ? "border-primary bg-primary text-[var(--text-on-primary)]"
+                  : "border-line bg-sunken text-ink",
+                disabled && "cursor-not-allowed opacity-70",
+              )}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+        <Input
+          value={draft.copilotName}
+          maxLength={COPILOT_NAME_MAX}
+          disabled={disabled}
+          placeholder={DEFAULT_COPILOT_NAME}
+          onChange={(e) => onChange("copilotName", e.target.value)}
+        />
+        <div className="mt-5">
+          <CopilotMemoryImport
+            source={draft.copilotMemorySource || null}
+            memory={draft.copilotMemory}
+            companionName={draft.copilotName || DEFAULT_COPILOT_NAME}
+            disabled={disabled}
+            onSource={(next) => onChange("copilotMemorySource", next ?? "")}
+            onMemory={(next) => onChange("copilotMemory", next)}
+          />
+        </div>
+        <CompanionVoiceToggle name={draft.copilotName || DEFAULT_COPILOT_NAME} />
       </Card>
 
       <Card>
