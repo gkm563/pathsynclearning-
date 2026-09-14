@@ -55,6 +55,10 @@ async function loadStatus(userId: string): Promise<OnboardingStatus> {
       path: meta?.careerPath ?? EMPTY_ONBOARDING_CAREER.path,
       targetRole: meta?.targetRole ?? "",
       interests: meta?.interests ?? [],
+      workStyle: meta?.workStyle ?? "",
+      strengths: meta?.strengths ?? [],
+      outcome: meta?.outcome ?? "",
+      followUps: meta?.followUps ?? {},
     },
   };
 }
@@ -103,6 +107,16 @@ export async function POST(request: Request) {
           ? body.career.targetRole
           : (prevMeta?.targetRole ?? null),
       interests: body.career?.interests ?? prevMeta?.interests ?? [],
+      workStyle:
+        body.career?.workStyle !== undefined
+          ? body.career.workStyle
+          : (prevMeta?.workStyle ?? null),
+      strengths: body.career?.strengths ?? prevMeta?.strengths ?? [],
+      outcome:
+        body.career?.outcome !== undefined
+          ? body.career.outcome
+          : (prevMeta?.outcome ?? null),
+      followUps: body.career?.followUps ?? prevMeta?.followUps ?? {},
       generateNow: false,
       skipped: body.action === "skip",
     };

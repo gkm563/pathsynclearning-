@@ -460,20 +460,29 @@ export async function studentInterviewTurn(input: {
         endInterview: false,
       };
     }
-  } else if (phase === "live" && studentAskedToEnd(input.message)) {
+  } else if (studentAskedToEnd(input.message)) {
     await appendInterviewTurn({
       sessionId: input.sessionId,
       role: "student",
       content: input.message,
       source: input.source,
     });
-    plan = { ...plan, awaitingEndConfirm: true };
-    await savePlan(input.sessionId, plan);
-    result = {
-      reply: "Do you want to end the interview? Say yes to finish, or no to continue.",
-      showCode: false,
-      endInterview: false,
-    };
+    if (phase !== "live") {
+      result = {
+        reply: "No problem — we'll stop here. Thanks for dropping in.",
+        showCode: false,
+        endInterview: true,
+        aborted: true,
+      };
+    } else {
+      plan = { ...plan, awaitingEndConfirm: true };
+      await savePlan(input.sessionId, plan);
+      result = {
+        reply: "Do you want to end the interview? Say yes to finish, or no to continue.",
+        showCode: false,
+        endInterview: false,
+      };
+    }
   } else if (phase === "live" && looksLikeStartNoise(input.message)) {
     result = {
       reply: alreadyLiveNudge(),
@@ -589,7 +598,11 @@ export async function studentInterviewTurn(input: {
   });
 
   if (result.endInterview) {
-    await finishInterviewSession(input.userId, input.sessionId);
+    if (result.aborted) {
+      await abortInterviewSession(input.userId, input.sessionId);
+    } else {
+      await finishInterviewSession(input.userId, input.sessionId);
+    }
   }
 
   return {

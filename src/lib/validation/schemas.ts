@@ -108,6 +108,10 @@ export const onboardingSaveSchema = z
         path: onboardingCareerPathSchema.nullable().optional(),
         targetRole: optionalText(200),
         interests: z.array(z.string().trim().min(1).max(80)).max(12).optional(),
+        workStyle: optionalText(80),
+        strengths: z.array(z.string().trim().min(1).max(80)).max(8).optional(),
+        outcome: optionalText(80),
+        followUps: z.record(z.string(), z.string().trim().max(80)).optional(),
       })
       .optional(),
     generateRoadmap: z.boolean().optional(),

@@ -13,6 +13,10 @@ export type OnboardingCareer = {
   path: OnboardingCareerPath | null;
   targetRole: string;
   interests: string[];
+  workStyle: string;
+  strengths: string[];
+  outcome: string;
+  followUps: Record<string, string>;
 };
 
 export type OnboardingMeta = {
@@ -20,6 +24,10 @@ export type OnboardingMeta = {
   careerPath: OnboardingCareerPath | null;
   targetRole: string | null;
   interests: string[];
+  workStyle: string | null;
+  strengths: string[];
+  outcome: string | null;
+  followUps: Record<string, string>;
   generateNow: boolean;
   skipped: boolean;
 };
@@ -43,6 +51,10 @@ export const EMPTY_ONBOARDING_CAREER: OnboardingCareer = {
   path: null,
   targetRole: "",
   interests: [],
+  workStyle: "",
+  strengths: [],
+  outcome: "",
+  followUps: {},
 };
 
 export function parseOnboardingMeta(data: unknown): OnboardingMeta | null {
@@ -53,6 +65,14 @@ export function parseOnboardingMeta(data: unknown): OnboardingMeta | null {
   const o = raw as Record<string, unknown>;
   const careerPath =
     o.careerPath === "decided" || o.careerPath === "help" ? o.careerPath : null;
+  const followUps =
+    o.followUps && typeof o.followUps === "object" && !Array.isArray(o.followUps)
+      ? Object.fromEntries(
+          Object.entries(o.followUps as Record<string, unknown>).filter(
+            (entry): entry is [string, string] => typeof entry[1] === "string",
+          ),
+        )
+      : {};
   return {
     version: 1,
     careerPath,
@@ -60,6 +80,12 @@ export function parseOnboardingMeta(data: unknown): OnboardingMeta | null {
     interests: Array.isArray(o.interests)
       ? o.interests.filter((s): s is string => typeof s === "string")
       : [],
+    workStyle: typeof o.workStyle === "string" ? o.workStyle : null,
+    strengths: Array.isArray(o.strengths)
+      ? o.strengths.filter((s): s is string => typeof s === "string")
+      : [],
+    outcome: typeof o.outcome === "string" ? o.outcome : null,
+    followUps,
     generateNow: o.generateNow === true,
     skipped: o.skipped === true,
   };

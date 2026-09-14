@@ -40,7 +40,7 @@ import {
   interviewerInvitedCode,
   studentAskedToCheckCode,
 } from "@/lib/ai/interview-code";
-import { interviewReportPath } from "@/lib/routes";
+import { interviewReportPath, routes } from "@/lib/routes";
 import type {
   InterviewIntegrityEvent,
   InterviewSessionPublic,
@@ -212,6 +212,9 @@ export default function PlatformInterviewRoom() {
   useEffect(() => {
     if (session?.status === "completed" && !wrappingUp && !ending) {
       router.replace(interviewReportPath(id));
+    }
+    if (session?.status === "aborted" && !wrappingUp && !ending) {
+      router.replace(routes.app.interview);
     }
   }, [ending, id, router, session?.status, wrappingUp]);
 
@@ -528,6 +531,7 @@ export default function PlatformInterviewRoom() {
         reply: string;
         showCode?: boolean;
         endInterview?: boolean;
+        aborted?: boolean;
         coding?: InterviewSessionPublic["plan"]["coding"];
         turn: InterviewTurnPublic;
       }>(`/api/ai/interview/sessions/${id}/turn`, "POST", {
@@ -573,7 +577,7 @@ export default function PlatformInterviewRoom() {
             if (res.endInterview) {
               window.setTimeout(() => {
                 setEnding(true);
-                router.push(interviewReportPath(id));
+                router.push(res.aborted ? routes.app.interview : interviewReportPath(id));
               }, 600);
               return;
             }
@@ -588,7 +592,7 @@ export default function PlatformInterviewRoom() {
       setPendingSpeech("");
       if (res.endInterview && !shouldSpeak) {
         setEnding(true);
-        router.push(interviewReportPath(id));
+        router.push(res.aborted ? routes.app.interview : interviewReportPath(id));
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not send");

@@ -5,7 +5,10 @@ import { useRouter } from "next/navigation";
 import { apiGet, apiSend } from "@/lib/api";
 import { setRoadmapDeferred } from "@/lib/roadmap/defer";
 import { roadmapStartPath, routes } from "@/lib/routes";
-import { suggestRolesFromInterests } from "@/lib/onboarding/career-help";
+import {
+  careerHelpIncomplete,
+  suggestRolesFromHelp,
+} from "@/lib/onboarding/career-help";
 import {
   EMPTY_ONBOARDING_BASICS,
   EMPTY_ONBOARDING_CAREER,
@@ -57,7 +60,7 @@ export default function AccountOnboarding() {
     const typed = career.targetRole.trim();
     if (typed) return typed;
     if (career.path === "help") {
-      return suggestRolesFromInterests(career.interests)[0]?.name ?? "";
+      return suggestRolesFromHelp(career)[0]?.name ?? "";
     }
     return "";
   }, [career]);
@@ -74,6 +77,10 @@ export default function AccountOnboarding() {
           path: career.path,
           targetRole: role,
           interests: career.interests,
+          workStyle: career.workStyle || null,
+          strengths: career.strengths,
+          outcome: career.outcome || null,
+          followUps: career.followUps,
         },
         generateRoadmap: generate,
       },
@@ -119,9 +126,12 @@ export default function AccountOnboarding() {
       setError("Pick a career, or type one.");
       return;
     }
-    if (career.path === "help" && career.interests.length === 0) {
-      setError("Select at least one interest so we can suggest a career.");
-      return;
+    if (career.path === "help") {
+      const missing = careerHelpIncomplete(career);
+      if (missing) {
+        setError(missing);
+        return;
+      }
     }
     setSaving(true);
     setError(null);

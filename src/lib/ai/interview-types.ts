@@ -137,6 +137,7 @@ export type InterviewTurnResult = {
   reply: string;
   showCode: boolean;
   endInterview: boolean;
+  aborted?: boolean;
   coding?: InterviewCodingProblem | null;
   audioBase64?: string;
   audioMime?: string;
