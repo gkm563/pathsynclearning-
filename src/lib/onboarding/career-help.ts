@@ -24,7 +24,16 @@ export type HelpQuestion = {
 
 export type CareerSuggestion = HiringRole & {
   score: number;
+  matchPercent: number;
   reasons: string[];
+  breakdown: MatchBreakdownRow[];
+  blurb: string;
+};
+
+export type MatchBreakdownRow = {
+  label: string;
+  detail: string;
+  aligned: boolean;
 };
 
 export const CAREER_INTERESTS: CareerInterest[] = [
@@ -218,6 +227,92 @@ function bump(scores: Map<RoleId, number>, roles: RoleId[], amount: number) {
   });
 }
 
+function matchCeiling(career: OnboardingCareer): number {
+  return (
+    career.interests.length * 4 +
+    followUpsFor(career.interests).length * 5 +
+    (career.workStyle ? 3 : 0) +
+    career.strengths.length * 3 +
+    (career.outcome ? 2 : 0)
+  );
+}
+
+function toPercent(score: number, ceiling: number): number {
+  if (ceiling <= 0) return 0;
+  const raw = Math.round((score / ceiling) * 100);
+  return Math.max(1, Math.min(100, raw));
+}
+
+function breakdownFor(roleId: RoleId, career: OnboardingCareer): MatchBreakdownRow[] {
+  const rows: MatchBreakdownRow[] = [];
+
+  for (const id of career.interests) {
+    const interest = CAREER_INTERESTS.find((item) => item.id === id);
+    if (!interest) continue;
+    rows.push({
+      label: "Interest",
+      detail: interest.label,
+      aligned: interest.roles.includes(roleId),
+    });
+  }
+
+  for (const question of followUpsFor(career.interests)) {
+    const answerId = career.followUps[question.id];
+    const option = question.options.find((o) => o.id === answerId);
+    if (!option) continue;
+    rows.push({
+      label: "Follow-up",
+      detail: `${question.prompt} → ${option.label}`,
+      aligned: option.roles.includes(roleId),
+    });
+  }
+
+  const style = WORK_STYLES.find((o) => o.id === career.workStyle);
+  if (style) {
+    rows.push({
+      label: "Work style",
+      detail: style.label,
+      aligned: style.roles.includes(roleId),
+    });
+  }
+
+  for (const id of career.strengths) {
+    const strength = STRENGTHS.find((item) => item.id === id);
+    if (!strength) continue;
+    rows.push({
+      label: "Strength",
+      detail: strength.label,
+      aligned: strength.roles.includes(roleId),
+    });
+  }
+
+  const outcome = OUTCOMES.find((o) => o.id === career.outcome);
+  if (outcome) {
+    rows.push({
+      label: "Goal",
+      detail: outcome.label,
+      aligned: outcome.roles.includes(roleId),
+    });
+  }
+
+  return rows;
+}
+
+function blurbFor(
+  role: HiringRole,
+  percent: number,
+  reasons: string[],
+  isBest: boolean,
+): string {
+  const lead = isBest
+    ? `${role.name} is your strongest match at ${percent}%.`
+    : `${role.name} is a ${percent}% match based on this questionnaire.`;
+  const why = reasons.length
+    ? ` ${reasons.join(". ")}.`
+    : "";
+  return `${lead}${why} ${role.summary}`;
+}
+
 function reasonFor(roleId: RoleId, career: OnboardingCareer): string[] {
   const reasons: string[] = [];
   const interestHits = CAREER_INTERESTS.filter(
@@ -264,12 +359,23 @@ export function suggestRolesFromHelp(career: OnboardingCareer): CareerSuggestion
     if (option) bump(scores, option.roles, 5);
   }
 
-  return [...scores.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .map(([id, score]) => {
+  const ceiling = matchCeiling(career);
+  const ranked = [...scores.entries()].sort((a, b) => b[1] - a[1]);
+
+  return ranked
+    .map(([id, score], index) => {
       const role = HIRING_ROLES.find((item) => item.id === id);
       if (!role) return null;
-      return { ...role, score, reasons: reasonFor(id, career) };
+      const reasons = reasonFor(id, career);
+      const matchPercent = toPercent(score, ceiling);
+      return {
+        ...role,
+        score,
+        matchPercent,
+        reasons,
+        breakdown: breakdownFor(id, career),
+        blurb: blurbFor(role, matchPercent, reasons, index === 0),
+      };
     })
     .filter((row): row is CareerSuggestion => Boolean(row))
     .slice(0, 3);

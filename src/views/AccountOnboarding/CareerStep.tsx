@@ -1,6 +1,7 @@
 "use client";
 
-import { Compass, Sparkles, Target } from "lucide-react";
+import { useState } from "react";
+import { Check, Compass, Sparkles, Target } from "lucide-react";
 import { HIRING_ROLES } from "@/lib/roadmap/hiring-catalog";
 import {
   CAREER_INTERESTS,
@@ -10,9 +11,11 @@ import {
   careerHelpIncomplete,
   followUpsFor,
   suggestRolesFromHelp,
+  type CareerSuggestion,
 } from "@/lib/onboarding/career-help";
 import type { OnboardingCareer } from "@/lib/onboarding/types";
-import { Input } from "@/components/ui";
+import { Badge, Button, Dialog, Input } from "@/components/ui";
+import { cn } from "@/lib/cn";
 import {
   ChoiceCard,
   OnboardingCard,
@@ -38,6 +41,7 @@ export default function CareerStep({
   data: OnboardingCareer;
   onChange: (next: OnboardingCareer) => void;
 }) {
+  const [whyRole, setWhyRole] = useState<CareerSuggestion | null>(null);
   const set = (patch: Partial<OnboardingCareer>) => onChange(applyHelpPatch(data, patch));
   const followUps = followUpsFor(data.interests);
   const followUpsDone = followUps.every((q) => Boolean(data.followUps[q.id]));
@@ -238,24 +242,55 @@ export default function CareerStep({
             <div>
               <p className={labelClass}>Suggested careers</p>
               <div className="grid gap-2.5">
-                {suggestions.map((role, index) => (
-                  <ChoiceCard
-                    key={role.id}
-                    selected={data.targetRole === role.name}
-                    onClick={() => onChange({ ...data, targetRole: role.name })}
-                  >
-                    <p className="type-h4 m-0 text-ink">
-                      {index === 0 ? "Best match · " : ""}
-                      {role.name}
-                    </p>
-                    <p className="type-small mt-1.5 mb-0 text-muted">{role.summary}</p>
-                    {role.reasons.length ? (
-                      <p className="type-caption mt-2 mb-0 text-faint">
-                        {role.reasons.join(" · ")}
-                      </p>
-                    ) : null}
-                  </ChoiceCard>
-                ))}
+                {suggestions.map((role, index) => {
+                  const selected = data.targetRole === role.name;
+                  return (
+                    <div
+                      key={role.id}
+                      className={cn(
+                        "rounded-[var(--radius-lg)] border p-4 transition-colors",
+                        selected
+                          ? "border-primary-border bg-primary-soft"
+                          : "border-line bg-sunken",
+                      )}
+                    >
+                      <div className="flex items-start gap-3">
+                        <button
+                          type="button"
+                          className="min-w-0 flex-1 text-left"
+                          onClick={() => onChange({ ...data, targetRole: role.name })}
+                        >
+                          <p className="type-h4 m-0 text-ink">
+                            {index === 0 ? "Best match · " : ""}
+                            {role.name}
+                          </p>
+                          <p className="type-small mt-1.5 mb-0 text-muted">{role.summary}</p>
+                        </button>
+                        <Badge tone="accent" className="shrink-0 normal-case tracking-normal">
+                          {role.matchPercent}% match
+                        </Badge>
+                      </div>
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => onChange({ ...data, targetRole: role.name })}
+                        >
+                          {selected ? "Selected" : "Choose this"}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setWhyRole(role)}
+                        >
+                          See why
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ) : data.interests.length === 0 ? (
@@ -265,6 +300,71 @@ export default function CareerStep({
           ) : null}
         </div>
       ) : null}
+
+      <Dialog
+        open={Boolean(whyRole)}
+        onClose={() => setWhyRole(null)}
+        title={whyRole ? `Why ${whyRole.name}?` : "Why this match"}
+        description={
+          whyRole
+            ? `${whyRole.matchPercent}% match from your answers.`
+            : undefined
+        }
+        size="md"
+        footer={
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button type="button" variant="secondary" onClick={() => setWhyRole(null)}>
+              Close
+            </Button>
+            {whyRole ? (
+              <Button
+                type="button"
+                onClick={() => {
+                  onChange({ ...data, targetRole: whyRole.name });
+                  setWhyRole(null);
+                }}
+              >
+                Choose this career
+              </Button>
+            ) : null}
+          </div>
+        }
+      >
+        {whyRole ? (
+          <div className="flex flex-col gap-4">
+            <p className="type-body m-0 text-ink">{whyRole.blurb}</p>
+            <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
+              {whyRole.breakdown.map((row) => (
+                <li
+                  key={`${row.label}-${row.detail}`}
+                  className="flex items-start gap-3 rounded-[var(--radius-md)] border border-line bg-sunken px-3.5 py-3"
+                >
+                  <span
+                    className={cn(
+                      "mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full",
+                      row.aligned
+                        ? "bg-primary-soft text-primary"
+                        : "bg-surface text-faint",
+                    )}
+                    aria-hidden
+                  >
+                    {row.aligned ? <Check size={14} /> : "–"}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="type-caption block text-faint">{row.label}</span>
+                    <span className="type-small block text-ink">{row.detail}</span>
+                    <span className="type-caption mt-1 block text-muted">
+                      {row.aligned
+                        ? "This answer supports this career."
+                        : "This answer points more at a different path."}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </Dialog>
     </OnboardingCard>
   );
 }
