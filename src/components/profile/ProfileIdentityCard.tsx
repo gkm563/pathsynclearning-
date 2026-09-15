@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Camera, Mail, MapPin, Pencil, Shield, UserRound, X } from "lucide-react";
+import { Camera, Mail, MapPin, Pencil, Shield, Briefcase, UserRound, X } from "lucide-react";
 import type { ProfileFormState, ProfileSectionId } from "@/lib/profile/types";
 import { Avatar, Badge, Button, Card } from "@/components/ui";
 import { StudentRegistrationIdDisplay } from "@/components/profile/StudentRegistrationIdDisplay";
@@ -64,6 +64,11 @@ export function ProfileIdentityCard({
             <Meta icon={MapPin}>{profile.location}</Meta>
           ) : null}
           <Meta icon={Shield}>{profile.role}</Meta>
+          {profile.targetRole || profile.careerGoal ? (
+            <Meta icon={Briefcase}>
+              {profile.targetRole || profile.careerGoal}
+            </Meta>
+          ) : null}
         </div>
 
         {profile.studentRegistrationId ? (
@@ -90,6 +95,14 @@ export function ProfileIdentityCard({
         >
           <Camera size={15} aria-hidden />
           Change photo
+        </Button>
+        <Button
+          variant="secondary"
+          className="min-h-11 w-full sm:w-auto"
+          onClick={() => onJump("career")}
+        >
+          <Briefcase size={15} aria-hidden />
+          Change career
         </Button>
         {editing ? (
           <Button

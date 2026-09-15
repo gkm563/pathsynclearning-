@@ -1,4 +1,4 @@
-import { Image as ImageIcon, Lock, Settings2, User, UserRound } from "lucide-react";
+import { Briefcase, Image as ImageIcon, Lock, Settings2, User, UserRound } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { ApiClientError } from "@/lib/api";
 import {
@@ -88,6 +88,12 @@ export const PROFILE_SECTIONS: readonly ProfileSection[] = [
     label: "Personal",
     description: "Name, contact details, links and academic record.",
     icon: User,
+  },
+  {
+    id: "career",
+    label: "Career",
+    description: "Your target role, CRI for that career, and a way to change path.",
+    icon: Briefcase,
   },
   {
     id: "photo",

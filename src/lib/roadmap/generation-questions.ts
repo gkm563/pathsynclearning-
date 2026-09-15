@@ -567,6 +567,11 @@ function packFor(roleName: string | null) {
   return ROLE_PACK[role?.id ?? "other"];
 }
 
+/** Canonical skills used to score CRI for a hiring role. */
+export function skillsForRoleName(roleName: string | null): string[] {
+  return [...packFor(roleName).skills];
+}
+
 function companyHints(company: HiringCompany | null) {
   if (!company) {
     return {

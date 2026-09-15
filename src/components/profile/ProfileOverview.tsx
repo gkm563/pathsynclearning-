@@ -101,6 +101,20 @@ export function ProfileOverview({
       />
 
       <OverviewCard
+        title="Career"
+        description="Target role and Career Readiness Index for this path."
+        onJump={onJump}
+        cta={{ label: "Change career", section: "career" }}
+        items={[
+          {
+            label: "Career",
+            value: dash(profile.targetRole || profile.careerGoal),
+          },
+          { label: "CRI", value: `${profile.cri}%` },
+        ]}
+      />
+
+      <OverviewCard
         title="Preferences"
         description="Theme, notification channels and who can find you."
         onJump={onJump}

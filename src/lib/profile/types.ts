@@ -26,6 +26,9 @@ export type ProfileFormState = {
   accountStatus: string;
   role: string;
   studentRegistrationId: string;
+  careerGoal: string;
+  targetRole: string;
+  cri: number;
 };
 
 export type PreferencesFormState = {
@@ -51,6 +54,7 @@ export type ProfileSession = {
 export type ProfileSectionId =
   | "overview"
   | "personal"
+  | "career"
   | "photo"
   | "security"
   | "preferences";
@@ -75,6 +79,9 @@ export const EMPTY_PROFILE: ProfileFormState = {
   accountStatus: "active",
   role: "student",
   studentRegistrationId: "",
+  careerGoal: "",
+  targetRole: "",
+  cri: 0,
 };
 
 export const EMPTY_PREFERENCES: PreferencesFormState = {
@@ -112,6 +119,9 @@ export function mapApiProfile(
     accountStatus: String(p.account_status ?? "active"),
     role: String(p.role ?? "student"),
     studentRegistrationId: String(p.student_registration_id ?? ""),
+    careerGoal: String(p.career_goal ?? ""),
+    targetRole: String(p.target_role ?? ""),
+    cri: Number(p.cri) || 0,
   };
 }
 

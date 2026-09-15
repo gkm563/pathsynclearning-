@@ -4,7 +4,7 @@ import { parseJson, errorResponse, jsonResponse } from "@/lib/api/http";
 import { AppError } from "@/lib/api/errors";
 import { getDb } from "@/lib/db/client";
 import { mapProfile } from "@/lib/db/mappers";
-import { profiles, users, wallets } from "@/lib/db/schema";
+import { profiles, roadmapProfiles, users, wallets } from "@/lib/db/schema";
 import { getCachedClerkIdentity, requireDbUser } from "@/lib/db/users";
 import { sanitizeUserUpdatePatch } from "@/lib/identity/student-registration-id";
 import { profileUpdateSchema } from "@/lib/validation/schemas";
@@ -31,10 +31,13 @@ async function loadProfilePayload(userId: string) {
       studentRegistrationId: users.studentRegistrationId,
       coins: wallets.coins,
       createdAt: users.createdAt,
+      careerGoal: roadmapProfiles.careerGoal,
+      targetRole: roadmapProfiles.targetRole,
     })
     .from(profiles)
     .innerJoin(users, eq(users.id, profiles.userId))
     .innerJoin(wallets, eq(wallets.userId, profiles.userId))
+    .leftJoin(roadmapProfiles, eq(roadmapProfiles.userId, profiles.userId))
     .where(eq(profiles.userId, userId))
     .limit(1);
 
@@ -49,6 +52,8 @@ async function loadProfilePayload(userId: string) {
     studentRegistrationId,
     coins,
     createdAt,
+    careerGoal,
+    targetRole,
   } =
     rows[0];
 
@@ -66,6 +71,8 @@ async function loadProfilePayload(userId: string) {
     coins,
     account_status: "active",
     created_at: createdAt,
+    career_goal: careerGoal,
+    target_role: targetRole,
   });
 }
 

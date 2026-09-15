@@ -275,6 +275,8 @@ export function StudentProvider({ children }: { children: ReactNode }) {
 
       const career =
         challengesRes?.careerGoal ||
+        (p?.target_role as string) ||
+        (p?.career_goal as string) ||
         (p?.objective as string) ||
         (p?.passion as string) ||
         "Software Engineer";

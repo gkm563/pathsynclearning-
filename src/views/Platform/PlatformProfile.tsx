@@ -1,6 +1,7 @@
 "use client";
 
 import { Button, ErrorState, PageHeader, PageSkeleton } from "@/components/ui";
+import { CareerSection } from "@/components/profile/CareerSection";
 import { PersonalInfoForm } from "@/components/profile/PersonalInfoForm";
 import { PreferencesSection } from "@/components/profile/PreferencesSection";
 import { ProfileIdentityCard } from "@/components/profile/ProfileIdentityCard";
@@ -77,6 +78,15 @@ export default function PlatformProfile() {
               disabled={!editor.editing}
               onChange={editor.updateProfile}
               onRequestEdit={editor.startEditing}
+            />
+          ) : null}
+
+          {editor.section === "career" ? (
+            <CareerSection
+              targetRole={editor.draftProfile.targetRole}
+              careerGoal={editor.draftProfile.careerGoal}
+              cri={editor.draftProfile.cri}
+              onApplied={editor.setCareer}
             />
           ) : null}
 

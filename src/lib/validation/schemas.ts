@@ -88,6 +88,12 @@ export const profileUpdateSchema = z
   })
   .strict();
 
+export const careerChangeSchema = z
+  .object({
+    targetRole: z.string().trim().min(2).max(200),
+  })
+  .strict();
+
 export const onboardingCareerPathSchema = z.enum(["decided", "help"]);
 
 export const onboardingSaveSchema = z

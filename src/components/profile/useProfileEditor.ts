@@ -203,6 +203,15 @@ export function useProfileEditor() {
     void refreshStudent();
   }, [refreshStudent]);
 
+  const setCareer = useCallback(
+    (next: { targetRole: string; careerGoal: string; cri: number }) => {
+      setDraftProfile((p) => ({ ...p, ...next }));
+      setSavedProfile((p) => ({ ...p, ...next }));
+      void refreshStudent();
+    },
+    [refreshStudent],
+  );
+
   const discard = () => {
     setDraftProfile(savedProfile);
     setDraftPrefs(savedPrefs);
@@ -258,6 +267,9 @@ export function useProfileEditor() {
           account_status: draftProfile.accountStatus,
           role: draftProfile.role,
           student_registration_id: draftProfile.studentRegistrationId,
+          career_goal: draftProfile.careerGoal,
+          target_role: draftProfile.targetRole,
+          cri: draftProfile.cri,
         };
         const mapped = mapApiProfile(payload);
         setSavedProfile(mapped);
@@ -321,6 +333,7 @@ export function useProfileEditor() {
     updateProfile,
     updatePrefs,
     setImageUrl,
+    setCareer,
     discard,
     save,
   };
