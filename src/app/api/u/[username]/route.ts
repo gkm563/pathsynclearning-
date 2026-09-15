@@ -56,6 +56,8 @@ export async function GET(_request: Request, { params }: Params) {
         username: row.profile.username,
         profile_visibility: visibility,
         is_owner: isOwner,
+        cri_milli: (row.profile as { criMilli?: number }).criMilli ?? 0,
+        cri_formula: (row.profile as { criFormula?: string }).criFormula ?? "cri.v1",
       }),
     });
   } catch (e) {

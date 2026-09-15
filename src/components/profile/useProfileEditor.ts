@@ -204,7 +204,7 @@ export function useProfileEditor() {
   }, [refreshStudent]);
 
   const setCareer = useCallback(
-    (next: { targetRole: string; careerGoal: string; cri: number }) => {
+    (next: { targetRole: string; careerGoal: string; cri: number; criMilli: number }) => {
       setDraftProfile((p) => ({ ...p, ...next }));
       setSavedProfile((p) => ({ ...p, ...next }));
       void refreshStudent();
@@ -270,6 +270,7 @@ export function useProfileEditor() {
           career_goal: draftProfile.careerGoal,
           target_role: draftProfile.targetRole,
           cri: draftProfile.cri,
+          cri_milli: draftProfile.criMilli,
         };
         const mapped = mapApiProfile(payload);
         setSavedProfile(mapped);

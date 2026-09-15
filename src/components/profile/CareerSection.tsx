@@ -8,6 +8,8 @@ import { previewCareerCri } from "@/lib/career/match";
 import { HIRING_ROLES } from "@/lib/roadmap/hiring-catalog";
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/cn";
+import { formatCri, resolveCriMilli } from "@/lib/cri/milli";
+import { WhyCriDialog } from "@/components/cri/WhyCriDialog";
 import {
   Alert,
   Button,
@@ -21,6 +23,7 @@ type CareerApi = {
   targetRole: string | null;
   careerGoal: string | null;
   cri: number;
+  criMilli?: number;
   studentSkills: string[];
   previousRole?: string | null;
   previousCri?: number;
@@ -42,15 +45,23 @@ export function CareerSection({
   targetRole,
   careerGoal,
   cri,
+  criMilli = 0,
   onApplied,
 }: {
   targetRole: string;
   careerGoal: string;
   cri: number;
-  onApplied: (next: { targetRole: string; careerGoal: string; cri: number }) => void;
+  criMilli?: number;
+  onApplied: (next: {
+    targetRole: string;
+    careerGoal: string;
+    cri: number;
+    criMilli: number;
+  }) => void;
 }) {
   const toast = useToast();
   const router = useRouter();
+  const [whyOpen, setWhyOpen] = useState(false);
   const current = careerLabel(targetRole, careerGoal);
   const knownNames = useMemo(() => new Set(HIRING_ROLES.map((r) => r.name)), []);
   const [studentSkills, setStudentSkills] = useState<string[]>([]);
@@ -99,6 +110,7 @@ export function CareerSection({
         targetRole: career.targetRole || nextRole,
         careerGoal: career.careerGoal || nextRole,
         cri: career.cri,
+        criMilli: resolveCriMilli(career.criMilli, career.cri),
       });
       setConfirmOpen(false);
       if (career.startsFromBeginning) {
@@ -121,7 +133,8 @@ export function CareerSection({
         <div>
           <h3 className="type-h4 m-0 text-ink">Career path</h3>
           <p className="type-small mt-1 mb-0 text-muted">
-            CRI is scored for this role. Changing career recalculates it from skills that still apply.
+            CRI is calculated from verified evidence for this role. Changing career
+            recomputes it; unmatched paths start from 0.
           </p>
         </div>
 
@@ -134,7 +147,9 @@ export function CareerSection({
           </div>
           <div>
             <dt className="type-caption m-0 text-faint">CRI for this career</dt>
-            <dd className="type-body m-0 mt-1 font-semibold text-ink">{cri}%</dd>
+            <dd className="type-body m-0 mt-1 font-semibold text-ink">
+              {formatCri(resolveCriMilli(criMilli, cri))}%
+            </dd>
           </div>
         </dl>
 
@@ -189,14 +204,15 @@ export function CareerSection({
           >
             {preview.startsFromBeginning ? (
               <p className="m-0">
-                None of your current skills match {nextRole}. CRI would go from {cri}% to 0%,
-                and your active roadmap would be cleared so you begin that path from the start.
+                None of your listed skills overlap {nextRole}. CRI will be recalculated from
+                verified evidence for that career. With no matching proof it starts at 0%, and
+                the active roadmap is cleared.
               </p>
             ) : (
               <p className="m-0">
-                {preview.matchedSkills.length} of {preview.roleSkills.length} skills for{" "}
-                {nextRole} already match. CRI would change from {cri}% to {preview.cri}%. Your
-                current roadmap will be deactivated so a new one can be built for this career.
+                {preview.matchedSkills.length} of {preview.roleSkills.length} catalog skills for{" "}
+                {nextRole} overlap your profile. CRI itself is recalculated from assessments,
+                projects, and interviews for the new career — not from this overlap count.
               </p>
             )}
           </Alert>
@@ -210,6 +226,13 @@ export function CareerSection({
           >
             <Briefcase size={15} aria-hidden />
             Change career
+          </Button>
+          <Button
+            variant="secondary"
+            className="min-h-11"
+            onClick={() => setWhyOpen(true)}
+          >
+            Why {formatCri(resolveCriMilli(criMilli, cri))}%?
           </Button>
           <Button
             variant="secondary"
@@ -234,17 +257,17 @@ export function CareerSection({
       >
         {preview?.startsFromBeginning ? (
           <p className="type-small m-0 text-muted">
-            No skills match this career. Your CRI will reset to 0% and you will start this path
-            from the beginning.
+            No overlapping skills. CRI will be recalculated from evidence for this career and
+            will be 0% if none applies. You start this path from the beginning.
           </p>
         ) : (
           <p className="type-small m-0 text-muted">
-            CRI will be recalculated for {nextRole}
-            {preview ? ` (${cri}% → ${preview.cri}%)` : ""}. Skills that do not apply to the new
-            career will not count.
+            CRI will be recalculated from verified assessments, projects, and interviews for{" "}
+            {nextRole}. Unrelated evidence will not count.
           </p>
         )}
       </ConfirmDialog>
+      <WhyCriDialog open={whyOpen} onClose={() => setWhyOpen(false)} />
     </>
   );
 }

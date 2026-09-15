@@ -2,6 +2,8 @@
 
 import { ArrowRight } from "lucide-react";
 import type { PreferencesFormState, ProfileFormState, ProfileSectionId } from "@/lib/profile/types";
+import { formatCri } from "@/lib/cri/milli";
+import { resolveCriMilli } from "@/lib/cri/milli";
 import { Button, Card, DescriptionList } from "@/components/ui";
 import { StudentRegistrationIdDisplay } from "@/components/profile/StudentRegistrationIdDisplay";
 
@@ -110,7 +112,7 @@ export function ProfileOverview({
             label: "Career",
             value: dash(profile.targetRole || profile.careerGoal),
           },
-          { label: "CRI", value: `${profile.cri}%` },
+          { label: "CRI", value: `${formatCri(resolveCriMilli(profile.criMilli, profile.cri))}%` },
         ]}
       />
 

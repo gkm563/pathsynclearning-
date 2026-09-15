@@ -134,26 +134,26 @@ const SECTIONS: readonly DocSection[] = [
     blocks: [
       {
         kind: "p",
-        text: "The Career Readiness Index (CRI) is a proprietary scoring system (0-100) that evaluates a student's employability. It is not just an average of test scores. It factors in:",
+        text: "The Career Readiness Index (CRI) is a deterministic 0–100.000 score calculated from verified PathED evidence for your current target career. PathED does not assign CRI; it computes it. CRI indicates readiness. It does not guarantee a job or tell a recruiter to hire.",
       },
       {
         kind: "bullets",
         items: [
           {
-            term: "Code Quality:",
-            text: "Time complexity, space complexity, and code linting scores.",
+            term: "Evidence:",
+            text: "Assessments, DSA attempts, projects, interviews, roadmap mastery, consistency, and profile completeness. Each component is 0–100 with published weights (formula cri.v1).",
           },
           {
-            term: "Consistency:",
-            text: "Daily activity streaks and long-term engagement.",
+            term: "Precision:",
+            text: "Stored as millipoints (78.263%). Every recompute writes an audit snapshot so you can open Why this CRI? and inspect Evidence IDs.",
           },
           {
-            term: "Complexity:",
-            text: "The difficulty weighting of the challenges successfully completed.",
+            term: "Career-scoped:",
+            text: "Changing career recalculates CRI from evidence that still applies. Unrelated proof does not transfer. Missing evidence scores 0.",
           },
           {
-            term: "Speed:",
-            text: "Time taken to solve a problem vs. the cohort average.",
+            term: "Not in v1:",
+            text: "Verified open-source PRs, hackathon rank, and third-party certifications are reserved until those artifacts can be verified.",
           },
         ],
       },

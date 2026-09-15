@@ -28,6 +28,7 @@ export type CopilotStudentContext = {
     name: string;
     firstName: string;
     cri: number;
+    criMilli: number;
     xp: number;
     coins: number;
     streak: number;
@@ -194,6 +195,7 @@ export async function buildCopilotContext(
       name: fullName,
       firstName: firstNameFrom(fullName),
       cri: profileRow?.cri ?? 0,
+      criMilli: profileRow?.criMilli ?? 0,
       xp: profileRow?.xp ?? 0,
       coins: walletRow?.coins ?? 0,
       streak: profileRow?.streak ?? 0,

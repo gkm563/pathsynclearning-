@@ -12,6 +12,7 @@ import React, {
 import { useUser } from "@clerk/nextjs";
 import { apiGet } from "@/lib/api";
 import { levelFromXp } from "@/lib/challenges/progress";
+import { resolveCriMilli, criInteger } from "@/lib/cri/milli";
 import type {
   AttemptStatus,
   ChallengesApiResponse,
@@ -58,6 +59,7 @@ export type StudentSnapshot = {
   degree: string;
   institute: string;
   cri: number;
+  criMilli: number;
   xp: number;
   coins: number;
   streak: number;
@@ -213,6 +215,7 @@ const DEFAULT_SNAPSHOT: Omit<StudentSnapshot, "loading" | "refresh"> = {
   degree: "B.Tech · Computer Science",
   institute: "Your Institute",
   cri: 0,
+  criMilli: 0,
   xp: 0,
   coins: 0,
   streak: 0,
@@ -290,7 +293,8 @@ export function StudentProvider({ children }: { children: ReactNode }) {
       const xp = Math.max(Number(p?.xp) || 0, Number(g?.xp) || 0);
       const coins = Math.max(Number(p?.coins) || 0, Number(g?.coins) || 0);
       const streak = Math.max(Number(p?.streak) || 0, Number(g?.streak) || 0);
-      const cri = Number(p?.cri) || 0;
+      const criMilli = resolveCriMilli(p?.cri_milli, p?.cri);
+      const cri = criInteger(criMilli);
       const degree =
         [p?.degree, p?.branch].filter(Boolean).join(" · ") ||
         "B.Tech · Computer Science";
@@ -311,6 +315,7 @@ export function StudentProvider({ children }: { children: ReactNode }) {
         degree,
         institute,
         cri,
+        criMilli,
         xp,
         coins,
         streak,

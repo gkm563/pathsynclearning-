@@ -90,6 +90,10 @@ export const profiles = pgTable("profiles", {
   rollNumber: text("roll_number"),
   semester: text("semester"),
   cri: integer("cri").notNull().default(0),
+  /** Millipoints: 78263 = 78.263%. Source of truth for CRI display. */
+  criMilli: integer("cri_milli").notNull().default(0),
+  criFormula: text("cri_formula").notNull().default("cri.v1"),
+  criSnapshotId: uuid("cri_snapshot_id"),
   rankGlobal: text("rank_global"),
   rankUniv: text("rank_univ"),
   xp: integer("xp").notNull().default(0),
@@ -114,6 +118,42 @@ export const profiles = pgTable("profiles", {
   additionalCompleted: boolean("additional_completed").notNull().default(false),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+export const criSnapshots = pgTable(
+  "cri_snapshots",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    formulaId: text("formula_id").notNull(),
+    targetRole: text("target_role"),
+    criMilli: integer("cri_milli").notNull(),
+    components: jsonb("components").$type<unknown[]>().notNull().default([]),
+    trigger: text("trigger").notNull(),
+    computedAt: timestamp("computed_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("idx_cri_snapshots_user").on(t.userId, t.computedAt)],
+);
+
+export const criEvidence = pgTable(
+  "cri_evidence",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    snapshotId: uuid("snapshot_id")
+      .notNull()
+      .references(() => criSnapshots.id, { onDelete: "cascade" }),
+    component: text("component").notNull(),
+    sourceType: text("source_type").notNull(),
+    sourceId: text("source_id").notNull(),
+    metric: text("metric").notNull(),
+    valueMilli: integer("value_milli").notNull().default(0),
+    weightMilli: integer("weight_milli").notNull().default(0),
+  },
+  (t) => [index("idx_cri_evidence_snapshot").on(t.snapshotId, t.component)],
+);
 
 export const userSettings = pgTable("user_settings", {
   userId: uuid("user_id")
@@ -305,6 +345,7 @@ export const challengeAttempts = pgTable(
     score: integer("score").notNull().default(0),
     xpAwarded: integer("xp_awarded").notNull().default(0),
     coinsAwarded: integer("coins_awarded").notNull().default(0),
+    durationMs: integer("duration_ms"),
     payload: jsonb("payload").$type<Record<string, unknown>>().notNull().default({}),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -680,6 +721,7 @@ export const roadmapAssessmentAttempts = pgTable(
     violations: jsonb("violations").$type<unknown[]>().notNull().default([]),
     answers: jsonb("answers").$type<Record<string, unknown>>().notNull().default({}),
     code: text("code"),
+    durationMs: integer("duration_ms"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -696,6 +738,8 @@ export const roadmapAssessmentAttempts = pgTable(
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Profile = typeof profiles.$inferSelect;
+export type CriSnapshot = typeof criSnapshots.$inferSelect;
+export type CriEvidenceRow = typeof criEvidence.$inferSelect;
 export type RoadmapProfileRow = typeof roadmapProfiles.$inferSelect;
 export type RoadmapRow = typeof roadmaps.$inferSelect;
 export type RoadmapProgressRow = typeof roadmapProgress.$inferSelect;

@@ -213,6 +213,7 @@ export const challengesAttemptSchema = z
     language: z.enum(["javascript", "python", "java", "c", "cpp"]).optional(),
     writeup: z.string().max(20000).optional(),
     dimensionIds: z.array(z.string().trim().min(1).max(64)).max(20).optional(),
+    durationMs: z.number().int().min(0).max(24 * 60 * 60 * 1000).optional(),
   })
   .strict();
 

@@ -24,6 +24,7 @@ import {
 } from "@/lib/db/schema";
 import { requireDbUser } from "@/lib/db/users";
 import { recordProjectMemory } from "@/lib/memory/processor";
+import { recomputeCriSafe } from "@/lib/cri/persist";
 import { challengesProjectSubmitSchema } from "@/lib/validation/schemas";
 
 export async function POST(request: Request) {
@@ -230,6 +231,8 @@ export async function POST(request: Request) {
         checklistPct: graded.checklistPct,
       }).catch(() => null);
     }
+
+    await recomputeCriSafe(user.id, "project");
 
     return jsonResponse({
       ok: true,

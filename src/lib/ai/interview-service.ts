@@ -17,6 +17,7 @@ import {
   studiedTopicsFromRoadmap,
 } from "./interview-roadmap";
 import { applyRoadmapInterviewOutcome } from "./roadmap-adapt";
+import { recomputeCriSafe } from "@/lib/cri/persist";
 import { parseCertificationStatus } from "@/lib/roadmap/certification";
 import {
   countProctorViolations,
@@ -827,6 +828,8 @@ export async function finishInterviewSession(
       );
     }
   }
+
+  await recomputeCriSafe(userId, "interview");
 
   return toReport(report);
 }

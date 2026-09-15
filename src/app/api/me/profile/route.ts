@@ -8,6 +8,7 @@ import { profiles, roadmapProfiles, users, wallets } from "@/lib/db/schema";
 import { getCachedClerkIdentity, requireDbUser } from "@/lib/db/users";
 import { sanitizeUserUpdatePatch } from "@/lib/identity/student-registration-id";
 import { profileUpdateSchema } from "@/lib/validation/schemas";
+import { recomputeCriSafe } from "@/lib/cri/persist";
 
 function splitFullName(fullName: string) {
   const parts = fullName.trim().split(/\s+/).filter(Boolean);
@@ -185,6 +186,8 @@ export async function PUT(request: Request) {
       }
       throw err;
     }
+
+    await recomputeCriSafe(user.id, "profile");
 
     const profile = await loadProfilePayload(user.id);
     return jsonResponse({ profile });

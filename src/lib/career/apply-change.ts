@@ -14,6 +14,7 @@ import { recordCareerGoalChange } from "@/lib/memory/processor";
 import { parseOnboardingMeta } from "@/lib/onboarding/types";
 import { deactivateActiveRoadmaps } from "@/lib/roadmap/active";
 import { findRoleByName } from "@/lib/roadmap/hiring-catalog";
+import { recomputeCri } from "@/lib/cri/persist";
 import type { RoadmapNode } from "@/types/roadmap";
 
 function asNodes(raw: unknown): RoadmapNode[] {
@@ -24,6 +25,7 @@ export type CareerPayload = {
   targetRole: string | null;
   careerGoal: string | null;
   cri: number;
+  criMilli: number;
   studentSkills: string[];
 };
 
@@ -38,7 +40,7 @@ export async function loadCareerPayload(userId: string): Promise<CareerPayload> 
   const db = getDb();
   const [[profile], [roadmap], [active]] = await Promise.all([
     db
-      .select({ cri: profiles.cri, skills: profiles.skills })
+      .select({ cri: profiles.cri, criMilli: profiles.criMilli, skills: profiles.skills })
       .from(profiles)
       .where(eq(profiles.userId, userId))
       .limit(1),
@@ -90,6 +92,7 @@ export async function loadCareerPayload(userId: string): Promise<CareerPayload> 
     targetRole: roadmap?.targetRole ?? null,
     careerGoal: roadmap?.careerGoal ?? null,
     cri: profile?.cri ?? 0,
+    criMilli: profile?.criMilli ?? 0,
     studentSkills,
   };
 }
@@ -131,7 +134,6 @@ export async function applyCareerChange(
   await db
     .update(profiles)
     .set({
-      cri: preview.cri,
       additionalData,
       updatedAt: now,
     })
@@ -156,19 +158,22 @@ export async function applyCareerChange(
 
   await deactivateActiveRoadmaps(db, userId);
 
+  const recomputed = await recomputeCri(userId, "career", now.getTime());
+
   await recordCareerGoalChange({
     userId,
     previousGoal: previousRole,
     newGoal: canonical,
     reason: preview.startsFromBeginning
-      ? `Career changed to ${canonical}. No matching skills — CRI reset to 0.`
-      : `Career changed to ${canonical}. CRI updated from ${current.cri} to ${preview.cri}.`,
+      ? `Career changed to ${canonical}. No matching skills — CRI recalculated from evidence (now ${recomputed.criMilli / 1000}%).`
+      : `Career changed to ${canonical}. CRI recalculated from evidence (${current.criMilli} → ${recomputed.criMilli} milli).`,
   }).catch(() => null);
 
   return {
     targetRole: canonical,
     careerGoal: canonical,
-    cri: preview.cri,
+    cri: recomputed.cri,
+    criMilli: recomputed.criMilli,
     studentSkills: current.studentSkills,
     previousRole,
     previousCri: current.cri,

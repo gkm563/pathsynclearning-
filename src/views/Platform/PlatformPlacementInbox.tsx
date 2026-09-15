@@ -21,12 +21,13 @@ import {
 } from "@/components/ui";
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/cn";
+import { formatCri, resolveCriMilli } from "@/lib/cri/milli";
+import { useStudent } from "@/components/dashboard/StudentContext";
 import { InboxList } from "./placement/InboxList";
 import { MessageDetail } from "./placement/MessageDetail";
 import {
   MESSAGE_FILTERS,
   RECRUITER_MESSAGES,
-  STUDENT_CRI,
   matchesFilter,
   matchesQuery,
   type MessageFilter,
@@ -43,6 +44,9 @@ const FILTER_TABS: TabItem<MessageFilter>[] = MESSAGE_FILTERS.map((f) => ({
 export default function PlatformPlacementInbox() {
   const router = useRouter();
   const toast = useToast();
+  const student = useStudent();
+  const studentCri = student.cri;
+  const criLabel = formatCri(resolveCriMilli(student.criMilli, student.cri));
   const { state, reload } = useMockResource();
 
   const [archivedIds, setArchivedIds] = useState<ReadonlySet<string>>(
@@ -120,7 +124,7 @@ export default function PlatformPlacementInbox() {
       <PageHeader
         eyebrow="Placement"
         title="Recruiter inbox"
-        description={`Verified recruiters reaching out directly on the strength of your Career Readiness Index (currently ${STUDENT_CRI}%).`}
+        description={`Verified recruiters reaching out on the strength of your Career Readiness Index (currently ${criLabel}%). CRI is a readiness index, not a hire recommendation.`}
         actions={
           <Button
             variant="secondary"
@@ -257,6 +261,7 @@ export default function PlatformPlacementInbox() {
                 {selected ? (
                   <MessageDetail
                     message={selected}
+                    studentCri={studentCri}
                     onBack={() => setDetailOnPhone(false)}
                     onArchive={archive}
                   />

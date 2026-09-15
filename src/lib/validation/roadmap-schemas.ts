@@ -197,6 +197,7 @@ export const assessmentSubmitSchema = z.object({
   })).max(40).optional(),
   repoUrl: z.string().url().optional(),
   reflection: z.string().max(8000).optional(),
+  durationMs: z.number().int().min(0).max(24 * 60 * 60 * 1000).optional(),
   violations: z.array(z.object({
     kind: z.string(),
     at: z.string().optional(),

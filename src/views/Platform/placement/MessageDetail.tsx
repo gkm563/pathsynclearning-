@@ -15,7 +15,6 @@ import {
 import { routes } from "@/lib/routes";
 import {
   STATUS_TONE,
-  STUDENT_CRI,
   type RecruiterMessage,
 } from "./inbox-data";
 
@@ -67,10 +66,12 @@ function Fact({
  */
 export function MessageDetail({
   message,
+  studentCri,
   onBack,
   onArchive,
 }: {
   message: RecruiterMessage;
+  studentCri: number;
   onBack?: () => void;
   onArchive: (message: RecruiterMessage) => void;
 }) {
@@ -78,7 +79,7 @@ export function MessageDetail({
   const toast = useToast();
   const [pending, setPending] = useState<Pending>(null);
 
-  const shortfall = message.criThreshold - STUDENT_CRI;
+  const shortfall = message.criThreshold - studentCri;
   const locked = shortfall > 0;
   const busy = pending !== null;
 
@@ -189,7 +190,7 @@ export function MessageDetail({
       {locked ? (
         <Alert tone="warning" title="This invite is not unlocked yet">
           {message.company} screens at {message.criThreshold}% CRI and you are
-          at {STUDENT_CRI}%. Close the {shortfall}-point gap by verifying the
+          at {studentCri}%. Close the {shortfall}-point gap by verifying the
           remaining nodes on your roadmap, then the slot opens automatically.
           <span className="mt-3 block">
             <Button

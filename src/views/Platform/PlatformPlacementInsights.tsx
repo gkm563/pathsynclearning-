@@ -26,7 +26,8 @@ import {
   MENTOR_REVIEWS,
   competencyTone,
 } from "./placement/insights-data";
-import { STUDENT_CRI } from "./placement/inbox-data";
+import { useStudent } from "@/components/dashboard/StudentContext";
+import { formatCri, resolveCriMilli } from "@/lib/cri/milli";
 import { useMockResource } from "./shared/useMockResource";
 
 /** CRI needed before national benchmarking is generated. */
@@ -36,6 +37,9 @@ const DEEP_DIVE_CRI = 70;
 export default function PlatformPlacementInsights() {
   const router = useRouter();
   const toast = useToast();
+  const student = useStudent();
+  const criLabel = formatCri(resolveCriMilli(student.criMilli, student.cri));
+  const criInt = student.cri;
   const { state, reload } = useMockResource();
   const [analysing, setAnalysing] = useState(false);
 
@@ -85,7 +89,7 @@ export default function PlatformPlacementInsights() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <StatCard
               label="Readiness score (CRI)"
-              value={`${STUDENT_CRI}%`}
+              value={`${criLabel}%`}
               delta={{ value: 4, label: "this week" }}
               hint="Top 15% nationally"
             />
@@ -139,11 +143,11 @@ export default function PlatformPlacementInsights() {
                   <p className="type-small mt-1.5 mb-0 text-muted">
                     Per-company percentile curves and interview-loop
                     predictions generate at {DEEP_DIVE_CRI}% CRI. You are at{" "}
-                    {STUDENT_CRI}% — {DEEP_DIVE_CRI - STUDENT_CRI} points away.
+                    {criInt}% — {Math.max(0, DEEP_DIVE_CRI - criInt)} points away.
                   </p>
                 </div>
                 <Progress
-                  value={STUDENT_CRI}
+                  value={criInt}
                   max={DEEP_DIVE_CRI}
                   label={`Progress to ${DEEP_DIVE_CRI}% CRI`}
                   tone="accent"

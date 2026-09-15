@@ -23,6 +23,7 @@ import {
 } from "@/lib/db/schema";
 import { requireDbUser } from "@/lib/db/users";
 import { recordChallengeMemory } from "@/lib/memory/processor";
+import { recomputeCriSafe } from "@/lib/cri/persist";
 import { challengesAttemptSchema } from "@/lib/validation/schemas";
 import type { CodingLanguageId } from "@/lib/roadmap/coding-languages";
 import { resolveWindowProblem, windowBonus } from "@/lib/problems/schedule";
@@ -160,6 +161,7 @@ export async function POST(request: Request) {
       score,
       xpAwarded,
       coinsAwarded,
+      durationMs: body.durationMs ?? null,
       payload,
     });
 
@@ -244,6 +246,8 @@ export async function POST(request: Request) {
       // persist attempt blob only. For fail, sync economy if streak shields changed (they don't).
       await persistChallengeEconomy(user.id, state);
     }
+
+    await recomputeCriSafe(user.id, "challenge");
 
     return jsonResponse({
       ok: true,

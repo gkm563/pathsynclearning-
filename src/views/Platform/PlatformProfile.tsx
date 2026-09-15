@@ -86,6 +86,7 @@ export default function PlatformProfile() {
               targetRole={editor.draftProfile.targetRole}
               careerGoal={editor.draftProfile.careerGoal}
               cri={editor.draftProfile.cri}
+              criMilli={editor.draftProfile.criMilli}
               onApplied={editor.setCareer}
             />
           ) : null}

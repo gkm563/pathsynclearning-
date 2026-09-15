@@ -2,6 +2,7 @@ import {
   DEFAULT_COPILOT_NAME,
   isCopilotMemorySource,
 } from "@/lib/ai/copilot-identity";
+import { resolveCriMilli } from "@/lib/cri/milli";
 
 export type ProfileVisibility = "public" | "private" | "connections";
 export type ThemePreference = "light" | "dark";
@@ -29,6 +30,7 @@ export type ProfileFormState = {
   careerGoal: string;
   targetRole: string;
   cri: number;
+  criMilli: number;
 };
 
 export type PreferencesFormState = {
@@ -82,6 +84,7 @@ export const EMPTY_PROFILE: ProfileFormState = {
   careerGoal: "",
   targetRole: "",
   cri: 0,
+  criMilli: 0,
 };
 
 export const EMPTY_PREFERENCES: PreferencesFormState = {
@@ -122,6 +125,7 @@ export function mapApiProfile(
     careerGoal: String(p.career_goal ?? ""),
     targetRole: String(p.target_role ?? ""),
     cri: Number(p.cri) || 0,
+    criMilli: resolveCriMilli(p.cri_milli, p.cri),
   };
 }
 

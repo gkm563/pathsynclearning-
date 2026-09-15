@@ -40,6 +40,7 @@ import {
   recordProjectMemory,
 } from "@/lib/memory/processor";
 import { promotePendingInterviewIfReady } from "@/lib/roadmap/certification";
+import { recomputeCriSafe } from "@/lib/cri/persist";
 import {
   isProctoringEnabled,
   MAX_PROCTOR_VIOLATIONS,
@@ -103,8 +104,11 @@ export async function POST(request: Request) {
           violations,
           answers: { ...(body.answers || {}), [ASSESSMENT_ID_KEY]: assessmentId },
           code: body.code || null,
+          durationMs: body.durationMs ?? null,
         })
         .returning();
+
+      await recomputeCriSafe(user.id, "assessment");
 
       return jsonResponse({
         passed: false,
@@ -272,6 +276,7 @@ export async function POST(request: Request) {
           [ASSESSMENT_ID_KEY]: assessmentId,
         },
         code: body.code || null,
+        durationMs: body.durationMs ?? null,
       })
       .returning();
 
@@ -283,6 +288,7 @@ export async function POST(request: Request) {
           .set({ status: "in_progress", updatedAt: new Date() })
           .where(eq(roadmapProgress.id, current.id));
       }
+      await recomputeCriSafe(user.id, "assessment");
       return jsonResponse({
         passed: false,
         score,
@@ -321,6 +327,7 @@ export async function POST(request: Request) {
           .set({ status: "in_progress", updatedAt: new Date() })
           .where(eq(roadmapProgress.id, current.id));
       }
+      await recomputeCriSafe(user.id, "assessment");
       return jsonResponse({
         passed: true,
         score,
@@ -424,6 +431,8 @@ export async function POST(request: Request) {
       certifiedAt: activeRoadmap.certifiedAt,
       certificationStatus: activeRoadmap.certificationStatus,
     });
+
+    await recomputeCriSafe(user.id, "assessment");
 
     return jsonResponse({
       passed: true,

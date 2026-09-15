@@ -182,6 +182,7 @@ export default function StudentHome() {
       <HomeSection title="Where you stand" delay={0}>
         <HeadlineStats
           cri={student.cri}
+          criMilli={student.criMilli}
           level={student.level}
           xp={student.xp}
           coins={student.coins}
@@ -207,6 +208,7 @@ export default function StudentHome() {
         <div className="grid gap-4 lg:grid-cols-2">
           <CriGauge
             cri={student.cri}
+            criMilli={student.criMilli}
             status={summary ? statusLabel(summary.status) : null}
             focus={summary?.currentFocus}
           />

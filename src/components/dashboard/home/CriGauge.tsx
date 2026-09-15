@@ -2,15 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useReducedMotion } from "framer-motion";
-import { Badge } from "@/components/ui";
+import { Badge, Button } from "@/components/ui";
 import { CountUp } from "./shared";
 import { homeUi } from "./tokens";
+import { formatCri, resolveCriMilli } from "@/lib/cri/milli";
+import { WhyCriDialog } from "@/components/cri/WhyCriDialog";
 
 const RADIUS = 54;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 type Props = {
   cri: number;
+  criMilli?: number;
   status?: string | null;
   focus?: string | null;
 };
@@ -22,9 +25,12 @@ type Props = {
  * the `<figcaption>` carries the same information as a sentence, and the live
  * value lives in `CountUp`'s polite region.
  */
-export function CriGauge({ cri, status, focus }: Props) {
+export function CriGauge({ cri, criMilli, status, focus }: Props) {
   const reduceMotion = useReducedMotion();
-  const pct = Math.max(0, Math.min(100, Math.round(Number(cri) || 0)));
+  const [whyOpen, setWhyOpen] = useState(false);
+  const milli = resolveCriMilli(criMilli, cri);
+  const pct = Math.max(0, Math.min(100, Math.round(milli / 1000)));
+  const label = formatCri(milli);
   const target = CIRCUMFERENCE - (CIRCUMFERENCE * pct) / 100;
   const [offset, setOffset] = useState(CIRCUMFERENCE);
 
@@ -38,12 +44,10 @@ export function CriGauge({ cri, status, focus }: Props) {
   }, [target, reduceMotion]);
 
   const summary = [
-    `Career readiness index ${pct} out of 100.`,
+    `Career readiness index ${label} out of 100.`,
     status ? `Status: ${status}.` : null,
     focus ? `Current focus: ${focus}.` : null,
-    pct > 0
-      ? "Completing challenges and roadmap nodes raises it."
-      : "Complete challenges and roadmap nodes to start building it.",
+    "Calculated from verified PathED evidence. It does not guarantee a job.",
   ]
     .filter(Boolean)
     .join(" ");
@@ -81,7 +85,7 @@ export function CriGauge({ cri, status, focus }: Props) {
               suffix="%"
               className="type-numeric text-[2rem] leading-none font-semibold tracking-[-0.04em] text-ink"
             />
-            <span className="type-overline mt-1.5 text-faint">CRI</span>
+            <span className="type-overline mt-1.5 text-faint">CRI {label}</span>
           </div>
         </div>
 
@@ -96,6 +100,13 @@ export function CriGauge({ cri, status, focus }: Props) {
           {focus ? <span className={homeUi.chip}>Focus · {focus}</span> : null}
         </div>
       ) : null}
+
+      <div className="mt-4 flex justify-center">
+        <Button variant="secondary" className="min-h-11" onClick={() => setWhyOpen(true)}>
+          Why {label}%?
+        </Button>
+      </div>
+      <WhyCriDialog open={whyOpen} onClose={() => setWhyOpen(false)} />
     </div>
   );
 }
