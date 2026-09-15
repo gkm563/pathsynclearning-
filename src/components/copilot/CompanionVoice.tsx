@@ -3,20 +3,29 @@
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "@/components/ui";
 import {
-  createInterviewRecognition,
+  createCopilotRecognition,
   isSpeechRecognitionSupported,
-  speakInterviewReply,
   type InterviewRecognition,
 } from "@/lib/ai/interview-voice";
 import {
   isSleepPhrase,
   isWakePhrase,
+  speakCopilotReply,
   spokenCopilotText,
   stripWakePhrase,
 } from "@/lib/ai/copilot-voice";
 import { resolveCopilotName } from "@/lib/ai/copilot-identity";
 import { useStudent } from "@/components/dashboard/StudentContext";
 import { useCopilot } from "./CopilotProvider";
+
+async function primeMicrophone() {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  stream.getTracks().forEach((track) => track.stop());
+}
+
+function wordCount(text: string) {
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
 
 export function CompanionVoice() {
   const student = useStudent();
@@ -36,19 +45,22 @@ export function CompanionVoice() {
   } = useCopilot();
   const [supported, setSupported] = useState(true);
   const recRef = useRef<InterviewRecognition | null>(null);
-  const modeRef = useRef<"off" | "wake" | "talk">("off");
   const nameRef = useRef(name);
   const activeRef = useRef(voiceActive);
   const alwaysOnRef = useRef(voiceAlwaysOn);
   const openRef = useRef(open);
+  const phaseRef = useRef(voicePhase);
   const busyRef = useRef(false);
+  const mutedRef = useRef(false);
   const startVoiceRef = useRef(startVoice);
   const stopVoiceRef = useRef(stopVoice);
   const sendVoiceRef = useRef(sendVoice);
+  const listening = voiceAlwaysOn || voiceActive;
   nameRef.current = name;
   activeRef.current = voiceActive;
   alwaysOnRef.current = voiceAlwaysOn;
   openRef.current = open;
+  phaseRef.current = voicePhase;
   startVoiceRef.current = startVoice;
   stopVoiceRef.current = stopVoice;
   sendVoiceRef.current = sendVoice;
@@ -58,110 +70,139 @@ export function CompanionVoice() {
   }, []);
 
   useEffect(() => {
-    return () => {
-      recRef.current?.abort();
-      window.speechSynthesis?.cancel();
-    };
-  }, []);
+    if (voiceAlwaysOn && !voiceActive && voicePhase === "idle") {
+      setVoicePhase("listening");
+    }
+  }, [setVoicePhase, voiceActive, voiceAlwaysOn, voicePhase]);
 
   useEffect(() => {
-    const rec = createInterviewRecognition({
-      silenceMs: 900,
-      onTranscript: (finalText, interimText) => {
-        const spoken = [finalText, interimText].filter(Boolean).join(" ").trim();
-        if (modeRef.current === "wake") {
-          if (isWakePhrase(spoken, nameRef.current)) wakeFrom(spoken);
-          return;
-        }
-        if (modeRef.current === "talk") setHeard(spoken);
+    if (!supported || !listening) {
+      recRef.current?.abort();
+      recRef.current = null;
+      busyRef.current = false;
+      window.speechSynthesis?.cancel();
+      return;
+    }
+
+    let cancelled = false;
+    const rec = createCopilotRecognition({
+      onSpeech: (text) => {
+        if (mutedRef.current || busyRef.current || phaseRef.current === "speaking") return;
+        if (activeRef.current || alwaysOnRef.current) setHeard(text);
       },
       onCommit: (text) => {
         const spoken = text.trim();
-        if (!spoken || busyRef.current) return;
-        if (modeRef.current === "wake") {
-          if (!isWakePhrase(spoken, nameRef.current)) return;
-          wakeFrom(spoken);
-          return;
-        }
-        if (modeRef.current !== "talk") return;
+        if (!spoken || mutedRef.current || busyRef.current || cancelled) return;
+        if (phaseRef.current === "speaking" || phaseRef.current === "thinking") return;
         if (isSleepPhrase(spoken, nameRef.current)) {
           stopVoiceRef.current();
           return;
         }
+        const named = isWakePhrase(spoken, nameRef.current);
         const rest = stripWakePhrase(spoken, nameRef.current) || spoken;
-        void handleUtterance(rest);
+        if (!activeRef.current) {
+          if (!alwaysOnRef.current) return;
+          if (!named && wordCount(spoken) < 2) return;
+          activeRef.current = true;
+          startVoiceRef.current();
+          if (rest.length >= 2) void handleUtterance(rest);
+          return;
+        }
+        void handleUtterance(rest.length >= 2 ? rest : spoken);
       },
       onError: (message) => {
         toast.error(message);
-        if (alwaysOnRef.current) stopVoiceRef.current();
-        else setVoiceAlwaysOn(false);
+        setVoiceAlwaysOn(false);
+        stopVoiceRef.current();
       },
     });
     recRef.current = rec;
-
-    function wakeFrom(spoken: string) {
-      if (busyRef.current) return;
-      const rest = stripWakePhrase(spoken, nameRef.current);
-      modeRef.current = "talk";
-      activeRef.current = true;
-      startVoiceRef.current();
-      if (rest.length >= 2) void handleUtterance(rest);
-    }
 
     async function handleUtterance(text: string) {
       const asked = text.trim();
       if (!asked || busyRef.current) return;
       busyRef.current = true;
-      recRef.current?.abort();
+      mutedRef.current = true;
+      rec?.pause();
       setHeard(asked);
       setVoicePhase("thinking");
       const reply = await sendVoiceRef.current(asked);
-      busyRef.current = false;
-      if (!activeRef.current) return;
+      if (cancelled || !activeRef.current) {
+        busyRef.current = false;
+        mutedRef.current = false;
+        if (!cancelled && alwaysOnRef.current) rec?.start();
+        return;
+      }
       const spoken = spokenCopilotText(reply || "I couldn’t catch that. Try once more.");
       setVoicePhase("speaking");
-      speakInterviewReply(spoken, {
+      speakCopilotReply(spoken, {
+        onStart: () => {
+          mutedRef.current = true;
+          rec?.pause();
+        },
         onEnd: () => {
-          if (!activeRef.current) return;
+          if (cancelled) return;
+          if (!activeRef.current) {
+            busyRef.current = false;
+            window.setTimeout(() => {
+              mutedRef.current = false;
+              if (!cancelled && alwaysOnRef.current) rec?.start();
+            }, 650);
+            return;
+          }
           if (alwaysOnRef.current && !openRef.current) {
             stopVoiceRef.current();
+            busyRef.current = false;
+            window.setTimeout(() => {
+              mutedRef.current = false;
+              if (!cancelled && alwaysOnRef.current) rec?.start();
+            }, 650);
             return;
           }
           setVoicePhase("listening");
           setHeard("");
-          recRef.current?.start();
+          busyRef.current = false;
+          window.setTimeout(() => {
+            mutedRef.current = false;
+            if (!cancelled) rec?.start();
+          }, 650);
         },
       });
     }
 
-    return () => {
-      rec.abort();
-      recRef.current = null;
+    async function boot() {
+      try {
+        await primeMicrophone();
+      } catch {
+        if (cancelled) return;
+        toast.error("Microphone permission is needed for always-on voice. You can turn it back on anytime.");
+        setVoiceAlwaysOn(false);
+        stopVoiceRef.current();
+        return;
+      }
+      if (cancelled) return;
+      rec?.start();
+    }
+
+    void boot();
+    const retry = () => {
+      if (cancelled || mutedRef.current || document.visibilityState === "hidden") return;
+      rec?.start();
     };
-  }, [setHeard, setVoiceAlwaysOn, setVoicePhase, toast]);
+    document.addEventListener("visibilitychange", retry);
+    window.addEventListener("focus", retry);
+    window.addEventListener("pointerdown", retry, { once: true });
 
-  useEffect(() => {
-    if (!supported) return;
-    if (!voiceAlwaysOn && !voiceActive) {
-      modeRef.current = "off";
+    return () => {
+      cancelled = true;
+      document.removeEventListener("visibilitychange", retry);
+      window.removeEventListener("focus", retry);
+      window.removeEventListener("pointerdown", retry);
+      rec?.abort();
+      recRef.current = null;
       busyRef.current = false;
-      recRef.current?.abort();
-      window.speechSynthesis?.cancel();
-      return;
-    }
-
-    if (voiceActive) {
-      modeRef.current = "talk";
-      if (voicePhase === "listening" && !busyRef.current) recRef.current?.start();
-      else if (voicePhase !== "listening") recRef.current?.abort();
-      return;
-    }
-
-    window.speechSynthesis?.cancel();
-    modeRef.current = "wake";
-    busyRef.current = false;
-    recRef.current?.start();
-  }, [supported, voiceActive, voiceAlwaysOn, voicePhase]);
+    };
+  }, [listening, setHeard, setVoiceAlwaysOn, setVoicePhase, stopVoice, supported, toast]);
 
   return null;
 }

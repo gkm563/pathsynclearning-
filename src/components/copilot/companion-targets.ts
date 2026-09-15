@@ -100,15 +100,16 @@ function isBlocked(el: HTMLElement, label: string, href?: string) {
 
 function collect(el: HTMLElement, out: CopilotUiSnapshotItem[], seen: Set<string>) {
   if (!displayed(el)) return;
-  const label = labelOf(el);
+  const label = labelOf(el).slice(0, 80);
   if (!label || label.length < 2) return;
-  const href = hrefOf(el);
+  let href = hrefOf(el);
+  if (href && href.length > 240) href = href.slice(0, 240);
   if (isBlocked(el, label, href)) return;
-  let id = el.getAttribute("data-companion-nav") || fingerprint(el, label, href);
-  if (seen.has(id)) id = `${id}-${out.length}`;
+  let id = (el.getAttribute("data-companion-nav") || fingerprint(el, label, href)).slice(0, 80);
+  if (seen.has(id)) id = `${id.slice(0, 70)}-${out.length}`.slice(0, 80);
   seen.add(id);
   live.set(id, el);
-  out.push({ id, label, kind: kindOf(el), href });
+  out.push(href ? { id, label, kind: kindOf(el), href } : { id, label, kind: kindOf(el) });
 }
 
 export function scanCompanionTargets(): CopilotUiSnapshotItem[] {
@@ -118,10 +119,11 @@ export function scanCompanionTargets(): CopilotUiSnapshotItem[] {
   const seen = new Set<string>();
 
   for (const el of root.querySelectorAll<HTMLElement>("[data-companion-nav], [data-companion-target]")) {
+    if (out.length >= 80) break;
     collect(el, out, seen);
   }
   for (const el of root.querySelectorAll<HTMLElement>(SELECTOR)) {
-    if (out.length >= 140) break;
+    if (out.length >= 80) break;
     if (el.hasAttribute("data-companion-nav") || el.hasAttribute("data-companion-target")) continue;
     collect(el, out, seen);
   }

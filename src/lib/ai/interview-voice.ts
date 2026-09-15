@@ -207,6 +207,7 @@ export type InterviewRecognition = {
   start: () => boolean;
   stop: () => void;
   abort: () => void;
+  pause: () => void;
   hearEnergy: (level: number) => void;
 };
 
@@ -382,6 +383,178 @@ export function createInterviewRecognition(handlers: {
       wanted = false;
       running = false;
       clearSilence();
+      try {
+        rec.abort();
+      } catch {
+        /* already stopped */
+      }
+    },
+    pause: () => {
+      wanted = false;
+      running = false;
+      clearSilence();
+      try {
+        rec.abort();
+      } catch {
+        /* already stopped */
+      }
+    },
+  };
+}
+
+export function createCopilotRecognition(handlers: {
+  onSpeech: (text: string) => void;
+  onCommit: (text: string) => void;
+  onError: (message: string) => void;
+}): InterviewRecognition | null {
+  const win = window as typeof window & {
+    SpeechRecognition?: RecognitionCtor;
+    webkitSpeechRecognition?: RecognitionCtor;
+  };
+  const Ctor = win.SpeechRecognition || win.webkitSpeechRecognition;
+  if (!Ctor) return null;
+
+  const rec = new Ctor();
+  rec.lang = "en-US";
+  rec.continuous = true;
+  rec.interimResults = true;
+
+  let wanted = false;
+  let running = false;
+  let finals: string[] = [];
+  let lastInterim = "";
+  let silenceTimer: number | null = null;
+  let restartTimer: number | null = null;
+
+  const spokenNow = () => [finals.join(" "), lastInterim].filter(Boolean).join(" ").trim();
+
+  const clearSilence = () => {
+    if (silenceTimer != null) {
+      window.clearTimeout(silenceTimer);
+      silenceTimer = null;
+    }
+  };
+
+  const resetBuffer = () => {
+    finals = [];
+    lastInterim = "";
+    clearSilence();
+  };
+
+  const kick = () => {
+    if (!wanted || running) return;
+    try {
+      rec.start();
+      running = true;
+    } catch (err) {
+      const already = err instanceof DOMException && err.name === "InvalidStateError";
+      running = already;
+      if (!already && restartTimer == null) {
+        restartTimer = window.setTimeout(() => {
+          restartTimer = null;
+          kick();
+        }, 400);
+      }
+    }
+  };
+
+  rec.onresult = (event) => {
+    if (!wanted) return;
+    let interim = "";
+    for (let i = event.resultIndex; i < event.results.length; i += 1) {
+      const piece = event.results[i]?.[0]?.transcript?.trim() ?? "";
+      if (!piece) continue;
+      if (event.results[i].isFinal) finals.push(piece);
+      else interim += (interim ? " " : "") + piece;
+    }
+    lastInterim = interim;
+    const spoken = spokenNow();
+    if (!spoken) return;
+    handlers.onSpeech(spoken);
+    clearSilence();
+    silenceTimer = window.setTimeout(() => {
+      silenceTimer = null;
+      if (!wanted) return;
+      const text = spokenNow();
+      resetBuffer();
+      if (text.length >= 2) handlers.onCommit(text);
+    }, 700);
+  };
+
+  rec.onerror = (event) => {
+    const code = event.error || "";
+    if (code === "aborted" || code === "no-speech" || code === "network") return;
+    running = false;
+    if (code === "not-allowed") {
+      wanted = false;
+      handlers.onError("Microphone permission denied. Allow it in the browser, then retry.");
+      return;
+    }
+    if (code === "audio-capture") {
+      if (restartTimer == null) {
+        restartTimer = window.setTimeout(() => {
+          restartTimer = null;
+          kick();
+        }, 600);
+      }
+    }
+  };
+
+  rec.onend = () => {
+    running = false;
+    if (!wanted) {
+      clearSilence();
+      return;
+    }
+    restartTimer = window.setTimeout(() => {
+      restartTimer = null;
+      kick();
+    }, 180);
+  };
+
+  return {
+    start: () => {
+      wanted = true;
+      kick();
+      return wanted;
+    },
+    hearEnergy: () => undefined,
+    stop: () => {
+      wanted = false;
+      running = false;
+      clearSilence();
+      if (restartTimer != null) {
+        window.clearTimeout(restartTimer);
+        restartTimer = null;
+      }
+      try {
+        rec.stop();
+      } catch {
+        /* already stopped */
+      }
+    },
+    abort: () => {
+      wanted = false;
+      running = false;
+      resetBuffer();
+      if (restartTimer != null) {
+        window.clearTimeout(restartTimer);
+        restartTimer = null;
+      }
+      try {
+        rec.abort();
+      } catch {
+        /* already stopped */
+      }
+    },
+    pause: () => {
+      wanted = false;
+      running = false;
+      resetBuffer();
+      if (restartTimer != null) {
+        window.clearTimeout(restartTimer);
+        restartTimer = null;
+      }
       try {
         rec.abort();
       } catch {

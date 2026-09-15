@@ -26,11 +26,17 @@ export function isWakePhrase(text: string, companionName: string) {
   const t = compact(text);
   const n = nameToken(companionName);
   if (!t) return false;
-  if (t === n || t === `hey ${n}` || t === `hi ${n}` || t === `hello ${n}`) return true;
-  if (t.startsWith(`hey ${n}`) || t.startsWith(`ok ${n}`) || t.startsWith(`okay ${n}`) || t.startsWith(`hi ${n}`)) {
-    return true;
+  const aliases = new Set<string>([n]);
+  if (n === "nova") {
+    aliases.add("noba");
+    aliases.add("niva");
+    aliases.add("nover");
   }
-  if (t.includes(`${n} wake up`) || t === "wake up" || t.startsWith("wake up ")) return true;
+  for (const word of t.split(" ")) {
+    if (aliases.has(word)) return true;
+  }
+  if ([...aliases].some((alias) => t.includes(alias))) return true;
+  if (t === "wake up" || t.startsWith("wake up ")) return true;
   return false;
 }
 
@@ -74,4 +80,86 @@ export function saveVoiceWakeEnabled(on: boolean) {
   } catch {
     // ignore
   }
+}
+
+function scoreCopilotVoice(voice: SpeechSynthesisVoice) {
+  const label = `${voice.name} ${voice.lang}`.toLowerCase();
+  let score = 0;
+  if (/en(-|_)us/.test(label) || voice.lang.toLowerCase().startsWith("en-us")) score += 6;
+  else if (voice.lang.toLowerCase().startsWith("en")) score += 4;
+  else score -= 8;
+  if (/aria|jenny|sonia|libby|zira|samantha|sara\b|natural|neural|online/.test(label)) score += 10;
+  if (/google us english|microsoft aria|microsoft jenny|microsoft zira/.test(label)) score += 8;
+  if (voice.localService) score += 1;
+  if (/david|mark|ravi|george|guy|davis|andrew|christopher|fred|daniel|james/.test(label)) score -= 6;
+  return score;
+}
+
+export function pickCopilotTtsVoice() {
+  if (typeof window === "undefined" || !window.speechSynthesis) return null;
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return null;
+  return [...voices].sort((a, b) => scoreCopilotVoice(b) - scoreCopilotVoice(a))[0] || null;
+}
+
+export function speakCopilotReply(
+  text: string,
+  handlers?: { onStart?: () => void; onEnd?: () => void },
+) {
+  if (typeof window === "undefined" || !window.speechSynthesis || !text.trim()) {
+    handlers?.onEnd?.();
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const spoken = text.trim();
+  const speak = () => {
+    const utterance = new SpeechSynthesisUtterance(spoken);
+    const voice = pickCopilotTtsVoice();
+    if (voice) {
+      utterance.voice = voice;
+      utterance.lang = voice.lang;
+    } else {
+      utterance.lang = "en-US";
+    }
+    utterance.rate = 1.04;
+    utterance.pitch = 1.06;
+    let finished = false;
+    let started = false;
+    const begunAt = Date.now();
+    const done = () => {
+      if (finished) return;
+      if (!started && Date.now() - begunAt < 500) return;
+      finished = true;
+      window.clearTimeout(safety);
+      handlers?.onEnd?.();
+    };
+    const safety = window.setTimeout(
+      done,
+      Math.min(28000, Math.max(4000, spoken.length * 85 + 2800)),
+    );
+    utterance.onstart = () => {
+      started = true;
+      handlers?.onStart?.();
+    };
+    utterance.onend = done;
+    utterance.onerror = () => {
+      if (started) done();
+    };
+    handlers?.onStart?.();
+    window.speechSynthesis.resume();
+    window.speechSynthesis.speak(utterance);
+  };
+
+  if (window.speechSynthesis.getVoices().length) {
+    speak();
+    return;
+  }
+  let armed = false;
+  const once = () => {
+    if (armed) return;
+    armed = true;
+    speak();
+  };
+  window.speechSynthesis.addEventListener("voiceschanged", once, { once: true });
+  window.setTimeout(once, 280);
 }
