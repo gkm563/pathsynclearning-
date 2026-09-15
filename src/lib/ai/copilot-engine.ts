@@ -3,9 +3,12 @@ import { callAIWithFallback } from "@/lib/ai/llm";
 import { copilotSystemInstruction, buildCopilotPrompt } from "./copilot-prompt";
 import type { CopilotStudentContext } from "./copilot-context";
 import { normalizeCopilotHref } from "./copilot-href";
+import { routes } from "@/lib/routes";
 import {
   copilotFallbackReply,
+  copilotNewsSearchQuery,
   copilotScopeRefusal,
+  wantsCopilotNews,
 } from "./copilot-scope";
 import { executeCopilotReadTool, isReadTool, type CopilotReadTool } from "./copilot-tools";
 import type {
@@ -268,6 +271,16 @@ export async function runCopilotTurn(input: {
   fallback?: boolean;
 }> {
   const toolResults: string[] = [];
+  if (wantsCopilotNews(input.message)) {
+    try {
+      const result = await executeCopilotReadTool(input.userId, "list_news", {
+        query: copilotNewsSearchQuery(input.message),
+      });
+      toolResults.push(`list_news: ${JSON.stringify(result).slice(0, 1800)}`);
+    } catch {
+      // snapshot.news still available
+    }
+  }
 
   for (let round = 0; round < 3; round++) {
     const prompt = buildCopilotPrompt(
@@ -337,9 +350,16 @@ export async function runCopilotTurn(input: {
     }
 
     const reply = asReply(raw) || copilotFallbackReply(input.ctx.companion.name);
+    const navigate = parseNavigate(raw.navigate, calls);
+    if (
+      wantsCopilotNews(input.message) &&
+      !navigate.some((item) => item.href.startsWith(routes.app.techNews))
+    ) {
+      navigate.unshift({ href: routes.app.techNews, label: "Tech News" });
+    }
     return {
       reply,
-      navigate: parseNavigate(raw.navigate, calls),
+      navigate: navigate.slice(0, 4),
       interact: parseInteract(raw.interact, calls),
       proposedWrites: parseProposedWrites(raw.proposed_writes, calls),
       fallback: !asReply(raw),

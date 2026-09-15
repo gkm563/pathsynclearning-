@@ -423,8 +423,7 @@ export function CopilotDrawer() {
           tabIndex={-1}
           data-companion-ignore
           className={cn(
-            "fixed flex flex-col overflow-visible border border-line bg-surface outline-none",
-            "rounded-[28px] shadow-[var(--shadow-xl)]",
+            "fixed flex flex-col overflow-visible border-0 bg-transparent outline-none",
             "w-[min(23.5rem,calc(100vw-5.5rem))] h-[min(36rem,calc(100dvh-5rem))]",
           )}
           style={{
@@ -442,15 +441,7 @@ export function CopilotDrawer() {
           exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96 }}
           transition={{ duration: reduceMotion || dragging ? 0 : 0.2, ease: [0.05, 0.7, 0.1, 1] }}
         >
-          <span
-            aria-hidden
-            className={cn(
-              "pointer-events-none absolute bottom-7 h-3.5 w-3.5 rotate-45 border-line bg-surface",
-              chatBox?.side === "right"
-                ? "-left-1.5 border-b border-l"
-                : "-right-1.5 border-r border-t",
-            )}
-          />
+          <div className="relative flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-[28px] border border-line bg-surface shadow-[var(--shadow-xl)]">
           <header
             className={cn(
               "flex shrink-0 touch-none select-none items-center gap-3 border-b border-line bg-[linear-gradient(180deg,var(--primary-soft),var(--surface))] px-4 py-3 rounded-t-[28px]",
@@ -484,10 +475,14 @@ export function CopilotDrawer() {
             </div>
             <IconButton
               type="button"
-              label={voiceAlwaysOn ? "Turn off always-on voice" : "Turn on always-on voice"}
-              variant={voiceAlwaysOn ? "primary" : "ghost"}
+              label={voiceAlwaysOn && !voiceActive ? "Turn off always-on voice" : "Turn on always-on voice"}
+              variant={voiceAlwaysOn && !voiceActive ? "primary" : "ghost"}
               size="sm"
-              onClick={() => setVoiceAlwaysOn(!voiceAlwaysOn)}
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={() => {
+                if (voiceActive) stopVoice();
+                setVoiceAlwaysOn(!(voiceAlwaysOn && !voiceActive));
+              }}
             >
               <Mic size={16} />
             </IconButton>
@@ -514,7 +509,7 @@ export function CopilotDrawer() {
 
             <div
               ref={listRef}
-              className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-4"
+              className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain px-3 py-4 sm:px-4"
             >
               {showHistory ? (
                 <div className="flex flex-col gap-2">
@@ -567,29 +562,29 @@ export function CopilotDrawer() {
                   )}
                 </div>
               ) : (
-                <div className="flex flex-col gap-3">
+                <div className="flex min-w-0 flex-col gap-3">
                   {messages.map((msg, i) => {
                     const mine = msg.role === "user";
                     return (
                       <div
                         key={msg.id || `${msg.role}-${msg.at}-${i}`}
-                        className={cn("flex max-w-[92%] gap-2", mine ? "self-end" : "self-start")}
+                        className={cn("flex min-w-0 max-w-full gap-2", mine ? "self-end" : "self-start")}
                       >
                         {!mine ? (
                           <span className="mt-1 shrink-0">
                             <CompanionAvatar name={companionName} size="sm" pose="still" />
                           </span>
                         ) : null}
-                        <div className={cn("min-w-0", mine && "text-right")}>
+                        <div className={cn("min-w-0 max-w-[min(100%,20rem)]", mine && "text-right")}>
                           <div className="type-caption mb-1 text-muted">
                             {mine ? "You" : companionName}
                             {msg.at ? ` · ${formatAt(msg.at)}` : ""}
                           </div>
                           <div
                             className={cn(
-                              "tutor-bubble overflow-wrap-anywhere px-3.5 py-2.5 text-left type-small leading-relaxed",
+                              "overflow-hidden break-words px-3.5 py-2.5 text-left type-small leading-relaxed [overflow-wrap:anywhere]",
                               mine
-                                ? "tutor-bubble-user rounded-[1.2rem] rounded-br-sm bg-primary text-[var(--text-on-primary)]"
+                                ? "rounded-[1.2rem] rounded-br-sm bg-primary text-[var(--text-on-primary)]"
                                 : "rounded-[1.2rem] rounded-bl-sm border border-line bg-sunken text-ink",
                             )}
                           >
@@ -742,6 +737,16 @@ export function CopilotDrawer() {
                 </form>
               )}
             </footer>
+          </div>
+          <span
+            aria-hidden
+            className={cn(
+              "pointer-events-none absolute bottom-7 h-3.5 w-3.5 rotate-45 border-line bg-surface shadow-[var(--shadow-sm)]",
+              chatBox?.side === "right"
+                ? "-left-1.5 border-b border-l"
+                : "-right-1.5 border-r border-t",
+            )}
+          />
         </motion.aside>
       ) : null}
     </AnimatePresence>,

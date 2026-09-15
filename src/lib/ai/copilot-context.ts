@@ -13,6 +13,8 @@ import {
   isCopilotMemorySource,
   resolveCopilotName,
 } from "./copilot-identity";
+import { getArticle, listNews } from "@/lib/news/service";
+import { techNewsArticlePath } from "@/lib/routes";
 
 export type CopilotStudentContext = {
   page: string;
@@ -48,6 +50,11 @@ export type CopilotStudentContext = {
     featured: { title: string; slug: string; difficulty: string } | null;
     side: Array<{ title: string; slug: string; difficulty: string }>;
   };
+  news: {
+    featured: Array<{ id: string; title: string; category: string; summary: string; href: string }>;
+    latest: Array<{ id: string; title: string; category: string; summary: string; href: string }>;
+    current: { id: string; title: string; category: string; summary: string; href: string } | null;
+  };
 };
 
 function asNodes(raw: unknown): RoadmapNode[] {
@@ -59,6 +66,21 @@ function compactProblem(id: string | undefined | null) {
   const q = getChallengeById(id);
   if (!q) return null;
   return { title: q.title, slug: q.slug, difficulty: q.difficulty };
+}
+
+function compactNewsItem(article: {
+  id: string;
+  title: string;
+  category: string;
+  summary: string;
+}) {
+  return {
+    id: article.id,
+    title: article.title,
+    category: article.category,
+    summary: article.summary.slice(0, 180),
+    href: techNewsArticlePath(article.id),
+  };
 }
 
 export async function buildCopilotContext(
@@ -142,6 +164,22 @@ export async function buildCopilotContext(
   const degree = [profileRow?.degree, profileRow?.branch].filter(Boolean).join(" · ") || null;
   const fullName = user.full_name || profileRow?.username || "Student";
 
+  let news: CopilotStudentContext["news"] = { featured: [], latest: [], current: null };
+  try {
+    const feed = await listNews(user.id, { limit: 6, sort: "latest" });
+    news = {
+      featured: (feed.featured || []).slice(0, 4).map(compactNewsItem),
+      latest: (feed.items || []).slice(0, 6).map(compactNewsItem),
+      current: null,
+    };
+    if (entity.type === "news" && entity.id) {
+      const article = await getArticle(user.id, entity.id);
+      if (article) news.current = compactNewsItem(article);
+    }
+  } catch {
+    // snapshot still useful without the feed
+  }
+
   return {
     page,
     pageEntity: entity,
@@ -167,5 +205,6 @@ export async function buildCopilotContext(
     },
     roadmap: roadmapCtx,
     today,
+    news,
   };
 }

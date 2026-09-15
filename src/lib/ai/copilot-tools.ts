@@ -2,7 +2,8 @@ import "server-only";
 import { getChallengeById, listCatalog } from "@/lib/challenges/catalog";
 import { getMemorySettings } from "@/lib/memory/settings";
 import { searchNotes } from "@/lib/memory/notes";
-import { listNews } from "@/lib/news/service";
+import { getArticle, listNews } from "@/lib/news/service";
+import { techNewsArticlePath } from "@/lib/routes";
 import { getProgressPayload } from "@/lib/progress";
 import { getActiveRoadmap } from "@/lib/roadmap/active";
 import { getDb } from "@/lib/db/client";
@@ -17,6 +18,7 @@ export const COPILOT_READ_TOOLS = [
   "search_problems",
   "search_notes",
   "list_news",
+  "get_article",
 ] as const;
 
 export type CopilotReadTool = (typeof COPILOT_READ_TOOLS)[number];
@@ -156,14 +158,42 @@ export async function executeCopilotReadTool(
       sort: "latest",
     });
     return {
+      page: "/dashboard/tech-news",
+      featured: (data.featured || []).slice(0, 4).map((a) => ({
+        id: a.id,
+        title: a.title,
+        category: a.category,
+        summary: a.summary.slice(0, 220),
+        href: techNewsArticlePath(a.id),
+        featured: true,
+      })),
       items: data.items.map((a) => ({
         id: a.id,
         title: a.title,
         category: a.category,
         summary: a.summary.slice(0, 220),
+        href: techNewsArticlePath(a.id),
         bookmarked: a.bookmarked,
         publishedAt: a.publishedAt,
       })),
+    };
+  }
+
+  if (name === "get_article") {
+    const articleId = typeof args.articleId === "string" ? args.articleId.trim() : "";
+    if (!articleId) return { error: "articleId required" };
+    const article = await getArticle(userId, articleId);
+    if (!article) return { error: "Article not found in PathED tech news." };
+    return {
+      id: article.id,
+      title: article.title,
+      category: article.category,
+      summary: article.summary,
+      excerpt: (article.content || article.summary).slice(0, 1200),
+      href: techNewsArticlePath(article.id),
+      bookmarked: article.bookmarked,
+      publishedAt: article.publishedAt,
+      sourceName: article.sourceName,
     };
   }
 

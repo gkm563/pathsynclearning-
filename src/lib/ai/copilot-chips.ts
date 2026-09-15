@@ -90,6 +90,6 @@ function copilotChipsForPathInner(pathname: string): CopilotChip[] {
     { label: "What next?", prompt: "What should I do next on PathED?" },
     { label: "Explain my CRI", prompt: "Explain my Career Readiness Index and how to raise it." },
     { label: "Today's challenge", prompt: "Open today’s featured challenge." },
-    { label: "Save a note", prompt: "Save a short private note about my current focus." },
+    { label: "Tech news", prompt: "Summarize what’s in my PathED tech news feed." },
   ];
 }

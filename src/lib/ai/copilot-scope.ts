@@ -13,6 +13,23 @@ const OFF_TOPIC =
 const PLATFORM_INTENT =
   /\b(pathed|path ed|cri|career readiness|xp|streak|coin|wallet|roadmap|node|study room|challenge|problem|dsa|mcq|project|progress|memory lane|note|bookmark|tech news|article|store|placement|mentor|profile|settings|badge|level|daily|what should i|next|help|open|navigate|explain)\b/i;
 
+export function wantsCopilotNews(text: string) {
+  return /\b(news|headline|headlines|articles?|tech news|feed recap|what(?:'|’)s (?:new|happening) in tech)\b/i.test(
+    text,
+  );
+}
+
+export function copilotNewsSearchQuery(text: string) {
+  const cleaned = text
+    .toLowerCase()
+    .replace(/\b(hey|hi|hello|please|can you|could you|would you|open|show|tell me|about|from|my|the|a|an|in|on|for|with|nova|atlas|sage|pixel|mira)\b/gi, " ")
+    .replace(/\b(tech news|news feed|headlines?|articles?|feed recap|summarize|what's in)\b/gi, " ")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return cleaned.length >= 3 ? cleaned : undefined;
+}
+
 export function classifyCopilotMessage(message: string): CopilotScopeVerdict {
   const q = message.trim();
   if (q.length < 2) return { ok: false, reason: "empty" };

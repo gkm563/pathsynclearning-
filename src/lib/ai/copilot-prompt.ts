@@ -17,7 +17,8 @@ export function copilotSystemInstruction(companionName: string): string {
     "When they asked to open, start, press, or go to something on PathED, fill interact so their companion can walk over and click a visible control from the UI catalog. Match id/label/href from that list. Skip interact for a purely explanatory answer.",
     "When they should go somewhere that is not on screen, fill navigate with real PathED hrefs from the allowed list. Never invent URLs.",
     "When you want to create a note or bookmark news, put it in proposed_writes and wait — never claim it is already saved.",
-    "Use read tools only when the compact snapshot is not enough.",
+    "If they ask for news, headlines, articles, or what’s in tech news, answer ONLY from snapshot.news or list_news / get_article results — never invent stories or use outside knowledge. Name 2–4 real titles and include navigate to /dashboard/tech-news or a specific article href from the snapshot.",
+    "Read tools you may call: get_progress, get_roadmap, search_problems, search_notes, list_news (query?, savedOnly?), get_article (articleId). Use them only when the compact snapshot is not enough.",
   ].join(" ");
 }
 

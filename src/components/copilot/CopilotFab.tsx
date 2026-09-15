@@ -14,7 +14,6 @@ import { useStudent } from "@/components/dashboard/StudentContext";
 import { CompanionAvatar } from "./CompanionAvatar";
 import { useCopilot } from "./CopilotProvider";
 import {
-  FAB_MARGIN,
   FAB_SIZE,
   clampFab,
   defaultFabPos,
@@ -22,8 +21,6 @@ import {
   getWalkTask,
   initCompanionPos,
   setCompanionPos,
-  tabBarInset,
-  useCompanionActing,
   useCompanionPos,
   useCompanionTapping,
   useCompanionWalkTask,
@@ -45,16 +42,12 @@ const MOVE_SPEED: Record<MoveStyle, number> = {
   jump: 124,
 };
 
-function pickMoveStyle(dx: number, dy: number, dist: number, guided: boolean): MoveStyle {
+function pickMoveStyle(dx: number, dy: number, dist: number): MoveStyle {
   const ax = Math.abs(dx);
   const ay = Math.abs(dy);
   if (ay > 52 && ay > ax * 1.12) return "climb";
   if (dy < -40 && ax > 28) return "jump";
-  if (guided && dist > 130) return ay > ax ? "climb" : "run";
-  if (dist > 190) return "run";
-  if (!guided && dist > 70 && Math.random() < 0.34) {
-    return Math.random() < 0.45 ? "jump" : "run";
-  }
+  if (dist > 130) return ay > ax ? "climb" : "run";
   return "walk";
 }
 
@@ -67,7 +60,6 @@ export function CopilotFab() {
   const pos = useCompanionPos();
   const walkTask = useCompanionWalkTask();
   const tapping = useCompanionTapping();
-  const acting = useCompanionActing();
   const [dragging, setDragging] = useState(false);
   const [pose, setPose] = useState<CompanionPose>("idle");
   const [lift, setLift] = useState(0);
@@ -111,10 +103,12 @@ export function CopilotFab() {
   }, []);
 
   useEffect(() => {
-    if (reduceMotion && !walkTask) {
-      poseRef.current = "idle";
-      setPose("idle");
+    if (!walkTask) {
       setLift(0);
+      if (poseRef.current !== "tap" && poseRef.current !== "still") {
+        poseRef.current = "idle";
+        setPose("idle");
+      }
       return;
     }
 
@@ -123,37 +117,6 @@ export function CopilotFab() {
     let target: CompanionPos | null = null;
     let move: MoveStyle = "walk";
     let tripDist = 1;
-    let restUntil = performance.now() + 2800;
-    let fidgetUntil = 0;
-    let fidget: "wave" | "stretch" | "hop" | null = null;
-    let fidgetStarted = 0;
-
-    const pickTarget = (from: CompanionPos): CompanionPos => {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const play = Math.random();
-      for (let i = 0; i < 10; i += 1) {
-        let next: CompanionPos;
-        if (play < 0.22) {
-          next = clampFab({
-            x: from.x + (Math.random() * 36 - 18),
-            y: FAB_MARGIN + Math.random() * Math.max(1, vh - FAB_SIZE - tabBarInset() - FAB_MARGIN),
-          });
-        } else if (play < 0.4) {
-          next = clampFab({
-            x: from.x,
-            y: from.y - (80 + Math.random() * 160),
-          });
-        } else {
-          next = clampFab({
-            x: FAB_MARGIN + Math.random() * Math.max(1, vw - FAB_SIZE - FAB_MARGIN * 2),
-            y: FAB_MARGIN + Math.random() * Math.max(1, vh - FAB_SIZE - tabBarInset() - FAB_MARGIN),
-          });
-        }
-        if (Math.hypot(next.x - from.x, next.y - from.y) > 80) return next;
-      }
-      return clampFab(from);
-    };
 
     const setPoseNow = (next: CompanionPose) => {
       if (poseRef.current === next) return;
@@ -208,8 +171,10 @@ export function CopilotFab() {
         return false;
       };
 
-      if (guided) {
-        fidget = null;
+      if (guided && !draggingRef.current) {
+        const dx = guided.x - current.x;
+        const dy = guided.y - current.y;
+        const dist = Math.hypot(dx, dy);
         if (reduceMotion) {
           posRef.current = { x: guided.x, y: guided.y };
           setCompanionPos(posRef.current);
@@ -219,13 +184,10 @@ export function CopilotFab() {
           raf = requestAnimationFrame(tick);
           return;
         }
-        const dx = guided.x - current.x;
-        const dy = guided.y - current.y;
-        const dist = Math.hypot(dx, dy);
         if (!target || target.x !== guided.x || target.y !== guided.y) {
           target = { x: guided.x, y: guided.y };
           tripDist = Math.max(24, dist);
-          move = pickMoveStyle(dx, dy, dist, true);
+          move = pickMoveStyle(dx, dy, dist);
         }
         if (moveToward(guided, move, tripDist)) {
           target = null;
@@ -236,75 +198,15 @@ export function CopilotFab() {
         return;
       }
 
-      const blocked =
-        open ||
-        voiceActive ||
-        acting ||
-        draggingRef.current ||
-        Date.now() < pauseUntilRef.current ||
-        reduceMotion;
-
-      if (blocked) {
-        target = null;
-        fidget = null;
-        setLift(0);
-        if (poseRef.current !== "tap" && poseRef.current !== "still") setPoseNow("idle");
-        raf = requestAnimationFrame(tick);
-        return;
-      }
-
-      if (!target) {
-        if (now < restUntil) {
-          if (!fidget && now > fidgetUntil && now > restUntil - 400) {
-            // wait
-          }
-          if (!fidget && now > restUntil - 1800 && Math.random() < 0.012) {
-            const pick = Math.random();
-            fidget = pick < 0.34 ? "wave" : pick < 0.62 ? "stretch" : "hop";
-            fidgetStarted = now;
-            fidgetUntil = now + (fidget === "hop" ? 620 : 1400);
-          }
-          if (fidget) {
-            if (now >= fidgetUntil) {
-              fidget = null;
-              setLift(0);
-              setPoseNow("idle");
-            } else if (fidget === "hop") {
-              const t = (now - fidgetStarted) / 620;
-              setLift(Math.sin(Math.min(1, t) * Math.PI) * 28);
-              setPoseNow("jump");
-            } else {
-              setLift(0);
-              setPoseNow(fidget);
-            }
-          } else {
-            setLift(0);
-            setPoseNow("idle");
-          }
-          raf = requestAnimationFrame(tick);
-          return;
-        }
-        target = pickTarget(current);
-        const dx = target.x - current.x;
-        const dy = target.y - current.y;
-        tripDist = Math.max(24, Math.hypot(dx, dy));
-        move = pickMoveStyle(dx, dy, tripDist, false);
-        fidget = null;
-      }
-
-      if (moveToward(target, move, tripDist)) {
-        if (posRef.current) setCompanionPos(posRef.current, true);
-        target = null;
-        setPoseNow("idle");
-        restUntil = now + 2200 + Math.random() * 4800;
-        fidgetUntil = now + 700;
-      }
+      target = null;
+      setLift(0);
+      if (poseRef.current !== "tap" && poseRef.current !== "still") setPoseNow("idle");
       raf = requestAnimationFrame(tick);
     };
 
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [open, reduceMotion, walkTask, acting, voiceActive]);
+  }, [reduceMotion, walkTask]);
 
   useEffect(() => {
     if (open || reduceMotion) {

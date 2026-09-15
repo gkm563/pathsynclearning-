@@ -43,48 +43,51 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
   const [voicePhase, setVoicePhase] = useState<CopilotVoicePhase>("idle");
   const [heard, setHeard] = useState("");
   const senderRef = useRef<VoiceSender | null>(null);
-  const stopVoice = useCallback(() => {
+  const alwaysOnHeldRef = useRef(false);
+  const alwaysOnRef = useRef(true);
+  alwaysOnRef.current = voiceAlwaysOn;
+  const endTalk = useCallback(() => {
     setVoiceActive(false);
-    setVoicePhase("idle");
     setHeard("");
-  }, []);
-  const closeChat = useCallback(() => {
-    setVoiceActive(false);
-    setVoicePhase("idle");
-    setHeard("");
-    setOpenState(false);
-  }, []);
-  const setOpen = useCallback((next: boolean) => {
-    if (!next) {
-      setVoiceActive(false);
-      setVoicePhase("idle");
-      setHeard("");
+    if (alwaysOnHeldRef.current) {
+      alwaysOnHeldRef.current = false;
+      setVoiceAlwaysOnState(true);
+      setVoicePhase("listening");
+      return;
     }
-    setOpenState(next);
+    setVoicePhase("idle");
   }, []);
+  const stopVoice = endTalk;
+  const closeChat = useCallback(() => {
+    endTalk();
+    setOpenState(false);
+  }, [endTalk]);
+  const setOpen = useCallback((next: boolean) => {
+    if (!next) endTalk();
+    setOpenState(next);
+  }, [endTalk]);
   const toggle = useCallback(() => {
     setOpenState((v) => {
-      if (v) {
-        setVoiceActive(false);
-        setVoicePhase("idle");
-        setHeard("");
-      }
+      if (v) endTalk();
       return !v;
     });
-  }, []);
+  }, [endTalk]);
   const startVoice = useCallback(() => {
+    if (alwaysOnRef.current) {
+      alwaysOnHeldRef.current = true;
+      setVoiceAlwaysOnState(false);
+    }
     setVoiceActive(true);
     setVoicePhase("listening");
     setHeard("");
   }, []);
   const setVoiceAlwaysOn = useCallback((on: boolean) => {
+    alwaysOnHeldRef.current = false;
     saveVoiceWakeEnabled(on);
     setVoiceAlwaysOnState(on);
-    if (!on) {
-      setVoiceActive(false);
-      setVoicePhase("idle");
-      setHeard("");
-    }
+    setVoiceActive(false);
+    setHeard("");
+    setVoicePhase(on ? "listening" : "idle");
   }, []);
 
   useEffect(() => {
