@@ -98,7 +98,7 @@ function hasUserTurns(messages: CopilotChatMsg[]) {
 const DRAG_THRESHOLD = 8;
 
 export function CopilotDrawer() {
-  const { open, closeChat, registerVoiceSender, voiceActive, voiceAlwaysOn, voicePhase, startVoice, stopVoice, setVoiceAlwaysOn } = useCopilot();
+  const { open, closeChat, registerVoiceSender, voiceActive, voiceAlwaysOn, voiceBlocked, voicePhase, startVoice, stopVoice, setVoiceAlwaysOn } = useCopilot();
   const student = useStudent();
   const companionName = resolveCopilotName(student.preferences.copilotName);
   const pathname = usePathname() || "/dashboard";
@@ -457,8 +457,16 @@ export function CopilotDrawer() {
                 {companionName}
               </h2>
               <p className="type-caption m-0 flex items-center gap-1.5 text-muted">
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-success" aria-hidden />
-                  {voiceActive
+                <span
+                  className={cn(
+                    "inline-block h-1.5 w-1.5 rounded-full",
+                    voiceBlocked ? "bg-[var(--text-muted)]" : "bg-success",
+                  )}
+                  aria-hidden
+                />
+                  {voiceBlocked
+                    ? "Voice paused during interview"
+                    : voiceActive
                     ? voicePhase === "listening"
                       ? "Listening…"
                       : voicePhase === "thinking"
@@ -476,8 +484,9 @@ export function CopilotDrawer() {
             <IconButton
               type="button"
               label={voiceAlwaysOn && !voiceActive ? "Turn off always-on voice" : "Turn on always-on voice"}
-              variant={voiceAlwaysOn && !voiceActive ? "primary" : "ghost"}
+              variant={voiceAlwaysOn && !voiceActive && !voiceBlocked ? "primary" : "ghost"}
               size="sm"
+              disabled={voiceBlocked}
               onPointerDown={(event) => event.stopPropagation()}
               onClick={() => {
                 if (voiceActive) stopVoice();
@@ -718,8 +727,15 @@ export function CopilotDrawer() {
                   />
                   <IconButton
                     type="button"
-                    label={voiceActive ? "End voice" : `Talk to ${companionName}`}
+                    label={
+                      voiceBlocked
+                        ? "Voice paused during interview"
+                        : voiceActive
+                          ? "End voice"
+                          : `Talk to ${companionName}`
+                    }
                     variant={voiceActive ? "primary" : "ghost"}
+                    disabled={voiceBlocked}
                     onClick={() => (voiceActive ? stopVoice() : startVoice())}
                     className="rounded-full"
                   >

@@ -10,7 +10,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { usePathname } from "next/navigation";
 import { loadVoiceWakeEnabled, saveVoiceWakeEnabled } from "@/lib/ai/copilot-voice";
+import { isLiveInterviewPath } from "@/lib/routes";
 
 export type CopilotVoicePhase = "idle" | "listening" | "thinking" | "speaking";
 
@@ -28,6 +30,7 @@ type CopilotContextValue = {
   heard: string;
   startVoice: () => void;
   stopVoice: () => void;
+  voiceBlocked: boolean;
   setVoicePhase: (phase: CopilotVoicePhase) => void;
   setHeard: (text: string) => void;
   registerVoiceSender: (sender: VoiceSender) => () => void;
@@ -37,6 +40,8 @@ type CopilotContextValue = {
 const CopilotContext = createContext<CopilotContextValue | null>(null);
 
 export function CopilotProvider({ children }: { children: ReactNode }) {
+  const pathname = usePathname() || "";
+  const voiceBlocked = isLiveInterviewPath(pathname);
   const [open, setOpenState] = useState(false);
   const [voiceActive, setVoiceActive] = useState(false);
   const [voiceAlwaysOn, setVoiceAlwaysOnState] = useState(true);
@@ -45,10 +50,17 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
   const senderRef = useRef<VoiceSender | null>(null);
   const alwaysOnHeldRef = useRef(false);
   const alwaysOnRef = useRef(true);
+  const blockedRef = useRef(false);
   alwaysOnRef.current = voiceAlwaysOn;
+  blockedRef.current = voiceBlocked;
   const endTalk = useCallback(() => {
     setVoiceActive(false);
     setHeard("");
+    if (blockedRef.current) {
+      alwaysOnHeldRef.current = false;
+      setVoicePhase("idle");
+      return;
+    }
     if (alwaysOnHeldRef.current) {
       alwaysOnHeldRef.current = false;
       setVoiceAlwaysOnState(true);
@@ -73,6 +85,7 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
     });
   }, [endTalk]);
   const startVoice = useCallback(() => {
+    if (blockedRef.current) return;
     if (alwaysOnRef.current) {
       alwaysOnHeldRef.current = true;
       setVoiceAlwaysOnState(false);
@@ -87,12 +100,21 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
     setVoiceAlwaysOnState(on);
     setVoiceActive(false);
     setHeard("");
-    setVoicePhase(on ? "listening" : "idle");
+    setVoicePhase(on && !blockedRef.current ? "listening" : "idle");
   }, []);
 
   useEffect(() => {
     setVoiceAlwaysOnState(loadVoiceWakeEnabled());
   }, []);
+
+  useEffect(() => {
+    if (!voiceBlocked) return;
+    alwaysOnHeldRef.current = false;
+    setVoiceActive(false);
+    setHeard("");
+    setVoicePhase("idle");
+    window.speechSynthesis?.cancel();
+  }, [voiceBlocked]);
   const registerVoiceSender = useCallback((sender: VoiceSender) => {
     senderRef.current = sender;
     return () => {
@@ -138,6 +160,7 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
       heard,
       startVoice,
       stopVoice,
+      voiceBlocked,
       setVoicePhase,
       setHeard,
       registerVoiceSender,
@@ -155,6 +178,7 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
       heard,
       startVoice,
       stopVoice,
+      voiceBlocked,
       registerVoiceSender,
       sendVoice,
     ],

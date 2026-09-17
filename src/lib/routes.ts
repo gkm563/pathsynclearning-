@@ -94,6 +94,15 @@ export function interviewReportPath(id: string): string {
   return `${interviewPath(id)}/report`;
 }
 
+/** Live mock room (`/dashboard/interview/:id`), not the lobby or report. */
+export function isLiveInterviewPath(pathname: string): boolean {
+  const base = `${routes.app.interview}/`;
+  if (!pathname.startsWith(base)) return false;
+  const rest = pathname.slice(base.length);
+  const [id, extra] = rest.split("/");
+  return Boolean(id) && !extra;
+}
+
 export function interviewFinalStartPath(roadmapId: string): string {
   const params = new URLSearchParams({
     purpose: "roadmap_final",

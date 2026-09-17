@@ -35,6 +35,7 @@ export function CompanionVoice() {
     voiceActive,
     voiceAlwaysOn,
     voicePhase,
+    voiceBlocked,
     open,
     startVoice,
     stopVoice,
@@ -55,7 +56,7 @@ export function CompanionVoice() {
   const startVoiceRef = useRef(startVoice);
   const stopVoiceRef = useRef(stopVoice);
   const sendVoiceRef = useRef(sendVoice);
-  const listening = voiceAlwaysOn || voiceActive;
+  const listening = !voiceBlocked && (voiceAlwaysOn || voiceActive);
   nameRef.current = name;
   activeRef.current = voiceActive;
   alwaysOnRef.current = voiceAlwaysOn;
@@ -70,10 +71,10 @@ export function CompanionVoice() {
   }, []);
 
   useEffect(() => {
-    if (voiceAlwaysOn && !voiceActive && voicePhase === "idle") {
+    if (!voiceBlocked && voiceAlwaysOn && !voiceActive && voicePhase === "idle") {
       setVoicePhase("listening");
     }
-  }, [setVoicePhase, voiceActive, voiceAlwaysOn, voicePhase]);
+  }, [setVoicePhase, voiceActive, voiceAlwaysOn, voiceBlocked, voicePhase]);
 
   useEffect(() => {
     if (!supported || !listening) {

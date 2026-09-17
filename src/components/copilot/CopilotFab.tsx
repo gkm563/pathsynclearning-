@@ -52,7 +52,7 @@ function pickMoveStyle(dx: number, dy: number, dist: number): MoveStyle {
 }
 
 export function CopilotFab() {
-  const { open, toggle, voiceActive, voiceAlwaysOn, voicePhase, heard, startVoice, stopVoice } = useCopilot();
+  const { open, toggle, voiceActive, voiceAlwaysOn, voiceBlocked, voicePhase, heard, startVoice, stopVoice } = useCopilot();
   const student = useStudent();
   const pathname = usePathname() || "/dashboard";
   const reduceMotion = useReducedMotion();
@@ -420,7 +420,7 @@ export function CopilotFab() {
             facing={facing}
           />
         </IconButton>
-        {voiceAlwaysOn || voiceActive ? (
+        {voiceBlocked ? null : voiceAlwaysOn || voiceActive ? (
           <span
             className={cn(
               "companion-voice-pip pointer-events-none absolute right-0.5 top-1 h-2.5 w-2.5 rounded-full bg-success shadow-[0_0_0_2px_var(--surface)]",
