@@ -402,6 +402,21 @@ export function createInterviewRecognition(handlers: {
   };
 }
 
+function copilotCommitDelayMs(text: string, hasInterim: boolean) {
+  const words = spokenWordCount(text);
+  const compact = text.replace(/[^\w\s]/g, " ").replace(/\s+/g, " ").trim();
+  // Wake-only phrases can settle a bit sooner; still wait for a pause.
+  if (/^(hey|hi|hello|ok|okay|yo)\s+\w+$/i.test(compact) || /^wake up$/i.test(compact)) {
+    return hasInterim ? 2200 : 1600;
+  }
+  if (SHORT_ANSWER.test(compact)) return 2800;
+  // Longer pauses for short speech so mid-sentence gaps don't cut you off.
+  if (words <= 2) return hasInterim ? 5200 : 4200;
+  if (words <= 5) return hasInterim ? 3800 : 3000;
+  if (words <= 12) return hasInterim ? 3200 : 2600;
+  return hasInterim ? 2800 : 2200;
+}
+
 export function createCopilotRecognition(handlers: {
   onSpeech: (text: string) => void;
   onCommit: (text: string) => void;
@@ -425,6 +440,7 @@ export function createCopilotRecognition(handlers: {
   let lastInterim = "";
   let silenceTimer: number | null = null;
   let restartTimer: number | null = null;
+  let lastSpeechAt = 0;
 
   const spokenNow = () => [finals.join(" "), lastInterim].filter(Boolean).join(" ").trim();
 
@@ -438,7 +454,33 @@ export function createCopilotRecognition(handlers: {
   const resetBuffer = () => {
     finals = [];
     lastInterim = "";
+    lastSpeechAt = 0;
     clearSilence();
+  };
+
+  const scheduleCommit = () => {
+    if (!wanted) return;
+    const text = spokenNow();
+    if (!text) {
+      clearSilence();
+      return;
+    }
+    clearSilence();
+    const wait = copilotCommitDelayMs(text, Boolean(lastInterim));
+    silenceTimer = window.setTimeout(() => {
+      silenceTimer = null;
+      if (!wanted) return;
+      const spoken = spokenNow();
+      if (!spoken) return;
+      // Speech kept coming — wait again instead of cutting mid-sentence.
+      const needed = copilotCommitDelayMs(spoken, Boolean(lastInterim));
+      if (Date.now() - lastSpeechAt < needed - 80) {
+        scheduleCommit();
+        return;
+      }
+      resetBuffer();
+      if (spoken.length >= 2) handlers.onCommit(spoken);
+    }, wait);
   };
 
   const kick = () => {
@@ -468,17 +510,11 @@ export function createCopilotRecognition(handlers: {
       else interim += (interim ? " " : "") + piece;
     }
     lastInterim = interim;
+    lastSpeechAt = Date.now();
     const spoken = spokenNow();
     if (!spoken) return;
     handlers.onSpeech(spoken);
-    clearSilence();
-    silenceTimer = window.setTimeout(() => {
-      silenceTimer = null;
-      if (!wanted) return;
-      const text = spokenNow();
-      resetBuffer();
-      if (text.length >= 2) handlers.onCommit(text);
-    }, 700);
+    scheduleCommit();
   };
 
   rec.onerror = (event) => {

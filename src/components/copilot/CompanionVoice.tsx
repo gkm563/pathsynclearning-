@@ -23,9 +23,8 @@ async function primeMicrophone() {
   stream.getTracks().forEach((track) => track.stop());
 }
 
-function wordCount(text: string) {
-  return text.trim().split(/\s+/).filter(Boolean).length;
-}
+/** How long to stay green/listening for a follow-up after Nova finishes talking. */
+const FOLLOW_UP_MS = 10000;
 
 export function CompanionVoice() {
   const student = useStudent();
@@ -36,7 +35,6 @@ export function CompanionVoice() {
     voiceAlwaysOn,
     voicePhase,
     voiceBlocked,
-    open,
     startVoice,
     stopVoice,
     setVoiceAlwaysOn,
@@ -49,10 +47,10 @@ export function CompanionVoice() {
   const nameRef = useRef(name);
   const activeRef = useRef(voiceActive);
   const alwaysOnRef = useRef(voiceAlwaysOn);
-  const openRef = useRef(open);
   const phaseRef = useRef(voicePhase);
   const busyRef = useRef(false);
   const mutedRef = useRef(false);
+  const followUpTimer = useRef<number | undefined>(undefined);
   const startVoiceRef = useRef(startVoice);
   const stopVoiceRef = useRef(stopVoice);
   const sendVoiceRef = useRef(sendVoice);
@@ -60,7 +58,6 @@ export function CompanionVoice() {
   nameRef.current = name;
   activeRef.current = voiceActive;
   alwaysOnRef.current = voiceAlwaysOn;
-  openRef.current = open;
   phaseRef.current = voicePhase;
   startVoiceRef.current = startVoice;
   stopVoiceRef.current = stopVoice;
@@ -71,44 +68,78 @@ export function CompanionVoice() {
   }, []);
 
   useEffect(() => {
-    if (!voiceBlocked && voiceAlwaysOn && !voiceActive && voicePhase === "idle") {
-      setVoicePhase("listening");
-    }
-  }, [setVoicePhase, voiceActive, voiceAlwaysOn, voiceBlocked, voicePhase]);
-
-  useEffect(() => {
     if (!supported || !listening) {
+      window.clearTimeout(followUpTimer.current);
       recRef.current?.abort();
       recRef.current = null;
       busyRef.current = false;
+      mutedRef.current = false;
       window.speechSynthesis?.cancel();
       return;
     }
 
     let cancelled = false;
+
+    const clearFollowUp = () => {
+      window.clearTimeout(followUpTimer.current);
+      followUpTimer.current = undefined;
+    };
+
+    const armFollowUp = () => {
+      clearFollowUp();
+      followUpTimer.current = window.setTimeout(() => {
+        if (cancelled || busyRef.current) return;
+        if (!activeRef.current) return;
+        stopVoiceRef.current();
+      }, FOLLOW_UP_MS);
+    };
+
+    const resumeListening = () => {
+      if (cancelled) return;
+      busyRef.current = false;
+      window.setTimeout(() => {
+        mutedRef.current = false;
+        if (!cancelled) rec?.start();
+      }, 650);
+    };
+
     const rec = createCopilotRecognition({
       onSpeech: (text) => {
         if (mutedRef.current || busyRef.current || phaseRef.current === "speaking") return;
-        if (activeRef.current || alwaysOnRef.current) setHeard(text);
+        if (!activeRef.current) return;
+        clearFollowUp();
+        setHeard(text);
       },
       onCommit: (text) => {
         const spoken = text.trim();
         if (!spoken || mutedRef.current || busyRef.current || cancelled) return;
         if (phaseRef.current === "speaking" || phaseRef.current === "thinking") return;
+
         if (isSleepPhrase(spoken, nameRef.current)) {
+          clearFollowUp();
           stopVoiceRef.current();
           return;
         }
-        const named = isWakePhrase(spoken, nameRef.current);
-        const rest = stripWakePhrase(spoken, nameRef.current) || spoken;
+
         if (!activeRef.current) {
           if (!alwaysOnRef.current) return;
-          if (!named && wordCount(spoken) < 2) return;
+          if (!isWakePhrase(spoken, nameRef.current)) return;
+          clearFollowUp();
+          const rest = stripWakePhrase(spoken, nameRef.current);
           activeRef.current = true;
           startVoiceRef.current();
-          if (rest.length >= 2) void handleUtterance(rest);
+          if (rest.length >= 2) {
+            void handleUtterance(rest);
+          } else {
+            setHeard("");
+            setVoicePhase("listening");
+            armFollowUp();
+          }
           return;
         }
+
+        clearFollowUp();
+        const rest = stripWakePhrase(spoken, nameRef.current) || spoken;
         void handleUtterance(rest.length >= 2 ? rest : spoken);
       },
       onError: (message) => {
@@ -122,6 +153,7 @@ export function CompanionVoice() {
     async function handleUtterance(text: string) {
       const asked = text.trim();
       if (!asked || busyRef.current) return;
+      clearFollowUp();
       busyRef.current = true;
       mutedRef.current = true;
       rec?.pause();
@@ -144,29 +176,13 @@ export function CompanionVoice() {
         onEnd: () => {
           if (cancelled) return;
           if (!activeRef.current) {
-            busyRef.current = false;
-            window.setTimeout(() => {
-              mutedRef.current = false;
-              if (!cancelled && alwaysOnRef.current) rec?.start();
-            }, 650);
-            return;
-          }
-          if (alwaysOnRef.current && !openRef.current) {
-            stopVoiceRef.current();
-            busyRef.current = false;
-            window.setTimeout(() => {
-              mutedRef.current = false;
-              if (!cancelled && alwaysOnRef.current) rec?.start();
-            }, 650);
+            resumeListening();
             return;
           }
           setVoicePhase("listening");
           setHeard("");
-          busyRef.current = false;
-          window.setTimeout(() => {
-            mutedRef.current = false;
-            if (!cancelled) rec?.start();
-          }, 650);
+          resumeListening();
+          armFollowUp();
         },
       });
     }
@@ -196,6 +212,7 @@ export function CompanionVoice() {
 
     return () => {
       cancelled = true;
+      clearFollowUp();
       document.removeEventListener("visibilitychange", retry);
       window.removeEventListener("focus", retry);
       window.removeEventListener("pointerdown", retry);

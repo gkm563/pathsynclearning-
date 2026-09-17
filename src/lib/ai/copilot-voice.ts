@@ -32,11 +32,13 @@ export function isWakePhrase(text: string, companionName: string) {
     aliases.add("niva");
     aliases.add("nover");
   }
-  for (const word of t.split(" ")) {
-    if (aliases.has(word)) return true;
+  if (aliases.has(t) || t === "wake up") return true;
+  const greet = t.match(/^(hey|hi|hello|ok|okay|yo)\s+([a-z0-9]+)/);
+  if (greet && aliases.has(greet[2])) return true;
+  if ([...aliases].some((alias) => t.startsWith(`hey ${alias}`) || t.startsWith(`hi ${alias}`) || t.startsWith(`hello ${alias}`))) {
+    return true;
   }
-  if ([...aliases].some((alias) => t.includes(alias))) return true;
-  if (t === "wake up" || t.startsWith("wake up ")) return true;
+  if (t.startsWith("wake up ")) return true;
   return false;
 }
 

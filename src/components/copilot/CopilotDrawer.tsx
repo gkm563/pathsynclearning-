@@ -475,7 +475,7 @@ export function CopilotDrawer() {
                           ? `${companionName} is talking`
                           : `Voice with ${you}`
                     : voiceAlwaysOn
-                      ? `Always on — say hey ${companionName}`
+                      ? `Passive — say hello ${companionName}`
                       : busy
                         ? `${companionName} is typing…`
                         : `Here with you, ${you}`}

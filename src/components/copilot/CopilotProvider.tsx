@@ -48,25 +48,11 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
   const [voicePhase, setVoicePhase] = useState<CopilotVoicePhase>("idle");
   const [heard, setHeard] = useState("");
   const senderRef = useRef<VoiceSender | null>(null);
-  const alwaysOnHeldRef = useRef(false);
-  const alwaysOnRef = useRef(true);
   const blockedRef = useRef(false);
-  alwaysOnRef.current = voiceAlwaysOn;
   blockedRef.current = voiceBlocked;
   const endTalk = useCallback(() => {
     setVoiceActive(false);
     setHeard("");
-    if (blockedRef.current) {
-      alwaysOnHeldRef.current = false;
-      setVoicePhase("idle");
-      return;
-    }
-    if (alwaysOnHeldRef.current) {
-      alwaysOnHeldRef.current = false;
-      setVoiceAlwaysOnState(true);
-      setVoicePhase("listening");
-      return;
-    }
     setVoicePhase("idle");
   }, []);
   const stopVoice = endTalk;
@@ -86,21 +72,16 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
   }, [endTalk]);
   const startVoice = useCallback(() => {
     if (blockedRef.current) return;
-    if (alwaysOnRef.current) {
-      alwaysOnHeldRef.current = true;
-      setVoiceAlwaysOnState(false);
-    }
     setVoiceActive(true);
     setVoicePhase("listening");
     setHeard("");
   }, []);
   const setVoiceAlwaysOn = useCallback((on: boolean) => {
-    alwaysOnHeldRef.current = false;
     saveVoiceWakeEnabled(on);
     setVoiceAlwaysOnState(on);
     setVoiceActive(false);
     setHeard("");
-    setVoicePhase(on && !blockedRef.current ? "listening" : "idle");
+    setVoicePhase("idle");
   }, []);
 
   useEffect(() => {
@@ -109,7 +90,6 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!voiceBlocked) return;
-    alwaysOnHeldRef.current = false;
     setVoiceActive(false);
     setHeard("");
     setVoicePhase("idle");

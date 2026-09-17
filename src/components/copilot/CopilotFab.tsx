@@ -423,9 +423,15 @@ export function CopilotFab() {
         {voiceBlocked ? null : voiceAlwaysOn || voiceActive ? (
           <span
             className={cn(
-              "companion-voice-pip pointer-events-none absolute right-0.5 top-1 h-2.5 w-2.5 rounded-full bg-success shadow-[0_0_0_2px_var(--surface)]",
-              voicePhase === "listening" && "is-live",
-              voicePhase === "thinking" && "is-think",
+              "companion-voice-pip pointer-events-none absolute right-0.5 top-1 h-2.5 w-2.5 rounded-full shadow-[0_0_0_2px_var(--surface)]",
+              voiceActive
+                ? cn(
+                    "bg-success",
+                    voicePhase === "listening" && "is-live",
+                    voicePhase === "thinking" && "is-think",
+                    voicePhase === "speaking" && "is-speak",
+                  )
+                : "is-passive bg-[var(--warning)]",
             )}
             aria-hidden
           />

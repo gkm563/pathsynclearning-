@@ -982,6 +982,10 @@
   animation: companionTargetPulse 0.9s var(--ease-standard) infinite;
 }
 
+.companion-voice-pip.is-passive {
+  background: var(--warning);
+}
+
 .companion-voice-pip.is-live {
   animation: companionPipPulse 1.05s ease-in-out infinite;
 }
