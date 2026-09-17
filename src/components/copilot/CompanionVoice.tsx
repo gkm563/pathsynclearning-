@@ -24,7 +24,7 @@ async function primeMicrophone() {
 }
 
 /** How long to stay green/listening for a follow-up after Nova finishes talking. */
-const FOLLOW_UP_MS = 10000;
+const FOLLOW_UP_MS = 60000;
 
 export function CompanionVoice() {
   const student = useStudent();
