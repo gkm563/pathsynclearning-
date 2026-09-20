@@ -372,22 +372,39 @@ export function createInterviewRecognition(handlers: {
     },
     stop: () => {
       wanted = false;
+      running = false;
       clearSilence();
+      const text = currentText();
       try {
         rec.stop();
       } catch {
-        flush(true);
+        /* already stopped */
+      }
+      if (text.length >= 2) {
+        finals = [];
+        lastInterim = "";
+        lastSpeechAt = 0;
+        handlers.onCommit(text);
+      } else {
+        finals = [];
+        lastInterim = "";
+        lastSpeechAt = 0;
+        handlers.onTranscript("", "");
       }
     },
     abort: () => {
       wanted = false;
       running = false;
       clearSilence();
+      finals = [];
+      lastInterim = "";
+      lastSpeechAt = 0;
       try {
         rec.abort();
       } catch {
         /* already stopped */
       }
+      handlers.onTranscript("", "");
     },
     pause: () => {
       wanted = false;

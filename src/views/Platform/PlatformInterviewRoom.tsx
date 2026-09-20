@@ -669,19 +669,32 @@ export default function PlatformInterviewRoom() {
     }
   }, [camOn, ensureRecognition, micReady, speechOk, startMedia]);
 
-  const toggleMic = async () => {
+  const toggleMic = () => {
     const next = !micOn;
     setMicOn(next);
     if (next) {
+      // Resume capture only when the interviewer is idle — the auto-listen
+      // effect starts SpeechRecognition. Forcing it here races TTS / turns.
       listenFailsRef.current = 0;
       setMicError(null);
-      await roomRef.current?.localParticipant.setMicrophoneEnabled(false);
-      void startListening();
       return;
     }
+    // Mute: stop capturing, but still process anything already spoken so the
+    // turn does not die mid-answer.
+    const pending = [heardFinal, heardInterim].filter(Boolean).join(" ").trim();
     recognitionRef.current?.abort();
     setListening(false);
-    await roomRef.current?.localParticipant.setMicrophoneEnabled(false);
+    setHeardFinal("");
+    setHeardInterim("");
+    if (
+      pending.length >= 2 &&
+      !sending &&
+      !ending &&
+      !checking &&
+      !committingRef.current
+    ) {
+      void sendText(pending, "voice");
+    }
   };
 
   useEffect(() => {
@@ -701,7 +714,13 @@ export default function PlatformInterviewRoom() {
       !settingsOpen &&
       !opening;
     if (!shouldListen) {
-      if (sending || checking || ending || wrappingUp || interviewerSpeaking || holdListen || opening || !micOn) {
+      // Keep an in-flight turn alone — mute only pauses capture. Aborting while
+      // `sending` can race the commit path and drop the reply UI.
+      if (
+        !sending &&
+        !checking &&
+        (ending || wrappingUp || interviewerSpeaking || holdListen || opening || !micOn)
+      ) {
         recognitionRef.current?.abort();
         setListening(false);
       }
@@ -1261,7 +1280,7 @@ export default function PlatformInterviewRoom() {
               checked={prefs.autoListen}
               onChange={(next) => void updatePrefs({ autoListen: next })}
               label="Auto listen"
-              description="Mic stays on and sends your answer after you pause. Mute to pause it."
+              description="Mic stays on and sends your answer after you pause. Mute pauses capture; anything you already said is still sent."
             />
             <Switch
               checked={prefs.speakReplies}
