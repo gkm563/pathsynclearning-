@@ -28,14 +28,18 @@ export default function PhaseNode({ data }: { data: any }) {
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") onClick?.();
       }}
-      className="flex flex-col items-center rounded-[var(--radius-md)] p-3"
+      className="flex flex-col items-center rounded-[var(--radius-md)] px-3 py-2"
       style={{
-        width: 260,
+        width: 240,
         background: isCompleted ? "var(--success-soft)" : "var(--bg-card)",
         border,
         cursor: "pointer",
         opacity: isLocked ? 0.75 : 1,
-        boxShadow: isAvailable || isInProgress ? "0 0 0 3px var(--primary-soft)" : undefined,
+        boxShadow: data.expanded
+          ? "0 0 0 3px var(--primary-soft), var(--shadow-md)"
+          : isAvailable || isInProgress
+            ? "0 0 0 3px var(--primary-soft)"
+            : undefined,
       }}
     >
       <Handle type="target" position={Position.Top} style={{ visibility: "hidden" }} />
@@ -59,14 +63,19 @@ export default function PhaseNode({ data }: { data: any }) {
       </div>
 
       <div className="type-h4 text-center text-ink">{label}</div>
-
-      <div className="type-caption mt-1.5 text-center text-muted">
-        {isLocked
-          ? "Complete the node above first"
-          : isCompleted
-            ? "Completed"
-            : "Click → Mark Complete to unlock skills"}
-      </div>
+      {data.childCount ? (
+        <div className="type-caption mt-1 text-center text-muted">
+          {data.expanded ? "Click to collapse" : `${data.childCount} topics — click to expand`}
+        </div>
+      ) : (
+        <div className="type-caption mt-1.5 text-center text-muted">
+          {isLocked
+            ? "Complete the node above first"
+            : isCompleted
+              ? "Completed"
+              : "Click → Mark Complete to unlock skills"}
+        </div>
+      )}
 
       <Handle type="source" position={Position.Bottom} style={{ visibility: "hidden" }} />
     </div>

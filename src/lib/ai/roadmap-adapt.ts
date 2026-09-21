@@ -3,7 +3,8 @@ import "server-only";
 import crypto from "crypto";
 import { and, eq } from "drizzle-orm";
 import { AppError } from "@/lib/api/errors";
-import { callAIWithFallback } from "@/lib/ai/llm";
+import { env } from "@/lib/env";
+import { callOllamaJson } from "@/lib/ai/ollama";
 import { getDb } from "@/lib/db/client";
 import {
   interviewReports,
@@ -146,7 +147,7 @@ async function refreshNodePack(input: {
   let learningOutcomes = input.node.learningOutcomes || [];
   let topics = input.node.topics || [];
   try {
-    const generated = await callAIWithFallback<{
+    const generated = await callOllamaJson<{
       description?: string;
       whyLearn?: string;
       learningOutcomes?: string[];
@@ -158,10 +159,12 @@ Weakness: ${input.weakness || "fundamentals were missing"}
 Current description: ${input.node.description}
 Return JSON only: {"description":"4-6 beginner sentences","whyLearn":"2 sentences","learningOutcomes":["..."],"topics":["..."]}`,
       systemInstruction: "You rewrite learning modules for struggling students. JSON only. Be concrete and beginner-first.",
-      userId: input.userId,
-      maxTokens: 900,
-      timeoutMs: 45000,
+      model: env.ollamaRoadmapModel,
+      maxTokens: null,
+      timeoutMs: 180000,
       temperature: 0.5,
+      label: "Ollama roadmap adapt",
+      purpose: "roadmap",
     });
     if (typeof generated.description === "string" && generated.description.trim()) {
       description = generated.description.trim().slice(0, 1200);
@@ -216,16 +219,18 @@ async function generateRemedialNodes(input: {
   const count = Math.min(2, input.remaining);
   let drafts: Array<{ title: string; description: string; whyLearn: string; topics: string[] }> = [];
   try {
-    const generated = await callAIWithFallback<{
+    const generated = await callOllamaJson<{
       nodes?: Array<{ title?: string; description?: string; whyLearn?: string; topics?: string[] }>;
     }>({
       prompt: `Add ${count} short follow-up learning node(s) after "${input.origin.title}" for a student who was weak here: ${input.weakness || "needs more practice"}.
 Return JSON only: {"nodes":[{"title":"specific title","description":"4-6 sentences","whyLearn":"2 sentences","topics":["..."]}]}`,
       systemInstruction: "You add remedial learning nodes. JSON only. Titles must be specific, not generic.",
-      userId: input.userId,
-      maxTokens: 1200,
-      timeoutMs: 45000,
+      model: env.ollamaRoadmapModel,
+      maxTokens: null,
+      timeoutMs: 180000,
       temperature: 0.6,
+      label: "Ollama roadmap remediate",
+      purpose: "roadmap",
     });
     if (Array.isArray(generated.nodes)) {
       drafts = generated.nodes
@@ -302,6 +307,24 @@ export async function applyRoadmapInterviewOutcome(input: {
   const adaptation = parseAdaptation(row.adaptation);
   const now = new Date();
   if (input.outcome === "certified") {
+    const nodes = asNodes(row.nodes);
+    const interviewIds = nodes
+      .filter((n) => n.type === "interview" || n.gate === "final_interview")
+      .map((n) => n.id);
+    if (interviewIds.length) {
+      for (const nodeId of interviewIds) {
+        await db
+          .update(roadmapProgress)
+          .set({ status: "completed", completedAt: now, updatedAt: now })
+          .where(
+            and(
+              eq(roadmapProgress.userId, input.userId),
+              eq(roadmapProgress.roadmapId, input.roadmapId),
+              eq(roadmapProgress.nodeId, nodeId),
+            ),
+          );
+      }
+    }
     await db
       .update(roadmaps)
       .set({

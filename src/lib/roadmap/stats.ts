@@ -1,7 +1,7 @@
 import type { RoadmapNode, RoadmapNodeStatus } from "@/types/roadmap";
 import { isProgressSatisfied } from "@/lib/roadmap/progress";
 
-const NON_TRACKABLE = new Set(["phase", "goal", "career"]);
+const NON_TRACKABLE = new Set(["phase", "goal", "career", "interview"]);
 
 export function isTrackableRoadmapNode(
   node: Pick<RoadmapNode, "type"> | { type?: string },

@@ -10,6 +10,8 @@ import {
   Check,
   Save,
   AlertCircle,
+  GitBranch,
+  CalendarDays,
 } from "lucide-react";
 import {
   GENERATION_STEPS,
@@ -23,8 +25,10 @@ const ICONS: Record<GenerationStepId, typeof Brain> = {
   profile: Brain,
   hiring: Network,
   graph: Sparkles,
+  expand: GitBranch,
   assessments: Clock,
   resources: Clapperboard,
+  calendar: CalendarDays,
   save: Save,
   done: Check,
 };

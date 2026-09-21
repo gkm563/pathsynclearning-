@@ -43,12 +43,13 @@ export default function SkillNode({ data }: { data: any }) {
     <div
       onClick={() => onClick && onClick()}
       className={cn(
-        "flex flex-col gap-1.5 rounded-[var(--radius-lg)] border-2 p-3 transition-[box-shadow,opacity] duration-200",
+        "flex flex-col rounded-[var(--radius-md)] border-2 transition-[box-shadow,opacity] duration-200",
+        data.compact ? "gap-0.5 p-2" : "gap-1.5 p-3",
         status === "skipped" && "line-through",
       )}
       style={{
-        width: 260,
-        minHeight: 118,
+        width: data.compact ? 200 : 220,
+        minHeight: data.compact ? 72 : 88,
         background: bg,
         borderColor,
         cursor: "pointer",
@@ -66,7 +67,7 @@ export default function SkillNode({ data }: { data: any }) {
         <span className="type-label truncate text-ink">{label}</span>
       </div>
 
-      {blurb ? (
+      {!data.compact && blurb ? (
         <div className="type-caption line-clamp-2 text-muted">{blurb}</div>
       ) : null}
 
@@ -76,6 +77,8 @@ export default function SkillNode({ data }: { data: any }) {
             ? "Added after interview"
             : data.source === "loop_refresh"
               ? "Review again — new materials"
+              : data.childCount
+                ? `${data.childCount} nested topics`
               : resources
                 ? `${resources} resources`
                 : ""}

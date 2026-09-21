@@ -22,6 +22,7 @@ import {
   progressFor,
   type RoadmapGenerationProgress,
 } from "@/lib/roadmap/generation-progress";
+import { seedStudyPlan } from "@/lib/roadmap/study-plan";
 import type {
   ProjectEntry,
   RoadmapProfile,
@@ -135,6 +136,14 @@ export async function persistGeneratedRoadmap(
   if (progressRows.length > 0) {
     await db.insert(roadmapProgress).values(progressRows);
   }
+
+  onProgress?.(progressFor("calendar"));
+  await seedStudyPlan({
+    userId,
+    roadmapId,
+    nodes: generatedData.nodes,
+    weeklyHours: profile.weeklyHours,
+  });
 
   return newRoadmap;
 }

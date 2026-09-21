@@ -8,6 +8,10 @@ import {
   persistGeneratedRoadmap,
 } from '@/lib/roadmap/persist-generated';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+export const maxDuration = 800;
+
 /** Regenerate a fresh roadmap for the active slot; other saved roadmaps are kept. */
 export async function POST() {
   try {

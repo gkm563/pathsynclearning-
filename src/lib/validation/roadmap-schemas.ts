@@ -90,24 +90,44 @@ export const nodeAssessmentSchema = z.object({
   { message: 'Assessment must include payload matching type' },
 );
 
+export const roadmapSubtopicSchema = z.object({
+  id: z.string().min(1).max(100),
+  title: z.string().min(1).max(200),
+});
+
 export const roadmapNodeSchema = z.object({
   id: z.string().min(1).max(100),
-  type: z.enum(['goal', 'milestone', 'phase', 'skill', 'topic', 'project', 'resource', 'checkpoint', 'career']),
+  type: z.enum([
+    'goal',
+    'milestone',
+    'phase',
+    'skill',
+    'topic',
+    'project',
+    'resource',
+    'checkpoint',
+    'career',
+    'interview',
+  ]),
   title: z.string().min(1).max(200),
-  description: z.string().max(2000),
+  description: z.string().max(8000),
   status: z.enum(['locked', 'available', 'in_progress', 'completed', 'skipped']),
   priority: z.enum(['low', 'medium', 'high', 'critical']),
-  estimatedHours: z.number().min(0).max(500),
+  estimatedHours: z.coerce.number().min(0).max(500),
   dependencies: z.array(z.string()),
   skills: z.array(z.string()),
   topics: z.array(z.string()),
-  resources: z.array(roadmapNodeResourceSchema).max(10),
+  resources: z.array(roadmapNodeResourceSchema).max(20),
   project: z.string().nullable().optional(),
-  whyLearn: z.string().max(1000),
-  learningOutcomes: z.array(z.string().max(240)).max(8).optional(),
-  interviewFocus: z.string().max(500).optional(),
+  whyLearn: z.string().max(4000),
+  learningOutcomes: z.array(z.string().max(400)).optional(),
+  interviewFocus: z.string().max(2000).optional(),
+  subtopics: z.array(roadmapSubtopicSchema).optional(),
+  parentId: z.string().max(100).optional(),
+  depth: z.number().int().min(0).optional(),
+  gate: z.enum(['final_interview']).optional(),
   assessment: nodeAssessmentSchema.optional(),
-  assessments: z.array(nodeAssessmentSchema).max(4).optional(),
+  assessments: z.array(nodeAssessmentSchema).max(8).optional(),
 });
 
 export const roadmapEdgeSchema = z.object({
@@ -120,8 +140,8 @@ export const roadmapEdgeSchema = z.object({
 export const roadmapSchema = z.object({
   title: z.string().min(1).max(200),
   targetRole: z.string().min(1).max(200),
-  estimatedWeeks: z.number().min(1).max(260),
-  nodes: z.array(roadmapNodeSchema).min(5).max(60),
+  estimatedWeeks: z.coerce.number().min(1).max(260),
+  nodes: z.array(roadmapNodeSchema).min(3),
   edges: z.array(roadmapEdgeSchema)
 });
 
@@ -179,6 +199,10 @@ export const roadmapProfileUpdateSchema = z.object({
 export const roadmapProgressUpdateSchema = z.object({
   nodeId: z.string().min(1),
   status: z.enum(['available', 'in_progress', 'completed', 'skipped'])
+}).strict();
+
+export const studyTaskCompleteSchema = z.object({
+  taskId: z.string().uuid(),
 }).strict();
 
 export const assessmentSubmitSchema = z.object({

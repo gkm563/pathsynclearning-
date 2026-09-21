@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   boolean,
+  date,
   index,
   integer,
   jsonb,
@@ -743,8 +744,69 @@ export type CriEvidenceRow = typeof criEvidence.$inferSelect;
 export type RoadmapProfileRow = typeof roadmapProfiles.$inferSelect;
 export type RoadmapRow = typeof roadmaps.$inferSelect;
 export type RoadmapProgressRow = typeof roadmapProgress.$inferSelect;
+export const roadmapStudyTasks = pgTable(
+  "roadmap_study_tasks",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    roadmapId: uuid("roadmap_id")
+      .notNull()
+      .references(() => roadmaps.id, { onDelete: "cascade" }),
+    nodeId: text("node_id").notNull(),
+    title: text("title").notNull(),
+    scheduledDate: date("scheduled_date").notNull(),
+    sourceDate: date("source_date").notNull(),
+    estimatedMinutes: integer("estimated_minutes").notNull().default(60),
+    status: text("status").notNull().default("planned"),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique("roadmap_study_tasks_user_roadmap_node").on(
+      t.userId,
+      t.roadmapId,
+      t.nodeId,
+    ),
+    index("idx_roadmap_study_tasks_day").on(
+      t.userId,
+      t.roadmapId,
+      t.scheduledDate,
+    ),
+  ],
+);
+
 export type RoadmapAssessmentAttempt =
   typeof roadmapAssessmentAttempts.$inferSelect;
+export type RoadmapStudyTaskRow = typeof roadmapStudyTasks.$inferSelect;
+
+/** Shared YouTube Data API / oEmbed cache — not per student. */
+export const youtubeSearchCache = pgTable(
+  "youtube_search_cache",
+  {
+    queryKey: text("query_key").primaryKey(),
+    hits: jsonb("hits")
+      .$type<Array<{ title: string; url: string; channel: string; seconds: number }>>()
+      .notNull()
+      .default([]),
+    fetchedAt: timestamp("fetched_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("idx_youtube_search_cache_fetched").on(t.fetchedAt)],
+);
+
+export const youtubeOembedCache = pgTable("youtube_oembed_cache", {
+  videoId: text("video_id").primaryKey(),
+  playable: boolean("playable").notNull(),
+  checkedAt: timestamp("checked_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type YoutubeSearchCacheRow = typeof youtubeSearchCache.$inferSelect;
 export type Memory = typeof memories.$inferSelect;
 export type Note = typeof notes.$inferSelect;
 export type Milestone = typeof milestones.$inferSelect;

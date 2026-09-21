@@ -91,6 +91,7 @@ const DOMAIN_MARKERS: Array<{ re: RegExp; tokens: string[] }> = [
 ];
 
 export const MIN_VIDEO_RELEVANCE = 2;
+export const MIN_SEARCH_VIDEO_RELEVANCE = 3;
 
 export function topicTokens(text: string): string[] {
   return text
@@ -101,8 +102,19 @@ export function topicTokens(text: string): string[] {
     .filter((t) => t.length > 2 && !STOP.has(t) && !/^\d+$/.test(t));
 }
 
-export function nodeSearchHaystack(node: Pick<RoadmapNode, "title" | "skills" | "topics" | "description">): string {
-  return [node.title, ...(node.skills || []), ...(node.topics || [])].filter(Boolean).join(" ");
+export function nodeSearchHaystack(
+  node: Pick<RoadmapNode, "title" | "skills" | "topics" | "description" | "subtopics">,
+  parentTitle?: string,
+): string {
+  return [
+    parentTitle,
+    node.title,
+    ...(node.skills || []),
+    ...(node.topics || []),
+    ...((node.subtopics || []).map((s) => s.title)),
+  ]
+    .filter(Boolean)
+    .join(" ");
 }
 
 export function youtubeSearchQuery(node: Pick<RoadmapNode, "title" | "skills" | "topics">): string {

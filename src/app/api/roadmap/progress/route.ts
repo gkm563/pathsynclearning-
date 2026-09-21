@@ -1,6 +1,6 @@
 import { requireDbUser } from '@/lib/db/users';
 import { getDb } from '@/lib/db/client';
-import { roadmaps, roadmapProgress, roadmapAssessmentAttempts } from '@/lib/db/schema';
+import { roadmaps, roadmapProgress, roadmapAssessmentAttempts, roadmapStudyTasks } from '@/lib/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { errorResponse, jsonResponse, parseJson } from '@/lib/api/http';
 import { roadmapProgressUpdateSchema } from '@/lib/validation/roadmap-schemas';
@@ -67,6 +67,20 @@ export async function PUT(request: Request) {
     const node = nodes.find((n) => n.id === nodeId);
     if (!node) {
       throw new AppError('NOT_FOUND', 'Node not found in active roadmap');
+    }
+
+    if (status === 'completed' && (node.type === 'interview' || node.gate === 'final_interview')) {
+      throw new AppError(
+        'BAD_REQUEST',
+        'Complete the final AI interview to finish this node. Use Start interview.',
+      );
+    }
+
+    if (status === 'completed' && (node.type === 'interview' || node.gate === 'final_interview')) {
+      throw new AppError(
+        'BAD_REQUEST',
+        'Complete the final AI interview to finish this node. Use Start interview.',
+      );
     }
 
     if (status === 'completed' && nodeRequiresAssessment(node)) {
@@ -161,6 +175,19 @@ export async function PUT(request: Request) {
     }
 
     progressMap.set(nodeId, updatedProgress);
+
+    if (status === 'completed') {
+      await db
+        .update(roadmapStudyTasks)
+        .set({ status: 'done', completedAt: new Date(), updatedAt: new Date() })
+        .where(
+          and(
+            eq(roadmapStudyTasks.userId, user.id),
+            eq(roadmapStudyTasks.roadmapId, activeRoadmap.id),
+            eq(roadmapStudyTasks.nodeId, nodeId),
+          ),
+        );
+    }
 
     if (isProgressSatisfied(status)) {
       const toUnlock = findNodesToUnlock(nodeId, edges, progressMap);

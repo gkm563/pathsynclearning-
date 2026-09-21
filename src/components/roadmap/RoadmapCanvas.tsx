@@ -22,12 +22,14 @@ import SkillNode from './nodes/SkillNode';
 import ProjectNode from './nodes/ProjectNode';
 import MilestoneNode from './nodes/MilestoneNode';
 import PhaseNode from './nodes/PhaseNode';
+import InterviewNode from './nodes/InterviewNode';
 import DependencyEdge from './edges/DependencyEdge';
 import RoadmapToolbar from './RoadmapToolbar';
 import RoadmapDetailPanel from './RoadmapDetailPanel';
 import RoadmapOverview from './RoadmapOverview';
 import NodeAssessmentModal from './assessment/NodeAssessmentModal';
 import FinalInterviewGate from './FinalInterviewGate';
+import RoadmapStudyPlanner from './RoadmapStudyPlanner';
 import { isAssessableNode } from '@/lib/roadmap/assessment';
 import { Focus } from 'lucide-react';
 import { Alert, IconButton } from '@/components/ui';
@@ -43,34 +45,43 @@ const nodeTypes = {
   phase: PhaseNode,
   career: GoalNode,
   resource: SkillNode,
+  interview: InterviewNode,
 };
+const SPINE_TYPES = new Set(["goal", "phase", "milestone", "project", "interview", "career"]);
+
+function isSpineNode(n: Pick<RTNode, "type" | "parentId">) {
+  return !n.parentId || SPINE_TYPES.has(n.type);
+}
+
 const edgeTypes = { dependency: DependencyEdge };
+
+function nodeBox(type?: string, compact = false) {
+  if (type === "goal" || type === "career") return { width: 280, height: 96 };
+  if (type === "phase") return { width: 240, height: 88 };
+  if (type === "project") return { width: 220, height: 84 };
+  if (type === "interview") return { width: 240, height: 92 };
+  if (type === "milestone" || type === "checkpoint") return { width: 200, height: 64 };
+  if (compact) return { width: 200, height: 72 };
+  return { width: 220, height: 88 };
+}
 
 const getLayoutedElements = (nodes: ReactFlowNode[], edges: Edge[], direction = 'TB') => {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
 
   const isHorizontal = direction === 'LR';
-  dagreGraph.setGraph({ rankdir: direction, ranksep: 100, nodesep: 80 });
+  const expanded = nodes.some((n) => n.data?.parentId);
+  dagreGraph.setGraph({
+    rankdir: direction,
+    ranksep: expanded ? 72 : 88,
+    nodesep: expanded ? 28 : 48,
+    edgesep: 16,
+    marginx: 24,
+    marginy: 24,
+  });
 
   nodes.forEach((node) => {
-    let width = 220;
-    let height = 80;
-
-    if (node.type === 'goal') {
-      width = 280;
-      height = 100;
-    } else if (node.type === 'project') {
-      width = 240;
-      height = 90;
-    } else if (node.type === 'milestone' || node.type === 'checkpoint') {
-      width = 180;
-      height = 70;
-    } else if (node.type === 'phase') {
-      width = 260;
-      height = 120;
-    }
-
+    const { width, height } = nodeBox(node.type, Boolean(node.data?.parentId));
     dagreGraph.setNode(node.id, { width, height });
   });
 
@@ -122,6 +133,7 @@ export default function RoadmapCanvas({
   const [selectedNode, setSelectedNode] = useState<RTNode | null>(null);
   const [panelExpanded, setPanelExpanded] = useState(false);
   const [assessmentNodeId, setAssessmentNodeId] = useState<string | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
   const rfRef = useRef<any>(null);
@@ -321,11 +333,17 @@ export default function RoadmapCanvas({
   const handleNodeClick = useCallback(
     (node: RTNode) => {
       const status = (progressMap.get(node.id) || node.status || 'locked') as RTNode['status'];
+      const childCount = roadmap.nodes.filter((n) => n.parentId === node.id).length;
+      if (childCount > 0 && (node.type === 'phase' || node.type === 'skill' || node.type === 'milestone')) {
+        setExpandedIds((prev) => {
+          if (prev.has(node.id)) return new Set();
+          return new Set([node.id]);
+        });
+      }
       setSelectedNode({
         ...node,
         status,
       });
-      // Always center — including goal / locked nodes
       focusNode(node.id, {
         zoom:
           node.type === 'goal' || node.type === 'career'
@@ -339,7 +357,7 @@ export default function RoadmapCanvas({
         lift: true,
       });
     },
-    [progressMap, focusNode],
+    [progressMap, focusNode, roadmap.nodes],
   );
 
   // Deep-link from Challenges (?node=id)
@@ -416,23 +434,29 @@ export default function RoadmapCanvas({
   useEffect(() => {
     if (!roadmap) return;
 
-    const nodeIds = new Set(roadmap.nodes.map((n) => n.id));
+    const visible = roadmap.nodes.filter(
+      (n) => isSpineNode(n) || (n.parentId && expandedIds.has(n.parentId)),
+    );
+    const visibleIds = new Set(visible.map((n) => n.id));
+    const childCount = (id: string) => roadmap.nodes.filter((n) => n.parentId === id).length;
 
-    const initialNodes: ReactFlowNode[] = roadmap.nodes.map((n) => ({
+    const initialNodes: ReactFlowNode[] = visible.map((n) => ({
       id: n.id,
       type: n.type,
       position: { x: 0, y: 0 },
       data: {
         ...n,
-        // Node components expect `label`; API/AI provide `title`
         label: n.title,
         status: progressMap.get(n.id) || 'locked',
+        childCount: childCount(n.id),
+        expanded: expandedIds.has(n.id),
+        compact: Boolean(n.parentId),
         onClick: () => handleNodeClick(n),
       },
     }));
 
     const validEdges = roadmap.edges.filter(
-      (e) => nodeIds.has(e.source) && nodeIds.has(e.target) && e.source !== e.target,
+      (e) => visibleIds.has(e.source) && visibleIds.has(e.target) && e.source !== e.target,
     );
 
     const initialEdges: Edge[] = validEdges.map((e) => {
@@ -458,18 +482,39 @@ export default function RoadmapCanvas({
       };
     });
 
-    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-      initialNodes,
-      initialEdges,
-    );
-    setNodes(layoutedNodes);
-    setEdges(layoutedEdges);
+    const layoutEdges = [...initialEdges];
+    for (const n of visible) {
+      if (!n.parentId || !expandedIds.has(n.parentId)) continue;
+      if (layoutEdges.some((e) => e.source === n.parentId && e.target === n.id)) continue;
+      layoutEdges.push({
+        id: `layout-${n.parentId}-${n.id}`,
+        source: n.parentId,
+        target: n.id,
+        type: "dependency",
+      });
+    }
 
-    // Fit once after first layout (not on every progress update)
+    const { nodes: layoutedNodes } = getLayoutedElements(initialNodes, layoutEdges);
+    setNodes(layoutedNodes);
+    setEdges(initialEdges);
+
     requestAnimationFrame(() => {
       applyInitialCamera();
+      const expandedParent = [...expandedIds][0];
+      if (!expandedParent || !rfRef.current) return;
+      const cluster = layoutedNodes
+        .filter((n) => n.id === expandedParent || n.data?.parentId === expandedParent)
+        .map((n) => ({ id: n.id }));
+      if (cluster.length > 1) {
+        rfRef.current.fitView({
+          nodes: cluster,
+          padding: 0.22,
+          duration: 280,
+          maxZoom: 1.05,
+        });
+      }
     });
-  }, [roadmap, progressMap, handleNodeClick, setNodes, setEdges, applyInitialCamera]);
+  }, [roadmap, progressMap, handleNodeClick, setNodes, setEdges, applyInitialCamera, expandedIds]);
 
   useEffect(() => {
     setNodes((nds) =>
@@ -542,7 +587,7 @@ export default function RoadmapCanvas({
           applyInitialCamera(instance);
         }}
         proOptions={{ hideAttribution: true }}
-        minZoom={0.45}
+        minZoom={0.2}
         maxZoom={1.75}
         preventScrolling
         zoomOnPinch
@@ -570,7 +615,7 @@ export default function RoadmapCanvas({
               const status = n.data?.status;
               if (status === 'completed') return 'var(--success)';
               if (status === 'in_progress') return 'var(--primary)';
-              if (n.type === 'goal' || n.type === 'career') return 'var(--warning)';
+              if (n.type === 'goal' || n.type === 'career' || n.type === 'interview') return 'var(--warning)';
               if (n.type === 'milestone' || n.type === 'checkpoint') return 'var(--info)';
               if (n.type === 'project') return 'var(--accent)';
               return 'var(--border-strong)';
@@ -580,7 +625,7 @@ export default function RoadmapCanvas({
               if (status === 'completed') return 'var(--success)';
               if (status === 'in_progress') return 'var(--primary)';
               if (status === 'available') return 'var(--info)';
-              if (n.type === 'goal' || n.type === 'career') return 'var(--warning)';
+              if (n.type === 'goal' || n.type === 'career' || n.type === 'interview') return 'var(--warning)';
               if (n.type === 'milestone' || n.type === 'checkpoint') return 'var(--info)';
               if (n.type === 'project') return 'var(--accent)';
               return 'var(--text-muted)';
@@ -660,9 +705,21 @@ export default function RoadmapCanvas({
         certifiedAt={roadmap.certifiedAt}
       />
 
+      <RoadmapStudyPlanner
+        onOpenNode={(nodeId) => {
+          const n = roadmap.nodes.find((x) => x.id === nodeId);
+          if (!n) return;
+          if (n.parentId) {
+            setExpandedIds((prev) => new Set(prev).add(n.parentId!));
+          }
+          handleNodeClick(n);
+        }}
+      />
+
       <RoadmapDetailPanel
         node={selectedNode}
         allNodes={roadmap.nodes}
+        roadmapId={roadmap.id}
         onStatusChange={async (id, status) => {
           await onStatusChange(id, status);
         }}

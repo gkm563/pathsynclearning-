@@ -38,15 +38,30 @@ export const env = {
     if (!key || key === "YOUR_GROQ_API_KEY") return undefined;
     return key;
   },
-  /** Ollama Cloud — used only by AI interview (not roadmap / tutor / copilot). */
+  /** Shared fallback if a purpose-specific Ollama key is missing. */
   get ollamaApiKey() {
     return optional("OLLAMA_API_KEY");
+  },
+  /** Live interview turns — keep this key off the roadmap generator so they can run together. */
+  get ollamaInterviewApiKey() {
+    return optional("OLLAMA_INTERVIEW_API_KEY") || optional("OLLAMA_API_KEY");
+  },
+  /** Roadmap generate / adapt / follow-up questions. */
+  get ollamaRoadmapApiKey() {
+    return (
+      optional("OLLAMA_ROADMAP_API_KEY") ||
+      optional("OLLAMA_API_KEY_2") ||
+      optional("OLLAMA_API_KEY")
+    );
   },
   get ollamaBaseUrl() {
     return optional("OLLAMA_BASE_URL") || "https://ollama.com/v1";
   },
   get ollamaInterviewModel() {
     return optional("OLLAMA_INTERVIEW_MODEL") || "gpt-oss:120b";
+  },
+  get ollamaRoadmapModel() {
+    return optional("OLLAMA_ROADMAP_MODEL") || optional("OLLAMA_INTERVIEW_MODEL") || "gpt-oss:120b";
   },
   /**
    * WebSocket URL for LiveKit (Cloud or self-hosted).
@@ -84,6 +99,12 @@ export const env = {
     if (!key || key === "YOUR_YOUTUBE_API_KEY") return undefined;
     return key;
   },
+  /** Days to reuse a YouTube search row before calling the Data API again. */
+  get youtubeCacheTtlDays() {
+    const raw = optional("YOUTUBE_CACHE_TTL_DAYS");
+    const n = raw ? Number(raw) : 30;
+    return Number.isFinite(n) && n > 0 ? n : 30;
+  },
   get isProd() {
     return process.env.NODE_ENV === "production";
   },
@@ -100,6 +121,8 @@ export function getEnvStatus() {
     GEMINI_API_KEY: Boolean(env.geminiApiKey),
     GROQ_API_KEY: Boolean(env.groqApiKey),
     OLLAMA_API_KEY: Boolean(env.ollamaApiKey),
+    OLLAMA_INTERVIEW_API_KEY: Boolean(env.ollamaInterviewApiKey),
+    OLLAMA_ROADMAP_API_KEY: Boolean(env.ollamaRoadmapApiKey),
     LIVEKIT: Boolean(env.livekitUrl && env.livekitApiKey && env.livekitApiSecret),
     NEWS_API_KEY: Boolean(env.newsApiKey),
     YOUTUBE_API_KEY: Boolean(env.youtubeApiKey),

@@ -1,5 +1,6 @@
 import { RoadmapProfile, FollowUpQuestionsResponse, FollowUpQuestion } from '@/types/roadmap';
-import { callAIWithFallback } from './llm';
+import { env } from '@/lib/env';
+import { callOllamaJson } from './ollama';
 import { followUpQuestionsResponseSchema } from '@/lib/validation/roadmap-schemas';
 import { hiringBrief } from '@/lib/roadmap/hiring-catalog';
 import { generationStageQuestions } from '@/lib/roadmap/generation-questions';
@@ -130,6 +131,7 @@ export async function generateFollowUpQuestions(
   userId: string,
   mode: RoadmapGenerationMode = profile.targetCompany ? 'targeted' : 'general',
 ): Promise<FollowUpQuestionsResponse> {
+  void userId;
   const brief = hiringBrief(profile.targetCompany, profile.targetRole);
   const stageForPath = generationStageQuestions(mode, profile.targetRole, profile.targetCompany);
   const alreadyCovered = COVERED.filter((c) => c.test(profile)).flatMap((c) => c.phrases);
@@ -170,13 +172,15 @@ Return JSON:
   const prompt = `Student profile:\n${JSON.stringify(profile, null, 2)}`;
 
   try {
-    const result = await callAIWithFallback<unknown>({
+    const result = await callOllamaJson<unknown>({
       prompt,
       systemInstruction,
-      userId,
-      maxTokens: 2048,
+      model: env.ollamaRoadmapModel,
+      maxTokens: null,
+      timeoutMs: 180000,
       temperature: 0.4,
-      reasoningEffort: 'low',
+      label: 'Ollama roadmap questions',
+      purpose: 'roadmap',
     });
     const parsed = followUpQuestionsResponseSchema.parse(result);
     const questions = sanitizeQuestions(parsed.questions, profile, mode);

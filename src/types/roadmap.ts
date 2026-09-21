@@ -14,7 +14,8 @@ export type RoadmapNodeType =
   | "project"
   | "resource"
   | "checkpoint"
-  | "career";
+  | "career"
+  | "interview";
 
 export type RoadmapNodeStatus =
   | "locked"
@@ -139,6 +140,11 @@ export interface NodeAssessment {
   project?: ProjectAssessment;
 }
 
+export interface RoadmapSubtopic {
+  id: string;
+  title: string;
+}
+
 export interface RoadmapNode {
   id: string;
   type: RoadmapNodeType;
@@ -155,6 +161,13 @@ export interface RoadmapNode {
   whyLearn: string;
   learningOutcomes?: string[];
   interviewFocus?: string;
+  /** Nested checklist items (roadmap.sh-style). */
+  subtopics?: RoadmapSubtopic[];
+  /** Parent phase/topic on the nested map. */
+  parentId?: string;
+  depth?: number;
+  /** Final certification interview node. */
+  gate?: "final_interview";
   /** Primary / first assessment (kept for older roadmaps). */
   assessment?: NodeAssessment;
   /** Extra assessments on the same node. Pass all to complete the node. */

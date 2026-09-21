@@ -31,6 +31,7 @@ import {
   Sparkles,
   History,
   Plus,
+  Mic,
 } from "lucide-react";
 import type { RoadmapNode, RoadmapNodeResource } from "@/types/roadmap";
 import {
@@ -41,6 +42,8 @@ import {
 import { AddNoteButton, NotesForSource } from "@/components/memory-lane/AddNoteButton";
 import StudyRoomTutor, { type TutorChrome } from "@/components/roadmap/StudyRoomTutor";
 import { Alert, Badge, Button, Card, IconButton, Segmented, Tabs } from "@/components/ui";
+import { useRouter } from "next/navigation";
+import { interviewFinalStartPath } from "@/lib/routes";
 import { cn } from "@/lib/cn";
 
 type PanelTab = "overview" | "resources";
@@ -149,6 +152,7 @@ function isYoutubeVideo(r: RoadmapNodeResource) {
 export default function RoadmapDetailPanel({
   node,
   allNodes,
+  roadmapId,
   onStatusChange,
   onTakeAssessment,
   onClose,
@@ -156,11 +160,13 @@ export default function RoadmapDetailPanel({
 }: {
   node: RoadmapNode | null;
   allNodes: RoadmapNode[];
+  roadmapId?: string;
   onStatusChange: (id: string, status: string) => void | Promise<void>;
   onTakeAssessment?: (id: string) => void;
   onClose: () => void;
   onExpandedChange?: (expanded: boolean) => void;
 }) {
+  const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const [tab, setTab] = useState<PanelTab>("overview");
   const [sideRail, setSideRail] = useState<SideRail>("playlist");
@@ -461,7 +467,9 @@ export default function RoadmapDetailPanel({
     ? ytAll.filter((r) => r.suggested)
     : ytAll.slice(ytLessons.length);
   const ytResources = [...ytLessons, ...ytSuggested];
+  const hasVideos = ytResources.length > 0;
   const otherResources = rawResources.filter((r) => !isYoutubeVideo(r));
+  const isInterview = node?.type === "interview" || node?.gate === "final_interview";
 
   const currentVideo =
     ytResources.length > 0 ? ytResources[Math.min(activeVideo, ytResources.length - 1)] : null;
@@ -473,7 +481,7 @@ export default function RoadmapDetailPanel({
       await onStatusChange(node.id, "in_progress");
     }
     setExpanded(true);
-    setSideRail("playlist");
+    setSideRail(ytResources.length > 0 ? "playlist" : "notes");
     setStudyBubble(null);
     setMobileStudyTab(ytResources.length > 0 ? "playlist" : "overview");
     setTab("overview");
@@ -481,6 +489,11 @@ export default function RoadmapDetailPanel({
 
   const footerActions = (
     <div className="flex gap-2 sm:gap-3">
+      {isInterview && !isLocked && !isCompleted && roadmapId ? (
+        <Button className="min-w-0 flex-1" onClick={() => router.push(interviewFinalStartPath(roadmapId))}>
+          <Mic size={18} /> Start interview
+        </Button>
+      ) : null}
       {!isCompleted && !isLocked && hasExam && onTakeAssessment && (
         <Button className="min-w-0 flex-1" onClick={() => onTakeAssessment(node!.id)}>
           <ClipboardCheck size={18} /> Take Assessment
@@ -758,6 +771,8 @@ export default function RoadmapDetailPanel({
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-canvas text-ink">
             {narrowStudy ? (
               <div className="mx-auto flex w-full max-w-[40rem] flex-col px-3 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+                {hasVideos ? (
+                <>
                 <div
                   className="relative w-full overflow-hidden rounded-[var(--radius-lg)] border border-line bg-inverse shadow-[var(--shadow-md)]"
                   style={{ paddingBottom: "56.25%" }}
@@ -822,19 +837,27 @@ export default function RoadmapDetailPanel({
                     </Button>
                   </div>
                 ) : null}
+                </>
+                ) : (
+                  <h1 className="type-h4 mt-1 mb-3 text-ink">{node.title}</h1>
+                )}
 
                 <Tabs
                   ariaLabel="Study sections"
                   items={[
+                    ...(hasVideos
+                      ? [
+                          {
+                            id: "playlist" as const,
+                            label: "Playlist",
+                            icon: <Video size={14} />,
+                            badge: ytResources.length || undefined,
+                          },
+                        ]
+                      : []),
+                    { id: "overview" as const, label: "Overview", icon: <GraduationCap size={14} /> },
                     {
-                      id: "playlist",
-                      label: "Playlist",
-                      icon: <Video size={14} />,
-                      badge: ytResources.length || undefined,
-                    },
-                    { id: "overview", label: "Overview", icon: <GraduationCap size={14} /> },
-                    {
-                      id: "resources",
+                      id: "resources" as const,
                       label: "Reading",
                       icon: <Book size={14} />,
                       badge: otherResources.length || undefined,
@@ -845,12 +868,7 @@ export default function RoadmapDetailPanel({
                 />
 
                 <div className="mt-3">
-                  {mobileStudyTab === "playlist" ? (
-                    ytResources.length === 0 ? (
-                      <p className="type-small m-0 rounded-[var(--radius-md)] border border-line bg-surface p-4 text-muted">
-                        No video playlist for this topic. Use the AI or notes bubbles.
-                      </p>
-                    ) : (
+                  {mobileStudyTab === "playlist" && hasVideos ? (
                       <div className="overflow-hidden rounded-[var(--radius-md)] border border-line bg-surface">
                         {ytLessons.map((res, i) => (
                           <PlaylistRow
@@ -882,7 +900,6 @@ export default function RoadmapDetailPanel({
                           );
                         })}
                       </div>
-                    )
                   ) : null}
 
                   {mobileStudyTab === "overview" ? (
@@ -916,6 +933,8 @@ export default function RoadmapDetailPanel({
               }}
             >
               <div className="min-w-0 flex-1">
+                {hasVideos ? (
+                <>
                 <div
                   className="relative w-full overflow-hidden rounded-[var(--radius-lg)] border border-line bg-inverse shadow-[var(--shadow-md)]"
                   style={{
@@ -984,6 +1003,10 @@ export default function RoadmapDetailPanel({
                     </Button>
                   </div>
                 ) : null}
+                </>
+                ) : (
+                  <h1 className="type-h3 mt-0 mb-4 text-ink">{node.title}</h1>
+                )}
 
                 <Tabs
                   ariaLabel="Study sections"
@@ -1087,7 +1110,9 @@ export default function RoadmapDetailPanel({
                     value={sideRail}
                     onChange={(id) => setSideRail(id as SideRail)}
                     items={[
-                      { id: "playlist", label: "Playlist", icon: <Video size={14} /> },
+                      ...(hasVideos
+                        ? [{ id: "playlist" as const, label: "Playlist", icon: <Video size={14} /> }]
+                        : []),
                       { id: "notes", label: "Notes", icon: <StickyNote size={14} /> },
                       { id: "tutor", label: "AI", icon: <Sparkles size={14} /> },
                     ]}
@@ -1122,13 +1147,7 @@ export default function RoadmapDetailPanel({
                   )}
                   style={{ overscrollBehavior: "contain" }}
                 >
-                  {sideRail === "playlist" ? (
-                    ytResources.length === 0 ? (
-                      <p className="type-small m-0 p-4 leading-relaxed text-muted">
-                        No video playlist for this topic. Open Notes or AI in this sidebar while you
-                        read.
-                      </p>
-                    ) : (
+                  {sideRail === "playlist" && hasVideos ? (
                       <>
                         {ytLessons.length > 0 ? (
                           <div className="type-overline border-b border-line bg-sunken px-3 py-2.5 text-muted">
@@ -1163,7 +1182,6 @@ export default function RoadmapDetailPanel({
                           );
                         })}
                       </>
-                    )
                   ) : null}
                   {sideRail === "notes" ? (
                     <div className="p-3">
@@ -1528,6 +1546,19 @@ function CompactOverview({
         </div>
       ) : null}
 
+      {node.subtopics && node.subtopics.length > 0 ? (
+        <div className="mb-6">
+          <h3 className="type-h4 mb-2 text-ink">Subtopics</h3>
+          <ul className="type-body m-0 list-disc pl-5 text-muted">
+            {node.subtopics.map((item) => (
+              <li key={item.id} className="mb-1">
+                {item.title}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       {node.topics && node.topics.length > 0 && (
         <div className="mb-6">
           <h3 className="type-h4 mb-2 text-ink">Key Topics</h3>
@@ -1643,6 +1674,18 @@ function StudyOverview({
           <ul className="type-body m-0 list-disc pl-4.5 text-muted" style={{ color: muted }}>
             {node.learningOutcomes.map((item, i) => (
               <li key={i}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      {node.subtopics?.length ? (
+        <div>
+          <h3 className="type-h4 mb-2 text-ink" style={{ color: main }}>
+            Subtopics
+          </h3>
+          <ul className="type-body m-0 list-disc pl-4.5 text-muted" style={{ color: muted }}>
+            {node.subtopics.map((item) => (
+              <li key={item.id}>{item.title}</li>
             ))}
           </ul>
         </div>

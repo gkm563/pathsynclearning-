@@ -6,11 +6,20 @@ import { curatedResourcesForNode } from "@/lib/roadmap/resource-library";
 import {
   durationFitsLesson,
   isVideoOnTopic,
+  MIN_VIDEO_RELEVANCE,
+  MIN_SEARCH_VIDEO_RELEVANCE,
   nodeSearchHaystack,
   parseIsoDuration,
   videoRelevanceScore,
   youtubeSearchQuery,
 } from "@/lib/roadmap/video-recommend";
+import {
+  readYoutubePlayableCache,
+  readYoutubeSearchCache,
+  writeYoutubePlayableCache,
+  writeYoutubeSearchCache,
+  type YoutubeSearchHit,
+} from "@/lib/roadmap/youtube-cache";
 
 const OEMBED = "https://www.youtube.com/oembed?format=json&url=";
 
@@ -35,6 +44,8 @@ export function extractYoutubeId(url: string): string | null {
 async function isYoutubePlayable(url: string): Promise<boolean> {
   const id = extractYoutubeId(url);
   if (!id || id.length < 8) return false;
+  const cached = await readYoutubePlayableCache(id);
+  if (cached !== null) return cached;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 4500);
   try {
@@ -42,7 +53,9 @@ async function isYoutubePlayable(url: string): Promise<boolean> {
       signal: controller.signal,
       headers: { Accept: "application/json" },
     });
-    return res.ok;
+    const ok = res.ok;
+    await writeYoutubePlayableCache(id, ok);
+    return ok;
   } catch {
     return false;
   } finally {
@@ -66,9 +79,9 @@ async function isHttpOk(url: string): Promise<boolean> {
   }
 }
 
-type YtSearchHit = { title: string; url: string; channel: string; seconds: number };
+type YtSearchHit = YoutubeSearchHit;
 
-async function youtubeSearch(query: string, max = 5): Promise<YtSearchHit[]> {
+async function youtubeSearchLive(query: string, max = 5): Promise<YtSearchHit[]> {
   const key = env.youtubeApiKey;
   if (!key) return [];
   const params = new URLSearchParams({
@@ -140,6 +153,14 @@ async function youtubeSearch(query: string, max = 5): Promise<YtSearchHit[]> {
   return hits;
 }
 
+async function youtubeSearch(query: string, max = 5): Promise<YtSearchHit[]> {
+  const cached = await readYoutubeSearchCache(query);
+  if (cached) return cached.slice(0, max);
+  const hits = await youtubeSearchLive(query, max);
+  await writeYoutubeSearchCache(query, hits);
+  return hits;
+}
+
 function uniqueResources(list: RoadmapNodeResource[]): RoadmapNodeResource[] {
   const seen = new Set<string>();
   const out: RoadmapNodeResource[] = [];
@@ -168,18 +189,20 @@ async function mapPool<T, R>(items: T[], limit: number, fn: (item: T) => Promise
 function rankVideos(hay: string, videos: RoadmapNodeResource[]): RoadmapNodeResource[] {
   return videos
     .map((r) => ({ r, score: videoRelevanceScore(hay, r.title, r.channel) }))
-    .filter((row) => row.score >= 2)
+    .filter((row) => row.score >= MIN_VIDEO_RELEVANCE)
     .sort((a, b) => b.score - a.score)
     .map(({ r }, i) => ({ ...r, suggested: i > 0 }));
 }
 
 export async function enrichNodeResources(nodes: RoadmapNode[]): Promise<RoadmapNode[]> {
+  const byId = new Map(nodes.map((n) => [n.id, n]));
   return mapPool(nodes, 4, async (node) => {
     if (!["skill", "topic", "project", "checkpoint", "resource"].includes(node.type)) {
       return node;
     }
 
-    const hay = nodeSearchHaystack(node);
+    const parentTitle = node.parentId ? byId.get(node.parentId)?.title : undefined;
+    const hay = nodeSearchHaystack(node, parentTitle);
     const curated = curatedResourcesForNode(hay);
     const existing = (node.resources || []).filter((r) => {
       if (r.type !== "video") return true;
@@ -200,7 +223,7 @@ export async function enrichNodeResources(nodes: RoadmapNode[]): Promise<Roadmap
             hit,
             score: videoRelevanceScore(hay, hit.title, hit.channel),
           }))
-          .filter((row) => row.score >= 2)
+          .filter((row) => row.score >= MIN_SEARCH_VIDEO_RELEVANCE)
           .sort((a, b) => b.score - a.score);
         for (const { hit } of ranked) {
           kept.push({
