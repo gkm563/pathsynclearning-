@@ -45,6 +45,7 @@ import {
   isProctoringEnabled,
   MAX_PROCTOR_VIOLATIONS,
 } from "@/lib/proctoring";
+import { ensureNodeAssessments } from "@/lib/roadmap/assessment-bank";
 
 const MAX_VIOLATIONS = MAX_PROCTOR_VIOLATIONS;
 const PROCTORING_ENABLED = isProctoringEnabled();
@@ -64,9 +65,16 @@ export async function POST(request: Request) {
 
     if (!activeRoadmap) throw AppError.notFound("Active roadmap not found");
 
-    const nodes = (Array.isArray(activeRoadmap.nodes)
+    const rawNodes = (Array.isArray(activeRoadmap.nodes)
       ? activeRoadmap.nodes
       : []) as RoadmapNode[];
+    const nodes = ensureNodeAssessments(rawNodes);
+    if (JSON.stringify(rawNodes) !== JSON.stringify(nodes)) {
+      await db
+        .update(roadmaps)
+        .set({ nodes })
+        .where(eq(roadmaps.id, activeRoadmap.id));
+    }
     const edges = (Array.isArray(activeRoadmap.edges)
       ? activeRoadmap.edges
       : []) as RoadmapEdge[];

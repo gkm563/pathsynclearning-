@@ -18,6 +18,7 @@ import {
   stripAssessmentSecrets,
 } from "@/lib/roadmap/assessment";
 import type { RoadmapNode } from "@/types/roadmap";
+import { ensureNodeAssessments } from "@/lib/roadmap/assessment-bank";
 
 export async function GET(request: Request) {
   try {
@@ -36,9 +37,16 @@ export async function GET(request: Request) {
 
     if (!activeRoadmap) throw AppError.notFound("Active roadmap not found");
 
-    const nodes = (Array.isArray(activeRoadmap.nodes)
+    const rawNodes = (Array.isArray(activeRoadmap.nodes)
       ? activeRoadmap.nodes
       : []) as RoadmapNode[];
+    const nodes = ensureNodeAssessments(rawNodes);
+    if (JSON.stringify(rawNodes) !== JSON.stringify(nodes)) {
+      await db
+        .update(roadmaps)
+        .set({ nodes })
+        .where(eq(roadmaps.id, activeRoadmap.id));
+    }
     const node = nodes.find((n) => n.id === nodeId);
     if (!node) throw AppError.notFound("Node not found");
     if (!isAssessableNode(node)) {

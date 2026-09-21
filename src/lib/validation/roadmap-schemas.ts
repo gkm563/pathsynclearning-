@@ -48,7 +48,7 @@ export const nodeAssessmentSchema = z.object({
   type: z.enum(['mcq', 'coding', 'project']),
   passScore: z.number().min(0).max(100),
   timeLimitMinutes: z.number().min(5).max(180),
-  mcq: z.object({ questions: z.array(mcqQuestionSchema).min(3).max(10) }).optional(),
+  mcq: z.object({ questions: z.array(mcqQuestionSchema).min(3) }).optional(),
   coding: codingAssessmentSchema.optional(),
   project: z.object({
     overview: z.object({

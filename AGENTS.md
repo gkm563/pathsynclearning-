@@ -4,6 +4,8 @@ PathED is **one product family**, not one mixed dashboard for every login.
 
 **Read first:** [docs/PLATFORM.md](docs/PLATFORM.md) — hosts, customer roles (`student` \| `teacher` \| `recruiter`), API ownership, monorepo target, Flutter rules.
 
+**Student roadmap:** [docs/ROADMAP.md](docs/ROADMAP.md) — nested graph, Ollama generate, study calendar, assessments.
+
 **Staff admin:** [docs/ADMIN.md](docs/ADMIN.md) — separate app and host. Specified only; not in code.
 
 Hard rules:

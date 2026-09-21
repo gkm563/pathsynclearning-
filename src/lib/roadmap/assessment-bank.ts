@@ -58,6 +58,177 @@ function q(
   };
 }
 
+function hashSeed(value: string) {
+  let h = 0;
+  for (let i = 0; i < value.length; i += 1) h = (h * 31 + value.charCodeAt(i)) | 0;
+  return Math.abs(h) || 1;
+}
+
+function shuffle<T>(items: T[], seed: number): T[] {
+  const next = [...items];
+  let s = seed || 1;
+  for (let i = next.length - 1; i > 0; i -= 1) {
+    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+    const j = s % (i + 1);
+    [next[i], next[j]] = [next[j], next[i]];
+  }
+  return next;
+}
+
+function labelsOf(node: RoadmapNode): string[] {
+  const subtopics = (node.subtopics || []).map((item) =>
+    typeof item === "string" ? item : item.title,
+  );
+  return [...subtopics, ...(node.topics || []), ...(node.skills || [])]
+    .map((item) => String(item || "").trim())
+    .filter(Boolean);
+}
+
+function choiceQuestion(
+  node: RoadmapNode,
+  i: number,
+  prompt: string,
+  correct: string,
+  pool: string[],
+) {
+  const filler = [
+    "Unrelated trivia",
+    "Skipping this topic",
+    "Memorizing without practice",
+    "Avoiding examples",
+  ];
+  const options: string[] = [];
+  for (const item of [correct, ...pool, ...filler]) {
+    const text = String(item || "").trim();
+    if (!text) continue;
+    if (options.some((row) => row.toLowerCase() === text.toLowerCase())) continue;
+    options.push(text);
+    if (options.length >= 4) break;
+  }
+  while (options.length < 4) options.push(`Not a focus of this module (${options.length + 1})`);
+  const shuffled = shuffle(options.slice(0, 4), hashSeed(`${node.id}-${i}-${prompt}`));
+  return q(node, i, prompt, shuffled, shuffled.findIndex((row) => row === correct));
+}
+
+function expandMcqQuestions(
+  node: RoadmapNode,
+  seed: NonNullable<NodeAssessment["mcq"]>["questions"] = [],
+): NonNullable<NodeAssessment["mcq"]>["questions"] {
+  const out: NonNullable<NodeAssessment["mcq"]>["questions"] = [];
+  const seen = new Set<string>();
+  const push = (item: (typeof out)[number]) => {
+    const key = item.prompt.trim().toLowerCase();
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    out.push({ ...item, id: `${node.id}-q${out.length + 1}` });
+  };
+
+  for (const item of seed) push(item);
+
+  const pool = labelsOf(node);
+  const outcomes = (node.learningOutcomes || [])
+    .map((row) => String(row || "").trim())
+    .filter(Boolean);
+
+  for (const title of [...new Set(pool)]) {
+    push(
+      choiceQuestion(
+        node,
+        out.length + 1,
+        `In “${node.title}”, what should you cover under “${title}”?`,
+        `It is part of this module — study ${title}`,
+        [
+          "Skip it; it is optional trivia",
+          "Replace it with unrelated interview riddles",
+          "Ignore it until after the final interview",
+        ],
+      ),
+    );
+  }
+
+  for (const outcome of outcomes) {
+    const label = outcome.length > 180 ? `${outcome.slice(0, 177)}…` : outcome;
+    push(
+      choiceQuestion(
+        node,
+        out.length + 1,
+        `After finishing “${node.title}”, which outcome matches: “${label}”?`,
+        label,
+        outcomes
+          .filter((row) => row !== outcome)
+          .map((row) => (row.length > 180 ? `${row.slice(0, 177)}…` : row)),
+      ),
+    );
+  }
+
+  if (node.interviewFocus) {
+    const focus =
+      node.interviewFocus.length > 180
+        ? `${node.interviewFocus.slice(0, 177)}…`
+        : node.interviewFocus;
+    push(
+      choiceQuestion(
+        node,
+        out.length + 1,
+        `What do interviewers typically probe for “${node.title}”?`,
+        focus,
+        pool,
+      ),
+    );
+  }
+
+  if (out.length <= 4) {
+    push(
+      q(
+        node,
+        out.length + 1,
+        `Best way to practice “${node.title}” beyond reading?`,
+        [
+          "Work a small example or exercise and check edge cases",
+          "Only reread the title",
+          "Skip all examples",
+          "Memorize unrelated facts",
+        ],
+        0,
+      ),
+    );
+    push(
+      q(
+        node,
+        out.length + 1,
+        `If you are stuck on “${node.title}”, what should you do first?`,
+        [
+          "Retry a smaller case and name what you do not understand",
+          "Skip the module forever",
+          "Change career immediately",
+          "Ignore the error and move on",
+        ],
+        0,
+      ),
+    );
+    push(
+      q(
+        node,
+        out.length + 1,
+        `Which mistake undermines “${node.title}” the most?`,
+        [
+          "Treating it as trivia and never applying it",
+          "Checking a worked example",
+          "Writing down what you learned",
+          "Practicing a tiny version first",
+        ],
+        0,
+      ),
+    );
+  }
+
+  return out;
+}
+
+function mcqTimeLimit(questionCount: number, current?: number) {
+  return Math.min(180, Math.max(current || 20, Math.ceil(questionCount * 1.5)));
+}
+
 const PACKS: TopicPack[] = [
   {
     id: "arrays-hash",
@@ -419,13 +590,14 @@ function codingPart(
 }
 
 function mcqPart(node: RoadmapNode, mcq: NodeAssessment["mcq"]): NodeAssessment {
+  const questions = expandMcqQuestions(node, mcq?.questions || []);
   return {
     id: `${node.id}-mcq-0`,
     title: "Concept quiz",
     type: "mcq",
     passScore: 70,
-    timeLimitMinutes: 20,
-    mcq,
+    timeLimitMinutes: mcqTimeLimit(questions.length, 20),
+    mcq: { questions },
   };
 }
 
@@ -560,14 +732,23 @@ export function ensureNodeAssessments(nodes: RoadmapNode[]): RoadmapNode[] {
       existing.some((a) => isMisalignedAssessment(node, a));
     const tooFew = wantsMultiple(node) && existing.length < 2 && node.type !== "project";
 
-    const assessments = misaligned || tooFew
+    const assessments = (misaligned || tooFew
       ? buildAssessmentsForNode(node)
       : withIds(
           node,
           existing.map((a) =>
             a.coding ? { ...a, coding: hydrateCodingAssessment(a.coding) } : a,
           ),
-        );
+        )
+    ).map((assessment) => {
+      if (assessment.type !== "mcq" || !assessment.mcq) return assessment;
+      const questions = expandMcqQuestions(node, assessment.mcq.questions);
+      return {
+        ...assessment,
+        timeLimitMinutes: mcqTimeLimit(questions.length, assessment.timeLimitMinutes),
+        mcq: { questions },
+      };
+    });
 
     return { ...node, resources, assessment: assessments[0], assessments };
   });

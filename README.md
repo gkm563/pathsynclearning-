@@ -8,14 +8,14 @@ Career readiness platform that bridges academic learning and industry skills for
 
 - Custom Clerk sign-in / sign-up flows (`/sign-in`, `/sign-up`)
 - Student dashboard with CRI, XP, coins, streaks, and AI guidance
-- Challenges, Memory Lane, roadmap, store & wallet
+- Nested AI roadmap (Ollama), IST study calendar, node assessments, Memory Lane, challenges, store & wallet
 - Neon-backed profiles, wallets, purchases, notifications, and quotes
 
 ## Quick start
 
 ```bash
 npm install
-cp .env.example .env.local   # fill in Clerk + DATABASE_URL + GEMINI_API_KEY
+cp .env.example .env.local   # Clerk, DATABASE_URL, GROQ_API_KEY, Ollama keys
 npm run db:setup             # drizzle-kit push + seed store/quotes
 npm run dev                  # http://localhost:3000
 ```
@@ -34,6 +34,7 @@ npm run dev                  # http://localhost:3000
 | `npm run db:seed` | Seed store/quotes via Drizzle ORM |
 | `npm run db:generate` | Generate Drizzle migrations |
 | `npm run db:migrate` | Sync schema deltas via Drizzle ORM |
+| `npm run db:migrate:roadmap-study-youtube` | Study calendar + YouTube cache tables |
 | `npm run db:studio` | Open Drizzle Studio |
 
 ## Project layout
@@ -54,7 +55,16 @@ drizzle/         # Drizzle migrations
 
 - Never commit `.env.local` or Neon/Clerk secrets.
 - Rotate any credentials that were shared in chat or screenshots.
-- `GEMINI_API_KEY` and `DATABASE_URL` are server-only (no `NEXT_PUBLIC_` prefix).
+- `GROQ_API_KEY`, `OLLAMA_*`, `YOUTUBE_API_KEY`, and `DATABASE_URL` are server-only (no `NEXT_PUBLIC_` prefix).
+
+## Docs
+
+| Doc | What it covers |
+| --- | --- |
+| [docs/PLATFORM.md](docs/PLATFORM.md) | Hosts, roles, API ownership |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Student roadmap, generate, calendar, assessments |
+| [docs/CRI.md](docs/CRI.md) | Career Readiness Index |
+| [docs/ADMIN.md](docs/ADMIN.md) | Staff admin (spec only) |
 
 ## License
 
