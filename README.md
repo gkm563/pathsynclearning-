@@ -62,6 +62,7 @@ drizzle/         # Drizzle migrations
 | Doc | What it covers |
 | --- | --- |
 | [docs/PLATFORM.md](docs/PLATFORM.md) | Hosts, roles, API ownership |
+| [docs/STACK.md](docs/STACK.md) | Tech stack and where to host (Vercel vs VPS) |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Student roadmap, generate, calendar, assessments |
 | [docs/CRI.md](docs/CRI.md) | Career Readiness Index |
 | [docs/ADMIN.md](docs/ADMIN.md) | Staff admin (spec only) |

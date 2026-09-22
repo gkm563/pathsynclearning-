@@ -2,7 +2,7 @@
 
 This is the source of truth for **how PathED is split by audience**. Read it before adding routes, APIs, auth, or a new client. Product features belong in feature docs; this file is hosts, roles, ownership, and what not to mix.
 
-Feature docs: [ROADMAP.md](ROADMAP.md) (student path), [CRI.md](CRI.md) / [CRI-CALCULATION.md](CRI-CALCULATION.md).
+Feature docs: [ROADMAP.md](ROADMAP.md) (student path), [STACK.md](STACK.md) (runtime and hosting), [CRI.md](CRI.md) / [CRI-CALCULATION.md](CRI-CALCULATION.md).
 
 The repo today is still **one Next.js 15 app** (marketing + Clerk + student portal) on a single origin. The **target** is one marketing site, three **customer** role platforms on their own hosts, a **staff admin** app on its own host, a shared database, and a student-only mobile app.
 

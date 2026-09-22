@@ -6,6 +6,8 @@ PathED is **one product family**, not one mixed dashboard for every login.
 
 **Student roadmap:** [docs/ROADMAP.md](docs/ROADMAP.md) — nested graph, Ollama generate, study calendar, assessments.
 
+**Stack and hosting:** [docs/STACK.md](docs/STACK.md) — Next/Clerk/Neon/LLM, Vercel limits, VPS options.
+
 **Staff admin:** [docs/ADMIN.md](docs/ADMIN.md) — separate app and host. Specified only; not in code.
 
 Hard rules:
