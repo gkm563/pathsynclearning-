@@ -12,7 +12,7 @@ import { AppError } from '@/lib/api/errors';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-export const maxDuration = 800;
+export const maxDuration = 60;
 
 function wantsStream(request: Request) {
   const url = new URL(request.url);

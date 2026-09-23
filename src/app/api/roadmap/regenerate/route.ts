@@ -10,7 +10,7 @@ import {
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-export const maxDuration = 800;
+export const maxDuration = 60;
 
 /** Regenerate a fresh roadmap for the active slot; other saved roadmaps are kept. */
 export async function POST() {

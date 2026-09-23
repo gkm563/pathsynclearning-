@@ -34,3 +34,4 @@ tsconfig.tsbuildinfo
 agents/**/.venv
 agents/**/__pycache__
 *.pyc
+.vercel
