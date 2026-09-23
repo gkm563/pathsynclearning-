@@ -15,8 +15,9 @@ export interface GroqOptions {
   stream?: boolean;
 }
 
+// In-memory rate limit map (userId -> timestamps of requests in the last minute)
 const rateLimits = new Map<string, number[]>();
-const MAX_REQUESTS_PER_MINUTE = 30;
+const MAX_REQUESTS_PER_MINUTE = 15;
 const RATE_LIMIT_WINDOW_MS = 60000;
 
 function checkRateLimit(userId?: string): void {
@@ -63,27 +64,19 @@ function getGroqClient(): Groq {
   return groqClientInstance;
 }
 
-function normalizeGroqModel(rawModel?: string): string {
-  if (!rawModel || rawModel.includes('gpt-oss') || rawModel.startsWith('openai/')) {
-    return 'llama-3.3-70b-versatile';
-  }
-  return rawModel;
-}
-
 export async function callGroq<T>(options: GroqOptions): Promise<T> {
   const {
     prompt,
     systemInstruction,
     userId,
-    model: rawModel = 'llama-3.3-70b-versatile',
-    temperature = 0.7,
+    model = 'openai/gpt-oss-120b',
+    temperature = 1,
     maxCompletionTokens = 4096,
     topP = 1,
-    timeoutMs = 45000,
-    stream = false,
+    reasoningEffort = 'medium',
+    timeoutMs = 120000,
+    stream = true,
   } = options;
-
-  const model = normalizeGroqModel(rawModel);
 
   checkRateLimit(userId);
   const client = getGroqClient();
@@ -110,6 +103,7 @@ export async function callGroq<T>(options: GroqOptions): Promise<T> {
           temperature,
           max_completion_tokens: maxCompletionTokens,
           top_p: topP,
+          reasoning_effort: reasoningEffort,
           stream: true,
           response_format: { type: 'json_object' },
         },
@@ -128,6 +122,7 @@ export async function callGroq<T>(options: GroqOptions): Promise<T> {
           temperature,
           max_completion_tokens: maxCompletionTokens,
           top_p: topP,
+          reasoning_effort: reasoningEffort,
           stream: false,
           response_format: { type: 'json_object' },
         },

@@ -34,16 +34,19 @@ export const env = {
     return key;
   },
   get groqApiKey() {
-    const key = optional("GROQ_API_KEY");
+    const key = optional("GROQ_API_KEY") || optional("gpt-oss-120b");
     if (!key || key === "YOUR_GROQ_API_KEY") return undefined;
     return key;
   },
+  /** Shared fallback if a purpose-specific Ollama key is missing. */
   get ollamaApiKey() {
     return optional("OLLAMA_API_KEY");
   },
+  /** Live interview turns — keep this key off the roadmap generator so they can run together. */
   get ollamaInterviewApiKey() {
     return optional("OLLAMA_INTERVIEW_API_KEY") || optional("OLLAMA_API_KEY");
   },
+  /** Roadmap generate / adapt / follow-up questions. */
   get ollamaRoadmapApiKey() {
     return (
       optional("OLLAMA_ROADMAP_API_KEY") ||
@@ -55,11 +58,16 @@ export const env = {
     return optional("OLLAMA_BASE_URL") || "https://ollama.com/v1";
   },
   get ollamaInterviewModel() {
-    return optional("OLLAMA_INTERVIEW_MODEL") || "llama-3.3-70b-versatile";
+    return optional("OLLAMA_INTERVIEW_MODEL") || "gpt-oss:120b";
   },
   get ollamaRoadmapModel() {
-    return optional("OLLAMA_ROADMAP_MODEL") || optional("OLLAMA_INTERVIEW_MODEL") || "llama-3.3-70b-versatile";
+    return optional("OLLAMA_ROADMAP_MODEL") || optional("OLLAMA_INTERVIEW_MODEL") || "gpt-oss:120b";
   },
+  /**
+   * WebSocket URL for LiveKit (Cloud or self-hosted).
+   * Dev: wss://<project>.livekit.cloud
+   * Later VPS: wss://livekit.your-domain.com
+   */
   get livekitUrl() {
     return optional("LIVEKIT_URL");
   },
@@ -72,9 +80,11 @@ export const env = {
   get livekitAgentName() {
     return optional("LIVEKIT_AGENT_NAME") || "pathed-interviewer";
   },
+  /** Shared secret so the Python interviewer can persist turns/reports. */
   get interviewAgentSecret() {
     return optional("INTERVIEW_AGENT_SECRET");
   },
+  /** Optional NewsAPI.org key — Dev.to remains the primary free source. */
   get newsApiKey() {
     const key = optional("NEWS_API_KEY");
     if (!key || key === "YOUR_NEWS_API_KEY") return undefined;
@@ -83,11 +93,13 @@ export const env = {
   get newsCacheTtlMinutes() {
     return optional("NEWS_CACHE_TTL_MINUTES");
   },
+  /** Optional YouTube Data API key — used to search live, public, embeddable videos. */
   get youtubeApiKey() {
     const key = optional("YOUTUBE_API_KEY");
     if (!key || key === "YOUR_YOUTUBE_API_KEY") return undefined;
     return key;
   },
+  /** Days to reuse a YouTube search row before calling the Data API again. */
   get youtubeCacheTtlDays() {
     const raw = optional("YOUTUBE_CACHE_TTL_DAYS");
     const n = raw ? Number(raw) : 30;
@@ -98,6 +110,7 @@ export const env = {
   },
 };
 
+/** Soft check for docs / startup diagnostics (does not throw). */
 export function getEnvStatus() {
   return {
     DATABASE_URL: Boolean(process.env.DATABASE_URL),

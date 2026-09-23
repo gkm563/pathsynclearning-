@@ -1,8 +1,6 @@
 import "server-only";
 import { env } from "@/lib/env";
 import { AppError } from "@/lib/api/errors";
-import { callGroq } from "./groq";
-import { callGemini } from "./gemini";
 
 type OllamaChatMessage = {
   role: "system" | "user" | "assistant";
@@ -71,6 +69,7 @@ export async function callOllamaJson<T>(options: {
   prompt: string;
   systemInstruction?: string;
   model?: string;
+  /** Omit or pass null for no completion cap. */
   maxTokens?: number | null;
   timeoutMs?: number;
   temperature?: number;
@@ -81,47 +80,21 @@ export async function callOllamaJson<T>(options: {
   const apiKey =
     purpose === "interview" ? env.ollamaInterviewApiKey : env.ollamaRoadmapApiKey;
   const label = options.label || "Ollama";
-
-  // If Groq API key is available, prefer ultra-fast Groq (llama-3.3-70b-versatile)
-  if (env.groqApiKey) {
-    try {
-      return await callGroq<T>({
-        prompt: options.prompt,
-        systemInstruction: options.systemInstruction,
-        model: "llama-3.3-70b-versatile",
-        temperature: options.temperature ?? 0.7,
-        maxCompletionTokens: options.maxTokens ?? 4096,
-        timeoutMs: Math.min(options.timeoutMs ?? 25000, 25000),
-      });
-    } catch (groqErr) {
-      console.warn(`[AI] Groq fallback failed for ${label}, trying Gemini/Ollama:`, groqErr);
-    }
-  }
-
-  // If Gemini API key is available, try Gemini
-  if (env.geminiApiKey) {
-    try {
-      return await callGemini<T>({
-        prompt: options.prompt,
-        systemInstruction: options.systemInstruction,
-        timeoutMs: Math.min(options.timeoutMs ?? 25000, 25000),
-      });
-    } catch (geminiErr) {
-      console.warn(`[AI] Gemini fallback failed for ${label}, trying Ollama:`, geminiErr);
-    }
-  }
-
   if (!apiKey) {
+    const names =
+      purpose === "interview"
+        ? "OLLAMA_INTERVIEW_API_KEY or OLLAMA_API_KEY"
+        : "OLLAMA_ROADMAP_API_KEY or OLLAMA_API_KEY";
     throw new AppError(
       "INTERNAL",
-      `No AI provider API key is configured (GROQ_API_KEY, GEMINI_API_KEY, or OLLAMA_ROADMAP_API_KEY).`,
+      `${names} is not configured. ${purpose === "interview" ? "AI interview" : "Roadmap generation"} uses Ollama Cloud.`,
     );
   }
 
   const baseUrl = env.ollamaBaseUrl.replace(/\/$/, "");
   const fallbackBaseUrl =
     baseUrl.includes("api.ollama.com") ? "https://ollama.com/v1" : "";
-  const model = options.model || "llama-3.3-70b-versatile";
+  const model = options.model || env.ollamaRoadmapModel;
   const messages: Array<{ role: "system" | "user"; content: string }> = [];
   if (options.systemInstruction) {
     messages.push({ role: "system", content: options.systemInstruction });
@@ -129,7 +102,7 @@ export async function callOllamaJson<T>(options: {
   messages.push({ role: "user", content: options.prompt });
 
   const controller = new AbortController();
-  const timeoutMs = Math.min(options.timeoutMs ?? 25000, 30000);
+  const timeoutMs = options.timeoutMs ?? 180000;
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   const payload: Record<string, unknown> = {

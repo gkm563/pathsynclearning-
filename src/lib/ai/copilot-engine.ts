@@ -297,7 +297,7 @@ export async function runCopilotTurn(input: {
         prompt,
         systemInstruction: copilotSystemInstruction(input.ctx.companion.name),
         userId: input.userId,
-        groqModel: "llama-3.3-70b-versatile",
+        groqModel: "openai/gpt-oss-120b",
         geminiSchema: GEMINI_SCHEMA,
         maxTokens: 800,
         timeoutMs: 25000,

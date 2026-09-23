@@ -4,21 +4,23 @@ import { AppError } from '@/lib/api/errors';
 interface GeminiOptions {
   prompt: string;
   systemInstruction?: string;
-  userId?: string;
+  userId: string;
   schema?: object;
   timeoutMs?: number;
+  /** Caps Gemini output size. Roadmaps need a high value; keep lower for small JSON. */
   maxOutputTokens?: number;
 }
 
+// Simple in-memory rate limit map (userId -> timestamps of requests in the last minute)
 const rateLimits = new Map<string, number[]>();
-const MAX_REQUESTS_PER_MINUTE = 20;
+const MAX_REQUESTS_PER_MINUTE = 10;
 const RATE_LIMIT_WINDOW_MS = 60000;
 
-function checkRateLimit(userId?: string): void {
-  if (!userId) return;
+function checkRateLimit(userId: string): void {
   const now = Date.now();
   const timestamps = rateLimits.get(userId) || [];
 
+  // Filter out timestamps older than 1 minute
   const validTimestamps = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
 
   if (validTimestamps.length >= MAX_REQUESTS_PER_MINUTE) {
@@ -32,14 +34,14 @@ function checkRateLimit(userId?: string): void {
 function cleanMarkdown(text: string): string {
   let cleaned = text.trim();
   if (cleaned.startsWith('```json')) {
-    cleaned = cleaned.replace(/^```json\n?/, '');
+    cleaned = cleaned.replace(/^```json\n/, '');
     if (cleaned.endsWith('```')) {
-      cleaned = cleaned.replace(/\n?```$/, '');
+      cleaned = cleaned.replace(/\n```$/, '');
     }
   } else if (cleaned.startsWith('```')) {
-    cleaned = cleaned.replace(/^```\w*\n?/, '');
+    cleaned = cleaned.replace(/^```\w*\n/, '');
     if (cleaned.endsWith('```')) {
-      cleaned = cleaned.replace(/\n?```$/, '');
+      cleaned = cleaned.replace(/\n```$/, '');
     }
   }
   return cleaned.trim();
@@ -54,7 +56,7 @@ function isTransientError(error: unknown): boolean {
     msg.includes('econnreset') ||
     msg.includes('etimedout') ||
     msg.includes('timed out') ||
-    /\b5\d{2}\b/.test(msg)
+    /\b5\d{2}\b/.test(msg) // HTTP 5xx
   );
 }
 
@@ -74,12 +76,15 @@ export async function callGemini<T>(options: GeminiOptions): Promise<T> {
 
   checkRateLimit(userId);
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${env.geminiApiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${env.geminiApiKey}`;
 
   const payload: Record<string, unknown> = {
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     generationConfig: {
       responseMimeType: 'application/json',
+      // Gemini 2.5 Flash defaults to dynamic thinking, which burns tokens/latency
+      // on large structured JSON (e.g. roadmaps) and often hits our timeout.
+      thinkingConfig: { thinkingBudget: 0 },
       maxOutputTokens,
     },
   };
@@ -126,6 +131,10 @@ export async function callGemini<T>(options: GeminiOptions): Promise<T> {
 
       if (!text) {
         throw new Error(`Empty Gemini response (finishReason=${finishReason ?? 'unknown'})`);
+      }
+
+      if (finishReason === 'MAX_TOKENS') {
+        throw new Error('Gemini response truncated (MAX_TOKENS). Try again with a shorter prompt.');
       }
 
       return text as string;
