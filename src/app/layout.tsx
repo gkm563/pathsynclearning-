@@ -24,11 +24,11 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
   ),
   title: {
-    default: "PathEd",
-    template: "%s · PathEd",
+    default: "PathSync Learning",
+    template: "%s · PathSync Learning",
   },
   description:
-    "Career readiness platform bridging academic theory and industry demands.",
+    "AI-powered learning & career readiness platform bridging academic theory and industry demands.",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "48x48" },

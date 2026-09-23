@@ -5,23 +5,23 @@ import Header from "@/components/layout/Header";
 
 export const metadata: Metadata = {
   title: {
-    default: "PathEd — Career readiness for engineering students",
-    template: "%s · PathEd",
+    default: "PathSync Learning — AI-Powered Learning & Career Readiness Platform",
+    template: "%s · PathSync Learning",
   },
   description:
-    "Bridge academic learning and industry skills with PathEd — roadmaps, challenges, mentorship, and placement readiness for engineering students.",
+    "Bridge academic learning and industry skills with PathSync Learning — roadmaps, challenges, mentorship, and placement readiness for engineering students.",
   openGraph: {
     type: "website",
-    siteName: "PathEd",
-    title: "PathEd — Career readiness for engineering students",
+    siteName: "PathSync Learning",
+    title: "PathSync Learning — AI-Powered Learning & Career Readiness Platform",
     description:
-      "Bridge academic learning and industry skills with PathEd — roadmaps, challenges, mentorship, and placement readiness.",
+      "Bridge academic learning and industry skills with PathSync Learning — roadmaps, challenges, mentorship, and placement readiness.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "PathEd — Career readiness for engineering students",
+    title: "PathSync Learning — AI-Powered Learning & Career Readiness Platform",
     description:
-      "Bridge academic learning and industry skills with PathEd.",
+      "Bridge academic learning and industry skills with PathSync Learning.",
   },
   robots: {
     index: true,

@@ -26,7 +26,7 @@ export function BrandMark({
   return (
     <Link
       href={href}
-      aria-label="PathEd"
+      aria-label="PathSync Learning"
       className={cn(
         "flex h-8 items-center gap-2 no-underline",
         size === "md" && "h-9",
@@ -55,12 +55,12 @@ export function BrandMark({
               inverted ? "text-[var(--text-inverse)]" : "text-[var(--brand-ink)]"
             }
           >
-            Path
+            PathSync
           </span>
-          <span className="text-[var(--brand)]">Ed</span>
+          <span className="text-[var(--brand)]"> Learning</span>
         </span>
       ) : (
-        <span className="sr-only">PathEd</span>
+        <span className="sr-only">PathSync Learning</span>
       )}
     </Link>
   );

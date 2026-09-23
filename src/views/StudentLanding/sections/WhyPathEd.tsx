@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import {
   Flame,
   Gauge,
@@ -8,6 +9,7 @@ import {
   Radio,
   Users,
   Zap,
+  ExternalLink,
   type LucideIcon,
 } from "lucide-react";
 import { Chip, SkillBar } from "../../../components/ui/Shared";
@@ -37,30 +39,30 @@ type NewsItem = {
   tag: string;
   tone: "success" | "primary" | "info";
   time: string;
+  url?: string;
 };
 
-const NEWS: readonly NewsItem[] = [
+const INITIAL_NEWS: readonly NewsItem[] = [
   {
-    headline: "OpenAI releases o3 API for enterprise developers",
-    tag: "AI nodes updated",
+    headline: "OpenAI & Anthropic launch next-gen AI developer models",
+    tag: "AI & ML",
     tone: "success",
     time: "2h ago",
   },
   {
-    headline: "Google plans 2,000 DevOps hires in Q2 2025",
-    tag: "CRI DevOps ↑12%",
+    headline: "Google & Microsoft announce 5,000+ cloud engineering roles",
+    tag: "DEVOPS & CLOUD",
     tone: "primary",
-    time: "5h ago",
+    time: "4h ago",
   },
   {
-    headline: "Meta open-sources new LLaMA 4 architecture",
-    tag: "ML roadmap refreshed",
+    headline: "Next.js 15 & React 19 transform full-stack web architecture",
+    tag: "WEB DEV",
     tone: "info",
     time: "1d ago",
   },
 ];
 
-/** Deterministic so the heatmap is identical on the server and the client. */
 const pseudoRandom = (seed: number) => {
   let t = seed + 0x6d2b79f5;
   t = Math.imul(t ^ (t >>> 15), t | 1);
@@ -84,6 +86,25 @@ const heatClass = (i: number) => {
 };
 
 export default function WhyPathEd() {
+  const [news, setNews] = useState<readonly NewsItem[]>(INITIAL_NEWS);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetch("/api/public/tech-news")
+      .then((res) => res.json())
+      .then((data) => {
+        if (isMounted && data?.articles && Array.isArray(data.articles) && data.articles.length > 0) {
+          setNews(data.articles);
+        }
+      })
+      .catch(() => {
+        // Fallback remains INITIAL_NEWS
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <section
       aria-labelledby="why-heading"
@@ -91,18 +112,17 @@ export default function WhyPathEd() {
     >
       <div className="mx-auto grid max-w-[var(--measure-content)] gap-10 lg:grid-cols-2 lg:gap-14">
         <div className="min-w-0">
-          <p className="type-overline text-primary">Why PathEd</p>
-          <h2 id="why-heading" className="type-h1 mt-3 text-ink">
+          <p className="type-overline text-primary font-bold tracking-wider">Why PathSync Learning</p>
+          <h2 id="why-heading" className="type-h1 mt-3 text-ink font-bold">
             One platform. Infinite directions.
           </h2>
           <p className="type-body-lg type-prose mt-4 text-muted">
-            The only platform that simultaneously optimizes your CGPA and Career
-            Readiness Index. No compromises.
+            The only platform that simultaneously optimizes your academic performance and real-world Career Readiness Index. No compromises.
           </p>
 
-          <div className="mt-8 rounded-[var(--radius-lg)] border border-line bg-surface p-5 shadow-[var(--shadow-xs)] sm:p-6">
-            <p className="type-overline text-faint">
-              Consistency heatmap — 12 weeks
+          <div className="mt-8 rounded-2xl border border-line bg-surface p-5 shadow-xs sm:p-6">
+            <p className="type-overline text-faint font-semibold tracking-wider">
+              Consistency Heatmap — 12 Weeks
             </p>
             <div
               aria-hidden
@@ -120,16 +140,16 @@ export default function WhyPathEd() {
             </p>
           </div>
 
-          <div className="mt-5 rounded-[var(--radius-lg)] border border-warning/25 bg-warning-soft p-5 sm:p-6">
+          <div className="mt-5 rounded-2xl border border-warning/30 bg-warning-soft p-5 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="type-overline inline-flex items-center gap-1.5 text-warning">
-                <Zap size={13} aria-hidden />
-                Today’s challenge
+              <p className="type-overline inline-flex items-center gap-1.5 text-warning font-bold">
+                <Zap size={15} aria-hidden />
+                Today’s Challenge
               </p>
               <Chip tone="warning">+150 XP</Chip>
             </div>
-            <h3 className="type-h4 mt-3 text-ink">
-              Implement Binary Search Tree
+            <h3 className="type-h4 mt-3 text-ink font-bold">
+              Implement Binary Search Tree & Balance Algorithm
             </h3>
             <p className="type-small mt-1 text-muted">
               DSA · Medium · 45 min estimated
@@ -137,9 +157,9 @@ export default function WhyPathEd() {
             <div className="mt-4">
               <SkillBar pct={68} tone="warning" delay={200} />
             </div>
-            <p className="type-caption mt-3 inline-flex items-center gap-1.5 font-semibold text-warning">
-              <Flame size={13} aria-hidden />
-              7-day streak
+            <p className="type-caption mt-3 inline-flex items-center gap-1.5 font-bold text-warning">
+              <Flame size={15} aria-hidden />
+              7-day active streak
             </p>
           </div>
         </div>
@@ -149,34 +169,50 @@ export default function WhyPathEd() {
             {PILLARS.map((pillar) => (
               <li
                 key={pillar.label}
-                className="min-w-0 rounded-[var(--radius-lg)] border border-line bg-surface p-5 shadow-[var(--shadow-xs)] transition-[border-color,box-shadow] duration-[var(--duration-normal)] hover:border-line-strong hover:shadow-[var(--shadow-sm)] motion-reduce:transition-none"
+                className="min-w-0 rounded-2xl border border-line bg-surface p-5 shadow-xs transition-all duration-200 hover:border-primary/40 hover:shadow-md motion-reduce:transition-none"
               >
                 <span
                   aria-hidden
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-[var(--radius-md)] bg-primary-soft text-primary"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-primary"
                 >
-                  <pillar.icon size={17} strokeWidth={1.75} />
+                  <pillar.icon size={20} strokeWidth={2} />
                 </span>
-                <p className="type-h2 type-numeric mt-3 text-ink">
+                <p className="type-h2 type-numeric mt-3 text-ink font-bold">
                   {pillar.stat}
                 </p>
-                <p className="type-h4 mt-1 text-ink">{pillar.label}</p>
+                <p className="type-h4 mt-1 text-ink font-bold">{pillar.label}</p>
                 <p className="type-small mt-1 text-muted">{pillar.sub}</p>
               </li>
             ))}
           </ul>
 
-          <div className="mt-4 rounded-[var(--radius-lg)] border border-line bg-surface p-5 shadow-[var(--shadow-xs)] sm:p-6">
-            <p className="type-overline inline-flex items-center gap-1.5 text-accent">
-              <Radio size={13} aria-hidden />
-              Tech news — live
-            </p>
-            <ul className="mt-4 list-none divide-y divide-line p-0">
-              {NEWS.map((item) => (
-                <li key={item.headline} className="min-w-0 py-3 first:pt-0">
-                  <p className="type-body font-medium text-ink">
-                    {item.headline}
-                  </p>
+          <div className="mt-6 rounded-2xl border border-line bg-surface p-5 shadow-xs sm:p-6">
+            <div className="flex items-center justify-between">
+              <p className="type-overline inline-flex items-center gap-1.5 text-accent font-bold tracking-wider">
+                <Radio size={15} className="animate-pulse" aria-hidden />
+                Tech News — Live Stream
+              </p>
+              <span className="text-xs text-muted font-medium">Real-Time</span>
+            </div>
+
+            <ul className="mt-4 list-none divide-y divide-line/60 p-0">
+              {news.map((item) => (
+                <li key={item.headline} className="min-w-0 py-3.5 first:pt-0">
+                  {item.url ? (
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="type-body font-semibold text-ink hover:text-primary transition-colors flex items-center justify-between gap-2 group"
+                    >
+                      <span>{item.headline}</span>
+                      <ExternalLink className="h-4 w-4 shrink-0 text-muted group-hover:text-primary" />
+                    </a>
+                  ) : (
+                    <p className="type-body font-semibold text-ink">
+                      {item.headline}
+                    </p>
+                  )}
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     <Chip tone={item.tone}>{item.tag}</Chip>
                     <span className="type-caption text-faint">{item.time}</span>
@@ -184,11 +220,12 @@ export default function WhyPathEd() {
                 </li>
               ))}
             </ul>
+
             <Link
               href={routes.marketing.blog}
-              className="type-label mt-4 inline-flex min-h-11 items-center rounded-[var(--radius-sm)] text-primary transition-colors duration-[var(--duration-fast)] hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none"
+              className="type-label mt-4 inline-flex min-h-11 items-center rounded-xl text-primary font-semibold transition-colors duration-200 hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
-              Read the feed
+              Read full live feed →
             </Link>
           </div>
         </div>

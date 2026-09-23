@@ -72,7 +72,7 @@ export default function Footer() {
 
         <div className="mt-14 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6">
           <p className="type-small m-0 text-muted">
-            © {new Date().getFullYear()} PathEd. All rights reserved.
+            © {new Date().getFullYear()} PathSync Learning. All rights reserved.
           </p>
           <p className="type-overline m-0 inline-flex items-center gap-2 text-muted">
             <span className="h-1.5 w-1.5 rounded-full bg-success" aria-hidden />

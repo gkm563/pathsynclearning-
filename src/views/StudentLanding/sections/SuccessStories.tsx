@@ -21,11 +21,11 @@ const STORIES: readonly Story[] = [
   {
     name: "Priya Sharma",
     role: "Backend SDE",
-    company: "TechCorp",
+    company: "Google",
     cri: "92%",
     quote:
-      "PathEd didn't just teach me code. It taught me how to think like an engineer.",
-    text: "Before PathEd, I was lost in a sea of theoretical coursework. Once I started completing the real-world challenges on my personalized roadmap, my CRI score shot up. Within 3 months, a recruiter saw my profile and reached out directly. No resume screen, just proof of work.",
+      "PathSync Learning didn't just teach me code. It taught me how to think like an engineer.",
+    text: "Before PathSync Learning, I was lost in a sea of theoretical coursework. Once I started completing the real-world challenges on my personalized roadmap, my CRI score shot up. Within 3 months, a recruiter saw my profile and reached out directly. No resume screen, just proof of work.",
     before: "Struggling with DSA",
     after: "Backend SDE",
     image:
@@ -34,10 +34,10 @@ const STORIES: readonly Story[] = [
   {
     name: "Rahul Verma",
     role: "Frontend Engineer",
-    company: "Innovate AI",
+    company: "Microsoft",
     cri: "88%",
     quote: "I finally have a portfolio that speaks for itself.",
-    text: "I used to get rejected at the resume screening stage constantly. PathEd's project-based approach meant I built real, complex applications. When recruiters saw my verified Skill Tree and project repos, the interviews started pouring in.",
+    text: "I used to get rejected at the resume screening stage constantly. PathSync Learning's project-based approach meant I built real, complex applications. When recruiters saw my verified Skill Tree and project repos, the interviews started pouring in.",
     before: "Tutorial Hell",
     after: "Frontend Engineer",
     image:
@@ -46,7 +46,7 @@ const STORIES: readonly Story[] = [
   {
     name: "Aisha Patel",
     role: "Data Scientist",
-    company: "FinTech Global",
+    company: "Razorpay",
     cri: "95%",
     quote: "The AI Mentor is like having a senior engineer on call 24/7.",
     text: "Whenever I was stuck on a complex data pipeline challenge, the AI Mentor didn't just give me the answer. It asked me guiding questions, pointing out flaws in my logic. That Socratic method of learning completely changed how I problem-solve.",
@@ -58,10 +58,10 @@ const STORIES: readonly Story[] = [
   {
     name: "David Chen",
     role: "Full Stack Developer",
-    company: "NextGen Startup",
+    company: "Amazon",
     cri: "91%",
-    quote: "PathEd bridged the gap between college and the real world.",
-    text: "University taught me how to write scripts, but PathEd taught me how to build systems. Learning about CI/CD, system design, and clean architecture through hands-on challenges made me confident enough to ace my technical interviews.",
+    quote: "PathSync Learning bridged the gap between college and the real world.",
+    text: "University taught me how to write scripts, but PathSync Learning taught me how to build systems. Learning about CI/CD, system design, and clean architecture through hands-on challenges made me confident enough to ace my technical interviews.",
     before: "Writing Scripts",
     after: "Full Stack Developer",
     image:
@@ -97,7 +97,7 @@ export default function SuccessStories() {
     >
       <div className="mx-auto max-w-[var(--measure-content)]">
         <div className="mx-auto max-w-[40rem] text-center">
-          <p className="type-overline text-accent">Student success</p>
+          <p className="type-overline text-accent">Student Success</p>
           <h2 id="stories-heading" className="type-h1 mt-3 text-ink">
             From student to software engineer
           </h2>
@@ -117,7 +117,6 @@ export default function SuccessStories() {
             {`Story ${index + 1} of ${STORIES.length}: ${story.name}, ${story.role} at ${story.company}.`}
           </p>
 
-          {/* Track — the only element allowed to clip. */}
           <div className="relative min-w-0 overflow-hidden">
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
@@ -161,7 +160,7 @@ export default function SuccessStories() {
                   <dl className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="min-w-0 rounded-[var(--radius-md)] border border-line bg-canvas p-4">
                       <dt className="type-overline text-faint">
-                        Before PathEd
+                        Before PathSync Learning
                       </dt>
                       <dd className="type-label mt-1.5 text-ink">
                         {story.before}
@@ -169,7 +168,7 @@ export default function SuccessStories() {
                     </div>
                     <div className="min-w-0 rounded-[var(--radius-md)] border border-primary-border bg-primary-soft p-4">
                       <dt className="type-overline text-primary">
-                        After PathEd
+                        After PathSync Learning
                       </dt>
                       <dd className="type-label mt-1.5 text-ink">
                         {story.after}
