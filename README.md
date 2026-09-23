@@ -1,4 +1,4 @@
-# PathEd0
+# PathEd
 
 Career readiness platform that bridges academic learning and industry skills for engineering students.
 
