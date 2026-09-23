@@ -118,7 +118,7 @@ export async function POST(request: Request) {
         systemInstruction:
           "You are PathED Notes Enhancer, a careful tutor. Clean up notes, correct factual or conceptual mistakes, and teach why. Be kind and specific. Format like PathED chat: **bold** key terms and ==highlight== the core takeaway. Never invent exam answers. If unsure a claim is wrong, leave it and do not invent a correction.",
         userId: user.id,
-        groqModel: "openai/gpt-oss-120b",
+        groqModel: "llama-3.3-70b-versatile",
         geminiSchema: {
           type: "object",
           properties: {

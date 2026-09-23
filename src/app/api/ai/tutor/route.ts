@@ -95,7 +95,7 @@ export async function POST(request: Request) {
         prompt,
         systemInstruction: TUTOR_SYSTEM_INSTRUCTION,
         userId: user.id,
-        groqModel: "openai/gpt-oss-120b",
+        groqModel: "llama-3.3-70b-versatile",
         geminiSchema: {
           type: "object",
           properties: {
