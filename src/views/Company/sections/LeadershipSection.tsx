@@ -15,10 +15,10 @@ type TeamMember = {
 const LEADERSHIP: readonly TeamMember[] = [
   {
     name: "Gautam Kumar Maurya",
-    role: "Founder & CEO",
-    tag: "Founder",
+    role: "Co-Founder",
+    tag: "Co-Founder",
     img: "/team/gautam-kumar-maurya.jpg",
-    bio: "Leading vision, strategic architecture, and platform roadmap for PathSync Learning.",
+    bio: "Driving core platform vision, architecture, and long-term strategic execution.",
     crop: "center",
   },
   {
@@ -57,7 +57,7 @@ const LEADERSHIP: readonly TeamMember[] = [
     name: "Rohit Pal",
     role: "Head of Social Media & Growth Outreach",
     tag: "Leadership",
-    img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&h=600&q=80",
+    img: "/team/rohit-pal.jpg",
     bio: "Leading social presence, brand growth, community engagement, and public outreach.",
     crop: "top",
   },
@@ -71,7 +71,7 @@ export default function LeadershipSection() {
     >
       <div className="mx-auto w-full max-w-[var(--measure-content)] px-4 sm:px-6 lg:px-8">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <p className="type-overline text-primary font-bold tracking-wider">Leadership & Team</p>
+          <p className="type-overline text-primary font-bold tracking-wider">Co-Founders & Leadership</p>
           <h2 id="leadership-title" className="type-h1 mt-3 text-ink font-bold">
             The architects behind PathSync Learning
           </h2>
