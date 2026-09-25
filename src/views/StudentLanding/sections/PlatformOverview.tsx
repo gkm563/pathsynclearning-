@@ -21,7 +21,7 @@ const PILLARS: readonly Pillar[] = [
   {
     img: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80",
     title: "Peer-to-peer community",
-    desc: "You are not learning alone. Join a vibrant community of 40,000+ ambitious students. Find co-founders, get unstuck in minutes, and participate in exclusive weekend hackathons.",
+    desc: "You are not learning alone. Join a vibrant community of ambitious engineering students. Find co-founders, get unstuck in minutes, and participate in exclusive weekend hackathons.",
     tag: "Network",
     href: routes.marketing.community,
   },

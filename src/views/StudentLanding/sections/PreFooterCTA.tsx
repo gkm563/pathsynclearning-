@@ -18,7 +18,7 @@ export default function PreFooterCTA() {
             Your roadmap starts now.
           </h2>
           <p className="type-body-lg mx-auto mt-5 max-w-[32rem] text-muted">
-            Join 40,000+ students building careers they’re proud of. Real
+            Join ambitious students building careers they’re proud of. Real
             skills. Real progress. Real offers.
           </p>
 

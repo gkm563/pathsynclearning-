@@ -17,7 +17,7 @@ const FEATURES: readonly Feature[] = [
   {
     icon: Compass,
     title: "Build your roadmap",
-    desc: "AI-generated skill paths built on real hiring data from Google, Microsoft, and 500+ top companies.",
+    desc: "AI-generated skill paths built on real hiring data and core technical standards.",
     img: "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80",
   },
   {

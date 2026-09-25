@@ -63,10 +63,10 @@ const ROLES: ReadonlyArray<{
 ];
 
 const PROOF_POINTS: ReadonlyArray<{ icon: LucideIcon; value: string; label: string }> = [
-  { icon: Users, value: "40,000+", label: "Active Students" },
-  { icon: Award, value: "95%", label: "Placement Rate" },
-  { icon: Briefcase, value: "500+", label: "Hiring Companies" },
-  { icon: Zap, value: "1M+", label: "XP Earned Daily" },
+  { icon: Award, value: "Verified", label: "Proof-of-Work" },
+  { icon: Briefcase, value: "Industry", label: "Skill Roadmaps" },
+  { icon: Zap, value: "AI-Powered", label: "Learning Engine" },
+  { icon: Users, value: "Mentors", label: "Academic Guidance" },
 ];
 
 const MODES: ReadonlyArray<{
@@ -82,7 +82,7 @@ const MODES: ReadonlyArray<{
     id: "c",
     label: "Career mode",
     headline: "Turn a B.Tech degree into a career-ready roadmap.",
-    body: "AI-powered skill paths calibrated to Google, Microsoft, Razorpay, and 500+ companies. Build what the industry demands.",
+    body: "AI-powered skill paths calibrated to modern engineering role standards. Build what the industry demands.",
     features: ["AI-fication", "CRI tracker", "XP + coins", "Memory Lane"],
     cta: "Start career mode",
     href: routes.auth.signUp,

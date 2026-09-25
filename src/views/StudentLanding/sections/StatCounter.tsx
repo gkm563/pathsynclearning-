@@ -13,28 +13,28 @@ type Stat = {
 
 const STATS: readonly Stat[] = [
   {
-    label: "Active learners",
-    value: "40,000+",
-    target: 40000,
-    format: (n) => `${Math.round(n).toLocaleString("en-US")}+`,
-  },
-  {
-    label: "Placement rate",
-    value: "95%",
-    target: 95,
-    format: (n) => `${Math.round(n)}%`,
-  },
-  {
-    label: "Hiring partners",
-    value: "500+",
-    target: 500,
+    label: "Skill domains",
+    value: "10+",
+    target: 10,
     format: (n) => `${Math.round(n)}+`,
   },
   {
-    label: "Code submissions",
-    value: "2M+",
-    target: 2,
-    format: (n) => `${n.toFixed(1).replace(/\.0$/, "")}M+`,
+    label: "Interactive modules",
+    value: "50+",
+    target: 50,
+    format: (n) => `${Math.round(n)}+`,
+  },
+  {
+    label: "Roadmap tracks",
+    value: "15+",
+    target: 15,
+    format: (n) => `${Math.round(n)}+`,
+  },
+  {
+    label: "Verified readiness",
+    value: "100%",
+    target: 100,
+    format: (n) => `${Math.round(n)}%`,
   },
 ];
 

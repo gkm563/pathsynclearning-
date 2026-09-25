@@ -29,7 +29,7 @@ export const AUTH_ROLES: AuthRole[] = [
     highlights: [
       {
         title: "Skill decay protection",
-        detail: "98% knowledge retention",
+        detail: "Adaptive knowledge retention",
       },
       {
         title: "AI-calibrated skill graph",
@@ -47,7 +47,7 @@ export const AUTH_ROLES: AuthRole[] = [
     icon: BookOpen,
     tagline: "Enter the educator command centre.",
     highlights: [
-      { title: "12,000+ classrooms connected", detail: "Active academics" },
+      { title: "Classrooms connected", detail: "Active academics" },
       { title: "Automated AI evaluator", detail: "Submission analytics" },
       { title: "Real-time student heatmap", detail: "Skill-gap monitoring" },
     ],
@@ -58,7 +58,7 @@ export const AUTH_ROLES: AuthRole[] = [
     icon: Briefcase,
     tagline: "Access the verified talent portal.",
     highlights: [
-      { title: "500+ hiring partners", detail: "Verified skill résumés" },
+      { title: "Verified hiring network", detail: "Verified skill résumés" },
       { title: "Zero résumé friction", detail: "CRI-scored candidates" },
       { title: "Pipeline intelligence", detail: "Real-time matching" },
     ],

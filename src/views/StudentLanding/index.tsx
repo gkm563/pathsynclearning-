@@ -40,7 +40,7 @@ export default function StudentLanding() {
       <QuoteSection
         quote="An engineering degree shouldn't be a gamble. PathEd is the blueprint for guaranteed readiness."
         author="Rahul Kushwaha"
-        role="CEO & Chief Designer"
+        role="Co-Founder"
       />
       <FAQ />
       <PreFooterCTA />

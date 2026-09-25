@@ -224,7 +224,7 @@ export const STORE_CATALOG: StoreProductSeed[] = [
     price: 2500,
     icon: "🌐",
     image: "https://images.unsplash.com/photo-1511556532299-8f662fc26c06?auto=format&fit=crop&q=80&w=600",
-    desc: "Direct referral channel to 500+ placed alumni across global MNCs.",
+    desc: "Direct referral channel to placed alumni across global companies.",
     meta: "Premium Unlocks",
     col: "#14B8A6",
     included: ["Referral directory search access", "Automated referral requests messenger", "Alumni newsletter refer patterns", "Private alumni meet channels"]
