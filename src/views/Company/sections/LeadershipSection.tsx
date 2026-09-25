@@ -49,7 +49,7 @@ const LEADERSHIP: readonly TeamMember[] = [
     name: "Ridhika Singh",
     role: "Co-Founder",
     tag: "Co-Founder",
-    img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&h=600&q=80",
+    img: "/team/ridhika-singh.jpg",
     bio: "Driving student operations, academic partnerships, and mentorship initiatives.",
     crop: "top",
   },
