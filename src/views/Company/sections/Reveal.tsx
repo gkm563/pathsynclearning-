@@ -1,15 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import type { ReactNode } from "react";
-
-/**
- * Scroll reveal used across the /company sections.
- *
- * Fires once, moves a short distance and finishes inside the design-system
- * motion budget. When the visitor asks for reduced motion the wrapper degrades
- * to a plain element so nothing animates at all.
- */
 
 type RevealTag = "div" | "li";
 
@@ -27,8 +20,13 @@ export function Reveal({
   delay?: number;
 }) {
   const reducedMotion = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
 
-  if (reducedMotion) {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (reducedMotion || !mounted) {
     return as === "li" ? (
       <li className={className}>{children}</li>
     ) : (
@@ -37,16 +35,13 @@ export function Reveal({
   }
 
   const transition = { duration: 0.28, delay, ease: ENTRANCE_EASE };
-  const initial = { opacity: 0, y: 10 };
-  const whileInView = { opacity: 1, y: 0 };
-  const viewport = { once: true, amount: 0.2 };
 
   return as === "li" ? (
     <motion.li
       className={className}
-      initial={initial}
-      whileInView={whileInView}
-      viewport={viewport}
+      initial={{ opacity: 0, y: 8 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
       transition={transition}
     >
       {children}
@@ -54,9 +49,9 @@ export function Reveal({
   ) : (
     <motion.div
       className={className}
-      initial={initial}
-      whileInView={whileInView}
-      viewport={viewport}
+      initial={{ opacity: 0, y: 8 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
       transition={transition}
     >
       {children}
