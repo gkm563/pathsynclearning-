@@ -105,13 +105,17 @@ export default function LeadershipSection() {
                 </div>
 
                 <div className="flex flex-col items-center">
-                  <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary mb-2">
-                    {member.tag || "Team"}
-                  </span>
+                  {member.tag && (
+                    <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary mb-2">
+                      {member.tag}
+                    </span>
+                  )}
                   <h3 className="type-h3 font-bold text-ink">{member.name}</h3>
-                  <p className="type-overline mt-1 text-xs font-semibold tracking-wider text-primary">
-                    {member.role}
-                  </p>
+                  {member.role && member.role !== member.tag && (
+                    <p className="type-overline mt-1 text-xs font-semibold tracking-wider text-primary">
+                      {member.role}
+                    </p>
+                  )}
                   {member.bio && (
                     <p className="type-small mt-3 text-muted leading-relaxed">
                       {member.bio}
