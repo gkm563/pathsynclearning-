@@ -18,20 +18,15 @@ export interface LLMOptions {
   primary?: LLMPrimary;
 }
 
-/**
- * Groq (`openai/gpt-oss-120b`) for tutor, copilot, and notes.
- * Roadmap generation uses Ollama Cloud separately.
- */
 export async function callAIWithFallback<T>(options: LLMOptions): Promise<T> {
   const {
     prompt,
     systemInstruction,
     userId,
-    groqModel = 'openai/gpt-oss-120b',
+    groqModel = 'llama-3.3-70b-versatile',
     maxTokens = 4096,
-    timeoutMs = 90000,
-    temperature = 1,
-    reasoningEffort = 'medium',
+    timeoutMs = 45000,
+    temperature = 0.7,
   } = options;
 
   if (!env.groqApiKey) {
@@ -50,8 +45,7 @@ export async function callAIWithFallback<T>(options: LLMOptions): Promise<T> {
       temperature,
       maxCompletionTokens: maxTokens,
       topP: 1,
-      reasoningEffort,
-      stream: true,
+      stream: false,
       timeoutMs,
     });
     console.info(`[AI] Groq (${groqModel}) succeeded`);

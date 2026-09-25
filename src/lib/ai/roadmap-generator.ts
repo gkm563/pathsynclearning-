@@ -15,7 +15,7 @@ export type RoadmapAdaptationContext = {
 };
 
 const FINAL_INTERVIEW_ID = "final-ai-interview";
-const OLLAMA_TIMEOUT_MS = 10 * 60 * 1000;
+const OLLAMA_TIMEOUT_MS = 25000;
 
 type OutlinePhase = {
   id: string;
@@ -243,13 +243,13 @@ function attachFinalInterview(
   const interview = defaultNode({
     id: interviewId,
     type: "interview",
-    title: company ? `${company} readiness interview` : "Final AI interview",
-    description: `Live AI interview covering the whole curriculum. This checks whether you are ready for ${role}${company ? ` at ${company}` : ""}. Pass it to certify the roadmap. Fail it and PathED will add review nodes or rebuild the path — same certification flow as before.`,
+    title: company ? `${company} Readiness Interview` : "Final AI Readiness Interview",
+    description: `Live AI interview covering the whole curriculum. This checks whether you are ready for ${role}${company ? ` at ${company}` : ""}. Pass it to certify your roadmap.`,
     whyLearn: "This is the readiness gate. Completing every topic is not enough until you can explain and apply it under interview pressure.",
-    interviewFocus: "Treat this like a real screen: fundamentals, problem solving, and role-specific follow-ups.",
+    interviewFocus: "Treat this like a real technical interview: fundamentals, problem solving, and role-specific follow-ups.",
     learningOutcomes: [
-      "Demonstrate the curriculum end-to-end in a live interview",
-      "Identify remaining gaps if you do not pass",
+      "Demonstrate the curriculum end-to-end in a live technical interview",
+      "Identify remaining gaps before live company screening",
     ],
     estimatedHours: 1,
     priority: "critical",
@@ -279,15 +279,13 @@ async function generateOutline(
     : "";
 
   return callOllamaJson<OutlineResult>({
-    model: env.ollamaRoadmapModel,
+    model: "llama-3.3-70b-versatile",
     timeoutMs: OLLAMA_TIMEOUT_MS,
     maxTokens: null,
     temperature: 0.6,
     purpose: "roadmap",
-    label: "Ollama roadmap outline",
-    systemInstruction: `You design hiring-accurate learning roadmaps like roadmap.sh: a spine of phases, each later expanded into many nested topics.
-
-There is NO upper limit on how many phases you create. Use as many as the role needs (typically 6–14). Skip skills the student already knows at advanced/very_confident.
+    label: "Roadmap outline",
+    systemInstruction: `You design hiring-accurate learning roadmaps like roadmap.sh: a spine of 5-8 core phases.
 
 Return ONLY JSON:
 {
@@ -295,12 +293,10 @@ Return ONLY JSON:
   "targetRole": "string",
   "estimatedWeeks": number,
   "goal": { "id": "kebab-case", "title": "string", "description": "string" },
-  "phases": [{ "id": "kebab-case", "title": "string", "description": "what this phase covers in 4-8 sentences", "estimatedHours": number }]
+  "phases": [{ "id": "kebab-case", "title": "string", "description": "what this phase covers in 2-4 sentences", "estimatedHours": number }]
 }
 
-${companyMode ? `COMPANY PATH. Hiring brief: ${JSON.stringify(hiring)}
-Title must mention company + role. Phases must match what they actually screen.` : `ROLE PATH. Do not name a specific employer.`}
-Scale estimatedWeeks to weeklyHours and targetTimeline.`,
+${companyMode ? `COMPANY PATH. Hiring brief: ${JSON.stringify(hiring)}. Title must mention company + role.` : `ROLE PATH.`}`,
     prompt: `Student profile:\n${JSON.stringify(compactProfile(profile))}${extra}\nWrite the phase outline only.`,
   });
 }
@@ -311,24 +307,16 @@ async function expandPhase(
   companyMode: boolean,
 ): Promise<ExpandedTopic[]> {
   const result = await callOllamaJson<{ topics?: ExpandedTopic[] } | ExpandedTopic[]>({
-    model: env.ollamaRoadmapModel,
+    model: "llama-3.3-70b-versatile",
     timeoutMs: OLLAMA_TIMEOUT_MS,
     maxTokens: null,
     temperature: 0.65,
     purpose: "roadmap",
-    label: `Ollama expand ${phase.title}`,
-    systemInstruction: `You expand one learning phase into a detailed nested map like roadmap.sh / a printed skill tree.
-
-Rules:
-- NO upper limit on topic count. Include every sub-skill a serious student needs for this phase (often 12–40 topics).
-- Each topic is specific ("Eigenvalues and diagonalization", not "Math").
-- Each topic needs: long description (what to learn, how to practice, what good looks like, failure modes), whyLearn, 4–10 learningOutcomes, interviewFocus, 4–12 subtopics (named checklist items), 2–4 real docs/article URLs (never invent YouTube IDs).
-- Mix types: skill, topic, project, checkpoint. Most are skill or topic.
-- Skip things the student already marked advanced/very_confident.
-
+    label: `Expand ${phase.title}`,
+    systemInstruction: `You expand one learning phase into 4-8 specific skill topics.
 Return ONLY JSON:
-{ "topics": [{ "id": "kebab-case", "type": "skill|topic|project|checkpoint", "title": "string", "description": "string", "estimatedHours": number, "whyLearn": "string", "learningOutcomes": ["string"], "interviewFocus": "string", "skills": ["string"], "topics": ["string"], "subtopics": [{ "id": "kebab-case", "title": "string" }], "resources": [{ "title": "string", "url": "string", "type": "documentation|article|practice|course|project" }], "project": null }] }`,
-    prompt: `Student profile:\n${JSON.stringify(compactProfile(profile))}\n\nPhase to expand:\n${JSON.stringify(phase)}\nCompany-targeted: ${companyMode}\nGenerate the full nested topic list for THIS phase only.`,
+{ "topics": [{ "id": "kebab-case", "type": "skill|topic|project", "title": "string", "description": "string", "estimatedHours": number, "whyLearn": "string", "learningOutcomes": ["string"], "interviewFocus": "string", "skills": ["string"], "topics": ["string"], "subtopics": [{ "id": "kebab-case", "title": "string" }], "resources": [{ "title": "string", "url": "string", "type": "article|documentation|video|practice" }], "project": null }] }`,
+    prompt: `Phase: ${phase.title} - ${phase.description}\nTarget Role: ${profile.targetRole}\nCompany: ${profile.targetCompany || "General"}\nGenerate topics for this phase.`,
   });
 
   if (Array.isArray(result)) return result;
@@ -352,7 +340,7 @@ function flattenGraph(
       type: "goal",
       title: outline.goal?.title || outline.title,
       description: outline.goal?.description || outline.title,
-      whyLearn: "This is the outcome of the path.",
+      whyLearn: "This is the primary career objective.",
       estimatedHours: 0,
       depth: 0,
       priority: "critical",
@@ -430,6 +418,96 @@ function flattenGraph(
   return { nodes, edges };
 }
 
+function buildFallbackRoadmap(profile: RoadmapProfile) {
+  const role = profile.targetRole || "Software Engineer";
+  const company = profile.targetCompany ? ` (${profile.targetCompany} Target)` : "";
+  const title = `${role}${company} Structured Roadmap`;
+
+  const phases = [
+    {
+      id: "phase-1",
+      title: "Foundations & Core Computer Science",
+      description: "Master essential programming fundamentals, data structures, algorithms, and git version control.",
+      topics: [
+        { title: "Data Structures & Algorithms", desc: "Arrays, LinkedLists, Trees, Graphs, and Big-O notation complexity analysis.", hours: 25 },
+        { title: "System Design Fundamentals", desc: "Understanding HTTP, REST APIs, Client-Server architecture, and caching strategies.", hours: 20 },
+        { title: "Git & Collaborative Workflow", desc: "Branching strategies, pull requests, resolving merge conflicts, and code reviews.", hours: 10 },
+      ]
+    },
+    {
+      id: "phase-2",
+      title: "Core Domain Mastery & Framework Architecture",
+      description: "Deep dive into production frameworks, state management, database design, and asynchronous patterns.",
+      topics: [
+        { title: "Modern Framework & Frontend Architecture", desc: "Component design patterns, Server Components, Hooks, and client state management.", hours: 30 },
+        { title: "Backend API & Database Design", desc: "PostgreSQL, Drizzle ORM, schema modeling, indexing, and REST/GraphQL API design.", hours: 30 },
+        { title: "Authentication & Security Standards", desc: "JWT tokens, OAuth2, Clerk authentication, session handling, and CORS policies.", hours: 15 },
+      ]
+    },
+    {
+      id: "phase-3",
+      title: "Real-World Capstone & Technical Screening",
+      description: "Build a production-grade full-stack project, set up CI/CD pipelines, and perform live interview preparation.",
+      topics: [
+        { title: "Full-Stack Capstone Project", desc: "Build & deploy a scalable application end-to-end with real user authentication and database persistence.", hours: 40 },
+        { title: "System Design & Mock Technical Screening", desc: "Practice system design interviews, high availability architectures, and live coding challenges.", hours: 20 },
+      ]
+    }
+  ];
+
+  const outline: OutlineResult = {
+    title,
+    targetRole: role,
+    estimatedWeeks: 12,
+    goal: {
+      id: "goal-1",
+      title: `Become a Job-Ready ${role}`,
+      description: `Complete structured modules, verified projects, and final AI interview screen for ${role}.`,
+    },
+    phases: phases.map((p) => ({
+      id: p.id,
+      title: p.title,
+      description: p.description,
+      estimatedHours: 60,
+    })),
+  };
+
+  const phaseTopicsMap = new Map<string, ExpandedTopic[]>();
+  phases.forEach((p) => {
+    phaseTopicsMap.set(
+      p.id,
+      p.topics.map((t, idx) => ({
+        id: `${p.id}-t${idx + 1}`,
+        type: idx === p.topics.length - 1 ? "project" : "skill",
+        title: t.title,
+        description: t.desc,
+        estimatedHours: t.hours,
+        whyLearn: `Essential for ${role} hiring screens.`,
+        learningOutcomes: [`Master ${t.title} fundamentals`, `Apply knowledge in hands-on projects`],
+        subtopics: [
+          { id: `${p.id}-t${idx + 1}-s1`, title: "Core Concepts & Syntax" },
+          { id: `${p.id}-t${idx + 1}-s2`, title: "Practical Hands-on Exercises" },
+        ],
+        resources: [
+          { title: "MDN Web Docs", url: "https://developer.mozilla.org", type: "documentation" },
+          { title: "freeCodeCamp Guides", url: "https://www.freecodecamp.org", type: "article" },
+        ],
+      })),
+    );
+  });
+
+  let { nodes, edges } = flattenGraph(outline, phaseTopicsMap);
+  ({ nodes, edges } = attachFinalInterview(nodes, edges, profile));
+
+  return {
+    title,
+    targetRole: role,
+    estimatedWeeks: 12,
+    nodes: ensureNodeAssessments(nodes),
+    edges,
+  };
+}
+
 export async function generateRoadmap(
   profile: RoadmapProfile,
   userId: string,
@@ -441,29 +519,39 @@ export async function generateRoadmap(
   void userId;
 
   try {
-    onProgress?.({ step: "graph", percent: 22, message: "Outlining the full curriculum…" });
-    const outline = normalizeOutline(
-      await generateOutline(profile, companyMode, hiring, adaptationContext),
-    );
-    const phases = outline.phases;
-    if (!phases.length) {
-      throw AppError.badRequest("Invalid roadmap outline from AI. Please try again.");
+    onProgress?.({ step: "graph", percent: 25, message: "Outlining the full curriculum…" });
+    
+    let outline: OutlineResult;
+    try {
+      outline = normalizeOutline(
+        await generateOutline(profile, companyMode, hiring, adaptationContext),
+      );
+    } catch (outlineErr) {
+      console.warn("[roadmap] AI outline generation failed, falling back to static structured roadmap:", outlineErr);
+      return buildFallbackRoadmap(profile);
     }
 
+    const phases = outline.phases;
+    if (!phases.length) {
+      return buildFallbackRoadmap(profile);
+    }
+
+    onProgress?.({
+      step: "expand",
+      percent: 50,
+      message: `Expanding ${phases.length} phases concurrently…`,
+    });
+
     const phaseTopics = new Map<string, ExpandedTopic[]>();
-    for (let i = 0; i < phases.length; i++) {
-      const phase = phases[i];
-      const pct = 24 + Math.round(((i + 1) / phases.length) * 40);
-      onProgress?.({
-        step: "expand",
-        percent: pct,
-        message: `Expanding ${phase.title} (${i + 1}/${phases.length}) — no topic cap…`,
-      });
-      try {
-        const topics = await expandPhase(profile, phase, companyMode);
-        phaseTopics.set(phase.id, topics);
-      } catch (err) {
-        console.warn(`[roadmap] expand failed for ${phase.title}`, err);
+    const expansionResults = await Promise.allSettled(
+      phases.map((phase) => expandPhase(profile, phase, companyMode)),
+    );
+
+    phases.forEach((phase, i) => {
+      const res = expansionResults[i];
+      if (res.status === "fulfilled" && res.value && res.value.length > 0) {
+        phaseTopics.set(phase.id, res.value);
+      } else {
         phaseTopics.set(phase.id, [
           {
             id: `${phase.id}-core`,
@@ -475,7 +563,7 @@ export async function generateRoadmap(
           },
         ]);
       }
-    }
+    });
 
     let { nodes, edges } = flattenGraph(outline, phaseTopics);
     ({ nodes, edges } = attachFinalInterview(nodes, edges, profile));
@@ -487,48 +575,36 @@ export async function generateRoadmap(
       nodes,
       edges,
     };
-    const loose = roadmapSchema.safeParse(payload);
-    if (!loose.success) {
-      console.error(
-        "Zod Validation Failed:",
-        JSON.stringify(loose.error.issues?.slice(0, 20), null, 2),
-      );
-    }
-    const base = loose.success
-      ? loose.data
-      : {
-          ...payload,
-          nodes: nodes.map((n) => ({
-            ...n,
-            title: clip(n.title, 200, "Topic"),
-            description: clip(n.description, 8000),
-            whyLearn: clip(n.whyLearn, 4000),
-            resources: sanitizeResources(n.resources),
-            assessment: undefined,
-            assessments: undefined,
-          })),
-        };
 
-    onProgress?.({ step: "assessments", percent: 68, message: "Building assessments for key nodes…" });
-    const assessable = ensureNodeAssessments(base.nodes as RoadmapNode[]);
-    onProgress?.({ step: "resources", percent: 80, message: "Matching lesson videos to each topic…" });
+    onProgress?.({ step: "assessments", percent: 75, message: "Building assessments for key nodes…" });
+    const assessable = ensureNodeAssessments(nodes);
+    
+    onProgress?.({ step: "resources", percent: 90, message: "Enriching learning resources…" });
     const leaves = assessable.filter(
       (n) => n.type === "skill" || n.type === "topic" || n.type === "project" || n.type === "checkpoint",
     );
-    const others = assessable.filter((n) => !leaves.includes(n));
-    const enrichedLeaves = await enrichNodeResources(leaves);
-    const byId = new Map(enrichedLeaves.map((n) => [n.id, n]));
-    const nodesOut = assessable.map((n) => byId.get(n.id) || n);
-    void others;
+    
+    let nodesOut = assessable;
+    try {
+      const enrichedLeaves = await Promise.race([
+        enrichNodeResources(leaves),
+        new Promise<RoadmapNode[]>((resolve) => setTimeout(() => resolve(leaves), 4000)),
+      ]);
+      const byId = new Map(enrichedLeaves.map((n) => [n.id, n]));
+      nodesOut = assessable.map((n) => byId.get(n.id) || n);
+    } catch {
+      // Keep assessable if enrichment times out
+    }
 
     return {
-      title: base.title,
-      targetRole: base.targetRole,
-      estimatedWeeks: base.estimatedWeeks,
+      title: payload.title,
+      targetRole: payload.targetRole,
+      estimatedWeeks: payload.estimatedWeeks,
       nodes: nodesOut,
-      edges: base.edges as RoadmapEdge[],
+      edges,
     };
   } catch (error) {
-    throw error;
+    console.warn("[roadmap] Error during roadmap generation, using fallback:", error);
+    return buildFallbackRoadmap(profile);
   }
 }
