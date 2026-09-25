@@ -6,34 +6,59 @@ import { Reveal } from "./Reveal";
 type TeamMember = {
   readonly name: string;
   readonly role: string;
+  readonly tag?: string;
   readonly img: string;
-  /**
-   * Crop anchor for the portrait. Kept as a token rather than an inline
-   * `object-position` so the whole card stays style-attribute free.
-   */
+  readonly bio?: string;
   readonly crop?: "top" | "center";
 };
 
-const TEAM: readonly TeamMember[] = [
+const LEADERSHIP: readonly TeamMember[] = [
   {
-    name: "Rahul Kushwaha",
-    role: "CEO & Chief Designer",
-    img: "/team/Rahul Kushwaha.jpeg",
+    name: "Gautam Kumar Maurya",
+    role: "Founder & CEO",
+    tag: "Founder",
+    img: "/team/gautam-kumar-maurya.jpg",
+    bio: "Leading vision, strategic architecture, and platform roadmap for PathSync Learning.",
+    crop: "center",
   },
   {
     name: "Devesh Singh",
-    role: "Head of Research and Development",
-    img: "/team/Devesh SIngh.jpeg",
+    role: "Co-Founder",
+    tag: "Co-Founder",
+    img: "/team/devesh-singh.jpg",
+    bio: "Heading product research, learning systems, and curriculum design.",
+    crop: "center",
+  },
+  {
+    name: "Rahul Kushwaha",
+    role: "Co-Founder",
+    tag: "Co-Founder",
+    img: "/team/rahul-kushwaha.jpg",
+    bio: "Overseeing platform development, student experience, and design systems.",
+    crop: "center",
   },
   {
     name: "Ayush Yadav",
-    role: "Chief Engineer & Developer",
-    img: "/team/Ayush yadav.jpg",
+    role: "Co-Founder",
+    tag: "Co-Founder",
+    img: "/team/ayush-yadav.jpg",
+    bio: "Architecting core infrastructure, developer pipelines, and technical execution.",
+    crop: "center",
   },
   {
-    name: "Prabhat Pandey",
-    role: "Chief Technical Head",
-    img: "/team/Prabhat Pandey.jpg",
+    name: "Ridhika Singh",
+    role: "Co-Founder",
+    tag: "Co-Founder",
+    img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&h=600&q=80",
+    bio: "Driving student operations, academic partnerships, and mentorship initiatives.",
+    crop: "top",
+  },
+  {
+    name: "Rohit Pal",
+    role: "Head of Social Media & Growth Outreach",
+    tag: "Leadership",
+    img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&h=600&q=80",
+    bio: "Leading social presence, brand growth, community engagement, and public outreach.",
     crop: "top",
   },
 ];
@@ -42,31 +67,34 @@ export default function LeadershipSection() {
   return (
     <section
       aria-labelledby="leadership-title"
-      className="border-b border-line bg-sunken"
+      className="border-b border-line bg-sunken/40 py-16 sm:py-24"
     >
-      <div className="mx-auto w-full max-w-[var(--measure-content)] px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
-        <Reveal className="min-w-0 max-w-2xl">
-          <p className="type-overline text-primary">Leadership</p>
-          <h2 id="leadership-title" className="type-h1 mt-3 text-ink">
-            The architects behind the platform
+      <div className="mx-auto w-full max-w-[var(--measure-content)] px-4 sm:px-6 lg:px-8">
+        <Reveal className="mx-auto max-w-2xl text-center">
+          <p className="type-overline text-primary font-bold tracking-wider">Leadership & Team</p>
+          <h2 id="leadership-title" className="type-h1 mt-3 text-ink font-bold">
+            The architects behind PathSync Learning
           </h2>
+          <p className="type-body mx-auto mt-4 text-muted">
+            Building the next generation of career readiness, industry mentorship, and verified proof-of-work for engineering students.
+          </p>
         </Reveal>
 
-        <ul className="mt-10 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
-          {TEAM.map((member, index) => (
+        <ul className="mt-14 grid list-none grid-cols-1 gap-6 p-0 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+          {LEADERSHIP.map((member, index) => (
             <Reveal
               as="li"
               key={member.name}
               delay={index * 0.05}
               className="min-w-0"
             >
-              <article className="flex h-full min-w-0 flex-col items-center rounded-[var(--radius-lg)] border border-line bg-surface p-6 text-center shadow-[var(--shadow-xs)]">
-                <div className="h-28 w-28 overflow-hidden rounded-full border border-primary-border bg-sunken">
+              <article className="group flex h-full min-w-0 flex-col items-center rounded-2xl border border-line bg-surface p-6 text-center shadow-xs transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:-translate-y-1">
+                <div className="relative mb-5 h-32 w-32 overflow-hidden rounded-2xl border-2 border-primary/20 bg-sunken shadow-md transition-transform duration-300 group-hover:scale-105">
                   <img
                     src={member.img}
                     alt={`Portrait of ${member.name}`}
-                    width={224}
-                    height={224}
+                    width={256}
+                    height={256}
                     loading="lazy"
                     decoding="async"
                     className={cn(
@@ -75,8 +103,21 @@ export default function LeadershipSection() {
                     )}
                   />
                 </div>
-                <h3 className="type-h3 mt-5 text-ink">{member.name}</h3>
-                <p className="type-overline mt-2 text-primary">{member.role}</p>
+
+                <div className="flex flex-col items-center">
+                  <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary mb-2">
+                    {member.tag || "Team"}
+                  </span>
+                  <h3 className="type-h3 font-bold text-ink">{member.name}</h3>
+                  <p className="type-overline mt-1 text-xs font-semibold tracking-wider text-primary">
+                    {member.role}
+                  </p>
+                  {member.bio && (
+                    <p className="type-small mt-3 text-muted leading-relaxed">
+                      {member.bio}
+                    </p>
+                  )}
+                </div>
               </article>
             </Reveal>
           ))}

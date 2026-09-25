@@ -36,7 +36,7 @@ const STORY_ROWS: readonly StoryRow[] = [
     eyebrow: "The Prayagraj roots",
     title: "Our origin story",
     body: [
-      "PathEd wasn't born in Silicon Valley. It was built in Prayagraj by engineers who experienced the friction of traditional tech education firsthand.",
+      "PathSync Learning wasn't born in Silicon Valley. It was built in Prayagraj by engineers who experienced the friction of traditional tech education firsthand.",
       "We realised that if we wanted a system that actually cared about careers, we had to build it ourselves. What started as a local experiment is now scaling to redefine how engineers prepare for the workforce globally.",
     ],
     tone: "accent",
