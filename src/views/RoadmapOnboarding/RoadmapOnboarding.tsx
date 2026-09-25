@@ -191,6 +191,9 @@ export default function RoadmapOnboarding({
   const roleReady = !!resolvedTargetRole(formData.roleOfInterest, formData.customRole);
   const targetedReady =
     !!resolvedTargetCompany(formData.targetCompany, formData.customCompany) && roleReady;
+  const skillsReady = Boolean(formData.skills && Array.isArray(formData.skills) && formData.skills.length > 0);
+  const currentSectionId = sections[currentStepIndex]?.id;
+  const onSkillsStep = currentSectionId === 'skills';
 
   const skipForLater = () => {
     setRoadmapDeferred(true);
@@ -229,7 +232,7 @@ export default function RoadmapOnboarding({
         return;
       }
       if (generationMode === 'general' && !roleReady) {
-        setError('Pick the role this roadmap is for.');
+        setError('Pick the target role this roadmap is for.');
         return;
       }
       if (generationMode === 'targeted') {
@@ -252,9 +255,23 @@ export default function RoadmapOnboarding({
       setCurrentStepIndex(0);
       return;
     }
+
+    if (onSkillsStep && !skillsReady) {
+      setError('Skill Required: Profile must include at least 1 known skill to continue. Please select at least 1 skill above.');
+      return;
+    }
+
     if (currentStepIndex < sections.length - 1) {
       setCurrentStepIndex(prev => prev + 1);
     } else if (currentStepIndex === sections.length - 1 && !isAiStep) {
+      if (!roleReady) {
+        setError('Target Role Required: Profile must include a target role before generating.');
+        return;
+      }
+      if (!skillsReady) {
+        setError('Skill Required: Profile must include at least 1 known skill. Go back to Skills section to add a skill.');
+        return;
+      }
       setIsLoading(true);
       try {
         const payload = mapToApi(formData);
@@ -273,6 +290,10 @@ export default function RoadmapOnboarding({
         setIsLoading(false);
       }
     } else if (isAiStep) {
+      if (!roleReady || !skillsReady) {
+        setError('Target Role and at least 1 Known Skill are required to generate your roadmap.');
+        return;
+      }
       setIsLoading(true);
       try {
         await apiSend('/api/roadmap/profile', 'PUT', mapToApi(formData, aiAnswers));
@@ -287,6 +308,7 @@ export default function RoadmapOnboarding({
   };
 
   const handleBack = () => {
+    setError(null);
     if (isAiStep) {
       setIsAiStep(false);
     } else if (currentStepIndex > 0) {
@@ -349,7 +371,8 @@ export default function RoadmapOnboarding({
     (!generationMode ||
       (generationMode === 'targeted' && !targetedReady) ||
       (generationMode === 'general' && !roleReady));
-  const continueDisabled = isLoading || showStartChoice || typeSelectBlocked;
+  const skillsStepBlocked = !showStartChoice && !showTypeSelect && onSkillsStep && !skillsReady;
+  const continueDisabled = isLoading || showStartChoice || typeSelectBlocked || skillsStepBlocked;
   const hideNav = showStartChoice;
   const hideBack = showStartChoice || (fromRoadmap && showTypeSelect);
   const inFormSteps = !showStartChoice && !showTypeSelect;

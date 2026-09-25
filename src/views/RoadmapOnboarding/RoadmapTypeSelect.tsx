@@ -60,6 +60,9 @@ export default function RoadmapTypeSelect({
   const [pairingMessage, setPairingMessage] = useState<string | null>(null);
   const [pairingOk, setPairingOk] = useState(true);
 
+  const hasRoleSelected = Boolean(roleOfInterest && (roleOfInterest !== OTHER_ROLE || customRole.trim()));
+  const hasCompanySelected = Boolean(targetCompany && (targetCompany !== OTHER_COMPANY || customCompany.trim()));
+
   useEffect(() => {
     apiGet<{ companies: CatalogCompany[]; roles: CatalogRole[] }>("/api/roadmap/catalog")
       .then((res) => {
@@ -123,7 +126,6 @@ export default function RoadmapTypeSelect({
     return () => {
       cancelled = true;
     };
-     
   }, [mode, targetCompany, customCompany, roleOfInterest, customRole, selectedCompany?.id]);
 
   return (
@@ -153,10 +155,20 @@ export default function RoadmapTypeSelect({
 
       {mode === "targeted" ? (
         <div className="flex flex-col gap-6">
+          {!hasCompanySelected && (
+            <div className="rounded-xl border border-red-500/80 bg-red-500/10 p-3.5 text-sm font-semibold text-red-600 dark:text-red-400 flex items-center gap-2 shadow-sm">
+              <TriangleAlert className="h-5 w-5 shrink-0 text-red-500 animate-pulse" />
+              <span>Target Company Required: Please select a target company below to continue.</span>
+            </div>
+          )}
+
           <div>
             <label className={labelClass}>Search companies</label>
             <SearchField value={companyQuery} onChange={setCompanyQuery} placeholder="Google, Razorpay, TCS…" />
-            <div className="mt-3 grid max-h-72 grid-cols-[repeat(auto-fill,minmax(168px,1fr))] gap-2.5 overflow-y-auto pr-1">
+            <div className={cn(
+              "mt-3 grid max-h-72 grid-cols-[repeat(auto-fill,minmax(168px,1fr))] gap-2.5 overflow-y-auto pr-1 p-2 rounded-xl transition-colors",
+              !hasCompanySelected ? "border-2 border-red-500/60 bg-red-500/5" : ""
+            )}>
               {visibleCompanies.map((company) => {
                 const selected = targetCompany === company.name;
                 return (
@@ -177,7 +189,7 @@ export default function RoadmapTypeSelect({
                       "flex items-center gap-2.5 rounded-[var(--radius-md)] border px-3 py-2.5 text-left transition-colors",
                       "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
                       selected
-                        ? "border-primary-border bg-primary-soft"
+                        ? "border-primary-border bg-primary-soft ring-2 ring-primary/30"
                         : "border-line bg-sunken hover:bg-surface",
                     )}
                   >
@@ -202,7 +214,7 @@ export default function RoadmapTypeSelect({
                   "rounded-[var(--radius-md)] border border-dashed px-3 py-3 font-semibold text-ink",
                   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
                   targetCompany === OTHER_COMPANY
-                    ? "border-primary-border bg-primary-soft"
+                    ? "border-primary-border bg-primary-soft ring-2 ring-primary/30"
                     : "border-line",
                 )}
               >
@@ -211,7 +223,7 @@ export default function RoadmapTypeSelect({
             </div>
             {targetCompany === OTHER_COMPANY ? (
               <Input
-                className="mt-3"
+                className="mt-3 border-2 border-primary"
                 placeholder="Company name"
                 value={customCompany}
                 onChange={(e) => onChange({ ...data, customCompany: e.target.value })}
@@ -236,6 +248,12 @@ export default function RoadmapTypeSelect({
           ) : null}
 
           <div>
+            {!hasRoleSelected && (
+              <div className="mb-3 rounded-xl border border-red-500/80 bg-red-500/10 p-3.5 text-sm font-semibold text-red-600 dark:text-red-400 flex items-center gap-2 shadow-sm">
+                <TriangleAlert className="h-5 w-5 shrink-0 text-red-500 animate-pulse" />
+                <span>Target Role Required: Please select a role to continue.</span>
+              </div>
+            )}
             <label className={labelClass}>
               {selectedCompany ? `Roles ${selectedCompany.name} hires` : "Target role"}
             </label>
@@ -243,7 +261,10 @@ export default function RoadmapTypeSelect({
               <Search size={16} className="shrink-0 text-muted" aria-hidden />
               <SearchField value={roleQuery} onChange={setRoleQuery} placeholder="Filter roles…" />
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className={cn(
+              "flex flex-wrap gap-2 p-2 rounded-xl transition-colors",
+              !hasRoleSelected ? "border-2 border-red-500/60 bg-red-500/5" : ""
+            )}>
               {rolesForUi.map((role) => (
                 <Pill
                   key={role.id}
@@ -266,7 +287,7 @@ export default function RoadmapTypeSelect({
             </div>
             {roleOfInterest === OTHER_ROLE ? (
               <Input
-                className="mt-3"
+                className="mt-3 border-2 border-primary"
                 placeholder="Job role"
                 value={customRole}
                 onChange={(e) => onChange({ ...data, customRole: e.target.value })}
@@ -301,9 +322,18 @@ export default function RoadmapTypeSelect({
 
       {mode === "general" ? (
         <div>
+          {!hasRoleSelected && (
+            <div className="mb-3 rounded-xl border border-red-500/80 bg-red-500/10 p-3.5 text-sm font-semibold text-red-600 dark:text-red-400 flex items-center gap-2 shadow-sm">
+              <TriangleAlert className="h-5 w-5 shrink-0 text-red-500 animate-pulse" />
+              <span>Target Role Required: Please select or type your target role below to continue.</span>
+            </div>
+          )}
           <label className={labelClass}>Which role is this path for?</label>
           <SearchField value={roleQuery} onChange={setRoleQuery} placeholder="Search roles…" />
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className={cn(
+            "mt-3 flex flex-wrap gap-2 p-2 rounded-xl transition-colors",
+            !hasRoleSelected ? "border-2 border-red-500/60 bg-red-500/5" : ""
+          )}>
             {(roleQuery
               ? allRoles.filter(
                   (r) =>
@@ -329,7 +359,7 @@ export default function RoadmapTypeSelect({
           </div>
           {roleOfInterest === OTHER_ROLE ? (
             <Input
-              className="mt-3"
+              className="mt-3 border-2 border-primary"
               placeholder="Job role"
               value={customRole}
               onChange={(e) => onChange({ ...data, customRole: e.target.value })}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Plus, Wrench, X } from "lucide-react";
+import { Plus, Wrench, X, TriangleAlert, CheckCircle2 } from "lucide-react";
 import { IconButton, Input } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import {
@@ -56,6 +56,8 @@ export default function SkillsSection({
   const skills = asSkills(data.skills);
   const [customSkill, setCustomSkill] = useState("");
 
+  const hasNoSkills = skills.length === 0;
+
   useEffect(() => {
     const next = skills.filter(
       (row) =>
@@ -63,7 +65,6 @@ export default function SkillsSection({
     );
     if (next.length === skills.length) return;
     onChange({ ...data, skills: next });
-    // Only prune when the path's skill catalog changes.
   }, [stage.pathLabel, options.join("|")]);
 
   const toggleSkill = (skill: string) => {
@@ -102,7 +103,22 @@ export default function SkillsSection({
         subtitle={stage.skills.subtitle}
       />
 
-      <div>
+      {hasNoSkills ? (
+        <div className="rounded-xl border border-red-500/80 bg-red-500/10 p-4 text-sm font-semibold text-red-600 dark:text-red-400 flex items-center gap-2.5 shadow-sm">
+          <TriangleAlert className="h-5 w-5 shrink-0 text-red-500 animate-pulse" />
+          <span>At least 1 known skill is required to proceed. Please click a skill pill below or type your own skill.</span>
+        </div>
+      ) : (
+        <div className="rounded-xl border border-success-border/60 bg-success-soft/30 p-3 text-sm font-medium text-success flex items-center gap-2">
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
+          <span>{skills.length} skill(s) selected. Click Continue when ready.</span>
+        </div>
+      )}
+
+      <div className={cn(
+        "rounded-2xl p-4 transition-colors",
+        hasNoSkills ? "border-2 border-red-500/60 bg-red-500/5 ring-2 ring-red-500/20" : ""
+      )}>
         <p className={labelClass}>{stage.skills.prompt}</p>
         <div className="mb-4 flex flex-wrap gap-2">
           {options.map((skill) => (
