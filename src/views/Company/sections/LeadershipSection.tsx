@@ -14,22 +14,6 @@ type TeamMember = {
 
 const LEADERSHIP: readonly TeamMember[] = [
   {
-    name: "Gautam Kumar Maurya",
-    role: "Co-Founder",
-    tag: "Co-Founder",
-    img: "/team/gautam-kumar-maurya.jpg",
-    bio: "Driving core platform vision, architecture, and long-term strategic execution.",
-    crop: "center",
-  },
-  {
-    name: "Devesh Singh",
-    role: "Co-Founder",
-    tag: "Co-Founder",
-    img: "/team/devesh-singh.jpg",
-    bio: "Heading product research, learning systems, and curriculum design.",
-    crop: "center",
-  },
-  {
     name: "Rahul Kushwaha",
     role: "Co-Founder",
     tag: "Co-Founder",
@@ -38,11 +22,27 @@ const LEADERSHIP: readonly TeamMember[] = [
     crop: "center",
   },
   {
+    name: "Gautam Kumar Maurya",
+    role: "Co-Founder",
+    tag: "Co-Founder",
+    img: "/team/gautam-kumar-maurya.jpg",
+    bio: "Driving core platform vision, architecture, and long-term strategic execution.",
+    crop: "center",
+  },
+  {
     name: "Ayush Yadav",
     role: "Co-Founder",
     tag: "Co-Founder",
     img: "/team/ayush-yadav.jpg",
     bio: "Architecting core infrastructure, developer pipelines, and technical execution.",
+    crop: "center",
+  },
+  {
+    name: "Devesh Singh",
+    role: "Co-Founder",
+    tag: "Co-Founder",
+    img: "/team/devesh-singh.jpg",
+    bio: "Heading product research, learning systems, and curriculum design.",
     crop: "center",
   },
   {
