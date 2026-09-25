@@ -28,7 +28,7 @@ export default function Company() {
       <QuoteSection
         quote="Built in Prayagraj. Scaled for the world. We are engineers building for engineers."
         author="Rahul Kushwaha"
-        role="CEO & Chief Designer"
+        role="Co-Founder"
       />
 
       <RecruiterValidationSection
